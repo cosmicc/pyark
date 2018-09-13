@@ -34,6 +34,7 @@ def playerlist(instance):
             if line.startswith('"No Players'):
                 return
             else:
+                line.split(', ')
                 print(line)
 
 playerlist("@ragnarok")
