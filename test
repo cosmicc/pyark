@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import subprocess
+import subprocess, time
 
 def playercount(instance):
     playercount = 0
@@ -37,6 +37,19 @@ def playerlist(instance):
                 c = line.split(', ')
                 playersteamid = c[1]
                 d = c[0].split('. ')
-                print(d[1])
+                playersteamname = d[1]
 
-playerlist("@ragnarok")
+def follow(thefile):
+    thefile.seek(0,2)
+    while True:
+        line = thefile.readline()
+        if not line:
+            time.sleep(0.1)
+            continue
+        yield line
+
+logfile = open("/home/ark/ARK/ShooterGame/Saved/Logs/ShooterGame.log","r")
+loglines = follow(logfile)
+for line in loglines:
+    print(line)
+
