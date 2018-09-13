@@ -12,10 +12,9 @@ def playercount(instance):
         else:
             if line.startswith('"No Players'):
                 return 0
+            else:
                 print(line)
                 playercount+=1
-            else:
-                playercount=0
     return playercount
 
-print(playercount('@island'))
+print(playercount('@ragnarok'))
