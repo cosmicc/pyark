@@ -35,6 +35,7 @@ def playerlist(instance):
                 return
             else:
                 c = line.split(', ')
-                print(c)
+                playersteamid = c[1]
+                print(playersteamid)
 
 playerlist("@ragnarok")
