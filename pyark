@@ -26,7 +26,7 @@ parser.add_argument('--version', action='version', version='%(prog)s {}'.format(
 parser.add_argument('-q', '--quiet', action='store_true', help='supress logging output to console. default: error logging')
 parser.add_argument('--debug', action='store_true', help='verbose output (debug)')
 args = parser.parse_args()
-if args.debug == True:
+if args.debug == False:  # changed to false to force debugging
     log.setLevel(logging.DEBUG)
 else:
     log.setLevel(logging.INFO)
