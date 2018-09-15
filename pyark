@@ -5,6 +5,7 @@ import logging, argparse, sqlite3, time, threading
 from configparser import ConfigParser
 from arkupdater import arkupd
 from cmdlistener import clisten
+from logwatch import logwatch
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -80,6 +81,7 @@ def main():
     c = conn.cursor()
 
     c.execute('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart TEXT, lastdinowipe TEXT, needsrestart BOOL)')
+    c.execute('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, playedtime TEXT)')
 
     for ins in range(numinstances):
         c.execute('SELECT * FROM instances WHERE name = ?', [(instance[ins]['name']),])
@@ -98,14 +100,20 @@ def main():
     
     arkupdt = threading.Thread(name='arkupdater', target = arkupd)
     arkupdt.daemon = False
-    arkupdt.start()
+    #arkupdt.start()
 
     clistener = threading.Thread(name='cmdlistener', target = clisten)
     clistener.daemon = False
     clistener.start()
 
+    for each in range(numinstances):
+        inst = instance[each]['name']
+        instance[each]['restartthread'] = threading.Thread(name = '%s-logwatch' % inst, target=logwatch, args=(inst,))
+        instance[each]['restartthread'].start()
+
     while True:
-        time.sleep(500)
+        time.sleep(60)
+        print(threading.enumerate())
 
 if __name__ == '__main__':
     main()

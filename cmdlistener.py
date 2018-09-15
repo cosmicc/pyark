@@ -68,13 +68,40 @@ def elapsedTime(start_time, stop_time, lshort=False):
         else:
             daystring = 'Days'
     if days != 0:
-        return('{} {}, {} {}'.format(days, daystring, hours, hourstring))
+        return('{} {}, {} {}'.format(days, daystring, hours-days*24, hourstring))
     elif hours != 0:
-        return('{} {}, {} {}'.format(hours, hourstring, minutes, minstring))
+        return('{} {}, {} {}'.format(hours, hourstring, minutes-hours*60, minstring))
     elif minutes != 0:
         return('{} {}'.format(minutes, minstring))
     elif minutes == 0:
         return('now')
+    else:
+        log.error('Elapsed time function failed. Could not convert.')
+        return('Error')
+
+def playedTime(ptime):
+    total_min = ptime / 60
+    minutes = int(total_min % 60)
+    if minutes == 1:
+        minstring = 'Min'
+    else:
+        minstring = 'Mins'
+    hours = int(total_min / 60)
+    if hours == 1:
+        hourstring = 'Hour'
+    else:
+        hourstring = 'Hours'
+    days = int(hours / 24)
+    if days == 1:
+        daystring = 'Day'
+    else:
+        daystring = 'Days'
+    if days != 0:
+        return('{} {}, {} {}'.format(days, daystring, hours-days*24, hourstring))
+    elif hours != 0:
+        return('{} {}, {} {}'.format(hours, hourstring, minutes-hours*60, minstring))
+    elif minutes != 0:
+        return('{} {}'.format(minutes, minstring))
     else:
         log.error('Elapsed time function failed. Could not convert.')
         return('Error')
@@ -97,11 +124,39 @@ def getlastwipe(inst):
     conn.close()
     return ''.join(lastwipe[0])
 
+def getlastseen(seenname):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM players WHERE playername = ?', [seenname])
+    flast = c.fetchone()
+    c.close()
+    conn.close()
+    print(flast)
+    if not flast:
+        return 'No player found'
+    else:
+        plasttime = elapsedTime(time.time(),float(flast[2]))
+        return f'{seenname} was last seen {plasttime} ago on {flast[3]}'
+
+def gettimeplayed(seenname):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM players WHERE playername = ?', [seenname])
+    flast = c.fetchone()
+    c.close()
+    conn.close()
+    print(flast)
+    if not flast:
+        return 'No player found'
+    else:
+        plasttime = playedTime(float(flast[4].replace(',','')))
+        return f'{seenname} total playtime is {plasttime} on {flast[3]}'
+
+
 def checkcommands(inst):
-    cmdpipe = subprocess.Popen('arkmanager rconcmd getchat @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
-        print(line)
         if line.startswith('Running command') or line.startswith('Error:'):
             pass
         elif line.find('!help') != -1:
@@ -114,8 +169,19 @@ def checkcommands(inst):
             lastrestart = elapsedTime(time.time(),float(getlastrestart(inst)))
             subprocess.run('arkmanager rconcmd "ServerChat Last server restart was %s ago" @%s' % (lastrestart, inst), shell=True)
             log.info(f'responded to a lastrestart query on instance {inst}')
+        elif line.find('!lastseen') != -1:
+            rawseenname = line.split(' ')
+            seenname = rawseenname[4].lower()
+            print(getlastseen(seenname))
+            log.info(f'responding to a lastseen request for {seenname}')
+        elif line.find('!playedtime') != -1:
+            rawseenname = line.split(' ')
+            seenname = rawseenname[4].lower()
+            print(gettimeplayed(seenname))
+            log.info(f'responding to a playedtime request for {seenname}')
 
 def clisten():
+    log.info('starting the command listerner thread')
     while True:
         for each in range(numinstances):
             checkcommands(instance[each]['name'])

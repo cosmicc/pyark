@@ -258,7 +258,6 @@ def checkpending(inst):
     c.close()
     conn.close()
     ded = ''.join(lastwipe[0])
-    print(ded)
     if ded == "True":
         if not isrebooting(inst):
             log.info(f'detected admin forced instance restart for instance {inst}')
