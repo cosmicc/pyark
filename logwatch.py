@@ -77,7 +77,7 @@ def processlogline(line,inst):
             pexist = c.fetchall()
             if not pexist:
                 log.info(f'player {playername} with steamid {steamid} was not found. adding.')
-                c.execute('INSERT INTO players (steamid, playername, playedtime) VALUES (?, ?, ?, ?, ?)', (steamid,playername,playtime))
+                c.execute('INSERT INTO players (steamid, playername, playedtime) VALUES (?, ?, ?)', (steamid,playername,playtime))
                 conn.commit()
             elif steamid != '':
                 log.debug(f'player {playername} with steamid {steamid} was found. updating.')
