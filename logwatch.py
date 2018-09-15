@@ -79,7 +79,7 @@ def processlogline(line,inst):
                 log.info(f'player {playername} with steamid {steamid} was not found. adding.')
                 c.execute('INSERT INTO players (steamid, playername, playedtime) VALUES (?, ?, ?, ?, ?)', (steamid,playername,playtime))
                 conn.commit()
-            else:
+            elif steamid != '':
                 log.debug(f'player {playername} with steamid {steamid} was found. updating.')
                 c.execute('UPDATE players SET playername = ?, playedtime = ? WHERE steamid = ?', (playername,playtime,steamid))
                 conn.commit()
