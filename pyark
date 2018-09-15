@@ -69,8 +69,6 @@ def main():
         else:
             instr=instr + ', %s' % (a)
 
-    log.info(f'found {numinstances} instances: {instr}')
-
     sharedpath = config.get('general', 'shared')
 
     sqldb = f'{sharedpath}/db/pyark.db'
