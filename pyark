@@ -112,16 +112,6 @@ def main():
     while True:
         time.sleep(60)
         log.debug(threading.enumerate())
-        if not arkupdt.is_alive():
-            log.warning(f'ark updater thread has stalled. restarting.')
-            arkupdt.start()
-        if not clistener.is_alive():
-            log.warning(f'command listener thread has stalled. restarting.')
-            arkupdt.start()
-        for each in range(numinstances):
-            inst = instance[each]['name']
-            if not instance[each]['restartthread'].is_alive():
-                log.warning(f'log watcher thread for {inst} has stalled. restarting.')
 
 if __name__ == '__main__':
     main()

@@ -155,17 +155,32 @@ def gettimeplayed(seenname):
         plasttime = playedTime(float(flast[4].replace(',','')))
         return f'{seenname} total playtime is {plasttime} on {flast[3]}'
 
-def whoisonline(inst):
+def whoisonline(inst,oinst):
+    log.info(f'responding to a whoson request for {inst}')
     try:
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
         c.execute('SELECT * FROM players WHERE server = ?', [inst])
-        flast = c.fetchone()
-        log.critical(flast)
+        flast = c.fetchall()
+        pcnt = 0
+        plist = ''
+        for row in flast:
+            chktme = time.time()-float(row[2])
+            if chktme < 90:
+                print(row[1],chktme)
+                pcnt += 1
+                if plist == '':
+                    plist = '%s' % (row[1])
+                else:
+                    plist=plist + ', %s' % (row[1])
+
+        subprocess.run('arkmanager rconcmd "ServerChat Server %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
+
         c.close()
         conn.close()
     except:
-        subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst, inst), shell=True)
+        log.exception()
+        #subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst, inst), shell=True)
 
 
 def checkcommands(inst):
@@ -198,8 +213,13 @@ def checkcommands(inst):
             lpt = gettimeplayed(seenname)
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, inst), shell=True)
             log.info(f'responding to a playedtime request for {seenname}')
-        elif line.find('!whoson') != -1:
-            whoson = whoisonline(inst)
+        elif line.find('!whoson') != -1 or line.find('!whosonline') != -1:
+            rawline = line.split(' ')
+            if len(rawline) == 5:
+                ninst = rawline[4]
+            else:
+                ninst = inst
+            whoson = whoisonline(ninst,inst)
 
 def clisten():
     log.info('starting the command listerner thread')
