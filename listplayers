@@ -57,13 +57,13 @@ allplayers = c.fetchall()
 
 for row in allplayers:
     #print(row)
-    if row[0] == '' or row[0].startswith(' ') or row[0].find('76561198388849736') != -1:
+    if row[0] == '' or row[0].startswith(' '): # or row[0].find('76561198388849736') != -1:
         print(f'deleting id: {row[0]}')
         c.execute('DELETE from players WHERE steamid = ?', (row[0],))
-
-    pltime = playedTime(float(row[4].replace(',','')))
-    laston = datetime.fromtimestamp(float(row[2])-14400).strftime('%a, %b %d %I:%M%p')
-    print(f'id:{row[0]}, name: {row[1]}, laston: {laston} on {row[3]}, playtime: {pltime}')
+    else:
+        pltime = playedTime(float(row[4].replace(',','')))
+        laston = datetime.fromtimestamp(float(row[2])-14400).strftime('%a, %b %d %I:%M%p')
+        print(f'id:{row[0]}, name: {row[1]}, laston: {laston} on {row[3]}, playtime: {pltime}')
 
 conn.commit()
 c.close()

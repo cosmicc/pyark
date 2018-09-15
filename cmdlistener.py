@@ -156,13 +156,16 @@ def gettimeplayed(seenname):
         return f'{seenname} total playtime is {plasttime} on {flast[3]}'
 
 def whoisonline(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM players WHERE lastserver = ?', [inst])
-    flast = c.fetchone()
-    print(flast)
-    c.close()
-    conn.close()
+    try:
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT * FROM players WHERE server = ?', [inst])
+        flast = c.fetchone()
+        log.critical(flast)
+        c.close()
+        conn.close()
+    except:
+        subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst, inst), shell=True)
 
 
 def checkcommands(inst):
