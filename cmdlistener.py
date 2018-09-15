@@ -68,12 +68,12 @@ def elapsedTime(start_time, stop_time, lshort=False):
         else:
             daystring = 'Days'
     if days != 0:
-        return('{} {}, {} {}'.format(days, daystring, hours-days*24, hourstring))
+        return('{} {}, {} {}'.format(days, daystring, hours, hourstring))
     elif hours != 0:
-        return('{} {}, {} {}'.format(hours, hourstring, minutes-hours*60, minstring))
-    elif minutes != 0:
+        return('{} {}, {} {}'.format(hours, hourstring, minutes, minstring))
+    elif minutes > 1:
         return('{} {}'.format(minutes, minstring))
-    elif minutes == 0:
+    elif minutes <= 1:
         return('now')
     else:
         log.error('Elapsed time function failed. Could not convert.')
@@ -133,10 +133,13 @@ def getlastseen(seenname):
     conn.close()
     print(flast)
     if not flast:
-        return 'No player found'
+        return 'No player found with that name'
     else:
         plasttime = elapsedTime(time.time(),float(flast[2]))
-        return f'{seenname} was last seen {plasttime} ago on {flast[3]}'
+        if plasttime != 'now':
+            return f'{seenname} was last seen {plasttime} ago on {flast[3]}'
+        else:
+            return f'{seenname} is online now on {flast[3]}'
 
 def gettimeplayed(seenname):
     conn = sqlite3.connect(sqldb)
@@ -172,12 +175,14 @@ def checkcommands(inst):
         elif line.find('!lastseen') != -1:
             rawseenname = line.split(' ')
             seenname = rawseenname[4].lower()
-            print(getlastseen(seenname))
+            lsn = getlastseen(seenname)
+            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, inst), shell=True)
             log.info(f'responding to a lastseen request for {seenname}')
         elif line.find('!playedtime') != -1:
             rawseenname = line.split(' ')
             seenname = rawseenname[4].lower()
-            print(gettimeplayed(seenname))
+            lpt = gettimeplayed(seenname)
+            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, inst), shell=True)
             log.info(f'responding to a playedtime request for {seenname}')
 
 def clisten():

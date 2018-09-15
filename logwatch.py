@@ -3,7 +3,7 @@
 import time
 from datetime import datetime
 from datetime import timedelta
-import logging, sqlite3
+import logging, sqlite3, threading, subprocess
 from configparser import ConfigParser
 
 log = logging.getLogger(__name__)
@@ -80,20 +80,59 @@ def processlogline(line,inst):
             pexist = c.fetchall()
             if not pexist:
                 log.info(f'player {playername} with steamid {steamid} was not found. adding.')
-                c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime) VALUES (?, ?, ?, ?, ?)', (steamid,playername,timestamp,inst,playtime))
+                c.execute('INSERT INTO players (steamid, playername, playedtime) VALUES (?, ?, ?, ?, ?)', (steamid,playername,playtime))
                 conn.commit()
             else:
                 log.debug(f'player {playername} with steamid {steamid} was found. updating.')
-                c.execute('UPDATE players SET playername = ?, lastseen = ?, server = ?, playedtime = ? WHERE steamid = ?', (playername,timestamp,inst,playtime,steamid))
+                c.execute('UPDATE players SET playername = ?, playedtime = ? WHERE steamid = ?', (playername,playtime,steamid))
                 conn.commit()
             c.close()
             conn.close()
+
+def onlineplayer(steamid,inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
+    pexist = c.fetchall()
+    timestamp=time.time()
+    if not pexist:
+        log.info(f'steamid {steamid} was not found. adding.')
+        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime) VALUES (?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0'))
+        conn.commit()
+    else:
+        log.debug(f'steamid {steamid} was found. updating.')
+        c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
+        conn.commit()
+        c.close()
+        conn.close()
+
+
+def onlineupdate(inst):
+    log.info(f'starting online player watcher on {inst}')
+    while True:
+        cmdpipe = subprocess.Popen('arkmanager rconcmd ListPlayers @%s' % inst, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        b = cmdpipe.stdout.read().decode("utf-8")
+        for line in iter(b.splitlines()):
+            if line.startswith('Running command') or line.startswith('"') or line.startswith(' "') or line.startswith('Error:'):
+                pass
+            else:
+                if line.startswith('"No Players'):
+                    pass
+                else:
+                    rawline = line.split(',')
+                    nsteamid = rawline[1]
+                    onlineplayer(nsteamid.strip(),inst)
+        time.sleep(60)
+
 
 
 def logwatch(inst):
     log.debug(f'starting logwatch thread for instance {inst}')
     for each in range(numinstances):
         if instance[each]['name'] == inst:
+            weebo = threading.Thread(name = '%s-onlineupdater' % inst, target=onlineupdate, args=(inst,))
+            weebo.start()
+
             logfile = instance[each]['logfile']
             logpath = f'{arkroot}/ShooterGame/Saved/Logs/{logfile}'
             log.debug(f'watching log {logpath} for instance {inst}')
