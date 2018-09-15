@@ -176,11 +176,12 @@ def checkcommands(inst):
             log.info(f'responded to a lastrestart query on instance {inst}')
         elif line.find('!lastseen') != -1:
             log.warning(line)
-            rawseenname = line.split(' ')
-            seenname = rawseenname[4].lower()
-            lsn = getlastseen(seenname)
-            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, inst), shell=True)
-            log.info(f'responding to a lastseen request for {seenname}')
+            rawseenname = line.split(':')
+            log.warning(rawseenname)
+            #seenname = rawseenname[4].lower()
+            #lsn = getlastseen(seenname)
+            #subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, inst), shell=True)
+            #log.info(f'responding to a lastseen request for {seenname}')
         elif line.find('!playedtime') != -1:
             rawseenname = line.split(' ')
             seenname = rawseenname[4].lower()
