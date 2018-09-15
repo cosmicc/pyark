@@ -279,7 +279,7 @@ def arkupd():
             checkwipe(instance[each]['name'])
             checkpending(instance[each]['name'])
 
-        time.sleep(60)
+        time.sleep(300)
         print(threading.enumerate())
 
     
