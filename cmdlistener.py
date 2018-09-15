@@ -190,5 +190,5 @@ def clisten():
     while True:
         for each in range(numinstances):
             checkcommands(instance[each]['name'])
-        time.sleep(10)
+        time.sleep(5)
 

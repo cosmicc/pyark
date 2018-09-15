@@ -1,0 +1,70 @@
+#!/usr/bin/python3
+
+import subprocess
+import argparse, sqlite3
+from configparser import ConfigParser
+from datetime import datetime
+
+configfile = '/home/ark/pyark.cfg'
+
+class ExtConfigParser(ConfigParser):
+    def getlist(self, section, option):
+        value = self.get(section, option)
+        return list(filter(None, (x.strip() for x in value.split(','))))
+
+    def getlistint(self, section, option):
+        return [int(x) for x in self.getlist(section, option)]
+
+config = ExtConfigParser()
+config.read(configfile)
+
+sharedpath = config.get('general', 'shared')
+
+sqldb = f'{sharedpath}/db/pyark.db'
+
+def playedTime(ptime):
+    total_min = ptime / 60
+    minutes = int(total_min % 60)
+    if minutes == 1:
+        minstring = 'Min'
+    else:
+        minstring = 'Mins'
+    hours = int(total_min / 60)
+    if hours == 1:
+        hourstring = 'Hour'
+    else:
+        hourstring = 'Hours'
+    days = int(hours / 24)
+    if days == 1:
+        daystring = 'Day'
+    else:
+        daystring = 'Days'
+    if days != 0:
+        return('{} {}, {} {}'.format(days, daystring, hours-days*24, hourstring))
+    elif hours != 0:
+        return('{} {}, {} {}'.format(hours, hourstring, minutes, minstring))
+    elif minutes != 0:
+        return('{} {}'.format(minutes, minstring))
+    else:
+        return('Error')
+
+
+conn = sqlite3.connect(sqldb)
+c = conn.cursor()
+
+c.execute('SELECT * from players')
+allplayers = c.fetchall()
+
+for row in allplayers:
+    if row[0] == '' or row[0].startswith(' '):
+        print(f'deleting id: {row[0]}')
+        c.execute('DELETE from players WHERE steamid = ?', (row[0],))
+
+    pltime = playedTime(float(row[4].replace(',','')))
+    laston = datetime.fromtimestamp(float(row[2])-14400).strftime('%a, %b %d %I:%M%p')
+    print(f'id:{row[0]}, name: {row[1]}, laston: {laston} on {row[3]}, playtime: {pltime}')
+
+conn.commit()
+c.close()
+conn.close()
+
