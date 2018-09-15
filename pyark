@@ -100,7 +100,7 @@ def main():
     
     arkupdt = threading.Thread(name='arkupdater', target = arkupd)
     arkupdt.daemon = False
-    #arkupdt.start()
+    arkupdt.start()
 
     clistener = threading.Thread(name='cmdlistener', target = clisten)
     clistener.daemon = False
@@ -113,7 +113,7 @@ def main():
 
     while True:
         time.sleep(60)
-        print(threading.enumerate())
+        log.debug(threading.enumerate())
 
 if __name__ == '__main__':
     main()

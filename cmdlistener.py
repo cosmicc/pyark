@@ -163,7 +163,7 @@ def checkcommands(inst):
         if line.startswith('Running command') or line.startswith('Error:'):
             pass
         elif line.find('!help') != -1:
-            subprocess.run('arkmanager rconcmd "ServerChat Available commands: lastdinowipe, lastrestart" @%s' % (inst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: lastdinowipe, lastrestart, lastseen <playername>, playedtime <playername>" @%s' % (inst), shell=True)
         elif line.find('!lastdinowipe') != -1:
             lastwipe = elapsedTime(time.time(),float(getlastwipe(inst)))
             subprocess.run('arkmanager rconcmd "ServerChat Last wild dino wipe was %s ago" @%s' % (lastwipe, inst), shell=True)
