@@ -126,7 +126,7 @@ def resetlastrestart(inst):
 
 
 def checkwipe(inst):
-    log.debug(f'running dinowipe check for {inst}')
+    #log.debug(f'running dinowipe check for {inst}')
     lastwipe = getlastwipe(inst)
     if time.time()-float(lastwipe) > 86400:
         if playercount(inst) == 0:
