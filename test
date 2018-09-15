@@ -48,8 +48,32 @@ def follow(thefile):
             continue
         yield line
 
-logfile = open("/home/ark/ARK/ShooterGame/Saved/Logs/ShooterGame.log","r")
-loglines = follow(logfile)
-for line in loglines:
-    print(line)
+    logfile = open("/home/ark/ARK/ShooterGame/Saved/Logs/ShooterGame_2.log","r")
+    loglines = follow(logfile)
+    for line in loglines:
+        print(line)
+
+def checkcommands(instance):
+    cmdpipe = subprocess.Popen('arkmanager rconcmd getchat %s' % (instance), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    b = cmdpipe.stdout.read().decode("utf-8")
+    for line in iter(b.splitlines()):
+        print(line)
+        if line.startswith('Running command') or line.startswith('Error:'):
+            pass
+        elif line.find('!help') != -1:
+            arkpipe = subprocess.Popen('arkmanager rconcmd "ServerChat Available commands: lastdinowipe, lastrestart" %s' % (instance), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            d = arkpipe.stdout.read().decode("utf-8")
+        elif line.find('!lastdinowipe') != -1:
+            lastwipe = 'Not Available'
+            arkpipe = subprocess.Popen('arkmanager rconcmd "ServerChat Last dino wipe was %s" %s' % (lastwipe, instance), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            d = arkpipe.stdout.read().decode("utf-8")
+        elif line.find('!lastrestart') != -1:
+            lastrestart = 'Not Available'
+            arkpipe = subprocess.Popen('arkmanager rconcmd "ServerChat Last server restart was %s" %s' % (lastrestart, instance), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            d = arkpipe.stdout.read().decode("utf-8")
+
+
+while True:
+    checkcommands('@island')
+    time.sleep(5)
 

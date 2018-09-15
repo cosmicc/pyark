@@ -1,0 +1,112 @@
+#!/usr/bin/python3
+
+import subprocess
+import logging, argparse, sqlite3, time, threading
+from queue import Queue
+from configparser import ConfigParser
+from arkupdater import arkupd
+from cmdlistener import clisten
+
+__author__ = "Ian Perry"
+__copyright__ = "Copyright 2018, Galaxy Media"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__maintainer__ = "Ian Perry"
+__email__ = "ianperry99@gmail.com"
+__progname__ = "pyark-daemon"
+__description__ = "pyark daemon service"
+__detaildesc__ = ""
+
+logfile = '/home/ark/pyark.log'
+configfile = '/home/ark/pyark.cfg'
+
+log = logging.getLogger()
+parser = argparse.ArgumentParser(prog=__progname__)
+parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
+parser.add_argument('-q', '--quiet', action='store_true', help='supress logging output to console. default: error logging')
+parser.add_argument('--debug', action='store_true', help='verbose output (debug)')
+args = parser.parse_args()
+if args.debug == True:
+    log.setLevel(logging.DEBUG)
+else:
+    log.setLevel(logging.INFO)
+console_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(threadName)s:%(message)s')
+log_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(threadName)s:%(message)s')
+if args.quiet is False:
+    log_console = logging.StreamHandler()
+    log.addHandler(log_console)
+    log_console.setFormatter(console_format)
+log_fileh = logging.FileHandler(logfile)
+log.addHandler(log_fileh)
+log_fileh.setFormatter(log_format)
+
+log.info('pyark daemon is starting')
+log.debug('reading config file')
+
+class ExtConfigParser(ConfigParser):
+    def getlist(self, section, option):
+        value = self.get(section, option)
+        return list(filter(None, (x.strip() for x in value.split(','))))
+
+    def getlistint(self, section, option):
+        return [int(x) for x in self.getlist(section, option)]
+
+config = ExtConfigParser()
+config.read(configfile)
+
+def main():
+    numinstances = int(config.get('general', 'instances'))
+
+    instance = [dict() for x in range(numinstances)]
+    instr = ''
+
+    for each in range(numinstances):
+        a = config.get('instance%s' % (each), 'name')
+        b = config.get('instance%s' % (each), 'logfile')
+        instance[each] = {'name':a,'logfile':b}
+        if instr == '':
+            instr = '%s' % (a)
+        else:
+            instr=instr + ', %s' % (a)
+
+    log.info(f'found {numinstances} instances: {instr}')
+
+    sharedpath = config.get('general', 'shared')
+
+    sqldb = f'{sharedpath}/db/pyark.db'
+
+    log.debug(f'opening pyark sql database: {sqldb}')
+
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+
+    c.execute('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart TEXT, lastdinowipe TEXT)')
+
+    for ins in range(numinstances):
+        c.execute('SELECT * FROM instances WHERE name = ?', [(instance[ins]['name']),])
+        chkinst = c.fetchall()
+        if not chkinst:
+            now = time.time()
+            log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.') 
+            c.execute('INSERT INTO instances (name, lastrestart, lastdinowipe) VALUES (?, ?, ?)', (instance[ins]["name"], now, now))
+            conn.commit()
+        else:
+            log.debug(f'found server {instance[ins]["name"]} in server table')
+    c.close()
+    conn.close()
+
+    log.debug('database initilization complete')
+    
+    arkupdt = threading.Thread(name='arkupdater', target = arkupd)
+    arkupdt.daemon = False
+    arkupdt.start()
+
+    clistener = threading.Thread(name='cmdlistener', target = clisten)
+    clistener.daemon = False
+    clistener.start()
+
+    while True:
+        time.sleep(500)
+
+if __name__ == '__main__':
+    main()
