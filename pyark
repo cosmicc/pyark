@@ -2,7 +2,6 @@
 
 import subprocess
 import logging, argparse, sqlite3, time, threading
-from queue import Queue
 from configparser import ConfigParser
 from arkupdater import arkupd
 from cmdlistener import clisten
@@ -80,7 +79,7 @@ def main():
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
 
-    c.execute('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart TEXT, lastdinowipe TEXT)')
+    c.execute('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart TEXT, lastdinowipe TEXT, needsrestart BOOL)')
 
     for ins in range(numinstances):
         c.execute('SELECT * FROM instances WHERE name = ?', [(instance[ins]['name']),])
@@ -88,7 +87,7 @@ def main():
         if not chkinst:
             now = time.time()
             log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.') 
-            c.execute('INSERT INTO instances (name, lastrestart, lastdinowipe) VALUES (?, ?, ?)', (instance[ins]["name"], now, now))
+            c.execute('INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart) VALUES (?, ?, ?, ?)', (instance[ins]["name"], now, now, 'False'))
             conn.commit()
         else:
             log.debug(f'found server {instance[ins]["name"]} in server table')

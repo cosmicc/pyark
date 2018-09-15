@@ -11,7 +11,7 @@ def follow(thefile):
             continue
         yield line
 
-logfile = open("/home/ark/ARK/ShooterGame/Saved/Logs/ShooterGame_2.log","r")
+logfile = open("/home/ark/ARK/ShooterGame/Saved/Logs/ShooterGame.log","r")
 loglines = follow(logfile)
 for line in loglines:
     print(line)

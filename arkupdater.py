@@ -119,6 +119,7 @@ def resetlastrestart(inst):
     newtime = time.time()
     c.execute('UPDATE instances SET lastrestart = ? WHERE name = ?', [newtime,inst])
     c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', [newtime,inst])
+    c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', [inst])
     conn.commit()
     c.close()
     conn.close()
@@ -247,8 +248,22 @@ def checkupdates():
                 instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,"ark game update"))
                 instance[each]['restartthread'].start()
 
-
-    
+def checkpending(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT needsrestart FROM instances WHERE name = ?', [inst])
+    lastwipe = c.fetchall()
+    c.close()
+    conn.close()
+    ded = ''.join(lastwipe[0])
+    print(ded)
+    if ded == "True":
+        if not isrebooting(inst):
+            log.info(f'detected admin forced instance restart for instance {inst}')
+            for each in range(numinstances):
+                if instance[each]['name'] == inst:
+                    instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,"admin restart"))
+                    instance[each]['restartthread'].start()
 
 def arkupd(): 
     log.info('arkupdater thread started')
@@ -261,7 +276,8 @@ def arkupd():
         checkupdates()
         for each in range(numinstances):
             checkwipe(instance[each]['name'])
-        
+            checkpending(instance[each]['name'])
+
         time.sleep(60)
         print(threading.enumerate())
 

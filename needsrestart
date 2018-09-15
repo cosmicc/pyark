@@ -1,0 +1,39 @@
+#!/usr/bin/python3
+
+import subprocess
+import argparse, sqlite3
+from configparser import ConfigParser
+
+configfile = '/home/ark/pyark.cfg'
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('instance', help='instance to restart')
+args = parser.parse_args()
+
+class ExtConfigParser(ConfigParser):
+    def getlist(self, section, option):
+        value = self.get(section, option)
+        return list(filter(None, (x.strip() for x in value.split(','))))
+
+    def getlistint(self, section, option):
+        return [int(x) for x in self.getlist(section, option)]
+
+config = ExtConfigParser()
+config.read(configfile)
+
+sharedpath = config.get('general', 'shared')
+
+sqldb = f'{sharedpath}/db/pyark.db'
+
+conn = sqlite3.connect(sqldb)
+c = conn.cursor()
+
+c.execute('UPDATE instances SET needsrestart = "True" WHERE name = ?', [args.instance])
+
+conn.commit()
+c.close()
+conn.close()
+
+
+print(f'Set instance {args.instance} to restart')
