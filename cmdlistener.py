@@ -156,7 +156,14 @@ def gettimeplayed(seenname):
         return f'{seenname} total playtime is {plasttime} on {flast[3]}'
 
 def whoisonline(inst):
-    pass
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM players WHERE lastserver = ?', [inst])
+    flast = c.fetchone()
+    print(flast)
+    c.close()
+    conn.close()
+
 
 def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
