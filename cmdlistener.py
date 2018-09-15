@@ -155,6 +155,8 @@ def gettimeplayed(seenname):
         plasttime = playedTime(float(flast[4].replace(',','')))
         return f'{seenname} total playtime is {plasttime} on {flast[3]}'
 
+def whoisonline(inst):
+    pass
 
 def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -184,11 +186,13 @@ def checkcommands(inst):
             lpt = gettimeplayed(seenname)
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, inst), shell=True)
             log.info(f'responding to a playedtime request for {seenname}')
+        elif line.find('!whoson') != -1:
+            whoson = whoisonline(inst)
 
 def clisten():
     log.info('starting the command listerner thread')
     while True:
         for each in range(numinstances):
             checkcommands(instance[each]['name'])
-        time.sleep(5)
+        time.sleep(3)
 

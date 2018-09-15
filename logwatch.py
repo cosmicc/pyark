@@ -43,13 +43,9 @@ def follow(stream):
     line = ''
     for block in iter(lambda:stream.read(1024), None):
         if '\n' in block:
-            # Only enter this block if we have at least one line to yield.
-            # The +[''] part is to catch the corner case of when a block
-            # ends in a newline, in which case it would repeat a line.
             for line in (line+block).splitlines(True)+['']:
                 if line.endswith('\n'):
                     yield line
-            # When exiting the for loop, 'line' has any remaninig text.
         elif not block:
             # Wait for data.
             time.sleep(1.0)
@@ -90,6 +86,22 @@ def processlogline(line,inst):
             c.close()
             conn.close()
 
+def pmnewplayer(steamid,inst):
+    time.sleep(300)
+    log.info(f'sending welcome message to new player {steamid} on {inst}')
+    mtxt = 'Welcome to the ultimate extinction core Galaxy server cluster!'
+    subprocess.run('arkmanager rconcmd "ServerChatTo %s %s" @%s' % (steamid, mtxt, inst), shell=True)
+    time.sleep(3)
+    mtxt = 'Public teleporters and crafting area is available, Rewards system points earned as you play. Build a rewards vault or find a public teleporter to access the rewards system.'
+    subprocess.run('arkmanager rconcmd "ServerChatTo %s %s" @%s' % (steamid, mtxt, inst), shell=True)
+    time.sleep(1)
+    mtxt = 'There are free starter packs in the rewards vault, and the level 1 tent makes a quick starter shelter, and you get all your items back when you die (no corpses)'
+    subprocess.run('arkmanager rconcmd "ServerChatTo %s %s" @%s' % (steamid, mtxt, inst), shell=True)
+    time.sleep(1)
+    mtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
+    subprocess.run('arkmanager rconcmd "ServerChatTo %s %s" @%s' % (steamid, mtxt, inst), shell=True)
+
+
 def onlineplayer(steamid,inst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -100,6 +112,9 @@ def onlineplayer(steamid,inst):
         log.info(f'steamid {steamid} was not found. adding.')
         c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime) VALUES (?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0'))
         conn.commit()
+        c.close()
+        conn.close()
+        pmnewplayer(steamid,inst)
     else:
         log.debug(f'steamid {steamid} was found. updating.')
         c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
@@ -124,8 +139,6 @@ def onlineupdate(inst):
                     nsteamid = rawline[1]
                     onlineplayer(nsteamid.strip(),inst)
         time.sleep(60)
-
-
 
 def logwatch(inst):
     log.debug(f'starting logwatch thread for instance {inst}')
