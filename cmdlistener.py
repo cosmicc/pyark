@@ -175,7 +175,7 @@ def checkcommands(inst):
             subprocess.run('arkmanager rconcmd "ServerChat Last server restart was %s ago" @%s' % (lastrestart, inst), shell=True)
             log.info(f'responded to a lastrestart query on instance {inst}')
         elif line.find('!lastseen') != -1:
-            print(line)
+            log.warning(line)
             rawseenname = line.split(' ')
             seenname = rawseenname[4].lower()
             lsn = getlastseen(seenname)
