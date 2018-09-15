@@ -133,7 +133,7 @@ def getlastseen(seenname):
     conn.close()
     print(flast)
     if not flast:
-        return 'No player found with that name'
+        return 'no player found with that name'
     else:
         plasttime = elapsedTime(time.time(),float(flast[2]))
         if plasttime != 'now':
@@ -174,7 +174,7 @@ def whoisonline(inst,oinst):
                 else:
                     plist=plist + ', %s' % (row[1])
 
-        subprocess.run('arkmanager rconcmd "ServerChat Server %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
+        subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
 
         c.close()
         conn.close()
@@ -190,14 +190,14 @@ def checkcommands(inst):
         if line.startswith('Running command') or line.startswith('Error:'):
             pass
         elif line.find('!help') != -1:
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: lastdinowipe, lastrestart, lastseen <playername>, playedtime <playername>" @%s' % (inst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: lastdinowipe, lastrestart, lastseen <playername>, playedtime <playername>, whoson <servername>" @%s' % (inst), shell=True)
         elif line.find('!lastdinowipe') != -1:
             lastwipe = elapsedTime(time.time(),float(getlastwipe(inst)))
-            subprocess.run('arkmanager rconcmd "ServerChat Last wild dino wipe was %s ago" @%s' % (lastwipe, inst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat last wild dino wipe was %s ago" @%s' % (lastwipe, inst), shell=True)
             log.info(f'responded to a lastdinowipe query on instance {inst}')
         elif line.find('!lastrestart') != -1:
             lastrestart = elapsedTime(time.time(),float(getlastrestart(inst)))
-            subprocess.run('arkmanager rconcmd "ServerChat Last server restart was %s ago" @%s' % (lastrestart, inst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat last server restart was %s ago" @%s' % (lastrestart, inst), shell=True)
             log.info(f'responded to a lastrestart query on instance {inst}')
         elif line.find('!lastseen') != -1:
             rawseenname = line.split(':')

@@ -112,6 +112,17 @@ def main():
     while True:
         time.sleep(60)
         log.debug(threading.enumerate())
+        if not arkupdt.is_alive():
+            t = 'ark updater'
+            log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+        if not clistener.is_alive():
+            t = 'command listener'
+            log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+        for each in range(numinstances):
+            inst = instance[each]['name']
+            if not instance[each]['restartthread'].is_alive():
+            t = f'{inst} log watcher'
+            log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
 
 if __name__ == '__main__':
     main()
