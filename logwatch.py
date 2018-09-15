@@ -71,8 +71,9 @@ def processlogline(line,inst):
             timestamp = newts.timestamp()
             playername = playername.lower()
         except:
-            log.error(f'error processing TCsAR logline for instance {inst}')
-            log.error(line)
+            pass
+            #log.error(f'error processing TCsAR logline for instance {inst}')
+            #log.error(line)
         else:
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
