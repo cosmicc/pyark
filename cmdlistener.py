@@ -255,7 +255,7 @@ def castedvote(inst,whoasked,myvote):
             mtxt = 'sorry, you are not eligible to vote in this round'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
         elif getvote(whoasked) == 2:
-            mtxt = 'you started the vote. your assumed a YES vote.'
+            mtxt = "you started the vote. you're assumed a YES vote."
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
         elif getvote(whoasked) == 1:
             mtxt = 'you have already voted YES. you can only vote once.'
@@ -299,6 +299,15 @@ def enoughvotes():
         return True
     else:
         return False
+
+def resetlastvote(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    newtime = time.time()
+    c.execute('UPDATE instances SET lastvote = ? WHERE name = ?', [newtime,inst])
+    conn.commit()
+    c.close()
+    conn.close()
 
 def resetlastwipe(inst):
     conn = sqlite3.connect(sqldb)
@@ -358,6 +367,7 @@ def voting(inst,whoasked):
                 arewevoting = False
         else:
             if sltimer == 120 or sltimer == 240:
+                log.info(f'sending voting waiting message to vote on {inst}')
                 subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe vote is waiting. make sure you have cast your vote yes or no." @%s' % (inst), shell=True)
 
         sltimer += 5
@@ -365,6 +375,7 @@ def voting(inst,whoasked):
     log.info(votertable)
     votertable = []
     lastvoter = time.time()
+    resetlastvote(inst)
     log.info(f'voting thread has ended on {inst}')
 
 def startvoter(inst,whoasked):
