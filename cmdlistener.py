@@ -185,9 +185,17 @@ def whoisonline(inst,oinst,whoasked):
         log.exception()
         subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst, inst), shell=True)
 
-def starvoter(inst,whoasked):
+def getlastvote(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT lastvote FROM instances WHERE name = ?', [inst])
+    flast = c.fetchall()
+    log.error(flast)
 
-    subprocess.run('arkmanager rconcmd "ServerChat last server restart was %s ago" @%s' % (lastrestart, inst), shell=True)
+
+def starvoter(inst,whoasked):
+    getlastvote(inst)
+    #subprocess.run('arkmanager rconcmd "ServerChat last server restart was %s ago" @%s' % (lastrestart, inst), shell=True)
 
 def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
