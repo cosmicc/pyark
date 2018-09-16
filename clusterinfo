@@ -143,8 +143,15 @@ for each in allservers:
     restarted = elapsedTime(float(now),float(each[1]))
     lwipe = elapsedTime(float(now),float(each[2]))
     lvote = elapsedTime(float(now),float(each[4]))
+
     ply = howmanyon(each[0])
-    print(f'{ply}/50 {each[0]} - Restarted: {restarted} - LastWipe: {lwipe} - LastVote: {lvote} - Resart {each[3]}')
+    print(f'Server: {each[0].upper()} - Players: {ply}/50')
+    print(f'Server Needs Restart: {each[3]}')
+    print(f'Last Restart: {restarted} - Reason: {each[5]}')
+    print(f'Last Dino Wipe: {lwipe}')
+    print(f'Last Wipe Vote: {lvote}')
+    print('  ')
+#    print(f'{ply}/50 {each[0]} - Restarted: {restarted} - LastWipe: {lwipe} - LastVote: {lvote} - LastRestart: {each[5]} NeedsRestart {each[3]}')
 
 print('        ')
 conn.commit()

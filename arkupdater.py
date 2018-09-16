@@ -95,6 +95,29 @@ def playercount(instance):
                 playercount+=1
     return playercount
 
+def setcfgver(inst,cver):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    if inst == 'general':
+        c.execute('UPDATE general SET cfgver = ?', [cver])
+    else:
+        c.execute('UPDATE instances SET cfgver = ? WHERE name = ?', [cver,inst])
+    conn.commit()
+    c.close()
+    conn.close()
+
+def getcfgver(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    if inst == 'general'
+        c.execute('SELECT cfgver FROM general')
+    else:
+        c.execute('SELECT cfgver FROM instances WHERE name = ?', [inst])
+    lastwipe = c.fetchone()
+    c.close()
+    conn.close()
+    return ''.join(lastwipe[0])
+
 def getlastwipe(inst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -121,6 +144,7 @@ def resetlastrestart(inst,reason):
     c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', [newtime,inst])
     c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', [inst])
     c.execute('UPDATE instances SET restartreason = ? WHERE name = ?', [reason,inst])
+    c.execute('UPDATE instances SET cfgver = ? WHERE name = ?', [getcfgver('general'),inst])
     conn.commit()
     c.close()
     conn.close()
@@ -130,6 +154,15 @@ def setrestartbit(inst):
     c = conn.cursor()
     newtime = time.time()
     c.execute('UPDATE instances SET needsrestart = "True" WHERE name = ?', [inst])
+    conn.commit()
+    c.close()
+    conn.close()
+
+def unsetstartbit(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    newtime = time.time()
+    c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', [inst])
     conn.commit()
     c.close()
     conn.close()
@@ -207,20 +240,23 @@ def instancerestart(inst, reason):
                 message = f'server is restarting because of a {reason}'
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 time.sleep(30)
-                #subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                #subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                #log.info(f'instance {inst} server has stopped')
-                #subprocess.run('arkmanager backup @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                #log.info(f'instance {inst} server has backed up world')
-                #subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                #subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                #log.debug(f'instance {inst} server updated config files')
-                #subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                #log.info(f'instance {inst} server is starting')
-                #resetlastrestart(inst, reason)
+                subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                log.info(f'instance {inst} server has stopped')
+                subprocess.run('arkmanager backup @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                log.info(f'instance {inst} server has backed up world')
+                subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                log.debug(f'instance {inst} server updated config files')
+                subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                log.info(f'instance {inst} server is starting')
+                resetlastrestart(inst, reason)
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server restart for %s has been cancelled'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        else:
+            unsetstartbit(inst)
+            log.info(f'waiting on configuration update for {inst} because players are online')
 
 
 def checkconfig():
@@ -230,15 +266,15 @@ def checkconfig():
     oldcfg2 = f'{sharedpath}/stagedconfig/GameUserSettings.ini'
 
     if not filecmp.cmp(newcfg1,oldcfg1) or not filecmp.cmp(newcfg2,oldcfg2):
-
         log.info('config file update detected')
+        oldver = getcfgver('general')
+        setcfgver('general',oldver+1)
         subprocess.run('cp %s/config/Game.ini %s/stagedconfig' % (sharedpath,sharedpath), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         subprocess.run('cp %s/config/GameUserSettings.ini %s/stagedconfig' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
-
-        for each in range(numinstances):
-            inst = instance[each]['name']
-            if not isrebooting(inst):
+    for each in range(numinstances):
+        inst = instance[each]['name']
+        if getcfgver('general') > getcfgver(inst) and not isrebooting(inst):
                 instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,"configuration update"))
                 instance[each]['restartthread'].start()
 
