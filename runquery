@@ -1,0 +1,44 @@
+#!/usr/bin/python3
+
+import subprocess
+import argparse, sqlite3
+from configparser import ConfigParser
+from datetime import datetime
+import time
+
+configfile = '/home/ark/pyark.cfg'
+
+class ExtConfigParser(ConfigParser):
+    def getlist(self, section, option):
+        value = self.get(section, option)
+        return list(filter(None, (x.strip() for x in value.split(','))))
+
+    def getlistint(self, section, option):
+        return [int(x) for x in self.getlist(section, option)]
+
+config = ExtConfigParser()
+config.read(configfile)
+
+sharedpath = config.get('general', 'shared')
+
+now = time.time()
+
+sqldb = f'{sharedpath}/db/pyark.db'
+
+conn = sqlite3.connect(sqldb)
+c = conn.cursor()
+
+
+#c.execute('DELETE from instances WHERE lastvote = 1537065335.29678')
+#c.execute('ALTER TABLE instances ADD COLUMN lastvote TEXT')
+c.execute('UPDATE players SET playername = ?, playedtime = ? WHERE steamid =
+conn.commit()
+
+c.execute('SELECT * from instances')
+alldata = c.fetchall()
+for row in alldata:
+    print(row)
+
+c.close()
+conn.close()
+
