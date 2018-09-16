@@ -131,9 +131,8 @@ def checkwipe(inst):
     if time.time()-float(lastwipe) > 86400:
         if playercount(inst) == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
-            cmdpipe = subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             resetlastwipe(inst)            
-
         else:
             log.debug(f'dino wipe needed for {inst}, but players are online. waiting..')
     else:
