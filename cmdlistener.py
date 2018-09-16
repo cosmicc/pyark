@@ -204,13 +204,15 @@ def isvoting(inst):
             else:
                 return False
 
-def getsteamid(playernme):
+def getsteamid(whoasked):
+    log.error(whoasked)
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
-    c.execute('SELECT steamid FROM players WHERE playername = ?', (playernme,))
+    c.execute('SELECT steamid FROM players WHERE playername = ?', (whoasked,))
     sid = c.fetchone()
     c.close()
     conn.close()
+    log.error(sid)
     return ''.join(sid[0])
 
 def populatevoters(inst):
@@ -226,6 +228,7 @@ def populatevoters(inst):
         if chktme < 90:
             newvoter = [row[0],row[1],3]
             votertable.append(newvoter)
+    log.info(votertable)
 
 def setvote(whoasked,myvote):
     global votertable
@@ -309,7 +312,7 @@ def wipeit(inst):
     time.sleep(3)
     subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe commencing in 10 seconds" @%s' % (inst), shell=True)
     time.sleep(10)
-    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    #subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     resetlastwipe(inst)
     log.debug(f'voted wild dino wipe complete for {inst}')
 
@@ -330,7 +333,7 @@ def voting(inst,whoasked):
         if votingpassed():
             wipeit(inst)
             arewevoting = False
-        elif time.time()-votestartime > 300:
+        elif time.time()-votestarttime > 300:
             if enoughvotes():
                 wipeit(inst)
                 arewevoting = False
@@ -344,16 +347,17 @@ def voting(inst,whoasked):
     log.info(f'voting thread has ended on {inst}')
 
 def startvoter(inst,whoasked):
+    global instance
     if isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat voting has already started. cast your vote" @%s' % (inst), shell=True)
     elif time.time()-float(getlastvote(inst)) < 7200:   # 2 hours between votes  !!!!!! Reversed < for now to test, switch back!!
         rawtimeleft = 7200-(time.time()-float(getlastvote(inst)))
         timeleft = playedTime(rawtimeleft)
-        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote" @%s' % (timeleft,inst), shell=True)
+        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
     elif time.time()-float(lastvoter) > 600:  # 10 min between attempts   !!!! CHANGE BACK TO  <
         rawtimeleft = 600-(time.time()-lastvoter)
         timeleft = playedTime(rawtimeleft)
-        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote" @%s' % (timeleft,inst), shell=True)
+        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
     else:
         for each in range(numinstances):
             if instance[each]['name'] == inst:
@@ -364,8 +368,11 @@ def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
+        log.warning(line)
         rawline = line.split(' ')
-        whoasked = rawline[1].lower()
+        
+        if len(rawline) >= 3:
+            whoasked = rawline[2].lower()
         if line.startswith('Running command') or line.startswith('Error:'):
             pass
         elif line.find('!help') != -1:
@@ -398,7 +405,7 @@ def checkcommands(inst):
             else:
                 ninst = inst
             whoson = whoisonline(ninst,inst,whoasked)
-        elif line.find('!vote') != -1:
+        elif line.find('!vote') != -1 or line.find('!startvote') != -1:
             log.info(f'responding to a dino wipe vote request on {inst} from {whoasked}')
             startvoter(inst,whoasked)
         elif line.find('!agree') != -1 or line.find('!yes') != -1:
