@@ -164,22 +164,22 @@ def instancerestart(inst, reason):
         log.info(f'instance {inst} server is starting')
         resetlastrestart(inst)
     else:
-        if reason == "configuration update":
-            log.info(f'starting 60 min restart countdown for instance {inst} due to {reason}')
-            timeleft = 60
+        if reason != "configuration update":
+            log.info(f'starting 30 min restart countdown for instance {inst} due to {reason}')
+            timeleft = 2
             gotime = False
             countstart = time.time()
             while not gotime:
-                if timeleft == 60 or timeleft == 30 or timeleft == 10 or timeleft == 5 or timeleft == 1:
+                if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
                     log.info(f'{timeleft} broadcast message sent to {inst}')
-                    subprocess.run("""arkmanager rconcmd 'broadcast \n\n\n         The server will be restarting in %s minutes for a %s' @%s """ % (timeleft,reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n          The server will be restarting in %s minutes for a %s'" @%s""" % (timeleft,reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 time.sleep(60)
                 timeleft = timeleft - 1
                 if playercount(inst) == 0 or timeleft == 0:
                     gotime = True
             log.info(f'instance {inst} is restarting now due to {reason}')
             message = f'server is restarting because of a {reason}'
-            subprocess.run("""arkmanager rconcmd 'broadcast \n\n\n         The server is restarting NOW for a %s' @%s """ % (timeleft,reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n          The server is restarting NOW for a %s'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             time.sleep(30)
             subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)

@@ -131,7 +131,7 @@ def getlastseen(seenname):
     flast = c.fetchone()
     c.close()
     conn.close()
-    print(flast)
+    #print(flast)
     if not flast:
         return 'no player found with that name'
     else:
@@ -148,15 +148,15 @@ def gettimeplayed(seenname):
     flast = c.fetchone()
     c.close()
     conn.close()
-    print(flast)
+    #print(flast)
     if not flast:
         return 'No player found'
     else:
         plasttime = playedTime(float(flast[4].replace(',','')))
         return f'{seenname} total playtime is {plasttime} on {flast[3]}'
 
-def whoisonline(inst,oinst):
-    log.info(f'responding to a whoson request for {inst}')
+def whoisonline(inst,oinst,whoasked):
+    log.info(f'responding to a whoson request for {inst} from {whoasked}')
     try:
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
@@ -167,7 +167,7 @@ def whoisonline(inst,oinst):
         for row in flast:
             chktme = time.time()-float(row[2])
             if chktme < 90:
-                print(row[1],chktme)
+                #print(row[1],chktme)
                 pcnt += 1
                 if plist == '':
                     plist = '%s' % (row[1])
@@ -180,25 +180,28 @@ def whoisonline(inst,oinst):
         conn.close()
     except:
         log.exception()
-        #subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst, inst), shell=True)
+        subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst, inst), shell=True)
 
 
 def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
+        rawline = line.split(' ')
+        whoasked = rawline[1]
         if line.startswith('Running command') or line.startswith('Error:'):
             pass
         elif line.find('!help') != -1:
             subprocess.run('arkmanager rconcmd "ServerChat Commands: lastdinowipe, lastrestart, lastseen <playername>, playedtime <playername>, whoson <servername>" @%s' % (inst), shell=True)
+            log.info(f'responded to help request on {inst} from {whoasked}')
         elif line.find('!lastdinowipe') != -1:
             lastwipe = elapsedTime(time.time(),float(getlastwipe(inst)))
             subprocess.run('arkmanager rconcmd "ServerChat last wild dino wipe was %s ago" @%s' % (lastwipe, inst), shell=True)
-            log.info(f'responded to a lastdinowipe query on instance {inst}')
+            log.info(f'responded to a lastdinowipe query on {inst} from {whoasked}')
         elif line.find('!lastrestart') != -1:
             lastrestart = elapsedTime(time.time(),float(getlastrestart(inst)))
             subprocess.run('arkmanager rconcmd "ServerChat last server restart was %s ago" @%s' % (lastrestart, inst), shell=True)
-            log.info(f'responded to a lastrestart query on instance {inst}')
+            log.info(f'responded to a lastrestart query on {inst} from {whoasked}')
         elif line.find('!lastseen') != -1:
             rawseenname = line.split(':')
             orgname = rawseenname[1].strip()
@@ -208,18 +211,16 @@ def checkcommands(inst):
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, inst), shell=True)
             log.info(f'responding to a lastseen request for {seenname} from {orgname}')
         elif line.find('!playedtime') != -1:
-            rawseenname = line.split(' ')
-            seenname = rawseenname[4].lower()
+            seenname = rawline[4].lower()
             lpt = gettimeplayed(seenname)
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, inst), shell=True)
-            log.info(f'responding to a playedtime request for {seenname}')
+            log.info(f'responding to a playedtime request for {seenname} on {inst} from {whoasked}')
         elif line.find('!whoson') != -1 or line.find('!whosonline') != -1:
-            rawline = line.split(' ')
             if len(rawline) == 5:
                 ninst = rawline[4]
             else:
                 ninst = inst
-            whoson = whoisonline(ninst,inst)
+            whoson = whoisonline(ninst,inst,whoasked)
 
 def clisten():
     log.info('starting the command listerner thread')
