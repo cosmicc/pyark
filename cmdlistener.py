@@ -319,7 +319,7 @@ def howmanyvotes():
     return vcnt,tvoters
 
 def wipeit(inst):
-    totvoters, yesvoters = howmanyvotes()
+    yesvoters, totvoters = howmanyvotes()
     log.info(f'voting yes has won ({yesvoters}/{totvoters}), wild dino wipe incoming for {inst}')
     subprocess.run('arkmanager rconcmd "ServerChat voting has finished. YES has won (%s of %s)" @%s' % (yesvoters,totvoters,inst), shell=True)
     time.sleep(3)
@@ -352,7 +352,7 @@ def voting(inst,whoasked):
                 wipeit(inst)
                 arewevoting = False
             else:
-                totvoters, yesvoters = howmanyvotes()
+                yesvoters, totvoters = howmanyvotes()
                 subprocess.run('arkmanager rconcmd "ServerChat not enough votes (%s of %s). voting has ended." @%s' % (yesvoters,totvoters,inst), shell=True)
                 log.info(f'not enough votes ({yesvoters}/{totvoters}), voting has ended on {inst}')
                 arewevoting = False
@@ -361,7 +361,7 @@ def voting(inst,whoasked):
                 subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe vote is waiting. make sure you have cast your vote yes or no." @%s' % (inst), shell=True)
 
         sltimer += 5
-
+    log.info(f'final votertable for vote on {inst}')
     log.info(votertable)
     votertable = []
     lastvoter = time.time()
@@ -372,16 +372,16 @@ def startvoter(inst,whoasked):
     print(time.time()-float(getlastvote(inst)))
     if isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat voting has already started. cast your vote" @%s' % (inst), shell=True)
-    elif time.time()-float(getlastvote(inst)) < 14400:          # 2 hours between wipes
-        rawtimeleft = 14400-(time.time()-float(getlastvote(inst)))
-        timeleft = playedTime(rawtimeleft)
-        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
-        log.info(f'vote start denied for {whoasked} on {inst} because 2 hour timer')
-    elif time.time()-float(lastvoter) < 600:  # 10 min between attempts   
-        rawtimeleft = 600-(time.time()-lastvoter)
-        timeleft = playedTime(rawtimeleft)
-        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
-        log.info(f'vote start denied for {whoasked} on {inst} because 10 min timer')
+    #elif time.time()-float(getlastvote(inst)) < 14400:          # 2 hours between wipes
+    #    rawtimeleft = 14400-(time.time()-float(getlastvote(inst)))
+    #    timeleft = playedTime(rawtimeleft)
+    #    subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
+    #    log.info(f'vote start denied for {whoasked} on {inst} because 2 hour timer')
+    #elif time.time()-float(lastvoter) < 600:  # 10 min between attempts   
+    #    rawtimeleft = 600-(time.time()-lastvoter)
+    #    timeleft = playedTime(rawtimeleft)
+    #    subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
+    #    log.info(f'vote start denied for {whoasked} on {inst} because 10 min timer')
     else:
         for each in range(numinstances):
             if instance[each]['name'] == inst:
@@ -389,12 +389,12 @@ def startvoter(inst,whoasked):
                 instance[each]['votethread'].start()
 
 def getnamefromchat(chat):
-    rawline = chat.split(':')
-    rawname = rawline[1].split('(')
+    rawline = chat.split('(')
+    rawname = rawline[1].split(')')
     #log.warning(rawline)
     #log.warning(rawname)
-    #log.warning(rawname[1][:-1].lower())
-    return rawname[1][:-1].lower()
+    #log.warning(rawname[0].lower())
+    return rawname[0].lower()
 
 def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
