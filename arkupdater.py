@@ -109,7 +109,7 @@ def setcfgver(inst,cver):
 def getcfgver(inst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
-    if inst == 'general'
+    if inst == 'general':
         c.execute('SELECT cfgver FROM general')
     else:
         c.execute('SELECT cfgver FROM instances WHERE name = ?', [inst])
