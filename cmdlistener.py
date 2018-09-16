@@ -16,6 +16,9 @@ configfile = '/home/ark/pyark.cfg'
 config = ExtConfigParser()
 config.read(configfile)
 
+voting = False
+
+
 sharedpath = config.get('general', 'shared')
 sqldb = f'{sharedpath}/db/pyark.db'
 arkroot = config.get('general', 'arkroot')
@@ -182,6 +185,9 @@ def whoisonline(inst,oinst,whoasked):
         log.exception()
         subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst, inst), shell=True)
 
+def starvoter(inst,whoasked):
+
+    subprocess.run('arkmanager rconcmd "ServerChat last server restart was %s ago" @%s' % (lastrestart, inst), shell=True)
 
 def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -221,11 +227,14 @@ def checkcommands(inst):
             else:
                 ninst = inst
             whoson = whoisonline(ninst,inst,whoasked)
+        elif line.find('!vote') != -1:
+            voting = True
+            log.info(f'responding to a dino wipe vote request on {inst} from {whoasked}')
+            startvoter(inst,whoasked)
 
-def clisten():
-    log.info('starting the command listerner thread')
+def clisten(inst):
+    log.info(f'starting the command listener thread for {inst}')
     while True:
-        for each in range(numinstances):
-            checkcommands(instance[each]['name'])
+        checkcommands(inst)
         time.sleep(3)
 

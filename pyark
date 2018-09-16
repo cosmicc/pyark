@@ -78,7 +78,7 @@ def main():
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
 
-    c.execute('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart TEXT, lastdinowipe TEXT, needsrestart BOOL)')
+    c.execute('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart TEXT, lastdinowipe TEXT, needsrestart BOOL, lastvote TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, playedtime TEXT)')
 
     for ins in range(numinstances):
@@ -87,7 +87,7 @@ def main():
         if not chkinst:
             now = time.time()
             log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.') 
-            c.execute('INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart) VALUES (?, ?, ?, ?)', (instance[ins]["name"], now, now, 'False'))
+            c.execute('INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote) VALUES (?, ?, ?, ?, ?)', (instance[ins]["name"], now, now, 'False', now))
             conn.commit()
         else:
             log.debug(f'found server {instance[ins]["name"]} in server table')
@@ -97,12 +97,12 @@ def main():
     log.debug('database initilization complete')
     
     arkupdt = threading.Thread(name='arkupdater', target = arkupd)
-    arkupdt.daemon = False
     arkupdt.start()
 
-    clistener = threading.Thread(name='cmdlistener', target = clisten)
-    clistener.daemon = False
-    clistener.start()
+    for each in range(numinstances):
+        inst = instance[each]['name']
+        instance[each]['cmdthread'] = threading.Thread(name='%s-cmdlistener' % inst, target = clisten, args=(inst,))
+        instance[each]['cmdthread'].start()
 
     for each in range(numinstances):
         inst = instance[each]['name']
@@ -115,9 +115,11 @@ def main():
         if not arkupdt.is_alive():
             t = 'ark updater'
             log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-        if not clistener.is_alive():
-            t = 'command listener'
-            log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+        for each in range(numinstances):
+            inst = instance[each]['name']
+            if not instance[each]['cmdthread'].is_alive():
+                t = f'{inst} command listener'
+                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         for each in range(numinstances):
             inst = instance[each]['name']
             if not instance[each]['restartthread'].is_alive():
