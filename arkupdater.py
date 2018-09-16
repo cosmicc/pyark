@@ -113,13 +113,14 @@ def resetlastwipe(inst):
     c.close()
     conn.close()
 
-def resetlastrestart(inst):
+def resetlastrestart(inst,reason):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     newtime = time.time()
     c.execute('UPDATE instances SET lastrestart = ? WHERE name = ?', [newtime,inst])
     c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', [newtime,inst])
     c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', [inst])
+    c.execute('UPDATE instances SET restartreason = ? WHERE name = ?', [reason,inst])
     conn.commit()
     c.close()
     conn.close()
@@ -161,7 +162,7 @@ def instancerestart(inst, reason):
         log.debug(f'instance {inst} server updated config files')
         subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         log.info(f'instance {inst} server is starting')
-        resetlastrestart(inst)
+        resetlastrestart(inst, reason)
     else:
         if reason != "configuration update":
             log.info(f'starting 30 min restart countdown for instance {inst} due to {reason}')
@@ -190,7 +191,7 @@ def instancerestart(inst, reason):
             log.debug(f'instance {inst} server updated config files')
             subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             log.info(f'instance {inst} server is starting')
-            resetlastrestart(inst)
+            resetlastrestart(inst, reason)
 
 def checkconfig():
     newcfg1 = f'{sharedpath}/config/Game.ini'

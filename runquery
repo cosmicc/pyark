@@ -30,9 +30,9 @@ c = conn.cursor()
 
 
 #c.execute('DELETE from instances WHERE lastvote = 1537065335.29678')
-#c.execute('ALTER TABLE instances ADD COLUMN lastvote TEXT')
-#c.execute('UPDATE instances SET lastvote = ? WHERE name = ?', (now,'volcano'))
-#conn.commit()
+c.execute('ALTER TABLE instances ADD COLUMN restartreason TEXT')
+#c.execute('UPDATE instances SET lastvote = ? WHERE name = ?', (time.time(),'ragnarok'))
+conn.commit()
 
 c.execute('SELECT * from instances')
 alldata = c.fetchall()

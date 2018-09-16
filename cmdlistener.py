@@ -383,16 +383,16 @@ def startvoter(inst,whoasked):
     print(time.time()-float(getlastvote(inst)))
     if isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat voting has already started. cast your vote" @%s' % (inst), shell=True)
-    #elif time.time()-float(getlastvote(inst)) < 14400:          # 2 hours between wipes
-    #    rawtimeleft = 14400-(time.time()-float(getlastvote(inst)))
-    #    timeleft = playedTime(rawtimeleft)
-    #    subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
-    #    log.info(f'vote start denied for {whoasked} on {inst} because 2 hour timer')
-    #elif time.time()-float(lastvoter) < 600:  # 10 min between attempts   
-    #    rawtimeleft = 600-(time.time()-lastvoter)
-    #    timeleft = playedTime(rawtimeleft)
-    #    subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
-    #    log.info(f'vote start denied for {whoasked} on {inst} because 10 min timer')
+    elif time.time()-float(getlastvote(inst)) < 14400:          # 2 hours between wipes
+        rawtimeleft = 14400-(time.time()-float(getlastvote(inst)))
+        timeleft = playedTime(rawtimeleft)
+        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
+        log.info(f'vote start denied for {whoasked} on {inst} because 2 hour timer')
+    elif time.time()-float(lastvoter) < 600:  # 10 min between attempts   
+        rawtimeleft = 600-(time.time()-lastvoter)
+        timeleft = playedTime(rawtimeleft)
+        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
+        log.info(f'vote start denied for {whoasked} on {inst} because 10 min timer')
     else:
         for each in range(numinstances):
             if instance[each]['name'] == inst:
