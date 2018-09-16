@@ -166,7 +166,7 @@ def instancerestart(inst, reason):
     else:
         if reason != "configuration update":
             log.info(f'starting 30 min restart countdown for instance {inst} due to {reason}')
-            timeleft = 2
+            timeleft = 30
             gotime = False
             countstart = time.time()
             while not gotime:
@@ -179,7 +179,7 @@ def instancerestart(inst, reason):
                     gotime = True
             log.info(f'instance {inst} is restarting now due to {reason}')
             message = f'server is restarting because of a {reason}'
-            subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n          The server is restarting NOW for a %s'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             time.sleep(30)
             subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
