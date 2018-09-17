@@ -119,7 +119,7 @@ def resptimeleft(inst,whoasked):
     c.close()
     conn.close()
     if dbtl[1] == 'True':
-        subprocess.run('arkmanager rconcmd "ServerChat server is restarting in %s minutes" @%s' % (dbtl[1], inst), shell=True)
+        subprocess.run('arkmanager rconcmd "ServerChat server is restarting in %s minutes" @%s' % (dbtl[0], inst), shell=True)
     else:
         subprocess.run('arkmanager rconcmd "ServerChat server is not pending a restart" @%s' % (inst), shell=True)
 
