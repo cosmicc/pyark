@@ -465,7 +465,7 @@ def checkcommands(inst):
     for line in iter(b.splitlines()):
         whoasked = 'nobody' 
         log.warning(f'###{line}')
-        if line.startswith('Running command') or line.startswith('Error:'):
+        if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:'):
             pass
         elif line.find('!help') != -1:
             whoasked = getnamefromchat(line)
@@ -505,6 +505,10 @@ def checkcommands(inst):
             else:
                 ninst = inst
             whoisonlinewrapper(ninst,inst,whoasked,False)
+        elif line.find('!whoami') != -1 or line.find('!myinfo') != -1:
+            whoasked = getnamefromchat(line)
+            log.info(f'responding to a myinfo request on {inst} from {whoasked}')
+            respmyinfo(inst,whoasked)
         elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1  or line.find('!online') != -1:
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
@@ -530,11 +534,6 @@ def checkcommands(inst):
             whoasked = getnamefromchat(line)
             log.info(f'responding to a restart timeleft request on {inst} from {whoasked}')
             resptimeleft(inst,whoasked)
-        elif line.find('!whoami') != -1 or line.find('!myinfo') != -1:
-            whoasked = getnamefromchat(line)
-            log.info(f'responding to a myinfo request on {inst} from {whoasked}')
-            respmyinfo(inst,whoasked)
-
 
 def clisten(inst):
     log.info(f'starting the command listener thread for {inst}')
