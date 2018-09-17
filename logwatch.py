@@ -37,6 +37,7 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr=instr + ', %s' % (a)
+
 def elapsedTime(start_time, stop_time, lshort=False):
     diff_time = start_time - stop_time
     total_min = diff_time / 60
@@ -87,7 +88,7 @@ def elapsedTime(start_time, stop_time, lshort=False):
 
 def playedTime(ptime):
     total_min = ptime / 60
-    minutes = int(total_min % 60)
+    minutes = int(ptime % 60)
     if minutes == 1:
         minstring = 'Min'
     else:
@@ -175,8 +176,23 @@ def welcomenewplayer(steamid,inst):
     time.sleep(10)
     mtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+    time.sleep(10)
+    mtxt = 'everyone welcome a new player to the cluster!'
+    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (steamid, mtxt, inst), shell=True)
     log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
 
+
+def serverisinrestart(steamid,inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM instances WHERE name = ?', [inst])
+    rbt = c.fetchone()
+    if rbt[3] == "True":
+
+        log.info(f'notifying player {oplayer[1]} that server {inst} will be restarting in {rbt[7]} min')
+        mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+    
 
 def onlineplayer(steamid,inst):
     conn = sqlite3.connect(sqldb)
@@ -185,8 +201,8 @@ def onlineplayer(steamid,inst):
     oplayer = c.fetchone()
     timestamp=time.time()
     if not oplayer:
-        log.info(f'steamid {steamid} was not found. adding new player!')
-        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardspoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0',0,timestamp,1))
+        log.info(f'steamid {steamid} was not found. adding new player to cluster!')
+        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardspoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0',50,timestamp,1))
         conn.commit()
         c.close()
         conn.close()
@@ -197,12 +213,14 @@ def onlineplayer(steamid,inst):
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
         else:
-            log.info(f'new connection from {oplayer[1]} on {inst} connection {int(oplayer[7])+1}. updating info.')
+            log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. updating info.")
             c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(oplayer[7])+1,steamid))
             laston = elapsedTime(float(time.time()),float(oplayer[2]))
             totplay = playedTime(float(oplayer[4].replace(',','')))
-            mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston}, total time played {totplay}'
+            mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston}, total time played {totplay}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        if float(oplayer[2]) + 60 > float(time.time()):
+            serverisinrestart(steamid,inst)
 
         conn.commit()
         c.close()
@@ -212,7 +230,7 @@ def onlineplayer(steamid,inst):
 def onlineupdate(inst):
     log.info(f'starting online player watcher on {inst}')
     while True:
-        while True:
+        try:
             time.sleep(10)
             cmdpipe = subprocess.Popen('arkmanager rconcmd ListPlayers @%s' % inst, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             b = cmdpipe.stdout.read().decode("utf-8")
@@ -227,9 +245,9 @@ def onlineupdate(inst):
                         nsteamid = rawline[1]
                         onlineplayer(nsteamid.strip(),inst)
             time.sleep(20)
-        #except:
-        #    e = sys.exc_info()[0]
-        #    log.critical(e)
+        except:
+            e = sys.exc_info()[0]
+            log.critical(e)
 
 def logwatch(inst):
     log.debug(f'starting logwatch thread for instance {inst}')

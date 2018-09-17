@@ -86,7 +86,7 @@ def elapsedTime(start_time, stop_time, lshort=False):
 
 def playedTime(ptime):
     total_min = ptime / 60
-    minutes = int(total_min % 60)
+    minutes = int(ptime % 60)
     if minutes == 1:
         minstring = 'Min'
     else:
@@ -110,6 +110,17 @@ def playedTime(ptime):
     else:
         log.error('Elapsed time function failed. Could not convert.')
         return('Error')
+
+def getsteamid(whoasked):
+    #log.error(whoasked)
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT steamid FROM players WHERE playername = ?', (whoasked,))
+    sid = c.fetchone()
+    c.close()
+    conn.close()
+    #log.error(sid)
+    return ''.join(sid[0])
 
 def resptimeleft(inst,whoasked):
     conn = sqlite3.connect(sqldb)
@@ -166,9 +177,7 @@ def respmyinfo(inst,whoasked):
     c.close()
     conn.close()
     ptime = playedTime(float(pinfo[4].replace(',','')))
-    mtxt = f"{pinfo[1]}'s reward points: {pinfo[5]}, {ptime}"
-    log.warning(getsteamid(whoasked))
-    log.warning(whoasked)
+    mtxt = f"your current reward points: {pinfo[5]}, your total play time is {ptime}"
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 def gettimeplayed(seenname):
@@ -194,7 +203,6 @@ def getserverlist():
     conn.close()
     for each in flast:
         newlist.append(each[0])
-    print(newlist)
     return newlist
 
 def whoisonlinewrapper(inst,oinst,whoasked,crnt):
@@ -257,17 +265,6 @@ def isvoting(inst):
                 return True
             else:
                 return False
-
-def getsteamid(whoasked):
-    #log.error(whoasked)
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT steamid FROM players WHERE playername = ?', (whoasked,))
-    sid = c.fetchone()
-    c.close()
-    conn.close()
-    #log.error(sid)
-    return ''.join(sid[0])
 
 def populatevoters(inst):
     log.debug(f'populating vote table for {inst}')
@@ -434,7 +431,7 @@ def voting(inst,whoasked):
 
 def startvoter(inst,whoasked):
     global instance
-    print(time.time()-float(getlastvote(inst)))
+    #print(time.time()-float(getlastvote(inst)))
     if isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat voting has already started. cast your vote" @%s' % (inst), shell=True)
     elif time.time()-float(getlastvote(inst)) < 14400:          # 2 hours between wipes
@@ -463,10 +460,14 @@ def getnamefromchat(chat):
 
 def isserver(line):
     rawissrv = line.split(':')
+    #print(rawissrv)
+    if len(rawissrv) > 1:
         if rawissrv[1].strip() == 'SERVER':
             return True
         else:
             return False
+    else:
+        return False
 
 def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -547,9 +548,9 @@ def checkcommands(inst):
 def clisten(inst):
     log.info(f'starting the command listener thread for {inst}')
     while True:
-        try:
+        #try:
             checkcommands(inst)
             time.sleep(3)
-        except:
-            e = sys.exc_info()[0]
-            log.critical(e)
+        #except:
+        #    e = sys.exc_info()[0]
+        #    log.critical(e)

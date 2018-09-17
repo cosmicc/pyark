@@ -24,7 +24,7 @@ sqldb = f'{sharedpath}/db/pyark.db'
 
 def playedTime(ptime):
     total_min = ptime / 60
-    minutes = int(total_min % 60)
+    minutes = int(ptime % 60)
     if minutes == 1:
         minstring = 'Min'
     else:
