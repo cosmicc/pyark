@@ -173,17 +173,21 @@ def getserverlist():
     print(newlist)
     return newlist
 
-def whoisonlinewrapper(inst,oinst,whoasked):
+def whoisonlinewrapper(inst,oinst,whoasked,crnt):
     log.info(f'responding to a whoson request from {whoasked}')
     if oinst == inst:
         slist = getserverlist()
         for each in slist:
-            whoisonline(each,oinst,whoasked,True)
+            whoisonline(each,oinst,whoasked,True,crnt)
     else:
         whoisonline(inst,oinst,whoasked,False)
 
-def whoisonline(inst,oinst,whoasked,filt):
+def whoisonline(inst,oinst,whoasked,filt,crnt):
     try:
+        if crnt:
+            potime = 90
+        else:
+            potime = 3600
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
         c.execute('SELECT * FROM players WHERE server = ?', [inst])
@@ -192,7 +196,7 @@ def whoisonline(inst,oinst,whoasked,filt):
         plist = ''
         for row in flast:
             chktme = time.time()-float(row[2])
-            if chktme < 90:
+            if chktme < potime:
                 #print(row[1],chktme)
                 pcnt += 1
                 if plist == '':
@@ -200,7 +204,10 @@ def whoisonline(inst,oinst,whoasked,filt):
                 else:
                     plist=plist + ', %s' % (row[1])
         if pcnt != 0:
-            subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
+            if crnt:
+                subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
+            else:
+                subprocess.run('arkmanager rconcmd "ServerChat %s recent players: %s" @%s' % (inst, plist, oinst), shell=True)
         if pcnt == 0 and not filt:
             subprocess.run('arkmanager rconcmd "ServerChat %s has no players online." @%s' % (inst, oinst), shell=True)
 
@@ -466,17 +473,26 @@ def checkcommands(inst):
             lpt = gettimeplayed(seenname)
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, inst), shell=True)
             log.info(f'responding to a playedtime request for {seenname} on {inst} from {whoasked}')
-        elif line.find('!whoson') != -1 or line.find('!whosonline') != -1:
+        elif line.find('!recent') != -1 or line.find('!whorecent') != -1 or line.find('!whosrecent') != -1:
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
             lastlline = rawline[2].strip().split(' ')
             #log.warning(lastlline)
             if len(lastlline) == 2:
+                ninst = lastlline[1]
+            else:
+                ninst = inst
+            whoisonlinewrapper(ninst,inst,whoasked,False)
+        elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1:
+            whoasked = getnamefromchat(line)
+            rawline = line.split(':')
+            lastlline = rawline[2].strip().split(' ')
+            if len(lastlline) == 2:
                 ninst = lastlline[1] 
             else:
                 ninst = inst
-            whoisonlinewrapper(ninst,inst,whoasked)
-        elif line.find('!vote') != -1 or line.find('!startvote') != -1:
+            whoisonlinewrapper(ninst,inst,whoasked,True)
+        elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!votestart') != -1:
             whoasked = getnamefromchat(line)
             log.info(f'responding to a dino wipe vote request on {inst} from {whoasked}')
             startvoter(inst,whoasked)
