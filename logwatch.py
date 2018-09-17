@@ -128,7 +128,6 @@ def processlogline(line,inst):
     if line.find('[TCsAR]') != -1:
         try:
             rawline = line.split('|')
-            log.warning(rawline)
             rawsteamid = rawline[2].split(':')
             steamid = rawsteamid[1].strip()
             rawname = rawline[3].split(':') 
@@ -137,6 +136,9 @@ def processlogline(line,inst):
             playtime = rawplaytime[1].strip()
             rawtimestamp = rawline[0].split(':')
             tstimestamp = rawtimestamp[0][1:]
+            rawpoints = rawline[4].split(':')
+            rewardpoints = rawpoints[1].strip()
+            log.warning(rewardpoints)
             tsobj = datetime.strptime(tstimestamp, '%Y.%m.%d-%H.%M.%S')
             newts = tsobj
             timestamp = newts.timestamp()
@@ -151,11 +153,11 @@ def processlogline(line,inst):
             pexist = c.fetchall()
             if not pexist:
                 log.info(f'player {playername} with steamid {steamid} was not found. adding.')
-                c.execute('INSERT INTO players (steamid, playername, playedtime) VALUES (?, ?, ?)', (steamid,playername,playtime))
+                c.execute('INSERT INTO players (steamid, playername, playedtime, rewardpoints) VALUES (?, ?, ?, ?)', (steamid,playername,playtime,rewardpoints))
                 conn.commit()
             elif steamid != '':
                 log.debug(f'player {playername} with steamid {steamid} was found. updating.')
-                c.execute('UPDATE players SET playername = ?, playedtime = ? WHERE steamid = ?', (playername,playtime,steamid))
+                c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
                 conn.commit()
             c.close()
             conn.close()
