@@ -160,7 +160,14 @@ def gettimeplayed(seenname):
         plasttime = playedTime(float(flast[4].replace(',','')))
         return f'{seenname} total playtime is {plasttime} on {flast[3]}'
 
-def whoisonline(inst,oinst,whoasked):
+def whoisonlinewrapper(inst,oinst,whoasked):
+    if oinst == inst:
+        for each in range(numinstances):
+            whoisonline(instance[each]['name'],oinst,whoasked,'True')
+    else:
+        whoisonline(inst,oinst,whoasked,'False')
+
+def whoisonline(inst,oinst,whoasked,filt):
     log.info(f'responding to a whoson request for {inst} from {whoasked}')
     try:
         conn = sqlite3.connect(sqldb)
@@ -178,8 +185,10 @@ def whoisonline(inst,oinst,whoasked):
                     plist = '%s' % (row[1])
                 else:
                     plist=plist + ', %s' % (row[1])
-
-        subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
+        if pcnt != 0:
+            subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
+        if pcnt == 0 and not filt:
+            subprocess.run('arkmanager rconcmd "ServerChat %s has no players online." @%s' % (inst, oinst), shell=True)
 
         c.close()
         conn.close()
@@ -452,7 +461,7 @@ def checkcommands(inst):
                 ninst = lastlline[1] 
             else:
                 ninst = inst
-            whoson = whoisonline(ninst,inst,whoasked)
+            whoisonlinewrapper(ninst,inst,whoasked)
         elif line.find('!vote') != -1 or line.find('!startvote') != -1:
             whoasked = getnamefromchat(line)
             log.info(f'responding to a dino wipe vote request on {inst} from {whoasked}')
