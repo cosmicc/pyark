@@ -183,7 +183,6 @@ def whoisonlinewrapper(inst,oinst,whoasked):
         whoisonline(inst,oinst,whoasked,False)
 
 def whoisonline(inst,oinst,whoasked,filt):
-    log.warning(f'checking whos online on {inst} for {whoasked}')
     try:
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
