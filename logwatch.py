@@ -193,12 +193,12 @@ def onlineplayer(steamid,inst):
         welcom = threading.Thread(name = '%s-welcomenewplayer' % inst, target=welcomenewplayer, args=(steamid,inst))
         welcom.start()
     else:
-        if pexist[2]+300 > float(time.time()):
+        if int(pexist[2])+300 > float(time.time()):
             log.debug(f'online player {pexists[1]} with {steamid} was found. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
         else:
             log.info(f'new connection from {pexists[1]} on {inst} aconnection #{pexists[7]}. updating info.')
-            c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,pexists[7]+1,steamid))
+            c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(pexists[7])+1,steamid))
             laston = elapsedTime(float(time.time()),float(pexist[2]))
             totplay = playerTime(float(pexist[4]))
             mtxt = f'Welcome back {pexist[1]}, you have {pexist[5]} reward points. you were last on {laston}, total time played {totplay}'
