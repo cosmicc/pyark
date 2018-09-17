@@ -402,7 +402,7 @@ def voting(inst,whoasked):
     pon = populatevoters(inst)
     log.info(f'making {whoasked} the vote leader')
     setvote(whoasked,2)
-    subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe voting has started with %s players. vote yes or no now" @%s' % (pon,inst), shell=True)
+    subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe voting has started with %s players. vote !yes or !no in global chat now" @%s' % (pon,inst), shell=True)
     votestarttime = time.time()
     sltimer = 0
     while arewevoting:
@@ -422,7 +422,7 @@ def voting(inst,whoasked):
         else:
             if sltimer == 120 or sltimer == 240:
                 log.info(f'sending voting waiting message to vote on {inst}')
-                subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe vote is waiting. make sure you have cast your vote yes or no." @%s' % (inst), shell=True)
+                subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe vote is waiting. make sure you have cast your vote !yes or !no in global chat" @%s' % (inst), shell=True)
 
         sltimer += 5
     log.info(f'final votertable for vote on {inst}')
@@ -461,17 +461,24 @@ def getnamefromchat(chat):
     #log.warning(rawname[0].lower())
     return rawname[0].lower()
 
+def isserver(line):
+    rawissrv = line.split(':')
+        if rawissrv[1].strip() == 'SERVER':
+            return True
+        else:
+            return False
+
 def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
         whoasked = 'nobody' 
         #log.warning(f'###{line}')
-        if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:'):
+        if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
             pass
         elif line.find('!help') != -1:
             whoasked = getnamefromchat(line)
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: who, recent, timeleft, myinfo, lastwipe, lastrestart, vote, lastseen <playername>, playtime <playername>" @%s' % (inst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: !who, !recent, !timeleft, !myinfo, !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (inst), shell=True)
             log.info(f'responded to help request on {inst} from {whoasked}')
         elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
             whoasked = getnamefromchat(line)
