@@ -172,7 +172,8 @@ def getserverlist():
 def whoisonlinewrapper(inst,oinst,whoasked):
     log.info(f'responding to a whoson request from {whoasked}')
     if oinst == inst:
-        for each in getserverlist():
+        slist = getserverlist()
+        for each in slist:
             whoisonline(each,oinst,whoasked,'True')
     else:
         whoisonline(inst,oinst,whoasked,'False')
