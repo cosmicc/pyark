@@ -464,7 +464,7 @@ def checkcommands(inst):
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
         whoasked = 'nobody' 
-        log.warning(line)
+        log.warning(f'###{line}')
         if line.startswith('Running command') or line.startswith('Error:'):
             pass
         elif line.find('!help') != -1:
@@ -500,7 +500,6 @@ def checkcommands(inst):
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
             lastlline = rawline[2].strip().split(' ')
-            #log.warning(lastlline)
             if len(lastlline) == 2:
                 ninst = lastlline[1]
             else:
