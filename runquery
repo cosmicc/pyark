@@ -31,12 +31,12 @@ c = conn.cursor()
 
 #c.execute('DELETE from players WHERE playedtime = 0')
 #c.execute('CREATE TABLE IF NOT EXISTS general (cfgver TEXT)')
-c.execute('ALTER TABLE instances ADD COLUMN restartcountdown INTEGER')
+#c.execute('ALTER TABLE players ADD COLUMN connects INTEGER')
 #c.execute('INSERT INTO general ("cfgver") VALUES ("1")')
-#c.execute('UPDATE instances SET cfgver = ? WHERE name = ?', ('1','volcano'))
+c.execute('UPDATE players SET rewardpoints = ?, firstseen = ?, connects = ?', (0,float(now),1))
 conn.commit()
 
-c.execute('SELECT * from instances')
+c.execute('SELECT * from players')
 alldata = c.fetchall()
 for row in alldata:
     print(row)

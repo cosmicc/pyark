@@ -197,7 +197,7 @@ def whoisonlinewrapper(inst,oinst,whoasked,crnt):
 def whoisonline(inst,oinst,whoasked,filt,crnt):
     try:
         if crnt:
-            potime = 90
+            potime = 70
         else:
             potime = 3600
         conn = sqlite3.connect(sqldb)
@@ -458,7 +458,7 @@ def checkcommands(inst):
             pass
         elif line.find('!help') != -1:
             whoasked = getnamefromchat(line)
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: who, recent, lastwipe, lastrestart, vote, lastseen <playername>, playtime <playername>" @%s' % (inst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: who, recent, timeleft, lastwipe, lastrestart, vote, lastseen <playername>, playtime <playername>" @%s' % (inst), shell=True)
             log.info(f'responded to help request on {inst} from {whoasked}')
         elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
             whoasked = getnamefromchat(line)
