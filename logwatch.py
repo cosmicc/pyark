@@ -37,6 +37,80 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr=instr + ', %s' % (a)
+def elapsedTime(start_time, stop_time, lshort=False):
+    diff_time = start_time - stop_time
+    total_min = diff_time / 60
+    minutes = int(total_min % 60)
+    if minutes == 1:
+        if lshort is False:
+            minstring = 'minute'
+        else:
+            minstring = 'min'
+    else:
+        if lshort is False:
+            minstring = 'minutes'
+        else:
+            minstring = 'mins'
+    hours = int(total_min / 60)
+    if hours == 1:
+        if lshort is False:
+            hourstring = 'hour'
+        else:
+            hourstring = 'hr'
+    else:
+        if lshort is False:
+            hourstring = 'hours'
+        else:
+            hourstring = 'hrs'
+    days = int(hours / 24)
+    if days == 1:
+        if lshort is False:
+            daystring = 'day'
+        else:
+            daystring = 'day'
+    else:
+        if lshort is False:
+            daystring = 'days'
+        else:
+            daystring = 'days'
+    if days != 0:
+        return('{} {}, {} {} ago'.format(days, daystring, hours, hourstring))
+    elif hours != 0:
+        return('{} {}, {} {} ago'.format(hours, hourstring, minutes, minstring))
+    elif minutes > 1:
+        return('{} {} ago'.format(minutes, minstring))
+    elif minutes <= 1:
+        return('now')
+    else:
+        log.error('Elapsed time function failed. Could not convert.')
+        return('Error')
+
+def playedTime(ptime):
+    total_min = ptime / 60
+    minutes = int(total_min % 60)
+    if minutes == 1:
+        minstring = 'Min'
+    else:
+        minstring = 'mins'
+    hours = int(total_min / 60)
+    if hours == 1:
+        hourstring = 'hour'
+    else:
+        hourstring = 'hours'
+    days = int(hours / 24)
+    if days == 1:
+        daystring = 'day'
+    else:
+        daystring = 'days'
+    if days != 0:
+        return('{} {}, {} {}'.format(days, daystring, hours-days*24, hourstring))
+    elif hours != 0:
+        return('{} {}, {} {}'.format(hours, hourstring, minutes-hours, minstring))
+    elif minutes != 0:
+        return('{} {}'.format(minutes, minstring))
+    else:
+        log.error('Elapsed time function failed. Could not convert.')
+        return('Error')
 
 def follow(stream):
     "Follow the live contents of a text file."
@@ -124,7 +198,11 @@ def onlineplayer(steamid,inst):
         else:
             log.info(f'new connection from {pexists[1]} on {inst} aconnection #{pexists[7]}. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,pexists[7]+1,steamid))
-            
+            laston = elapsedTime(float(time.time()),float(pexist[2]))
+            totplay = playerTime(float(pexist[4]))
+            mtxt = f'Welcome back {pexist[1]}, you have {pexist[5] reward points. you were last on {laston}, total time played {totplay}'
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+
         conn.commit()
         c.close()
         conn.close()
