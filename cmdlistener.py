@@ -160,8 +160,19 @@ def gettimeplayed(seenname):
         plasttime = playedTime(float(flast[4].replace(',','')))
         return f'{seenname} total playtime is {plasttime} on {flast[3]}'
 
+def getserverlist():
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT name FROM instances')
+    flast = c.fetchall()
+    c.close()
+    conn.close()
+    log.warning(flast)
+
+
 def whoisonlinewrapper(inst,oinst,whoasked):
     log.info(f'responding to a whoson request from {whoasked}')
+    getserverlist()
     if oinst == inst:
         for each in range(numinstances):
             whoisonline(instance[each]['name'],oinst,whoasked,'True')
