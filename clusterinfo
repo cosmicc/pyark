@@ -138,9 +138,9 @@ for row in allplayers:
         days = int(hours / 24)
         if minutes <= 1 and hours < 1 and days < 1:
             active = '*'
-        #laston = datetime.fromtimestamp(float(row[2])-14400).strftime('%a, %b %d %I:%M%p')
+        firston = datetime.fromtimestamp(float(row[6])-14400).strftime('%a, %b %d %I:%M%p')
         print(f'{row[0]} {active}\"{row[1]}\" - Connections: {row[7]} - Reward Points: {row[5]}')
-        print(f'LastON: {laston} on {row[3]} - PlayedTime: {pltime} - FirstON: {row[6]}')
+        print(f' FirstON: {firston} | PlayedTime: {pltime} | LastON: {laston} on {row[3]}')
         print('  ')
 
 print('      ')
