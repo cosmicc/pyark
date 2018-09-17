@@ -109,6 +109,7 @@ allplayers = c.fetchall()
 def howmanyon(inst):
     pcnt = 0
     for row in allplayers:
+        print(row)
         diff_time = float(now) -  float(row[2])
         total_min = diff_time / 60
         minutes = int(total_min % 60)
