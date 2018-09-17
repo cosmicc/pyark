@@ -161,6 +161,7 @@ def gettimeplayed(seenname):
         return f'{seenname} total playtime is {plasttime} on {flast[3]}'
 
 def whoisonlinewrapper(inst,oinst,whoasked):
+    log.info(f'responding to a whoson request from {whoasked}')
     if oinst == inst:
         for each in range(numinstances):
             whoisonline(instance[each]['name'],oinst,whoasked,'True')
@@ -168,7 +169,7 @@ def whoisonlinewrapper(inst,oinst,whoasked):
         whoisonline(inst,oinst,whoasked,'False')
 
 def whoisonline(inst,oinst,whoasked,filt):
-    log.info(f'responding to a whoson request for {inst} from {whoasked}')
+    log.warning(f'checking whos online on {inst} for {whoasked}')
     try:
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
@@ -456,7 +457,7 @@ def checkcommands(inst):
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
             lastlline = rawline[2].strip().split(' ')
-            log.warning(lastlline)
+            #log.warning(lastlline)
             if len(lastlline) == 2:
                 ninst = lastlline[1] 
             else:
