@@ -98,6 +98,14 @@ def playercount(instance):
                 playercount+=1
     return playercount
 
+def updatetimer(inst,ctime):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('UPDATE instances SET restartcountdown = ? WHERE name = ?', [ctime,inst])
+    conn.commit()
+    c.close()
+    conn.close()
+
 def setcfgver(inst,cver):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -236,6 +244,7 @@ def instancerestart(inst, reason):
             snr = stillneedsrestart(inst)
             log.warning(snr)
             while snr and not gotime:
+                updatetimer(inst,timeleft)
                 if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
                     log.info(f'{timeleft} broadcast message sent to {inst}')
                     subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n          The server will be restarting in %s minutes for a %s'" @%s""" % (timeleft,reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)

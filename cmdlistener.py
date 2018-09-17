@@ -111,6 +111,18 @@ def playedTime(ptime):
         log.error('Elapsed time function failed. Could not convert.')
         return('Error')
 
+def resptimeleft(inst,whoasked):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT restartcoutdown, needsrestart FROM instances WHERE name = ?', [inst])
+    dbtl = c.fetchone()
+    c.close()
+    conn.close()
+    if dbtl[1] == 'True'
+        subprocess.run('arkmanager rconcmd "ServerChat server is restarting in %s minutes" @%s' % (dbtl[1], inst), shell=True)
+    else:
+        subprocess.run('arkmanager rconcmd "ServerChat server is not pending a restart" @%s' % (inst), shell=True)
+
 def getlastrestart(inst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -504,6 +516,10 @@ def checkcommands(inst):
             whoasked = getnamefromchat(line)
             log.info(f'responding to NO vote on {inst} from {whoasked}')
             castedvote(inst,whoasked,False)
+        elif line.find('!timeleft') != -1 or line.find('!restart') != -1:
+            whoasked = getnamefromchat(line)
+            log.info(f'responding to a restart timeleft request on {inst} from {whoasked}')
+            resptimeleft(inst,whoasked)
 
 def clisten(inst):
     log.info(f'starting the command listener thread for {inst}')

@@ -29,9 +29,9 @@ conn = sqlite3.connect(sqldb)
 c = conn.cursor()
 
 
-c.execute('DELETE from players WHERE playedtime = 0')
+#c.execute('DELETE from players WHERE playedtime = 0')
 #c.execute('CREATE TABLE IF NOT EXISTS general (cfgver TEXT)')
-#c.execute('ALTER TABLE instances ADD COLUMN cfgver TEXT')
+c.execute('ALTER TABLE instances ADD COLUMN restartcountdown INTEGER')
 #c.execute('INSERT INTO general ("cfgver") VALUES ("1")')
 #c.execute('UPDATE instances SET cfgver = ? WHERE name = ?', ('1','volcano'))
 conn.commit()

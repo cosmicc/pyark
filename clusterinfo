@@ -154,11 +154,11 @@ for each in allservers:
         vertxt = '(Current)'
 
     print(f'Server: {each[0].upper()} - Players: {ply}/50')
-    print(f'Configuration Version: {each[6]} {vertxt}')
-    print(f'Server Needs Restart: {each[3]}')
-    print(f'Last Restart: {restarted} - Reason: {each[5]}')
-    print(f'Last Dino Wipe: {lwipe}')
-    print(f'Last Wipe Vote: {lvote}')
+    print(f'Configuration version: {each[6]} {vertxt}')
+    print(f'Server in restart: {each[3]}')
+    print(f'Last restart: {restarted} - Reason: {each[5]}')
+    print(f'Last wilddino wipe: {lwipe}')
+    print(f'Last wipe vote: {lvote}')
     print('  ')
 
 print('        ')
