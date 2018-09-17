@@ -114,11 +114,11 @@ def playedTime(ptime):
 def resptimeleft(inst,whoasked):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
-    c.execute('SELECT restartcoutdown, needsrestart FROM instances WHERE name = ?', [inst])
+    c.execute('SELECT restartcountdown, needsrestart FROM instances WHERE name = ?', [inst])
     dbtl = c.fetchone()
     c.close()
     conn.close()
-    if dbtl[1] == 'True'
+    if dbtl[1] == 'True':
         subprocess.run('arkmanager rconcmd "ServerChat server is restarting in %s minutes" @%s' % (dbtl[1], inst), shell=True)
     else:
         subprocess.run('arkmanager rconcmd "ServerChat server is not pending a restart" @%s' % (inst), shell=True)
