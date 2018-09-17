@@ -184,6 +184,7 @@ def onlineplayer(steamid,inst):
     c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
     pexist = c.fetchall()
     timestamp=time.time()
+    log.warning(pexist)
     if not pexist:
         log.info(f'steamid {steamid} was not found. adding new player!')
         c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardspoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0',0,timestamp,1))
@@ -197,7 +198,7 @@ def onlineplayer(steamid,inst):
             log.debug(f'online player {pexists[1]} with {steamid} was found. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
         else:
-            log.info(f'new connection from {pexists[1]} on {inst} aconnection #{pexists[7]}. updating info.')
+            log.info(f'new connection from {pexists[1]} on {inst} connections #{pexists[7]}. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(pexists[7])+1,steamid))
             laston = elapsedTime(float(time.time()),float(pexist[2]))
             totplay = playerTime(float(pexist[4]))
