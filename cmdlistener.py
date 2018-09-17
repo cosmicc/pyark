@@ -163,11 +163,15 @@ def gettimeplayed(seenname):
 def getserverlist():
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
+    newlist = []
     c.execute('SELECT name FROM instances')
     flast = c.fetchall()
     c.close()
     conn.close()
-    return flast
+    for each in flast:
+        newlist.append(each[0])
+    print(newlist)
+    return newlist
 
 def whoisonlinewrapper(inst,oinst,whoasked):
     log.info(f'responding to a whoson request from {whoasked}')
