@@ -103,6 +103,9 @@ c = conn.cursor()
 
 now = time.time()
 
+c.execute('DELETE from players WHERE playedtime = 0')
+conn.commit()
+
 c.execute('SELECT * from players')
 allplayers = c.fetchall()
 
