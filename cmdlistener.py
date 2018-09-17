@@ -167,6 +167,8 @@ def respmyinfo(inst,whoasked):
     conn.close()
     ptime = playedTime(float(pinfo[4].replace(',','')))
     mtxt = f"{pinfo[1]}'s reward points: {pinfo[5]}, {ptime}"
+    log.warning(getsteamid(whoasked))
+    log.warning(whoasked)
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 def gettimeplayed(seenname):
@@ -464,7 +466,7 @@ def checkcommands(inst):
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
         whoasked = 'nobody' 
-        log.warning(f'###{line}')
+        #log.warning(f'###{line}')
         if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:'):
             pass
         elif line.find('!help') != -1:
