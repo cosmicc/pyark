@@ -109,7 +109,7 @@ allplayers = c.fetchall()
 def howmanyon(inst):
     pcnt = 0
     for row in allplayers:
-        print(row)
+        #print(row)
         diff_time = float(now) -  float(row[2])
         total_min = diff_time / 60
         minutes = int(total_min % 60)
@@ -136,6 +136,9 @@ for row in allplayers:
 
 print('      ')
 
+c.execute('SELECT cfgver from general')
+gencfgver = c.fetchone()
+
 c.execute('SELECT * from instances')
 allservers = c.fetchall()
 
@@ -144,15 +147,19 @@ for each in allservers:
     restarted = elapsedTime(float(now),float(each[1]))
     lwipe = elapsedTime(float(now),float(each[2]))
     lvote = elapsedTime(float(now),float(each[4]))
-
     ply = howmanyon(each[0])
+    if gencfgver[0] != each[6]:
+        vertxt = f'({int(gencfgver[0])-int(each[6])} version behind)'
+    else:
+        vertxt = '(Current)'
+
     print(f'Server: {each[0].upper()} - Players: {ply}/50')
+    print(f'Configuration Version: {each[6]} {vertxt}')
     print(f'Server Needs Restart: {each[3]}')
     print(f'Last Restart: {restarted} - Reason: {each[5]}')
     print(f'Last Dino Wipe: {lwipe}')
     print(f'Last Wipe Vote: {lvote}')
     print('  ')
-#    print(f'{ply}/50 {each[0]} - Restarted: {restarted} - LastWipe: {lwipe} - LastVote: {lvote} - LastRestart: {each[5]} NeedsRestart {each[3]}')
 
 print('        ')
 conn.commit()
