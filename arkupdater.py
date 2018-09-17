@@ -16,6 +16,9 @@ configfile = '/home/ark/pyark.cfg'
 config = ExtConfigParser()
 config.read(configfile)
 
+confupdtimer = 0
+dwtimer = 0
+
 sharedpath = config.get('general', 'shared')
 sqldb = f'{sharedpath}/db/pyark.db'
 arkroot = config.get('general', 'arkroot')
@@ -168,15 +171,19 @@ def unsetstartbit(inst):
     conn.close()
 
 def checkwipe(inst):
-    #log.debug(f'running dinowipe check for {inst}')
     lastwipe = getlastwipe(inst)
     if time.time()-float(lastwipe) > 86400:
         if playercount(inst) == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
             subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            dwtimer = 0
             resetlastwipe(inst)            
         else:
-            log.debug(f'dino wipe needed for {inst}, but players are online. waiting..')
+            if dwtimer == 0:
+                log.info(f'dino wipe needed for {inst}, but players are online. waiting')
+            dwtimer += 1
+            if dwtimer == 12:
+                dwtimer = 0
     else:
         log.debug(f'no dino wipe is needed for {inst}')
 
@@ -203,10 +210,12 @@ def stillneedsrestart(inst):
 
 def instancerestart(inst, reason):
     log.debug(f'instance restart thread starting for {inst}')
+    global confupdtimer
     setrestartbit(inst)
     if playercount(inst) == 0:
         log.info(f'instance {inst} is empty and restarting now due to {reason}')
         message = f'server is restarting because of a {reason}'
+        confupdtimer = 0
         subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         subprocess.run('arkmanager stop --saveworld @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         log.info(f'instance {inst} server has stopped')
@@ -256,7 +265,11 @@ def instancerestart(inst, reason):
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server restart for %s has been cancelled'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         else:
             unsetstartbit(inst)
-            log.info(f'waiting on configuration update for {inst} because players are online')
+            if confupdtimer == 0:
+                log.info(f'waiting on configuration update restart for {inst} because players are online')
+            confupdtimer += 1
+            if confupdtimer == 12:
+                confupdtimer = 0
 
 
 def checkconfig():
