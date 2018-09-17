@@ -182,10 +182,9 @@ def onlineplayer(steamid,inst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
-    pexist = c.fetchall()
+    oplayer = c.fetchone()
     timestamp=time.time()
-    log.warning(pexist)
-    if not pexist:
+    if not oplayer:
         log.info(f'steamid {steamid} was not found. adding new player!')
         c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardspoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0',0,timestamp,1))
         conn.commit()
@@ -194,15 +193,15 @@ def onlineplayer(steamid,inst):
         welcom = threading.Thread(name = '%s-welcomenewplayer' % inst, target=welcomenewplayer, args=(steamid,inst))
         welcom.start()
     else:
-        if int(pexist[2])+300 > float(time.time()):
-            log.debug(f'online player {pexists[1]} with {steamid} was found. updating info.')
+        if float(oplayer[2]) + 300 > float(time.time()):
+            log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
         else:
-            log.info(f'new connection from {pexists[1]} on {inst} connections #{pexists[7]}. updating info.')
-            c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(pexists[7])+1,steamid))
-            laston = elapsedTime(float(time.time()),float(pexist[2]))
-            totplay = playerTime(float(pexist[4]))
-            mtxt = f'Welcome back {pexist[1]}, you have {pexist[5]} reward points. you were last on {laston}, total time played {totplay}'
+            log.info(f'new connection from {oplayer[1]} on {inst} connection {int(oplayer[7])+1}. updating info.')
+            c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(oplayer[7])+1,steamid))
+            laston = elapsedTime(float(time.time()),float(oplayer[2]))
+            totplay = playedTime(float(oplayer[4].replace(',','')))
+            mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston}, total time played {totplay}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
 
         conn.commit()
