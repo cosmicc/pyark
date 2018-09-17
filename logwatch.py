@@ -200,7 +200,7 @@ def onlineplayer(steamid,inst):
             c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,pexists[7]+1,steamid))
             laston = elapsedTime(float(time.time()),float(pexist[2]))
             totplay = playerTime(float(pexist[4]))
-            mtxt = f'Welcome back {pexist[1]}, you have {pexist[5] reward points. you were last on {laston}, total time played {totplay}'
+            mtxt = f'Welcome back {pexist[1]}, you have {pexist[5]} reward points. you were last on {laston}, total time played {totplay}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
 
         conn.commit()
