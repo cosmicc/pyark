@@ -178,9 +178,9 @@ def whoisonlinewrapper(inst,oinst,whoasked):
     if oinst == inst:
         slist = getserverlist()
         for each in slist:
-            whoisonline(each,oinst,whoasked,'True')
+            whoisonline(each,oinst,whoasked,True)
     else:
-        whoisonline(inst,oinst,whoasked,'False')
+        whoisonline(inst,oinst,whoasked,False)
 
 def whoisonline(inst,oinst,whoasked,filt):
     log.warning(f'checking whos online on {inst} for {whoasked}')
