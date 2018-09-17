@@ -125,7 +125,7 @@ def onlineplayer(steamid,inst):
             log.info(f'new connection from {pexists[1]} on {inst} aconnection #{pexists[7]}. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,pexists[7]+1,steamid))
             
-    i   conn.commit()
+        conn.commit()
         c.close()
         conn.close()
 
