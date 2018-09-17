@@ -207,7 +207,7 @@ def whoisonline(inst,oinst,whoasked,filt,crnt):
             if crnt:
                 subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
             else:
-                subprocess.run('arkmanager rconcmd "ServerChat %s recent players: %s" @%s' % (inst, plist, oinst), shell=True)
+                subprocess.run('arkmanager rconcmd "ServerChat %s last hour players: %s" @%s' % (inst, plist, oinst), shell=True)
         if pcnt == 0 and not filt:
             subprocess.run('arkmanager rconcmd "ServerChat %s has no players online." @%s' % (inst, oinst), shell=True)
 
@@ -446,9 +446,9 @@ def checkcommands(inst):
             pass
         elif line.find('!help') != -1:
             whoasked = getnamefromchat(line)
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: lastdinowipe, lastrestart, vote, lastseen <playername>, playedtime <playername>, whoson <servername>" @%s' % (inst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: who, recent, lastwipe, lastrestart, vote, lastseen <playername>, playtime <playername>" @%s' % (inst), shell=True)
             log.info(f'responded to help request on {inst} from {whoasked}')
-        elif line.find('!lastdinowipe') != -1:
+        elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
             whoasked = getnamefromchat(line)
             lastwipe = elapsedTime(time.time(),float(getlastwipe(inst)))
             subprocess.run('arkmanager rconcmd "ServerChat last wild dino wipe was %s ago" @%s' % (lastwipe, inst), shell=True)
@@ -467,7 +467,7 @@ def checkcommands(inst):
             lsn = getlastseen(seenname)
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, inst), shell=True)
             log.info(f'responding to a lastseen request for {seenname} from {orgname}')
-        elif line.find('!playedtime') != -1:
+        elif line.find('!playedtime') != -1 or line.find('!playtime') != -1 or line.find('!totalplayed') != -1:
             whoasked = getnamefromchat(line)
             seenname = rawline[4].lower()
             lpt = gettimeplayed(seenname)
