@@ -158,6 +158,17 @@ def getlastseen(seenname):
         else:
             return f'{seenname} is online now on {flast[3]}'
 
+def respmyinfo(inst,whoasked):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM players WHERE playername = ?', [whoasked])
+    pinfo = c.fetchone()
+    c.close()
+    conn.close()
+    ptime = playedTime(float(pinfo[4].replace(',','')))
+    mtxt = f"{pinfo[1]}'s reward points: {pinfo[5]}, {ptime}"
+    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
+
 def gettimeplayed(seenname):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -165,7 +176,6 @@ def gettimeplayed(seenname):
     flast = c.fetchone()
     c.close()
     conn.close()
-    #print(flast)
     if not flast:
         return 'No player found'
     else:
@@ -454,11 +464,12 @@ def checkcommands(inst):
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
         whoasked = 'nobody' 
+        log.warning(line)
         if line.startswith('Running command') or line.startswith('Error:'):
             pass
         elif line.find('!help') != -1:
             whoasked = getnamefromchat(line)
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: who, recent, timeleft, lastwipe, lastrestart, vote, lastseen <playername>, playtime <playername>" @%s' % (inst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: who, recent, timeleft, myinfo, lastwipe, lastrestart, vote, lastseen <playername>, playtime <playername>" @%s' % (inst), shell=True)
             log.info(f'responded to help request on {inst} from {whoasked}')
         elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
             whoasked = getnamefromchat(line)
@@ -495,7 +506,7 @@ def checkcommands(inst):
             else:
                 ninst = inst
             whoisonlinewrapper(ninst,inst,whoasked,False)
-        elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1:
+        elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1  or line.find('!online') != -1:
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
             lastlline = rawline[2].strip().split(' ')
@@ -520,6 +531,11 @@ def checkcommands(inst):
             whoasked = getnamefromchat(line)
             log.info(f'responding to a restart timeleft request on {inst} from {whoasked}')
             resptimeleft(inst,whoasked)
+        elif line.find('!whoami') != -1 or line.find('!myinfo') != -1:
+            whoasked = getnamefromchat(line)
+            log.info(f'responding to a myinfo request on {inst} from {whoasked}')
+            respmyinfo(inst,whoasked)
+
 
 def clisten(inst):
     log.info(f'starting the command listener thread for {inst}')
