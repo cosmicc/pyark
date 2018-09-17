@@ -167,15 +167,13 @@ def getserverlist():
     flast = c.fetchall()
     c.close()
     conn.close()
-    log.warning(flast)
-
+    return flast
 
 def whoisonlinewrapper(inst,oinst,whoasked):
     log.info(f'responding to a whoson request from {whoasked}')
-    getserverlist()
     if oinst == inst:
-        for each in range(numinstances):
-            whoisonline(instance[each]['name'],oinst,whoasked,'True')
+        for each in getserverlist():
+            whoisonline(each,oinst,whoasked,'True')
     else:
         whoisonline(inst,oinst,whoasked,'False')
 
