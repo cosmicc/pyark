@@ -213,7 +213,7 @@ def onlineplayer(steamid,inst):
 def onlineupdate(inst):
     log.info(f'starting online player watcher on {inst}')
     while True:
-        try:
+        while True:
             time.sleep(10)
             cmdpipe = subprocess.Popen('arkmanager rconcmd ListPlayers @%s' % inst, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             b = cmdpipe.stdout.read().decode("utf-8")
@@ -228,9 +228,9 @@ def onlineupdate(inst):
                         nsteamid = rawline[1]
                         onlineplayer(nsteamid.strip(),inst)
             time.sleep(20)
-        except:
-            e = sys.exc_info()[0]
-            log.critical(e)
+        #except:
+        #    e = sys.exc_info()[0]
+        #    log.critical(e)
 
 def logwatch(inst):
     log.debug(f'starting logwatch thread for instance {inst}')
