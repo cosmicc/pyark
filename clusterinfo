@@ -113,7 +113,9 @@ def howmanyon(inst):
         diff_time = float(now) -  float(row[2])
         total_min = diff_time / 60
         minutes = int(total_min % 60)
-        if minutes <= 1 and row[3] == inst:
+        hours = int(total_min / 60)
+        days = int(hours / 24)
+        if minutes <= 1 and hours < 1 and days < 1 and row[3] == inst:
             pcnt += 1
     return pcnt
 
@@ -129,7 +131,9 @@ for row in allplayers:
         diff_time = float(now) -  float(row[2])
         total_min = diff_time / 60
         minutes = int(total_min % 60)
-        if minutes <= 1:
+        hours = int(total_min / 60)
+        days = int(hours / 24)
+        if minutes <= 1 and hours < 1 and days < 1:
             active = '*'
         #laston = datetime.fromtimestamp(float(row[2])-14400).strftime('%a, %b %d %I:%M%p')
         print(f'{row[0]} {active}{row[1]} - laston: {laston} on {row[3]} - playtime: {pltime}')

@@ -80,7 +80,7 @@ def main():
 
     c.execute('CREATE TABLE IF NOT EXISTS general(cfgver TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart REAL, lastdinowipe REAL, needsrestart TEXT, lastvote REAL, restartreason TEXT, cfgver INTEGER, restartcountdown INTEGER)')
-    c.execute('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, playedtime TEXT)')
+    c.execute('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, playedtime TEXT, rewardpoints INTEGER, firstseen TEXT, connects INTEGER)')
 
     for ins in range(numinstances):
         c.execute('SELECT * FROM instances WHERE name = ?', [(instance[ins]['name']),])

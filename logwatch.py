@@ -110,17 +110,22 @@ def onlineplayer(steamid,inst):
     pexist = c.fetchall()
     timestamp=time.time()
     if not pexist:
-        log.info(f'steamid {steamid} was not found. adding.')
-        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime) VALUES (?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0'))
+        log.info(f'steamid {steamid} was not found. adding new player!')
+        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardspoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0',0,timestamp,1))
         conn.commit()
         c.close()
         conn.close()
         welcom = threading.Thread(name = '%s-welcomenewplayer' % inst, target=welcomenewplayer, args=(steamid,inst))
         welcom.start()
     else:
-        log.debug(f'steamid {steamid} was found. updating.')
-        c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
-        conn.commit()
+        if pexist[2]+300 > float(time.time()):
+            log.debug(f'online player {pexists[1]} with {steamid} was found. updating info.')
+            c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
+        else:
+            log.info(f'new connection from {pexists[1]} on {inst} aconnection #{pexists[7]}. updating info.')
+            c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,pexists[7]+1,steamid))
+            
+    i   conn.commit()
         c.close()
         conn.close()
 
@@ -142,7 +147,7 @@ def onlineupdate(inst):
                         rawline = line.split(',')
                         nsteamid = rawline[1]
                         onlineplayer(nsteamid.strip(),inst)
-            time.sleep(50)
+            time.sleep(20)
         except:
             e = sys.exc_info()[0]
             log.critical(e)
