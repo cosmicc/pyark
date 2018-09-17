@@ -1,4 +1,4 @@
-import logging, subprocess, sqlite3, time, filecmp, threading
+import sys, logging, subprocess, sqlite3, time, filecmp, threading
 from configparser import ConfigParser
 
 log = logging.getLogger(__name__)
@@ -334,19 +334,16 @@ def checkpending(inst):
 
 def arkupd(): 
     log.info('arkupdater thread started')
-
     log.info(f'found {numinstances} instances: {instr}')
-
     while True:
-        checkupdates()
-        checkconfig()
-        for each in range(numinstances):
-            checkwipe(instance[each]['name'])
-            checkpending(instance[each]['name'])
-
-        time.sleep(300)
-        print(threading.enumerate())
-
-    
-
-    
+        try:
+            checkupdates()
+            checkconfig()
+            for each in range(numinstances):
+                checkwipe(instance[each]['name'])
+                checkpending(instance[each]['name'])
+            time.sleep(300)
+            print(threading.enumerate())
+        except:
+            e = sys.exc_info()[0]
+            log.critical(e)

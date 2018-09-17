@@ -1,4 +1,4 @@
-import logging, subprocess, sqlite3, time, threading
+import sys, logging, subprocess, sqlite3, time, threading
 from configparser import ConfigParser
 
 log = logging.getLogger(__name__)
@@ -469,6 +469,9 @@ def checkcommands(inst):
 def clisten(inst):
     log.info(f'starting the command listener thread for {inst}')
     while True:
-        checkcommands(inst)
-        time.sleep(3)
-
+        try:
+            checkcommands(inst)
+            time.sleep(3)
+        except:
+            e = sys.exc_info()[0]
+            log.critical(e)
