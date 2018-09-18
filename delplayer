@@ -53,7 +53,7 @@ oplayers = c.fetchall()
 for each in oplayers:
     if each[0] == args.steamid:
         if ask_question(f'You will be deleting {each[1]} with steamid {each[0]} from the database. continue?'):
-            c.execute('DELETE from players WHERE steamid = ?', ([args.steamid])
+            c.execute('DELETE from players WHERE steamid = ?', ([args.steamid]))
             print(f'player {each[1]} with steamid {each[0]} deleted.')
         else:
             print(f'skipping delete')
