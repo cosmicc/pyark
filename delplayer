@@ -30,7 +30,7 @@ now = time.time()
 sqldb = f'{sharedpath}/db/pyark.db'
 
 def ask_question(question):
-    check = str(input("{question} (Y/N): ")).lower().strip()
+    check = str(input(f"{question} (Y/N): ")).lower().strip()
     try:
         if check[0] == 'y':
             return True
@@ -52,13 +52,11 @@ c.execute('SELECT * from players')
 oplayers = c.fetchall()
 for each in oplayers:
     if each[0] == args.steamid:
-        if ask_question(f'You will be deleting {each[1]} from the database. continue?'):
-            #c.execute('DELETE from players WHERE steamid = ?', ([args.steamid])
+        if ask_question(f'You will be deleting {each[1]} with steamid {each[0]} from the database. continue?'):
+            c.execute('DELETE from players WHERE steamid = ?', ([args.steamid])
             print(f'player {each[1]} with steamid {each[0]} deleted.')
         else:
             print(f'skipping delete')
-    else:
-        print('No player found with steamid {steamid}')
 
 conn.commit()
 
