@@ -287,14 +287,14 @@ def checkconfig():
     oldcfg2 = f'{sharedpath}/stagedconfig/GameUserSettings.ini'
 
     if not filecmp.cmp(newcfg1,oldcfg1) or not filecmp.cmp(newcfg2,oldcfg2):
-        log.info('config file update detected')
+        log.info('config file update detected. staging config files.')
         nessage('new configuration detected. signaling servers for update.')
-        subprocess.run('arkmanager notify "%s" @%s' % (message,instance[0]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         oldver = int(getcfgver('general'))
         setcfgver('general',str(oldver+1))
         subprocess.run('cp %s/config/Game.ini %s/stagedconfig' % (sharedpath,sharedpath), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         subprocess.run('cp %s/config/GameUserSettings.ini %s/stagedconfig' % (sharedpath,sharedpath), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-
+        subprocess.run('arkmanager notify "%s" @%s' % (message,instance[0]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        
     for each in range(numinstances):
         inst = instance[each]['name']
         if getcfgver('general') > getcfgver(inst) and not isrebooting(inst):

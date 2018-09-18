@@ -200,7 +200,7 @@ for each in allservers:
 
     ply = howmanyon(each[0])
     if gencfgver[0] != each[6]:
-        vertxt = f'{BRED}({int(gencfgver[0])-int(each[6])} version behind){RST}'
+        vertxt = f'{BRED}({int(gencfgver[0])-int(each[6])} versions behind){RST}'
     else:
         vertxt = f'{GRN}(Current){RST}'
 

@@ -153,7 +153,7 @@ def processlogline(line,inst):
             pexist = c.fetchall()
             if not pexist:
                 log.info(f'player {playername} with steamid {steamid} was not found. adding.')
-                c.execute('INSERT INTO players (steamid, playername, playedtime, rewardpoints) VALUES (?, ?, ?, ?)', (steamid,playername,playtime,rewardpoints))
+                c.execute('INSERT INTO players (steamid, playername, lastseen, playedtime, rewardpoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1))
                 conn.commit()
             elif steamid != '':
                 log.debug(f'player {playername} with steamid {steamid} was found. updating.')
@@ -164,22 +164,22 @@ def processlogline(line,inst):
 
 def welcomenewplayer(steamid,inst):
     log.info(f'welcome message thread started for new player {steamid} on {inst}')
-    time.sleep(180)
-    mtxt = 'Welcome to the ultimate extinction core galaxy server cluster!'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-    time.sleep(10)
-    mtxt = 'Public teleporters and crafting area is available, Rewards system points earned as you play. Build a rewards vault or find a public teleporter to access the rewards system.'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-    time.sleep(10)
-    mtxt = 'There are free starter packs in the rewards vault, and the level 1 tent makes a quick starter shelter, and you get all your items back when you die (no corpses)'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-    time.sleep(10)
-    mtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-    time.sleep(10)
-    mtxt = 'everyone welcome a new player to the cluster!'
-    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
-    log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
+    #time.sleep(180)
+    #mtxt = 'Welcome to the ultimate extinction core galaxy server cluster!'
+    #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+    #time.sleep(10)
+    #mtxt = 'Public teleporters and crafting area is available, Rewards system points earned as you play. Build a rewards vault or find a public teleporter to access the rewards system.'
+    #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+    #time.sleep(10)
+    #mtxt = 'There are free starter packs in the rewards vault, and the level 1 tent makes a quick starter shelter, and you get all your items back when you die (no corpses)'
+    #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+    #time.sleep(10)
+    #mtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
+    #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+    #time.sleep(10)
+    #mtxt = 'everyone welcome a new player to the cluster!'
+    #subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+    #log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
 
 
 def serverisinrestart(steamid,inst):
@@ -202,13 +202,13 @@ def onlineplayer(steamid,inst):
     timestamp=time.time()
     if not oplayer:
         log.info(f'steamid {steamid} was not found. adding new player to cluster!')
-        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0',50,timestamp,1))
+        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1))
         conn.commit()
         c.close()
         conn.close()
         welcom = threading.Thread(name = '%s-welcomenewplayer' % inst, target=welcomenewplayer, args=(steamid,inst))
         welcom.start()
-    else:
+    elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
@@ -230,7 +230,7 @@ def onlineplayer(steamid,inst):
 def onlineupdate(inst):
     log.info(f'starting online player watcher on {inst}')
     while True:
-        try:
+        #try:
             time.sleep(10)
             cmdpipe = subprocess.Popen('arkmanager rconcmd ListPlayers @%s' % inst, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             b = cmdpipe.stdout.read().decode("utf-8")
@@ -245,9 +245,9 @@ def onlineupdate(inst):
                         nsteamid = rawline[1]
                         onlineplayer(nsteamid.strip(),inst)
             time.sleep(20)
-        except:
-            e = sys.exc_info()[0]
-            log.critical(e)
+        #except:
+        #    e = sys.exc_info()[0]
+        #    log.critical(e)
 
 def logwatch(inst):
     log.debug(f'starting logwatch thread for instance {inst}')
