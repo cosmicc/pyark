@@ -312,13 +312,29 @@ def checkconfig():
     else:
         log.debug('no config file updates detected')
 
+def isnewarkver(inst):
+    isarkupd = subprocess.run('arkmanager checkupdate @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    for each in isarkupd.stdout.decode('utf-8').split('\n'):
+        if each.find('Current version:') != -1:
+            m = each.split(':')
+            k = m[1].split(' ')
+            curver = int((k[2]))
+        elif each.find('Available version:') != -1:
+            m = each.split(':')
+            k = m[1].split(' ')
+            avlver = int((k[2]))
+    if curver == avlver:
+        return False
+    else:
+        return True
+
 
 def checkupdates():
     pendingupdates = False
     arkupdate = False
     modupdate = False
-    isarkupd = subprocess.run('arkmanager checkupdate @%s' % (instance[0]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-    if isarkupd.returncode == 1:
+    ustate, curver, avlver = isnewarkver(instance[0]['name'])
+    if not ustate:
         log.debug('ark update check found no ark updates available')
 
         for each in range(numinstances):
@@ -334,10 +350,10 @@ def checkupdates():
                 log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
 
     elif isarkupd.returncode == 0:
-        log.info('ark update found. downloading update.')
+        log.info(f'ark update found ({curver}>{avlver}) downloading update.')
         pendingupdates = True
         arkupdate = True
-        subprocess.run('arkmanager update --downloadonly --update-mods @all', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         log.debug('ark update downloaded to staging area')
         for each in range(numinstances):
             inst = instance[each]['name']
