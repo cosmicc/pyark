@@ -165,26 +165,25 @@ def processlogline(line,inst):
             conn.close()
 
 def welcomenewplayer(steamid,inst):
-    if not iswelcoming(steamid):
+        global welcomthreads
         log.info(f'welcome message thread started for new player {steamid} on {inst}')
         time.sleep(180)
-        mtxt = 'Welcome to the ultimate extinction core galaxy server cluster!'
+        mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         time.sleep(10)
-        mtxt = 'Public teleporters and crafting area is available, Rewards system points earned as you play. Build a rewards vault or find a public teleporter to access the rewards system.'
+        mtxt = 'Public teleporters and crafting area, rewards system points earned as you play. Build a rewards vault quick, free starter items.'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         time.sleep(10)
-        mtxt = 'There are free starter packs in the rewards vault, and the level 1 tent makes a quick starter shelter, and you get all your items back when you die (no corpses)'
+        mtxt = 'Lvl 1 tent makes a quick starter shelter, and you get all your items back when you die, The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         time.sleep(10)
-        mtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
+        imtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(10)
-        mtxt = 'everyone welcome a new player to the cluster!'
+        time.sleep(20)
+        mtxt = 'Everyone welcome a new player to the cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
         log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
-    else:
-        log.warning(f'welcome message thread already running for new player {steamid}')
+        welcomthreads[:] = [d for d in welcomthreads if d.get('steamid') != steamid]
 
 
 def iswelcoming(steamid):
@@ -221,9 +220,13 @@ def onlineplayer(steamid,inst):
         conn.commit()
         c.close()
         conn.close()
-        welcom = threading.Thread(name = 'welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid,inst))
-        welcomthreads.append({'steamid':steamid,'sthread':welcom})
-        welcom.start()
+        if not iswelcoming(steamid):
+            welcom = threading.Thread(name = 'welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid,inst))
+            welcomthreads.append({'steamid':steamid,'sthread':welcom})
+            welcom.start()
+        else:
+            log.warning(f'welcome message thread already running for new player {steamid}')
+
     elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
@@ -246,7 +249,7 @@ def onlineplayer(steamid,inst):
 def onlineupdate(inst):
     log.info(f'starting online player watcher on {inst}')
     while True:
-        #try:
+        try:
             time.sleep(10)
             cmdpipe = subprocess.Popen('arkmanager rconcmd ListPlayers @%s' % inst, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             b = cmdpipe.stdout.read().decode("utf-8")
@@ -261,9 +264,9 @@ def onlineupdate(inst):
                         nsteamid = rawline[1]
                         onlineplayer(nsteamid.strip(),inst)
             time.sleep(20)
-        #except:
-        #    e = sys.exc_info()[0]
-        #    log.critical(e)
+        except:
+            e = sys.exc_info()[0]
+            log.critical(e)
 
 def logwatch(inst):
     log.debug(f'starting logwatch thread for instance {inst}')

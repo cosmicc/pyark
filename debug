@@ -1,0 +1,2 @@
+systemctl stop pyark
+./pyark --debug
