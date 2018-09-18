@@ -242,7 +242,6 @@ def instancerestart(inst, reason):
             gotime = False
             countstart = time.time()
             snr = stillneedsrestart(inst)
-            log.warning(snr)
             while snr and not gotime:
                 updatetimer(inst,timeleft)
                 if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
@@ -365,7 +364,6 @@ def arkupd():
                 checkwipe(instance[each]['name'])
                 checkpending(instance[each]['name'])
             time.sleep(300)
-            print(threading.enumerate())
         except:
             e = sys.exc_info()[0]
             log.critical(e)

@@ -177,7 +177,7 @@ def respmyinfo(inst,whoasked):
     c.close()
     conn.close()
     ptime = playedTime(float(pinfo[4].replace(',','')))
-    mtxt = f"your current reward points: {pinfo[5]}, your total play time is {ptime}"
+    mtxt = f"your current reward points: {pinfo[5]}. your total play time is {ptime}"
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 def gettimeplayed(seenname):

@@ -178,7 +178,7 @@ def welcomenewplayer(steamid,inst):
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
     time.sleep(10)
     mtxt = 'everyone welcome a new player to the cluster!'
-    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (steamid, mtxt, inst), shell=True)
+    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
     log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
 
 
@@ -202,7 +202,7 @@ def onlineplayer(steamid,inst):
     timestamp=time.time()
     if not oplayer:
         log.info(f'steamid {steamid} was not found. adding new player to cluster!')
-        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardspoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0',50,timestamp,1))
+        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'0',50,timestamp,1))
         conn.commit()
         c.close()
         conn.close()

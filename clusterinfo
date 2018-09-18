@@ -4,8 +4,23 @@ import subprocess, time
 import argparse, sqlite3
 from configparser import ConfigParser
 from datetime import datetime
+from colorama import Fore, Back, Style
 
 configfile = '/home/ark/pyark.cfg'
+
+YEL = Fore.YELLOW+Style.NORMAL
+BYEL = Fore.YELLOW+Style.BRIGHT
+CYN = Fore.CYAN+Style.NORMAL
+BCYN = Fore.CYAN+Style.BRIGHT
+WHT = Fore.WHITE+Style.NORMAL
+BWHT = Fore.WHITE+Style.BRIGHT
+MGT = Fore.MAGENTA+Style.NORMAL
+BMGT = Fore.MAGENTA+Style.BRIGHT
+GRN = Fore.GREEN+Style.NORMAL
+BGRN = Fore.GREEN+Style.BRIGHT
+RED = Fore.RED+Style.NORMAL
+BRED = Fore.RED+Style.BRIGHT
+RST = Fore.RESET+Style.NORMAL
 
 class ExtConfigParser(ConfigParser):
     def getlist(self, section, option):
@@ -128,7 +143,6 @@ for row in allplayers:
         print(f'deleting id: {row[0]}')
         c.execute('DELETE from players WHERE steamid = ?', (row[0],))
     else:
-        active = ''
         pltime = playedTime(float(row[4].replace(',','')))
         laston = elapsedTime(float(now),float(row[2]))
         diff_time = float(now) -  float(row[2])
@@ -137,10 +151,16 @@ for row in allplayers:
         hours = int(total_min / 60)
         days = int(hours / 24)
         if minutes <= 1 and hours < 1 and days < 1:
-            active = '*'
+            active = BGRN
+        elif days > 7 <= 14:
+            active = YEL
+        elif days > 14:
+            active = BRED
+        else:
+            active = BCYN
         firston = datetime.fromtimestamp(float(row[6])-14400).strftime('%a, %b %d %I:%M%p')
-        print(f'{row[0]} {active}\"{row[1]}\" - Connections: {row[7]} - Reward Points: {row[5]}')
-        print(f' FirstON: {firston} | PlayedTime: {pltime} | LastON: {laston} on {row[3]}')
+        print(f'{active}{row[0]} \"{row[1]}\" - Connections: {row[7]} - Reward Points: {row[5]}')
+        print(f' FirstON: {firston} | PlayedTime: {pltime} | LastON: {laston} on {row[3]}{RST}')
         print('  ')
 
 print('      ')
@@ -154,20 +174,49 @@ allservers = c.fetchall()
 for each in allservers:
 
     restarted = elapsedTime(float(now),float(each[1]))
+    if float(now)-float(each[1]) > 1209600:
+        restclr = f"{BRED}"
+    elif float(now)-float(each[1]) > 604800:
+        restclr = f"{BYEL}"
+    else:
+        restclr = f"{BGRN}"
     lwipe = elapsedTime(float(now),float(each[2]))
+    if float(now)-float(each[2]) > 86400:
+        wipeclr = f"{BRED}"
+    elif float(now)-float(each[2]) > 43200:
+        wipeclr = f"{BYEL}"
+    else:
+        wipeclr = f"{BGRN}"
     lvote = elapsedTime(float(now),float(each[4]))
+    if float(now)-float(each[4]) > 604800:
+        voteclr = f"{BRED}"
+    elif float(now)-float(each[4]) > 259200:
+        voteclr = f"{BYEL}"
+    else:
+        voteclr = f"{BGRN}"
+
     ply = howmanyon(each[0])
     if gencfgver[0] != each[6]:
-        vertxt = f'({int(gencfgver[0])-int(each[6])} version behind)'
+        vertxt = f'{RED}({int(gencfgver[0])-int(each[6])} version behind){RST}'
     else:
-        vertxt = '(Current)'
+        vertxt = f'{GRN}(Current){RST}'
 
-    print(f'Server: {each[0].upper()} - Players: {ply}/50')
+    if each[3] == "False":
+        inrest = f"{GRN}False{RST}"
+    else:
+        inrest = f"{BYEL}TRUE{RST}"
+    
+    if ply != 0:
+        mm = BGRN
+    else:
+        mm = YEL
+
+    print(f'Server: {BMGT}{each[0].upper()}{RST} - Players: {mm}{ply}/50{RST}')
     print(f'Configuration version: {each[6]} {vertxt}')
-    print(f'Server in restart: {each[3]}')
-    print(f'Last restart: {restarted} - Reason: {each[5]}')
-    print(f'Last wilddino wipe: {lwipe}')
-    print(f'Last wipe vote: {lvote}')
+    print(f'Server in restart: {inrest}')
+    print(f'Last restart: {restclr}{restarted}{RST} - Reason: {each[5]}')
+    print(f'Last wilddino wipe: {wipeclr}{lwipe}{RST}')
+    print(f'Last wipe vote: {voteclr}{lvote}{RST}')
     print('  ')
 
 print('        ')
