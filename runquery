@@ -29,22 +29,28 @@ conn = sqlite3.connect(sqldb)
 c = conn.cursor()
 
 ##delete the admin account from db
-c.execute('DELETE from players WHERE steamid = 76561198408657294')
+#c.execute('DELETE from players WHERE steamid = 76561198408657294')
 
 #c.execute('SELECT * from players WHERE steamid = 76561198187923238')
 #c.execute('DELETE from players WHERE steamid = 76561198187923238')
 #c.execute('CREATE TABLE IF NOT EXISTS general (cfgver TEXT)')
 #c.execute('ALTER TABLE players ADD COLUMN connects INTEGER')
 #c.execute('INSERT INTO general ("cfgver") VALUES ("1")')
-c.execute('UPDATE instances SET restartcountdown = 30')
+#c.execute('UPDATE instances SET restartcountdown = 30')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
-conn.commit()
+#conn.commit()
 
-c.execute('SELECT * from instances')
-alldata = c.fetchall()
-for row in alldata:
-    print(row)
+#c.execute('SELECT * from instances')
+#alldata = c.fetchall()
+#for row in alldata:
+#    print(row)
 
 c.close()
 conn.close()
+
+isarkupd = subprocess.run('arkmanager checkupdate @volcano', stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+for each in isarkupd.stdout.decode('utf-8').split('\n'):
+    if 
+    print(each)
+
 
