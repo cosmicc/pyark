@@ -25,6 +25,8 @@ sharedpath = config.get('general', 'shared')
 sqldb = f'{sharedpath}/db/pyark.db'
 arkroot = config.get('general', 'arkroot')
 
+welcomthreads = []
+
 numinstances = int(config.get('general', 'instances'))
 global instance
 instance = [dict() for x in range(numinstances)]
@@ -182,6 +184,15 @@ def welcomenewplayer(steamid,inst):
     log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
 
 
+def iswelcoming(steamid):
+    for each in welcomthreads:
+        if welcome[each] == inst and 'restartthread' in instance[each]:
+            if instance[each]['restartthread'].is_alive():
+                return True
+            else:
+                return False
+
+
 def serverisinrestart(steamid,inst,oplayer):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -190,12 +201,12 @@ def serverisinrestart(steamid,inst,oplayer):
     if rbt[3] == "True":
         log.warning(f'{rbt[6]},{rbt[7]}')
         log.info(f'notifying player {oplayer[1]} that server {inst} will be restarting in {rbt[7]} min')
-
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
     
 
 def onlineplayer(steamid,inst):
+    global welcomthreads
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
@@ -207,7 +218,8 @@ def onlineplayer(steamid,inst):
         conn.commit()
         c.close()
         conn.close()
-        welcom = threading.Thread(name = '%s-welcomenewplayer' % inst, target=welcomenewplayer, args=(steamid,inst))
+        welcom = threading.Thread(name = 'welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid,inst))
+        welcomthreads.append({'steamid':steamid,'sthread':welcom})
         welcom.start()
     elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):

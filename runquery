@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import threading
 import subprocess
 import argparse, sqlite3
 from configparser import ConfigParser
@@ -48,23 +49,28 @@ c = conn.cursor()
 c.close()
 conn.close()
 
-def isnewarkver(inst):
-    isarkupd = subprocess.run('arkmanager checkupdate @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-    for each in isarkupd.stdout.decode('utf-8').split('\n'):
-        if each.find('Current version:') != -1:
-            m = each.split(':')
-            k = m[1].split(' ')
-            curver = int((k[2]))
-        elif each.find('Available version:') != -1:
-            m = each.split(':')
-            k = m[1].split(' ')
-            avlver = int((k[2]))
-    if curver == avlver:
-        return False,curver,avlver
-    else:
-        return True,curver,avlver
+welcomthreads = []
 
-print(isnewarkver('volcano'))
+def newp():
+    time.sleep(900)
 
+welcom = threading.Thread(name = 'welcoming-1', target=newp)
+welcomthreads.append({'steamid':1,'sthread':welcom})
+welcom.start()
 
+welcom = threading.Thread(name = 'welcoming-2', target=newp)
+welcomthreads.append({'steamid':2,'sthread':welcom})
+welcom.start()
+
+time.sleep(1)
+
+print(welcomthreads)
+
+time.sleep(1)
+
+welcomthreads[:] = [d for d in welcomthreads if d.get('steamid') != 1]
+
+time.sleep(1)
+
+print(welcomthreads)
 
