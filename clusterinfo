@@ -163,10 +163,13 @@ for row in allplayers:
         print(f' FirstON: {firston} | PlayedTime: {pltime} | LastON: {laston} on {row[3]}{RST}')
         print('  ')
 
-print('      ')
 
 c.execute('SELECT cfgver from general')
 gencfgver = c.fetchone()
+
+print(f'Current Config Version: {BGRN}{gencfgver[0]}{RST}')
+
+print('    ')
 
 c.execute('SELECT * from instances')
 allservers = c.fetchall()
