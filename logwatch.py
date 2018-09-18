@@ -165,29 +165,32 @@ def processlogline(line,inst):
             conn.close()
 
 def welcomenewplayer(steamid,inst):
-    log.info(f'welcome message thread started for new player {steamid} on {inst}')
-    time.sleep(180)
-    mtxt = 'Welcome to the ultimate extinction core galaxy server cluster!'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-    time.sleep(10)
-    mtxt = 'Public teleporters and crafting area is available, Rewards system points earned as you play. Build a rewards vault or find a public teleporter to access the rewards system.'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-    time.sleep(10)
-    mtxt = 'There are free starter packs in the rewards vault, and the level 1 tent makes a quick starter shelter, and you get all your items back when you die (no corpses)'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-    time.sleep(10)
-    mtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-    time.sleep(10)
-    mtxt = 'everyone welcome a new player to the cluster!'
-    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
-    log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
+    if not iswelcoming(steamid):
+        log.info(f'welcome message thread started for new player {steamid} on {inst}')
+        time.sleep(180)
+        mtxt = 'Welcome to the ultimate extinction core galaxy server cluster!'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(10)
+        mtxt = 'Public teleporters and crafting area is available, Rewards system points earned as you play. Build a rewards vault or find a public teleporter to access the rewards system.'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(10)
+        mtxt = 'There are free starter packs in the rewards vault, and the level 1 tent makes a quick starter shelter, and you get all your items back when you die (no corpses)'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(10)
+        mtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(10)
+        mtxt = 'everyone welcome a new player to the cluster!'
+        subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+        log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
+    else:
+        log.warning(f'welcome message thread already running for new player {steamid}')
 
 
 def iswelcoming(steamid):
     for each in welcomthreads:
-        if welcome[each] == inst and 'restartthread' in instance[each]:
-            if instance[each]['restartthread'].is_alive():
+        if each['steamid'] == steamid:
+            if each['sthread'].is_alive():
                 return True
             else:
                 return False
