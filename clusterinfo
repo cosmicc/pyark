@@ -214,9 +214,17 @@ for each in allservers:
     else:
         mm = BRED
 
+    if each[7] < 5:
+        nn = BRED
+    elif each[7] < 15:
+        nn = BYEL
+    else:
+        nn = BGRN
+
+
     print(f'Server: {BMGT}{each[0].upper()}{RST} - Players: {mm}{ply}/50{RST}')
     print(f'Configuration version: {each[6]} {vertxt}')
-    print(f'Server in restart: {inrest}')
+    print(f'Server in restart: {inrest} - Time Left: {nn}{each[7]}{RST}')
     print(f'Last restart: {restclr}{restarted}{RST} - Reason: {each[5]}')
     print(f'Last wilddino wipe: {wipeclr}{lwipe}{RST}')
     print(f'Last wipe vote: {voteclr}{lvote}{RST}')

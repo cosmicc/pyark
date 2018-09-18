@@ -182,16 +182,17 @@ def welcomenewplayer(steamid,inst):
     #log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
 
 
-def serverisinrestart(steamid,inst):
+def serverisinrestart(steamid,inst,oplayer):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('SELECT * FROM instances WHERE name = ?', [inst])
     rbt = c.fetchone()
     if rbt[3] == "True":
-
+        log.warning(f'{rbt[6]},{rbt[7]}')
         log.info(f'notifying player {oplayer[1]} that server {inst} will be restarting in {rbt[7]} min')
-        mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+
+        #mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
+        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
     
 
 def onlineplayer(steamid,inst):
@@ -219,8 +220,8 @@ def onlineplayer(steamid,inst):
             totplay = playedTime(float(oplayer[4].replace(',','')))
             mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston}, total time played {totplay}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        if float(oplayer[2]) + 60 > float(time.time()):
-            serverisinrestart(steamid,inst)
+        if float(oplayer[2]) + 60 < float(time.time()):
+            serverisinrestart(steamid,inst,oplayer)
 
         conn.commit()
         c.close()
