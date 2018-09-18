@@ -152,7 +152,6 @@ def resetlastrestart(inst,reason):
     c = conn.cursor()
     newtime = time.time()
     c.execute('UPDATE instances SET lastrestart = ? WHERE name = ?', [newtime,inst])
-    c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', [newtime,inst])
     c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', [inst])
     c.execute('UPDATE instances SET restartreason = ? WHERE name = ?', [reason,inst])
     c.execute('UPDATE instances SET cfgver = ? WHERE name = ?', [getcfgver('general'),inst])
@@ -324,9 +323,9 @@ def isnewarkver(inst):
             k = m[1].split(' ')
             avlver = int((k[2]))
     if curver == avlver:
-        return False
+        return False, curver, avlver
     else:
-        return True
+        return True, curver, avlver
 
 
 def checkupdates():
