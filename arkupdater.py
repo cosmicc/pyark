@@ -1,5 +1,8 @@
 import sys, logging, subprocess, sqlite3, time, filecmp, threading
 from configparser import ConfigParser
+from datetime import datetime
+from datetime import time as dt
+from timebetween import is_time_between
 
 log = logging.getLogger(__name__)
 
@@ -238,7 +241,14 @@ def instancerestart(inst, reason):
         log.info(f'instance {inst} server is starting')
         resetlastrestart(inst, reason)
     else:
-        if reason != "configuration update":
+        t, s, e = datetime.now(), dt(10,0), dt(10,5)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
+        inmaint = is_time_between(t, s, e)
+        if inmaint:
+            log.info(f'maintenance window reached, running server os maintenance')
+            subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('apt full-upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            ### IF /var/run/requires-reboot
+        if (inmaint and reason == "configuration update") or (reason != "configuration update"):
             log.info(f'starting 30 min restart countdown for instance {inst} due to {reason}')
             timeleft = 30
             gotime = False

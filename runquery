@@ -5,6 +5,7 @@ import subprocess
 import argparse, sqlite3
 from configparser import ConfigParser
 from datetime import datetime
+from datetime import time as dt
 import time
 
 configfile = '/home/ark/pyark.cfg'
@@ -49,13 +50,14 @@ c = conn.cursor()
 c.close()
 conn.close()
 
-ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % ('volcano'), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-ismodupd = ismodupd.stdout.decode('utf-8')
-print(ismodupd)
-for each in ismodupd:
-    if each.find('has been updated') != -1:
-        print(each.split(' '))
+from datetime import time as dt
+from timebetween import is_time_between
 
-    
+
+
+print(datetime.now())
+t, s, e = datetime.now(), dt(1,0), dt(4,0)
+print(is_time_between(t, s, e))
+
 
 
