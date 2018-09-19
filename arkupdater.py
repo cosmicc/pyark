@@ -351,10 +351,10 @@ def checkupdates():
         ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
         ismodupd = ismodupd.stdout.decode('utf-8')
         modchk = 0
-        for each in ismodupd:
-            if each.find('has been updated') != -1:
+        for teach in ismodupd:
+            if teach.find('has been updated') != -1:
                 modchk += 1
-                al = each.split(' ')
+                al = teach.split(' ')
                 modid = al[1]
                 modname = al[2]    
         if modchk != 0 and not isrebooting(instance[each]['name']):
@@ -388,13 +388,13 @@ def arkupd():
     log.info('arkupdater thread started')
     log.info(f'found {numinstances} instances: {instr}')
     while True:
-        try:
+        #try:
             checkupdates()
             checkconfig()
             for each in range(numinstances):
                 checkwipe(instance[each]['name'])
                 checkpending(instance[each]['name'])
             time.sleep(300)
-        except:
-            e = sys.exc_info()[0]
-            log.critical(e)
+        #except:
+        #    e = sys.exc_info()[0]
+        #    log.critical(e)
