@@ -49,28 +49,13 @@ c = conn.cursor()
 c.close()
 conn.close()
 
-welcomthreads = []
+ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % ('volcano'), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+ismodupd = ismodupd.stdout.decode('utf-8')
+print(ismodupd)
+for each in ismodupd:
+    if each.find('has been updated') != -1:
+        print(each.split(' '))
 
-def newp():
-    time.sleep(900)
+    
 
-welcom = threading.Thread(name = 'welcoming-1', target=newp)
-welcomthreads.append({'steamid':1,'sthread':welcom})
-welcom.start()
-
-welcom = threading.Thread(name = 'welcoming-2', target=newp)
-welcomthreads.append({'steamid':2,'sthread':welcom})
-welcom.start()
-
-time.sleep(1)
-
-print(welcomthreads)
-
-time.sleep(1)
-
-welcomthreads[:] = [d for d in welcomthreads if d.get('steamid') != 1]
-
-time.sleep(1)
-
-print(welcomthreads)
 
