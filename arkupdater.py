@@ -348,20 +348,25 @@ def checkupdates():
                 instance[each]['restartthread'].start()
 
     for each in range(numinstances):
-        ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-
-        ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % ('volcano'), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+        ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
         ismodupd = ismodupd.stdout.decode('utf-8')
+        modchk = 0
         for each in ismodupd:
-            if each.find('has been updated') != -1 and not isrebooting(instance[each]['name']):
-                log.info(f'ark mod update detected for instance {instance[each]["name"]}')
-                log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
-                subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
-                instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,"ark mod update"))
-                instance[each]['restartthread'].start()
-            else:
-                log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
+            if each.find('has been updated') != -1:
+                modchk += 1
+                al = each.split(' ')
+                modid = al[1]
+                modname = al[2]    
+        if modchk != 0 and not isrebooting(instance[each]['name']):
+            log.info(f'ark mod update [{modname}] id {modid} detected for instance {instance[each]["name"]}')
+            log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
+            subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
+            aname = f'{modname} mod update'
+            instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,aname))
+            instance[each]['restartthread'].start()
+        else:
+            log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
 
 def checkpending(inst):
     conn = sqlite3.connect(sqldb)
