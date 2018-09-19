@@ -231,20 +231,24 @@ def onlineplayer(steamid,inst):
         if float(oplayer[2]) + 300 > float(time.time()):
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
+            conn.commit()
+            c.close()
+            conn.close()
+
         else:
             log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. updating info.")
             c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(oplayer[7])+1,steamid))
             laston = elapsedTime(float(time.time()),float(oplayer[2]))
             totplay = playedTime(float(oplayer[4].replace(',','')))
             mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston}, total time played {totplay}'
+            conn.commit()
+            c.close()
+            conn.close()
+
+            time.sleep(3)
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         if float(oplayer[2]) + 60 < float(time.time()):
             serverisinrestart(steamid,inst,oplayer)
-
-        conn.commit()
-        c.close()
-        conn.close()
-
 
 def onlineupdate(inst):
     log.info(f'starting online player watcher on {inst}')
