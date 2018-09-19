@@ -26,6 +26,7 @@ sharedpath = config.get('general', 'shared')
 sqldb = f'{sharedpath}/db/pyark.db'
 arkroot = config.get('general', 'arkroot')
 numinstances = int(config.get('general', 'instances'))
+isupdater = config.get('general', 'isupdater')
 global instance
 instance = [dict() for x in range(numinstances)]
 instr = ''
@@ -296,27 +297,26 @@ def instancerestart(inst, reason):
 
 
 def checkconfig():
-    newcfg1 = f'{sharedpath}/config/Game.ini'
-    oldcfg1 = f'{sharedpath}/stagedconfig/Game.ini'
-    newcfg2 = f'{sharedpath}/config/GameUserSettings.ini'
-    oldcfg2 = f'{sharedpath}/stagedconfig/GameUserSettings.ini'
+    if isupdater:
+        newcfg1 = f'{sharedpath}/config/Game.ini'
+        oldcfg1 = f'{sharedpath}/stagedconfig/Game.ini'
+        newcfg2 = f'{sharedpath}/config/GameUserSettings.ini'
+        oldcfg2 = f'{sharedpath}/stagedconfig/GameUserSettings.ini'
 
-    if not filecmp.cmp(newcfg1,oldcfg1) or not filecmp.cmp(newcfg2,oldcfg2):
-        log.info('config file update detected. staging config files.')
-        nessage('new configuration detected. signaling servers for update.')
-        oldver = int(getcfgver('general'))
-        setcfgver('general',str(oldver+1))
-        subprocess.run('cp %s/config/Game.ini %s/stagedconfig' % (sharedpath,sharedpath), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        subprocess.run('cp %s/config/GameUserSettings.ini %s/stagedconfig' % (sharedpath,sharedpath), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        subprocess.run('arkmanager notify "%s" @%s' % (message,instance[0]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        if not filecmp.cmp(newcfg1,oldcfg1) or not filecmp.cmp(newcfg2,oldcfg2):
+            log.info('config file update detected. staging config files.')
+            nessage('new configuration detected. signaling servers for update.')
+            oldver = int(getcfgver('general'))
+            setcfgver('general',str(oldver+1))
+            subprocess.run('cp %s/config/Game.ini %s/stagedconfig' % (sharedpath,sharedpath), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('cp %s/config/GameUserSettings.ini %s/stagedconfig' % (sharedpath,sharedpath), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('arkmanager notify "%s" @%s' % (message,instance[0]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         
     for each in range(numinstances):
         inst = instance[each]['name']
         if getcfgver('general') > getcfgver(inst) and not isrebooting(inst):
                 instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,"configuration update"))
                 instance[each]['restartthread'].start()
-
-        time.sleep(10)
 
     else:
         log.debug('no config file updates detected')
@@ -349,14 +349,16 @@ def checkupdates():
         log.info(f'ark update found ({curver}>{avlver}) downloading update.')
         pendingupdates = True
         arkupdate = True
-        subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        log.debug('ark update downloaded to staging area')
+        if isupdater:
+            subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            log.debug('ark update downloaded to staging area')
+        else:
+            time.sleep(60)
         for each in range(numinstances):
             inst = instance[each]['name']
             if not isrebooting(inst):
                 instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,"ark game update"))
                 instance[each]['restartthread'].start()
-
     for each in range(numinstances):
         ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
         ismodupd = ismodupd.stdout.decode('utf-8')
