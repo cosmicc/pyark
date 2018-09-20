@@ -240,16 +240,11 @@ def whoisonline(inst,oinst,whoasked,filt,crnt):
         if pcnt != 0:
             if crnt == 1:
                 subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
-<<<<<<< HEAD
-            else:
-                subprocess.run('arkmanager rconcmd "ServerChat %s had %s players in last hour: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
-=======
             elif crnt == 2:
                 subprocess.run('arkmanager rconcmd "ServerChat %s has had %s players in last hour: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
             elif crnt ==3:
                 subprocess.run('arkmanager rconcmd "ServerChat %s had had %s players in last day: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
 
->>>>>>> d69fa4020532f606428255dce0a2978e4c8bca3c
         if pcnt == 0 and not filt:
             subprocess.run('arkmanager rconcmd "ServerChat %s has no players online." @%s' % (inst, oinst), shell=True)
 
