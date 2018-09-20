@@ -255,10 +255,11 @@ def discordbot():
                     reqs = c.fetchone()
                     if reqs:
                         log.info(f'link account request on discord from {whofor} accepted. {reqs[1]} {whofor} {reqs[0]}')
-                        c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (whofor,dplayer[0]))
+                        c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (whofor,reqs[0]))
+
                         c.execute('DELETE FROM linkrequests WHERE reqcode = ?', (rcode,))
                         conn.commit()
-                        msg = f'Your discord account [{whofor}] is now linked to your game account [{dplayer[1]}]'
+                        msg = f'Your discord account [{whofor}] is now linked to your player {reqs[1]}'
                         await client.send_message(message.channel, msg)
                     
                     else:
