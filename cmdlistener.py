@@ -565,9 +565,9 @@ def checkcommands(inst):
 def clisten(inst):
     log.info(f'starting the command listener thread for {inst}')
     while True:
-        #try:
+        try:
             checkcommands(inst)
             time.sleep(3)
-        #except:
-        #    e = sys.exc_info()[0]
-        #    log.critical(e)
+        except:
+            e = sys.exc_info()
+            log.critical(e)

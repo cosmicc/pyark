@@ -41,7 +41,7 @@ for each in range(numinstances):
 
 def kicker(inst):
     while True:
-        #try:
+        try:
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
             c.execute('SELECT * FROM kicklist WHERE instance = ?', [inst])
@@ -53,9 +53,7 @@ def kicker(inst):
                 conn.commit()
             c.close()
             conn.close()
-
-
-            time.sleep(1)
-        #except:
-        #    pass
-
+            time.sleep(2)
+        except:
+            e = sys.exc_info()
+            log.critical(e)
