@@ -223,6 +223,16 @@ def discordbot():
                         conn.commit()
             c.close()
             conn.close()
-
+        elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT firstseen FROM players')
+            lastseens = c.fetchall()
+            c.execute('SELECT * from players WHERE firstseen = ?', (max(lastseens,)))
+            lsplayer = c.fetchone()
+            log.info(f'responding to lastnew request on discord')
+            lspago = elapsedTime(time.time(),float(lsplayer[6]))
+            msg = f'Newest cluster player is {lsplayer[1]} online {lspago} ago on {lsplayer[3]}'
+            await client.send_message(message.channel, msg)
 
     client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')

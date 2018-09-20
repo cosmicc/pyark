@@ -43,7 +43,7 @@ c = conn.cursor()
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
 #conn.commit()
 
-c.execute('SELECT * from kicklist')
+c.execute('SELECT * from players')
 alldata = c.fetchall()
 for row in alldata:
     print(row)
