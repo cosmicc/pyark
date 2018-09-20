@@ -239,7 +239,7 @@ def whoisonline(inst,oinst,whoasked,filt,crnt):
             if crnt:
                 subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
             else:
-                subprocess.run('arkmanager rconcmd "ServerChat %s last hour players: %s" @%s' % (inst, plist, oinst), shell=True)
+                subprocess.run('arkmanager rconcmd "ServerChat %s had %s players in last hour: %s" @%s' % (inst, pcnt, plist, oinst), shell=True)
         if pcnt == 0 and not filt:
             subprocess.run('arkmanager rconcmd "ServerChat %s has no players online." @%s' % (inst, oinst), shell=True)
 
@@ -515,11 +515,11 @@ def checkcommands(inst):
             else:
                 ninst = inst
             whoisonlinewrapper(ninst,inst,whoasked,False)
-        elif line.find('!whoami') != -1 or line.find('!myinfo') != -1:
+        elif line.find('!mypoints') != -1 or line.find('!myinfo') != -1:
             whoasked = getnamefromchat(line)
             log.info(f'responding to a myinfo request on {inst} from {whoasked}')
             respmyinfo(inst,whoasked)
-        elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1  or line.find('!online') != -1:
+        elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1:
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
             lastlline = rawline[2].strip().split(' ')
