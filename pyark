@@ -119,7 +119,7 @@ def main():
         instance[each]['restartthread'] = threading.Thread(name = '%s-logwatch' % inst, target=logwatch, args=(inst,))
         instance[each]['restartthread'].start()
 
-    if imthedbot:
+    if imthedbot == "True":
         discordt = threading.Thread(name='discord-bot', target = discordbot)
         discordt.start()
 

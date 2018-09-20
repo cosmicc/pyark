@@ -297,7 +297,7 @@ def instancerestart(inst, reason):
 
 
 def checkconfig():
-    if isupdater:
+    if isupdater == "True":
         newcfg1 = f'{sharedpath}/config/Game.ini'
         oldcfg1 = f'{sharedpath}/stagedconfig/Game.ini'
         newcfg2 = f'{sharedpath}/config/GameUserSettings.ini'
