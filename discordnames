@@ -30,20 +30,7 @@ sqldb = f'{sharedpath}/db/pyark.db'
 conn = sqlite3.connect(sqldb)
 c = conn.cursor()
 
-##delete the admin account from db
-#c.execute('DELETE from players WHERE steamid = 76561198408657294')
-
-#c.execute('SELECT * from players WHERE steamid = 76561198187923238')
-#c.execute('DELETE from kicklist')
-#c.execute('CREATE TABLE IF NOT EXISTS kicklist (instance TEXT, steamid TEXT)')
-#c.execute('ALTER TABLE discorids DEL COLUMN discordid TEXT')
-#c.execute('DROP TABLE discordids')
-#c.execute('INSERT INTO general ("cfgver") VALUES ("1")')
-#c.execute('UPDATE instances SET restartcountdown = 30')
-#c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
-#conn.commit()
-
-c.execute('SELECT * from kicklist')
+c.execute('SELECT * from discordnames')
 alldata = c.fetchall()
 for row in alldata:
     print(row)

@@ -7,6 +7,7 @@ from arkupdater import arkupd
 from cmdlistener import clisten
 from logwatch import logwatch
 from discordbot import discordbot
+from kicker import kicker
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -102,6 +103,11 @@ def main():
     
     arkupdt = threading.Thread(name='arkupdater', target = arkupd)
     arkupdt.start()
+
+    for each in range(numinstances):
+        inst = instance[each]['name']
+        instance[each]['kickthread'] = threading.Thread(name='%s-kicker' % inst, target = kicker, args=(inst,))
+        instance[each]['kickthread'].start()
 
     for each in range(numinstances):
         inst = instance[each]['name']

@@ -7,12 +7,24 @@ from cmdlistener import *
 client = discord.Client()
 
 def discordbot():
+    def savediscordtodb(author):
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT * FROM discordnames WHERE discordname = ?', (str(author),))
+        didexists = c.fetchone()
+        if not didexists:
+            c.execute('INSERT INTO discordnames (discordname) VALUES (?)', (str(author),))
+            conn.commit()
+        c.close()
+        conn.close()
+
     @client.event
     async def on_ready():
         log.info(f'discord logged in as {client.user.name} id {client.user.id}')
 
     @client.event
     async def on_message(message):
+        savediscordtodb(message.author)
         if message.content.startswith('!who') or message.content.startswith('!whoson') or message.content.startswith('!whosonline'):
             log.info('responding to whos online request from discord')
             potime = 70
@@ -40,10 +52,10 @@ def discordbot():
                         else:
                             plist=plist + ', %s' % (row[1])
                 if pcnt != 0:
-                    msg = f'{each[0].upper()} has {pcnt} players online: {plist}'
+                    msg = f'{each[0].capitalize()} has {pcnt} players online: {plist}'
                     await client.send_message(message.channel, msg)
                 else:
-                    msg = f'{each[0].upper()} has no players online.'
+                    msg = f'{each[0].capitalize()} has no players online.'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!recent') or message.content.startswith('!whorecent') or message.content.startswith('!lasthour'):
@@ -74,10 +86,10 @@ def discordbot():
                         else:
                             plist=plist + ', %s' % (row[1])
                 if pcnt != 0:
-                    msg = f'{each[0].upper()} has had {pcnt} players in last hour: {plist}'
+                    msg = f'{each[0].capitalize()} has had {pcnt} players in last hour: {plist}'
                     await client.send_message(message.channel, msg)
                 else:
-                    msg = f'{each[0].upper()} has had no players in last hour.'
+                    msg = f'{each[0].capitalize()} has had no players in last hour.'
                     await client.send_message(message.channel, msg)
 
 
@@ -98,10 +110,10 @@ def discordbot():
                 else:
                     plasttime = elapsedTime(time.time(),float(flast[2]))
                     if plasttime != 'now':
-                        msg = f'{seenname} was last seen {plasttime} ago on {flast[3]}'
+                        msg = f'{seenname.capitalize()} was last seen {plasttime} ago on {flast[3]}'
                         await client.send_message(message.channel, msg)
                     else:
-                        msg = f'Player {seenname} is online now on {flast[3]}'
+                        msg = f'{seenname.capitalize()} is online now on {flast[3]}'
                         await client.send_message(message.channel, msg)
             else:
                 msg = f'You must specify a player name to search for'
@@ -145,8 +157,12 @@ def discordbot():
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !who, !recent, !today, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>'
+            msg = f'Commands: !who, !recent, !today, !kickme, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>'
             await client.send_message(message.channel, msg)
+        elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
+            msg = f'Voting is only allowed in-game'
+            await client.send_message(message.channel, msg)
+
 
         elif message.content.startswith('!whotoday') or message.content.startswith('!today') or message.content.startswith('!lastday'):
             #await asyncio.sleep(5)
@@ -176,11 +192,37 @@ def discordbot():
                         else:
                             plist=plist + ', %s' % (row[1])
                 if pcnt != 0:
-                    msg = f'{each[0].upper()} has had {pcnt} players today: {plist}'
+                    msg = f'{each[0].capitalize()} has had {pcnt} players today: {plist}'
                     await client.send_message(message.channel, msg)
                 else:
-                    msg = f'{each[0].upper()} has had no players today.'
+                    msg = f'{each[0].capitalize()} has had no players today.'
                     await client.send_message(message.channel, msg)
+
+        elif message.content.startswith('!kickme'):
+            whofor = str(message.author).lower()
+            log.info(f'kickme request from {whofor} on discord')
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
+            kuser = c.fetchone()
+            if kuser:
+                if kuser[8] != whofor:
+                    log.info(f'kickme request from {whofor} denied, no account linked')
+                    msg = f'Your discord account is not connected to a player yet.'
+                    await client.send_message(message.channel, msg)
+                else:
+                    if time.time()-float(kuser[2]) > 300:
+                        log.info(f'kickme request from {whofor} denied, not connected to a server')
+                        msg = f'You are not connected to any servers'
+                        await client.send_message(message.channel, msg)
+                    else:
+                        log.info(f'kickme request from {whofor} passed, kicking player on {kuser[4]}')
+                        msg = f'Kicking {kuser[1]} from the {kuser[3].capitalize()} server'
+                        await client.send_message(message.channel, msg)
+                        c.execute('INSERT INTO kicklist (instance,steamid) VALUES (?,?)', (kuser[3],kuser[0]))
+                        conn.commit()
+            c.close()
+            conn.close()
 
 
     client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')

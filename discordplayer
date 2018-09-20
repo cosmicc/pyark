@@ -1,0 +1,92 @@
+#!/usr/bin/python3
+
+import subprocess
+import argparse, sqlite3
+from configparser import ConfigParser
+from datetime import datetime
+import time
+
+configfile = '/home/ark/pyark.cfg'
+
+parser = argparse.ArgumentParser()
+args = parser.parse_args()
+
+class ExtConfigParser(ConfigParser):
+    def getlist(self, section, option):
+        value = self.get(section, option)
+        return list(filter(None, (x.strip() for x in value.split(','))))
+
+    def getlistint(self, section, option):
+        return [int(x) for x in self.getlist(section, option)]
+
+config = ExtConfigParser()
+config.read(configfile)
+
+sharedpath = config.get('general', 'shared')
+
+now = time.time()
+
+sqldb = f'{sharedpath}/db/pyark.db'
+
+def getresponce(question):
+    check = str(input(f"{question} : ")).lower().strip()
+    try:
+        return check
+    except Exception as error:
+        print("Please enter valid inputs")
+        print(error)
+        return ask_user()
+
+
+def ask_question(question):
+    check = str(input(f"{question} (Y/N): ")).lower().strip()
+    try:
+        if check[0] == 'y':
+            return True
+        elif check[0] == 'n':
+            return False
+        else:
+            print('Invalid Input')
+            return ask_user()
+    except Exception as error:
+        print("Please enter valid inputs")
+        print(error)
+        return ask_user()
+
+
+conn = sqlite3.connect(sqldb)
+c = conn.cursor()
+
+c.execute('SELECT * from players')
+oplayers = c.fetchall()
+for each in oplayers:
+    print(f'{each}')
+
+nsteamid = getresponce(f'Enter Steam ID of player to add a discord ID too')
+
+c.execute('SELECT * from discordnames')
+odiscord = c.fetchall()
+for oeach in odiscord:
+    print(f'{oeach}')
+
+sdid = getresponce(f'Enter Discord Name to add to player {nsteamid}')
+
+if ask_question(f'Add Discord Name: [{sdid}] to Steam ID [{nsteamid}]?'):
+    c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (sdid,nsteamid))
+    print('Discord Name: [{sdid}] has been added to [{nsteamid}]')
+else:
+    print('Nothing done')
+
+
+#print(f'player {each[1]} with steamid {each[0]} deleted.')
+
+conn.commit()
+
+c.execute('SELECT * from players')
+alldata = c.fetchall()
+for row in alldata:
+    print(row)
+
+c.close()
+conn.close()
+
