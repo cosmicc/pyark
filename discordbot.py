@@ -234,5 +234,7 @@ def discordbot():
             lspago = elapsedTime(time.time(),float(lsplayer[6]))
             msg = f'Newest cluster player is {lsplayer[1]} online {lspago} ago on {lsplayer[3]}'
             await client.send_message(message.channel, msg)
+            c.close()
+            conn.close()
 
     client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')
