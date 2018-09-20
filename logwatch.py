@@ -269,7 +269,7 @@ def onlineupdate(inst):
                         onlineplayer(nsteamid.strip(),inst)
             time.sleep(20)
         except:
-            e = sys.exc_info()[0]
+            e = sys.exc_info()
             log.critical(e)
 
 def logwatch(inst):
