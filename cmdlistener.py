@@ -474,24 +474,25 @@ def isserver(line):
     else:
         return False
 
-def linker(whoasked):
+def linker(minst,whoasked):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('SELECT * FROM players WHERE playername == ?', (whoasked,))
     dplayer = c.fetchone()
     if dplayer:
-        if dplayer[8] == None:
+        if dplayer[8] == None or dplayer[8] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
-            log.info(f'generated code {rcode} for link request from {dplayer[1]}')
-            c.execute('DELETE from linkrequests WHERE steamid = ?', (dplayer[0]))
+            log.info(f'generated code {rcode} for link request from {dplayer[1]} on {minst}')
+            c.execute('DELETE from linkrequests WHERE steamid = ?', (dplayer[0],))
             conn.commit()
-            c.execute('INSERT INTO linkrequests (steamid, name, reqcode) VALUES (?, ?, ?)', (splayer[0],dplayer[1],str(rcode)))
-            msg = f'your discord link code is [{rcode}], goto discord now and type !linkme {rcode}'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" @%s'""" % (msg), shell=True)
+            c.execute('INSERT INTO linkrequests (steamid, name, reqcode) VALUES (?, ?, ?)', (dplayer[0],dplayer[1],str(rcode)))
+            conn.commit()
+            msg = f'your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0],msg,minst), shell=True)
         else:
             log.info(f'link request for {dplayer[1]} denied, already linked')
             msg = f'you already have a discord account linked to this account'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" @%s'""" % (msg), shell=True)
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0],msg,minst), shell=True)
 
     else:
         pass
@@ -499,8 +500,9 @@ def linker(whoasked):
     c.close()
     conn.close()
 
-def checkcommands(inst):
-    cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+def checkcommands(minst):
+    inst = minst
+    cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (minst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
         whoasked = 'nobody' 
@@ -509,18 +511,18 @@ def checkcommands(inst):
             pass
         elif line.find('!help') != -1:
             whoasked = getnamefromchat(line)
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: !who, !lasthour, !lastday, !timeleft, !myinfo, !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (inst), shell=True)
-            log.info(f'responded to help request on {inst} from {whoasked}')
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: !who, !lasthour, !lastday, !timeleft, !myinfo, !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
+            log.info(f'responded to help request on {minst} from {whoasked}')
         elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
             whoasked = getnamefromchat(line)
-            lastwipe = elapsedTime(time.time(),float(getlastwipe(inst)))
-            subprocess.run('arkmanager rconcmd "ServerChat last wild dino wipe was %s ago" @%s' % (lastwipe, inst), shell=True)
-            log.info(f'responded to a lastdinowipe query on {inst} from {whoasked}')
+            lastwipe = elapsedTime(time.time(),float(getlastwipe(minst)))
+            subprocess.run('arkmanager rconcmd "ServerChat last wild dino wipe was %s ago" @%s' % (lastwipe, minst), shell=True)
+            log.info(f'responded to a lastdinowipe query on {minst} from {whoasked}')
         elif line.find('!lastrestart') != -1:
             whoasked = getnamefromchat(line)
-            lastrestart = elapsedTime(time.time(),float(getlastrestart(inst)))
-            subprocess.run('arkmanager rconcmd "ServerChat last server restart was %s ago" @%s' % (lastrestart, inst), shell=True)
-            log.info(f'responded to a lastrestart query on {inst} from {whoasked}')
+            lastrestart = elapsedTime(time.time(),float(getlastrestart(minst)))
+            subprocess.run('arkmanager rconcmd "ServerChat last server restart was %s ago" @%s' % (lastrestart, minst), shell=True)
+            log.info(f'responded to a lastrestart query on {minst} from {whoasked}')
         elif line.find('!lastseen') != -1:
             whoasked = getnamefromchat(line)
             rawseenname = line.split(':')
@@ -529,16 +531,16 @@ def checkcommands(inst):
             if len(lsnname) > 1:
                 seenname = lsnname[1].strip().lower()
                 lsn = getlastseen(seenname)
-                subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, inst), shell=True)
+                subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, minst), shell=True)
             else:
-                subprocess.run('arkmanager rconcmd "ServerChat you must specify a player name to search" @%s' % (inst), shell=True)
+                subprocess.run('arkmanager rconcmd "ServerChat you must specify a player name to search" @%s' % (minst), shell=True)
             log.info(f'responding to a lastseen request for {seenname} from {orgname}')
         elif line.find('!playedtime') != -1 or line.find('!playtime') != -1 or line.find('!totalplayed') != -1:
             whoasked = getnamefromchat(line)
             seenname = rawline[4].lower()
             lpt = gettimeplayed(seenname)
-            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, inst), shell=True)
-            log.info(f'responding to a playedtime request for {seenname} on {inst} from {whoasked}')
+            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, minst), shell=True)
+            log.info(f'responding to a playedtime request for {seenname} on {minst} from {whoasked}')
         elif line.find('!recent') != -1 or line.find('!whorecent') != -1 or line.find('!lasthour') != -1:
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
@@ -546,8 +548,8 @@ def checkcommands(inst):
             if len(lastlline) == 2:
                 ninst = lastlline[1]
             else:
-                ninst = inst
-            whoisonlinewrapper(ninst,inst,whoasked,2)
+                ninst = minst
+            whoisonlinewrapper(ninst,minst,whoasked,2)
         elif line.find('!today') != -1 or line.find('!lastday') != -1:
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
@@ -555,12 +557,12 @@ def checkcommands(inst):
             if len(lastlline) == 2:
                 ninst = lastlline[1]
             else:
-                ninst = inst
-            whoisonlinewrapper(ninst,inst,whoasked,3)
+                ninst = minst
+            whoisonlinewrapper(ninst,minst,whoasked,3)
         elif line.find('!mypoints') != -1 or line.find('!myinfo') != -1:
             whoasked = getnamefromchat(line)
-            log.info(f'responding to a myinfo request on {inst} from {whoasked}')
-            respmyinfo(inst,whoasked)
+            log.info(f'responding to a myinfo request on {minst} from {whoasked}')
+            respmyinfo(minst,whoasked)
         elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1:
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
@@ -568,34 +570,34 @@ def checkcommands(inst):
             if len(lastlline) == 2:
                 ninst = lastlline[1] 
             else:
-                ninst = inst
-            whoisonlinewrapper(ninst,inst,whoasked,1)
+                ninst = minst
+            whoisonlinewrapper(ninst,minst,whoasked,1)
         elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!votestart') != -1:
             whoasked = getnamefromchat(line)
-            log.info(f'responding to a dino wipe vote request on {inst} from {whoasked}')
-            startvoter(inst,whoasked)
+            log.info(f'responding to a dino wipe vote request on {minst} from {whoasked}')
+            startvoter(minst,whoasked)
         elif line.find('!agree') != -1 or line.find('!yes') != -1:
             whoasked = getnamefromchat(line)
-            log.info(f'responding to YES vote on {inst} from {whoasked}')
-            castedvote(inst,whoasked,True)
+            log.info(f'responding to YES vote on {minst} from {whoasked}')
+            castedvote(minst,whoasked,True)
         elif line.find('!disagree') != -1 or line.find('!no') != -1:
             whoasked = getnamefromchat(line)
-            log.info(f'responding to NO vote on {inst} from {whoasked}')
-            castedvote(inst,whoasked,False)
+            log.info(f'responding to NO vote on {minst} from {whoasked}')
+            castedvote(minst,whoasked,False)
         elif line.find('!timeleft') != -1 or line.find('!restart') != -1:
             whoasked = getnamefromchat(line)
-            log.info(f'responding to a restart timeleft request on {inst} from {whoasked}')
-            resptimeleft(inst,whoasked)
+            log.info(f'responding to a restart timeleft request on {minst} from {whoasked}')
+            resptimeleft(minst,whoasked)
         elif line.find('!linkme') != -1 or line.find('!link') != -1:
             whoasked = getnamefromchat(line)
-            linker(whoasked)
+            linker(minst,whoasked)
 
-def clisten(inst):
-    log.info(f'starting the command listener thread for {inst}')
+def clisten(minst):
+    log.info(f'starting the command listener thread for {minst}')
     while True:
-        try:
-            checkcommands(inst)
+        #try:
+            checkcommands(minst)
             time.sleep(3)
-        except:
-            e = sys.exc_info()
-            log.critical(e)
+        #except:
+        #    e = sys.exc_info()
+        #    log.critical(e)
