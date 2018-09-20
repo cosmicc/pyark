@@ -155,7 +155,7 @@ def processlogline(line,inst):
             pexist = c.fetchall()
             if not pexist:
                 log.info(f'player {playername} with steamid {steamid} was not found. adding.')
-                c.execute('INSERT INTO players (steamid, playername, lastseen, playedtime, rewardpoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1))
+                c.execute('INSERT INTO players (steamid, playername, lastseen, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1,''))
                 conn.commit()
             elif steamid != '':
                 log.debug(f'player {playername} with steamid {steamid} was found. updating.')

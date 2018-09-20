@@ -1,0 +1,311 @@
+#!/usr/bin/python3
+
+import subprocess, time
+import argparse, sqlite3
+from configparser import ConfigParser
+from datetime import datetime
+from colorama import Fore, Back, Style
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist',
+                                                                  'linkrequests', 'delplayer', 'linkplayer', 'restartserver',
+                                                                  'discordlist', 'notlinked'], help='Action to perform')
+action_group = parser.add_argument_group(title='actions')
+action_group.add_argument('info', action='store_true', help='Cluster infomration')
+action_group.add_argument('players', action='store_true', help='Show players table')
+action_group.add_argument('kicklist', action='store_true', help='Show kick list table')
+action_group.add_argument('linkrequests', action='store_true', help='Show link requests table')
+action_group.add_argument('discordlist', action='store_true', help='Show discord users table')
+action_group.add_argument('restartserver', action='store_true', help='Set a server for admin restart')
+action_group.add_argument('delplayer', action='store_true', help='Remove a player from the table')
+action_group.add_argument('linkplayer', action='store_true', help='Link a player to a discord user')
+action_group.add_argument('notlinked', action='store_true', help='Show players not linked to discord')
+
+parser.add_argument('-c', '--cancel', action='store_true', help='Set restart server to cancel')
+
+args = parser.parse_args()
+
+configfile = '/home/ark/pyark.cfg'
+
+YEL = Fore.YELLOW+Style.NORMAL
+BYEL = Fore.YELLOW+Style.BRIGHT
+CYN = Fore.CYAN+Style.NORMAL
+BCYN = Fore.CYAN+Style.BRIGHT
+WHT = Fore.WHITE+Style.NORMAL
+BWHT = Fore.WHITE+Style.BRIGHT
+MGT = Fore.MAGENTA+Style.NORMAL
+BMGT = Fore.MAGENTA+Style.BRIGHT
+GRN = Fore.GREEN+Style.NORMAL
+BGRN = Fore.GREEN+Style.BRIGHT
+RED = Fore.RED+Style.NORMAL
+BRED = Fore.RED+Style.BRIGHT
+RST = Fore.RESET+Style.NORMAL
+
+class ExtConfigParser(ConfigParser):
+    def getlist(self, section, option):
+        value = self.get(section, option)
+        return list(filter(None, (x.strip() for x in value.split(','))))
+
+    def getlistint(self, section, option):
+        return [int(x) for x in self.getlist(section, option)]
+
+config = ExtConfigParser()
+config.read(configfile)
+
+sharedpath = config.get('general', 'shared')
+
+sqldb = f'{sharedpath}/db/pyark.db'
+
+clr1 = f'{BYEL}'
+clr2 = f'{BCYN}'
+
+def playedTime(ptime):
+    total_min = ptime / 60
+    minutes = int(ptime % 60)
+    if minutes == 1:
+        minstring = 'Min'
+    else:
+        minstring = 'Mins'
+    hours = int(total_min / 60)
+    if hours == 1:
+        hourstring = 'Hour'
+    else:
+        hourstring = 'Hours'
+    days = int(hours / 24)
+    if days == 1:
+        daystring = 'Day'
+    else:
+        daystring = 'Days'
+    if days != 0:
+        return('{} {}, {} {}'.format(days, daystring, hours-days*24, hourstring))
+    elif hours != 0:
+        return('{} {}, {} {}'.format(hours, hourstring, minutes, minstring))
+    elif minutes != 0:
+        return('{} {}'.format(minutes, minstring))
+    else:
+        return('Error')
+
+def elapsedTime(start_time, stop_time, lshort=False):
+    diff_time = start_time - stop_time
+    total_min = diff_time / 60
+    minutes = int(total_min % 60)
+    if minutes == 1:
+        if lshort is False:
+            minstring = 'minute'
+        else:
+            minstring = 'min'
+    else:
+        if lshort is False:
+            minstring = 'minutes'
+        else:
+            minstring = 'mins'
+    hours = int(total_min / 60)
+    if hours == 1:
+        if lshort is False:
+            hourstring = 'hour'
+        else:
+            hourstring = 'hr'
+    else:
+        if lshort is False:
+            hourstring = 'hours'
+        else:
+            hourstring = 'hrs'
+    days = int(hours / 24)
+    if days == 1:
+        if lshort is False:
+            daystring = 'day'
+        else:
+            daystring = 'day'
+    else:
+        if lshort is False:
+            daystring = 'days'
+        else:
+            daystring = 'days'
+    if days != 0:
+        return('{} {}, {} {} ago'.format(days, daystring, hours, hourstring))
+    elif hours != 0:
+        return('{} {}, {} {} ago'.format(hours, hourstring, minutes, minstring))
+    elif minutes > 1:
+        return('{} {} ago'.format(minutes, minstring))
+    elif minutes <= 1:
+        return('now')
+    else:
+        log.error('Elapsed time function failed. Could not convert.')
+        return('Error')
+
+print('    ')
+
+conn = sqlite3.connect(sqldb)
+c = conn.cursor()
+
+now = time.time()
+
+c.execute('DELETE from players WHERE playedtime = 0')
+conn.commit()
+
+
+def info():
+    c.execute('SELECT * from players')
+    allplayers = c.fetchall()
+
+    def howmanyon(inst):
+        pcnt = 0
+        for row in allplayers:
+            #print(row)
+            diff_time = float(now) -  float(row[2])
+            total_min = diff_time / 60
+            minutes = int(total_min % 60)
+            hours = int(total_min / 60)
+            days = int(hours / 24)
+            if minutes <= 1 and hours < 1 and days < 1 and row[3] == inst:
+                pcnt += 1
+        return pcnt
+
+    for row in allplayers:
+        #print(row)
+        if row[0] == '' or row[0].startswith(' '):
+            print(f'deleting id: {row[0]}')
+            c.execute('DELETE from players WHERE steamid = ?', (row[0],))
+        else:
+            pltime = playedTime(float(row[4].replace(',','')))
+            laston = elapsedTime(float(now),float(row[2]))
+            diff_time = float(now) -  float(row[2])
+            total_min = diff_time / 60
+            minutes = int(total_min % 60)
+            hours = int(total_min / 60)
+            days = int(hours / 24)
+            if minutes <= 1 and hours < 1 and days < 1:
+                active = BGRN
+            elif days > 7 <= 14:
+                active = YEL
+            elif days > 14:
+                active = BRED
+            else:
+                active = BCYN
+            firston = datetime.fromtimestamp(float(row[6])-14400).strftime('%a, %b %d %I:%M%p')
+            print(f'{active}{row[0]} \"{row[1]}\" - Connections: {row[7]} - Reward Points: {row[5]}')
+            print(f' FirstON: {firston} | PlayedTime: {pltime} | LastON: {laston} on {row[3]}{RST}')
+            print('  ')
+
+
+    c.execute('SELECT cfgver from general')
+    gencfgver = c.fetchone()
+
+    print(f'Current Config Version: {BGRN}{gencfgver[0]}{RST}')
+
+    print('    ')
+
+    c.execute('SELECT * from instances')
+    allservers = c.fetchall()
+
+    for each in allservers:
+
+        restarted = elapsedTime(float(now),float(each[1]))
+        if float(now)-float(each[1]) > 1209600:
+            restclr = f"{BRED}"
+        elif float(now)-float(each[1]) > 604800:
+            restclr = f"{BYEL}"
+        else:
+            restclr = f"{BGRN}"
+        lwipe = elapsedTime(float(now),float(each[2]))
+        if float(now)-float(each[2]) > 86400:
+            wipeclr = f"{BRED}"
+        elif float(now)-float(each[2]) > 43200:
+            wipeclr = f"{BYEL}"
+        else:
+            wipeclr = f"{BGRN}"
+        lvote = elapsedTime(float(now),float(each[4]))
+        if float(now)-float(each[4]) > 604800:
+            voteclr = f"{BRED}"
+        elif float(now)-float(each[4]) > 259200:
+            voteclr = f"{BYEL}"
+        else:
+            voteclr = f"{BGRN}"
+
+        ply = howmanyon(each[0])
+        if gencfgver[0] != each[6]:
+            vertxt = f'{BRED}({int(gencfgver[0])-int(each[6])} versions behind){RST}'
+        else:
+            vertxt = f'{GRN}(Current){RST}'
+
+        if each[3] == "False":
+            inrest = f"{GRN}False{RST}"
+        else:
+            inrest = f"{BYEL}TRUE{RST}"
+        
+        if ply != 0:
+            mm = BGRN
+        else:
+            mm = BRED
+
+        if each[7] < 5:
+            nn = BRED
+        elif each[7] < 15:
+            nn = BYEL
+        else:
+            nn = BGRN
+
+
+        print(f'Server: {BMGT}{each[0].upper()}{RST} - Players: {mm}{ply}/50{RST}')
+        print(f'Configuration version: {each[6]} {vertxt}')
+        print(f'Server in restart: {inrest} - Time Left: {nn}{each[7]}{RST}')
+        print(f'Last restart: {restclr}{restarted}{RST} - Reason: {each[5]}')
+        print(f'Last wilddino wipe: {wipeclr}{lwipe}{RST}')
+        print(f'Last wipe vote: {voteclr}{lvote}{RST}')
+        print('  ')
+
+    conn.commit()
+
+def printcolmns(mtable):
+    c.execute('PRAGMA table_info({})'.format(mtable))
+    alldata = c.fetchall()
+    ap = []
+    for row in alldata:
+        ap.append(f'{row[1]}[{row[0]}] {row[2]}')
+    print(f'{BMGT}{ap}{RST}')
+    print('  ')
+
+
+def listtablewhere(mtable,colmn,val):
+    print(mtable,colmn,val)
+    c.execute('SELECT * from {} WHERE {} = ""'.format(mtable,colmn))
+    showtable(mtable,c.fetchall())
+
+def listtable(mtable):
+    c.execute('SELECT * from {}'.format(mtable))
+    showtable(mtable,c.fetchall())
+
+def showtable(mtable,aplay):
+    sc = 0
+    if aplay:
+        for each in aplay:
+            if sc == 0:
+                sclr = f'{clr1}'
+            else:
+                sclr = f'{clr2}'
+            print(f'{sclr}{each}{RST}')
+            if sc == 1:
+                sc = 0
+            else:
+                sc = 1
+    else:
+        print(f'{BYEL}{mtable} table is empty.{RST}')
+
+
+if args.action_to_perform == 'info':
+    info()
+elif args.action_to_perform == 'players':
+    printcolmns('players')
+    listtable('players')
+elif args.action_to_perform == 'kicklist':
+    printcolmns('kicklist')
+    listtable('kicklist')
+elif args.action_to_perform == 'linkrequests':
+    listtable('linkrequests')
+elif args.action_to_perform == 'notlinked':
+    listtablewhere('players','discordid','') 
+
+print('       ')
+c.close()
+conn.close()
+

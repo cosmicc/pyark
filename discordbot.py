@@ -216,7 +216,7 @@ def discordbot():
                         msg = f'You are not connected to any servers'
                         await client.send_message(message.channel, msg)
                     else:
-                        log.info(f'kickme request from {whofor} passed, kicking player on {kuser[4]}')
+                        log.info(f'kickme request from {whofor} passed, kicking player on {kuser[3]}')
                         msg = f'Kicking {kuser[1]} from the {kuser[3].capitalize()} server'
                         await client.send_message(message.channel, msg)
                         c.execute('INSERT INTO kicklist (instance,steamid) VALUES (?,?)', (kuser[3],kuser[0]))

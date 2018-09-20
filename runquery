@@ -33,18 +33,19 @@ c = conn.cursor()
 ##delete the admin account from db
 #c.execute('DELETE from players WHERE steamid = 76561198408657294')
 
-#c.execute('SELECT * from players WHERE steamid = 76561198187923238')
-#c.execute('UPDATE players SET discordid = None WHERE playername = "rykker"')
+#c.execute('SELECT * from players WHERE discordid = None')
+c.execute('UPDATE players SET discordid = "" WHERE playername = "eclipse"')
 #c.execute('CREATE TABLE IF NOT EXISTS linkrequests (steamid TEXT, name TEXT, reqcode TEXT)')
 #c.execute('ALTER TABLE discorids DEL COLUMN discordid TEXT')
 #c.execute('DROP TABLE discordids')
 #c.execute('INSERT INTO general ("cfgver") VALUES ("1")')
-#c.execute('UPDATE instances SET restartcountdown = 30')
+#c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
-#conn.commit()
+conn.commit()
 
 c.execute('SELECT * from players')
 alldata = c.fetchall()
+ap = []
 for row in alldata:
     print(row)
 
