@@ -6,6 +6,7 @@ from configparser import ConfigParser
 from arkupdater import arkupd
 from cmdlistener import clisten
 from logwatch import logwatch
+from discordbot import discordbot
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -56,6 +57,8 @@ config.read(configfile)
 
 def main():
     numinstances = int(config.get('general', 'instances'))
+
+    imthedbot = config.get('general','isdiscordbot')
 
     instance = [dict() for x in range(numinstances)]
     instr = ''
@@ -110,11 +113,18 @@ def main():
         instance[each]['restartthread'] = threading.Thread(name = '%s-logwatch' % inst, target=logwatch, args=(inst,))
         instance[each]['restartthread'].start()
 
+    if imthedbot:
+        discordt = threading.Thread(name='discord-bot', target = discordbot)
+        discordt.start()
+
     while True:
         time.sleep(60)
         log.debug(threading.enumerate())
         if not arkupdt.is_alive():
             t = 'ark updater'
+            log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+        if not discordt.is_alive():
+            t = 'discord bot'
             log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         for each in range(numinstances):
             inst = instance[each]['name']
