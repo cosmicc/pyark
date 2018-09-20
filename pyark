@@ -129,9 +129,10 @@ def main():
         if not arkupdt.is_alive():
             t = 'ark updater'
             log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-        if not discordt.is_alive():
-            t = 'discord bot'
-            log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+        if imthedbot == "True":
+            if not discordt.is_alive():
+                t = 'discord bot'
+                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         for each in range(numinstances):
             inst = instance[each]['name']
             if not instance[each]['cmdthread'].is_alive():
