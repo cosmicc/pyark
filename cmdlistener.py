@@ -1,4 +1,4 @@
-import sys, logging, subprocess, sqlite3, time, threading
+import sys, logging, subprocess, sqlite3, time, threading, random
 from configparser import ConfigParser
 
 log = logging.getLogger(__name__)
@@ -474,6 +474,31 @@ def isserver(line):
     else:
         return False
 
+def linker(whoasked):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM players WHERE playername == ?', (whoasked,))
+    dplayer = c.fetchone()
+    if dplayer:
+        if dplayer[8] == None:
+            rcode = ''.join(str(x) for x in random.sample(range(10), 4))
+            log.info(f'generated code {rcode} for link request from {dplayer[1]}')
+            c.execute('DELETE from linkrequests WHERE steamid = ?', (dplayer[0]))
+            conn.commit()
+            c.execute('INSERT INTO linkrequests (steamid, name, reqcode) VALUES (?, ?, ?)', (splayer[0],dplayer[1],str(rcode)))
+            msg = f'your discord link code is [{rcode}], goto discord now and type !linkme {rcode}'
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" @%s'""" % (msg), shell=True)
+        else:
+            log.info(f'link request for {dplayer[1]} denied, already linked')
+            msg = f'you already have a discord account linked to this account'
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" @%s'""" % (msg), shell=True)
+
+    else:
+        pass
+        # user not found in db (wierd)
+    c.close()
+    conn.close()
+
 def checkcommands(inst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
@@ -561,6 +586,9 @@ def checkcommands(inst):
             whoasked = getnamefromchat(line)
             log.info(f'responding to a restart timeleft request on {inst} from {whoasked}')
             resptimeleft(inst,whoasked)
+        elif line.find('!linkme') != -1 or line.find('!link') != -1:
+            whoasked = getnamefromchat(line)
+            linker(whoasked)
 
 def clisten(inst):
     log.info(f'starting the command listener thread for {inst}')

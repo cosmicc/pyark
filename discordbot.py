@@ -236,5 +236,43 @@ def discordbot():
             await client.send_message(message.channel, msg)
             c.close()
             conn.close()
+        elif message.content.startswith('!link') or message.content.startswith('!linkme'):
+            whofor = str(message.author).lower()
+            log.info(f'responding to link account request on discord from {whofor}')
+            sw = message.content.split(' ')
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players WHERE discordid == ?', (whofor,))
+            dplayer = c.fetchone()
+            if dplayer:
+                log.info(f'link account request on discord from {whofor}i denied, already linked')
+                msg = f'Your discord account is already linked to your game account'
+                await client.send_message(message.channel, msg)
+            else:
+                if len(sw) > 1:
+                    rcode = sw[1]
+                    c.execute('SELECT * FROM linkrequests WHERE reqcode == ?', (rcode,))
+                    reqs = c.fetchone()
+                    if reqs:
+                        log.info(f'link account request on discord from {whofor} accepted. {reqs[1]} {whofor} {reqs[0]}')
+                        c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (whofor,dplayer[0]))
+                        c.execute('DELETE FROM linkrequests WHERE reqcode = ?', (rcode,))
+                        conn.commit()
+                        msg = f'Your discord account [{whofor}] is now linked to your game account [{dplayer[1]}]'
+                        await client.send_message(message.channel, msg)
+                    
+                    else:
+                        log.info(f'link account request on discord from {whofor} denied, code not found')
+                        msg = f'That link request code was not found. You must start a link request in-game to get your code'
+                        await client.send_message(message.channel, msg)
+                else:
+                    log.info(f'link account request on discord from {whofor} denied, no code specified')
+                    msg = f'You must start a link request in-game first to get a code, then specify that code here, to link your account'
+                    await client.send_message(message.channel, msg)
+
+
+            c.close()
+            conn.close()
+
 
     client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')
