@@ -501,10 +501,10 @@ def linker(minst,whoasked):
     c.close()
     conn.close()
 
-def writebuffer(inst,whos,msg):
+def writebuffer(inst,whos,msg,tstamp):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
-    c.execute('INSERT INTO chatbuffer (server,name,message) VALUES (?, ?, ?)', (inst,whos,msg))
+    c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
     conn.commit()
     c.close()
     conn.close()
@@ -610,9 +610,15 @@ def checkcommands(minst):
                     cmsg = rawname[1]
                     nmsg = line.split(': ')
                     if len(nmsg) > 2:
-                        print(nmsg[0][3:])
-                        dto = datetime.strptime(nmsg[0][3:], '%Y.%M.%d_%H.%M.%S')
-                        writebuffer(inst,whoname,cmsg,tstamp)
+                        print(f':{nmsg[0][3:]}:')
+                        try:
+                            dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
+                            print(dto)
+                            tstamp = dto.strftime('%m-%d %I:%M%p')
+                            print(tstamp)
+                            writebuffer(inst,whoname,cmsg,tstamp)
+                        except:
+                            log.warning('could not parse date from chat')
 
 
 def clisten(minst):
