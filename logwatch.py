@@ -205,6 +205,8 @@ def serverisinrestart(steamid,inst,oplayer):
         log.info(f'notifying player {oplayer[1]} that server {inst} will be restarting in {rbt[7]} min')
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+    c.close()
+    conn.close()
     
 
 def onlineplayer(steamid,inst):
@@ -218,23 +220,17 @@ def onlineplayer(steamid,inst):
         log.info(f'steamid {steamid} was not found. adding new player to cluster!')
         c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1))
         conn.commit()
-        c.close()
-        conn.close()
         if not iswelcoming(steamid):
             welcom = threading.Thread(name = 'welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid,inst))
             welcomthreads.append({'steamid':steamid,'sthread':welcom})
             welcom.start()
         else:
             log.warning(f'welcome message thread already running for new player {steamid}')
-
     elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
             c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
             conn.commit()
-            c.close()
-            conn.close()
-
         else:
             log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. updating info.")
             c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(oplayer[7])+1,steamid))
@@ -242,9 +238,6 @@ def onlineplayer(steamid,inst):
             totplay = playedTime(float(oplayer[4].replace(',','')))
             mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston}, total time played {totplay}'
             conn.commit()
-            c.close()
-            conn.close()
-
             time.sleep(3)
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         if oplayer[8] == '':
@@ -252,6 +245,8 @@ def onlineplayer(steamid,inst):
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         if float(oplayer[2]) + 60 < float(time.time()):
             serverisinrestart(steamid,inst,oplayer)
+    c.close()
+    conn.close()
 
 def onlineupdate(inst):
     log.info(f'starting online player watcher on {inst}')
@@ -291,4 +286,5 @@ def logwatch(inst):
             for line in follow(following):
                 processlogline(line,inst)
         except KeyboardInterrupt:
-            pass
+            c.close()
+            conn.close()
