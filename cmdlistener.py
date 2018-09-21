@@ -1,6 +1,7 @@
 import sys, logging, subprocess, sqlite3, time, threading, random
 from datetime import datetime
 from configparser import ConfigParser
+from timehelper import elapsedTime, playedTime
 
 log = logging.getLogger(__name__)
 
@@ -37,90 +38,13 @@ for each in range(numinstances):
     else:
         instr=instr + ', %s' % (a)
 
-def elapsedTime(start_time, stop_time, lshort=False):
-    diff_time = start_time - stop_time
-    total_min = diff_time / 60
-    minutes = int(total_min % 60)
-    if minutes == 1:
-        if lshort is False:
-            minstring = 'minute'
-        else:
-            minstring = 'min'
-    else:
-        if lshort is False:
-            minstring = 'minutes'
-        else:
-            minstring = 'mins'
-    hours = int(total_min / 60)
-    if hours == 1:
-        if lshort is False:
-            hourstring = 'hour'
-        else:
-            hourstring = 'hr'
-    else:
-        if lshort is False:
-            hourstring = 'hours'
-        else:
-            hourstring = 'hrs'
-    days = int(hours / 24)
-    if days == 1:
-        if lshort is False:
-            daystring = 'day'
-        else:
-            daystring = 'day'
-    else:
-        if lshort is False:
-            daystring = 'days'
-        else:
-            daystring = 'days'
-    if days != 0:
-        return('{} {}, {} {}'.format(days, daystring, hours, hourstring))
-    elif hours != 0:
-        return('{} {}, {} {}'.format(hours, hourstring, minutes, minstring))
-    elif minutes > 1:
-        return('{} {}'.format(minutes, minstring))
-    elif minutes <= 1:
-        return('now')
-    else:
-        log.error('Elapsed time function failed. Could not convert.')
-        return('Error')
-
-def playedTime(ptime):
-    total_min = ptime / 60
-    minutes = int(ptime % 60)
-    if minutes == 1:
-        minstring = 'Min'
-    else:
-        minstring = 'mins'
-    hours = int(total_min / 60)
-    if hours == 1:
-        hourstring = 'hour'
-    else:
-        hourstring = 'hours'
-    days = int(hours / 24)
-    if days == 1:
-        daystring = 'day'
-    else:
-        daystring = 'days'
-    if days != 0:
-        return('{} {}, {} {}'.format(days, daystring, hours-days*24, hourstring))
-    elif hours != 0:
-        return('{} {}, {} {}'.format(hours, hourstring, minutes-hours, minstring))
-    elif minutes != 0:
-        return('{} {}'.format(minutes, minstring))
-    else:
-        log.error('Elapsed time function failed. Could not convert.')
-        return('Error')
-
 def getsteamid(whoasked):
-    #log.error(whoasked)
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('SELECT steamid FROM players WHERE playername = ?', (whoasked,))
     sid = c.fetchone()
     c.close()
     conn.close()
-    #log.error(sid)
     return ''.join(sid[0])
 
 def resptimeleft(inst,whoasked):
@@ -160,7 +84,6 @@ def getlastseen(seenname):
     flast = c.fetchone()
     c.close()
     conn.close()
-    #print(flast)
     if not flast:
         return 'no player found with that name'
     else:
@@ -227,6 +150,8 @@ def whoisonline(inst,oinst,whoasked,filt,crnt):
         c = conn.cursor()
         c.execute('SELECT * FROM players WHERE server = ?', [inst])
         flast = c.fetchall()
+        c.close()
+        conn.close()
         pcnt = 0
         plist = ''
         for row in flast:
@@ -248,9 +173,6 @@ def whoisonline(inst,oinst,whoasked,filt,crnt):
 
         if pcnt == 0 and not filt:
             subprocess.run('arkmanager rconcmd "ServerChat %s has no players online." @%s' % (inst, oinst), shell=True)
-
-        c.close()
-        conn.close()
     except:
         log.exception()
         subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst, inst), shell=True)
@@ -281,6 +203,8 @@ def populatevoters(inst):
     c = conn.cursor()
     c.execute('SELECT * FROM players WHERE server = ?', [inst])
     pdata = c.fetchall()
+    c.close()
+    conn.close()
     for row in pdata:
         chktme = time.time()-float(row[2])
         if chktme < 90:
@@ -459,9 +383,6 @@ def startvoter(inst,whoasked):
 def getnamefromchat(chat):
     rawline = chat.split('(')
     rawname = rawline[1].split(')')
-    #log.warning(rawline)
-    #log.warning(rawname)
-    #log.warning(rawname[0].lower())
     return rawname[0].lower()
 
 def isserver(line):
@@ -480,26 +401,29 @@ def linker(minst,whoasked):
     c = conn.cursor()
     c.execute('SELECT * FROM players WHERE playername == ?', (whoasked,))
     dplayer = c.fetchone()
+    c.close()
+    conn.close()
     if dplayer:
         if dplayer[8] == None or dplayer[8] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
             log.info(f'generated code {rcode} for link request from {dplayer[1]} on {minst}')
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
             c.execute('DELETE from linkrequests WHERE steamid = ?', (dplayer[0],))
             conn.commit()
             c.execute('INSERT INTO linkrequests (steamid, name, reqcode) VALUES (?, ?, ?)', (dplayer[0],dplayer[1],str(rcode)))
             conn.commit()
+            c.close()
+            conn.close()
             msg = f'your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0],msg,minst), shell=True)
         else:
             log.info(f'link request for {dplayer[1]} denied, already linked')
             msg = f'you already have a discord account linked to this account'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0],msg,minst), shell=True)
-
     else:
         pass
         # user not found in db (wierd)
-    c.close()
-    conn.close()
 
 def writebuffer(inst,whos,msg,tstamp):
     conn = sqlite3.connect(sqldb)
@@ -618,15 +542,16 @@ def checkcommands(minst):
                         except:
                             log.warning('could not parse date from chat')
 
-
 def clisten(minst):
     log.info(f'starting the command listener thread for {minst}')
     while True:
-        #try:
+        try:
             checkcommands(minst)
             time.sleep(3)
-        #except:
-        #    e = sys.exc_info()
-        #    log.critical(e)
-        #    c.close()
-        #    conn.close()
+        except:
+            if c in vars():
+                c.close()
+            if conn in vars():
+                conn.close()
+            e = sys.exc_info()
+            log.critical(e)

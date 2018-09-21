@@ -5,6 +5,7 @@ import argparse, sqlite3
 from configparser import ConfigParser
 from datetime import datetime
 from colorama import Fore, Back, Style
+from timehelper import elapsedTime, playedTime
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist',
@@ -65,80 +66,6 @@ sqldb = f'{sharedpath}/db/pyark.db'
 
 clr1 = f'{BYEL}'
 clr2 = f'{BCYN}'
-
-def playedTime(ptime):
-    total_min = ptime / 60
-    minutes = int(ptime % 60)
-    if minutes == 1:
-        minstring = 'Min'
-    else:
-        minstring = 'Mins'
-    hours = int(total_min / 60)
-    if hours == 1:
-        hourstring = 'Hour'
-    else:
-        hourstring = 'Hours'
-    days = int(hours / 24)
-    if days == 1:
-        daystring = 'Day'
-    else:
-        daystring = 'Days'
-    if days != 0:
-        return('{} {}, {} {}'.format(days, daystring, hours-days*24, hourstring))
-    elif hours != 0:
-        return('{} {}, {} {}'.format(hours, hourstring, minutes, minstring))
-    elif minutes != 0:
-        return('{} {}'.format(minutes, minstring))
-    else:
-        return('Error')
-
-def elapsedTime(start_time, stop_time, lshort=False):
-    diff_time = start_time - stop_time
-    total_min = diff_time / 60
-    minutes = int(total_min % 60)
-    if minutes == 1:
-        if lshort is False:
-            minstring = 'minute'
-        else:
-            minstring = 'min'
-    else:
-        if lshort is False:
-            minstring = 'minutes'
-        else:
-            minstring = 'mins'
-    hours = int(total_min / 60)
-    if hours == 1:
-        if lshort is False:
-            hourstring = 'hour'
-        else:
-            hourstring = 'hr'
-    else:
-        if lshort is False:
-            hourstring = 'hours'
-        else:
-            hourstring = 'hrs'
-    days = int(hours / 24)
-    if days == 1:
-        if lshort is False:
-            daystring = 'day'
-        else:
-            daystring = 'day'
-    else:
-        if lshort is False:
-            daystring = 'days'
-        else:
-            daystring = 'days'
-    if days != 0:
-        return('{} {}, {} {} ago'.format(days, daystring, hours, hourstring))
-    elif hours != 0:
-        return('{} {}, {} {} ago'.format(hours, hourstring, minutes, minstring))
-    elif minutes > 1:
-        return('{} {} ago'.format(minutes, minstring))
-    elif minutes <= 1:
-        return('now')
-    else:
-        log.error('Elapsed time function failed. Could not convert.')
-        return('Error')
 
 print('    ')
 

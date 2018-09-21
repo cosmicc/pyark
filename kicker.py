@@ -42,18 +42,26 @@ for each in range(numinstances):
 def kicker(inst):
     while True:
         try:
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM kicklist WHERE instance = ?', [inst])
-            kicked = c.fetchone()
+            conn2 = sqlite3.connect(sqldb)
+            c2 = conn2.cursor()
+            c2.execute('SELECT * FROM kicklist WHERE instance = ?', [inst])
+            kicked = c2.fetchone()
+            c2.close()
+            conn2.close()
             if kicked:
                 log.info(f'kicking user {kicked[1]} from server {inst} on kicklist')
                 subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (kicked[1], inst), shell=True)
-                c.execute('DELETE FROM kicklist WHERE steamid = ?', [kicked[1]])    
-                conn.commit()
-            c.close()
-            conn.close()
+                conn2 = sqlite3.connect(sqldb)
+                c2 = conn2.cursor()
+                c2.execute('DELETE FROM kicklist WHERE steamid = ?', [kicked[1]])    
+                conn2.commit()
+                c2.close()
+                conn2.close()
             time.sleep(2)
         except:
+            if c2 in vars():
+                c2.close()
+            if conn2 in vars():
+                conn2.close()
             e = sys.exc_info()
             log.critical(e)

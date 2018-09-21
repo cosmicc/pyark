@@ -3,22 +3,26 @@
 import time
 import discord
 import asyncio
-from cmdlistener import *
+from timehelper import elapsedTime, playedTime
 
 client = discord.Client()
 
 def bufferreader():
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM chatbuffer')
-    cbuff = c.fetchall()
+    conn3 = sqlite3.connect(sqldb)
+    c3 = conn.cursor()
+    c3.execute('SELECT * FROM chatbuffer')
+    cbuff = c3.fetchall()
+    c3.close()
+    conn3.close()
     if cbuff:
         for each in cbuff:
             log.warning(each)
-        c.execute('DELETE FROM chatbuffer')
-        conn.commit()
-    c.close()
-    conn.close()
+        conn3 = sqlite3.connect(sqldb)
+        c3 = conn.cursor()
+        c3.execute('DELETE FROM chatbuffer')
+        conn3.commit()
+        c3.close()
+        conn3.close()
     time.sleep(120)
 
 
@@ -28,11 +32,15 @@ def discordbot():
         c = conn.cursor()
         c.execute('SELECT * FROM discordnames WHERE discordname = ?', (str(author),))
         didexists = c.fetchone()
-        if not didexists:
-            c.execute('INSERT INTO discordnames (discordname) VALUES (?)', (str(author),))
-            conn.commit()
         c.close()
         conn.close()
+        if not didexists:
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('INSERT INTO discordnames (discordname) VALUES (?)', (str(author),))
+            conn.commit()
+            c.close()
+            conn.close()
 
     @client.event
     async def on_ready():
@@ -48,10 +56,11 @@ def discordbot():
             c = conn.cursor()
             c.execute('SELECT * FROM instances')
             srvrs = c.fetchall()
+            c.close()
+            conn.close()
             for each in srvrs:
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
-
                 c.execute('SELECT * FROM players WHERE server = ?', [each[0]])
                 flast = c.fetchall()
                 c.close()
@@ -61,7 +70,6 @@ def discordbot():
                 for row in flast:
                     chktme = time.time()-float(row[2])
                     if chktme < potime:
-                        print(row[1],chktme)
                         pcnt += 1
                         if plist == '':
                             plist = '%s' % (row[1].capitalize())
@@ -82,10 +90,11 @@ def discordbot():
             c = conn.cursor()
             c.execute('SELECT * FROM instances')
             srvrs = c.fetchall()
+            c.close()
+            conn.close()
             for each in srvrs:
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
-
                 c.execute('SELECT * FROM players WHERE server = ?', [each[0]])
                 flast = c.fetchall()
                 c.close()
@@ -95,7 +104,6 @@ def discordbot():
                 for row in flast:
                     chktme = time.time()-float(row[2])
                     if chktme < potime:
-                        print(row[1],chktme)
                         pcnt += 1
                         if plist == '':
                             plist = '%s' % (row[1].capitalize())
@@ -188,10 +196,11 @@ def discordbot():
             c = conn.cursor()
             c.execute('SELECT * FROM instances')
             srvrs = c.fetchall()
+            c.close()
+            conn.close()
             for each in srvrs:
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
-
                 c.execute('SELECT * FROM players WHERE server = ?', [each[0]])
                 flast = c.fetchall()
                 c.close()
@@ -201,7 +210,6 @@ def discordbot():
                 for row in flast:
                     chktme = time.time()-float(row[2])
                     if chktme < potime:
-                        print(row[1],chktme)
                         pcnt += 1
                         if plist == '':
                             plist = '%s' % (row[1].capitalize())
@@ -221,6 +229,8 @@ def discordbot():
             c = conn.cursor()
             c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
             kuser = c.fetchone()
+            c.close()
+            conn.close()
             if kuser:
                 if kuser[8] != whofor:
                     log.info(f'kickme request from {whofor} denied, no account linked')
@@ -235,10 +245,12 @@ def discordbot():
                         log.info(f'kickme request from {whofor} passed, kicking player on {kuser[3]}')
                         msg = f'Kicking {kuser[1]} from the {kuser[3].capitalize()} server'
                         await client.send_message(message.channel, msg)
+                        conn = sqlite3.connect(sqldb)
+                        c = conn.cursor()
                         c.execute('INSERT INTO kicklist (instance,steamid) VALUES (?,?)', (kuser[3],kuser[0]))
                         conn.commit()
-            c.close()
-            conn.close()
+                        c.close()
+                        conn.close()
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
@@ -246,12 +258,12 @@ def discordbot():
             lastseens = c.fetchall()
             c.execute('SELECT * from players WHERE firstseen = ?', (max(lastseens,)))
             lsplayer = c.fetchone()
+            c.close()
+            conn.close()
             log.info(f'responding to lastnew request on discord')
             lspago = elapsedTime(time.time(),float(lsplayer[6]))
             msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
             await client.send_message(message.channel, msg)
-            c.close()
-            conn.close()
         elif message.content.startswith('!link') or message.content.startswith('!linkme'):
             whofor = str(message.author).lower()
             user = message.author
@@ -261,6 +273,8 @@ def discordbot():
             c = conn.cursor()
             c.execute('SELECT * FROM players WHERE discordid == ?', (whofor,))
             dplayer = c.fetchone()
+            c.close()
+            conn.close()
             if dplayer:
                 log.info(f'link account request on discord from {whofor}i denied, already linked')
                 msg = f'Your discord account is already linked to your game account'
@@ -268,13 +282,21 @@ def discordbot():
             else:
                 if len(sw) > 1:
                     rcode = sw[1]
+                    conn = sqlite3.connect(sqldb)
+                    c = conn.cursor()
                     c.execute('SELECT * FROM linkrequests WHERE reqcode == ?', (rcode,))
                     reqs = c.fetchone()
+                    c.close()
+                    conn.close()
                     if reqs:
                         log.info(f'link account request on discord from {whofor} accepted. {reqs[1]} {whofor} {reqs[0]}')
+                        conn = sqlite3.connect(sqldb)
+                        c = conn.cursor()
                         c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (whofor,reqs[0]))
                         c.execute('DELETE FROM linkrequests WHERE reqcode = ?', (rcode,))
                         conn.commit()
+                        c.close()
+                        conn.close()
                         msg = f'Your discord account [{whofor}] is now linked to your player {reqs[1]}'
                         await client.send_message(message.channel, msg)
                         role = discord.utils.get(user.server.roles, name="Verified Player")
@@ -288,18 +310,19 @@ def discordbot():
                     msg = f'You must start a link request in-game first to get a code, then specify that code here, to link your account'
                     await client.send_message(message.channel, msg)
 
-
-            c.close()
-            conn.close()
-
     chatlistener = threading.Thread(name='chat-listener', target = bufferreader)
     chatlistener.start()
 
     try:
         client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')
     except:
+        if c in vars():
+            c.close()
+        if conn in vars()
+            conn.close()
+        if c3 in vars():
+            c3.close()
+        if conn3 in vars()
+            conn3.close()
         e = sys.exc_info()
         log.critical(e)
-        c.close()
-        conn.close()
-

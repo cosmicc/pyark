@@ -3,6 +3,7 @@ from configparser import ConfigParser
 from datetime import datetime
 from datetime import time as dt
 from timebetween import is_time_between
+from timehelper import elapsedTime
 
 log = logging.getLogger(__name__)
 
@@ -39,55 +40,6 @@ for each in range(numinstances):
     else:
         instr=instr + ', %s' % (a)
 
-
-def elapsedTime(start_time, stop_time, lshort=False):
-    diff_time = start_time - stop_time
-    total_min = diff_time / 60
-    minutes = int(total_min % 60)
-    if minutes == 1:
-        if lshort is False:
-            minstring = 'Minute'
-        else:
-            minstring = 'Min'
-    else:
-        if lshort is False:
-            minstring = 'Minutes'
-        else:
-            minstring = 'Mins'
-    hours = int(total_min / 60)
-    if hours == 1:
-        if lshort is False:
-            hourstring = 'Hour'
-        else:
-            hourstring = 'Hr'
-    else:
-        if lshort is False:
-            hourstring = 'Hours'
-        else:
-            hourstring = 'Hrs'
-    days = int(hours / 24)
-    if days == 1:
-        if lshort is False:
-            daystring = 'Day'
-        else:
-            daystring = 'Day'
-    else:
-        if lshort is False:
-            daystring = 'Days'
-        else:
-            daystring = 'Days'
-    if days != 0:
-        return('{} {}, {} {}'.format(days, daystring, hours, hourstring))
-    elif hours != 0:
-        return('{} {}, {} {}'.format(hours, hourstring, minutes, minstring))
-    elif minutes != 0:
-        return('{} {}'.format(minutes, minstring))
-    elif minutes == 0:
-        return('now')
-    else:
-        log.error('Elapsed time function failed. Could not convert.')
-        return('Error')
-
 def playercount(instance):
     playercount = 0
     cmdpipe = subprocess.Popen('arkmanager rconcmd ListPlayers @%s' % instance, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -106,9 +58,9 @@ def updatetimer(inst,ctime):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('UPDATE instances SET restartcountdown = ? WHERE name = ?', [ctime,inst])
-    conn.commit()
+    conn1.commit()
     c.close()
-    conn.close()
+    conn1.close()
 
 def setcfgver(inst,cver):
     conn = sqlite3.connect(sqldb)
@@ -409,7 +361,9 @@ def arkupd():
                 checkpending(instance[each]['name'])
             time.sleep(300)
         except:
+            if c in vars():
+                c.close()
+            if conn in vars():
+                conn.close()
             e = sys.exc_info()
             log.critical(e)
-            c.close()
-            conn.close()

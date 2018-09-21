@@ -5,6 +5,7 @@ from datetime import datetime
 from datetime import timedelta
 import logging, sqlite3, threading, subprocess
 from configparser import ConfigParser
+from timehelper impoer elapsedTime, playedTime
 
 log = logging.getLogger(__name__)
 
@@ -39,81 +40,6 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr=instr + ', %s' % (a)
-
-def elapsedTime(start_time, stop_time, lshort=False):
-    diff_time = start_time - stop_time
-    total_min = diff_time / 60
-    minutes = int(total_min % 60)
-    if minutes == 1:
-        if lshort is False:
-            minstring = 'minute'
-        else:
-            minstring = 'min'
-    else:
-        if lshort is False:
-            minstring = 'minutes'
-        else:
-            minstring = 'mins'
-    hours = int(total_min / 60)
-    if hours == 1:
-        if lshort is False:
-            hourstring = 'hour'
-        else:
-            hourstring = 'hr'
-    else:
-        if lshort is False:
-            hourstring = 'hours'
-        else:
-            hourstring = 'hrs'
-    days = int(hours / 24)
-    if days == 1:
-        if lshort is False:
-            daystring = 'day'
-        else:
-            daystring = 'day'
-    else:
-        if lshort is False:
-            daystring = 'days'
-        else:
-            daystring = 'days'
-    if days != 0:
-        return('{} {}, {} {} ago'.format(days, daystring, hours, hourstring))
-    elif hours != 0:
-        return('{} {}, {} {} ago'.format(hours, hourstring, minutes, minstring))
-    elif minutes > 1:
-        return('{} {} ago'.format(minutes, minstring))
-    elif minutes <= 1:
-        return('now')
-    else:
-        log.error('Elapsed time function failed. Could not convert.')
-        return('Error')
-
-def playedTime(ptime):
-    total_min = ptime / 60
-    minutes = int(ptime % 60)
-    if minutes == 1:
-        minstring = 'Min'
-    else:
-        minstring = 'mins'
-    hours = int(total_min / 60)
-    if hours == 1:
-        hourstring = 'hour'
-    else:
-        hourstring = 'hours'
-    days = int(hours / 24)
-    if days == 1:
-        daystring = 'day'
-    else:
-        daystring = 'days'
-    if days != 0:
-        return('{} {}, {} {}'.format(days, daystring, hours-days*24, hourstring))
-    elif hours != 0:
-        return('{} {}, {} {}'.format(hours, hourstring, minutes-hours, minstring))
-    elif minutes != 0:
-        return('{} {}'.format(minutes, minstring))
-    else:
-        log.error('Elapsed time function failed. Could not convert.')
-        return('Error')
 
 def follow(stream):
     "Follow the live contents of a text file."
@@ -153,16 +79,24 @@ def processlogline(line,inst):
             c = conn.cursor()
             c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
             pexist = c.fetchall()
-            if not pexist:
-                log.info(f'player {playername} with steamid {steamid} was not found. adding.')
-                c.execute('INSERT INTO players (steamid, playername, lastseen, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?,?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1,''))
-                conn.commit()
-            elif steamid != '':
-                log.debug(f'player {playername} with steamid {steamid} was found. updating.')
-                c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
-                conn.commit()
             c.close()
             conn.close()
+            if not pexist:
+                log.info(f'player {playername} with steamid {steamid} was not found. adding.')
+                conn = sqlite3.connect(sqldb)
+                c = conn.cursor()
+                c.execute('INSERT INTO players (steamid, playername, lastseen, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?,?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1,''))
+                conn.commit()
+                c.close()
+                conn.close()
+            elif steamid != '':
+                log.debug(f'player {playername} with steamid {steamid} was found. updating.')
+                conn = sqlite3.connect(sqldb)
+                c = conn.cursor()
+                c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
+                conn.commit()
+                c.close()
+                conn.close()
 
 def welcomenewplayer(steamid,inst):
         global welcomthreads
@@ -196,30 +130,35 @@ def iswelcoming(steamid):
 
 
 def serverisinrestart(steamid,inst,oplayer):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM instances WHERE name = ?', [inst])
-    rbt = c.fetchone()
+    conn1 = sqlite3.connect(sqldb)
+    c1 = conn.cursor()
+    c1.execute('SELECT * FROM instances WHERE name = ?', [inst])
+    rbt = c1.fetchone()
+    c1.close()
+    conn1.close()
     if rbt[3] == "True":
         log.warning(f'{rbt[6]},{rbt[7]}')
         log.info(f'notifying player {oplayer[1]} that server {inst} will be restarting in {rbt[7]} min')
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-    c.close()
-    conn.close()
-    
 
 def onlineplayer(steamid,inst):
     global welcomthreads
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
-    oplayer = c.fetchone()
+    conn1 = sqlite3.connect(sqldb)
+    c1 = conn1.cursor()
+    c1.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
+    oplayer = c1.fetchone()
+    c1.close()
+    conn1.close()
     timestamp=time.time()
     if not oplayer:
         log.info(f'steamid {steamid} was not found. adding new player to cluster!')
-        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,''))
-        conn.commit()
+        conn1 = sqlite3.connect(sqldb)
+        c1 = conn1.cursor()
+        c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,''))
+        conn1.commit()
+        c1.close()
+        conn1.close()
         if not iswelcoming(steamid):
             welcom = threading.Thread(name = 'welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid,inst))
             welcomthreads.append({'steamid':steamid,'sthread':welcom})
@@ -229,15 +168,23 @@ def onlineplayer(steamid,inst):
     elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
-            c.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
-            conn.commit()
+            conn1 = sqlite3.connect(sqldb)
+            c1 = conn1.cursor()
+            c1.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
+            conn1.commit()
+            c1.close()
+            conn1.close()
         else:
             log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. updating info.")
-            c.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(oplayer[7])+1,steamid))
+            conn1 = sqlite3.connect(sqldb)
+            c1 = conn1.cursor()
+            c1.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(oplayer[7])+1,steamid))
+            conn1.commit()
+            c1.close()
+            conn1.close()
             laston = elapsedTime(float(time.time()),float(oplayer[2]))
             totplay = playedTime(float(oplayer[4].replace(',','')))
             mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston}, total time played {totplay}'
-            conn.commit()
             time.sleep(3)
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
             if oplayer[8] == '':
@@ -245,8 +192,6 @@ def onlineplayer(steamid,inst):
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         if float(oplayer[2]) + 60 < float(time.time()):
             serverisinrestart(steamid,inst,oplayer)
-    c.close()
-    conn.close()
 
 def onlineupdate(inst):
     log.info(f'starting online player watcher on {inst}')
@@ -287,11 +232,23 @@ def logwatch(inst):
                 for line in follow(following):
                     processlogline(line,inst)
             except KeyboardInterrupt:
-                c.close()
-                conn.close()
+                if c in vars():
+                    c.close()
+                if conn in vars():
+                    conn.close()
+                if c1 in vars():
+                    c1.close()
+                if conn1 in vars():
+                    conn1.close()
     except:
         e = sys.exc_info()
         log.critical(e)
-        c.close()
-        conn.close()
+        if c in vars():
+            c.close()
+        if conn in vars():
+            conn.close()
+        if c1 in vars():
+            c1.close()
+        if conn1 in vars():
+            conn1.close()
 
