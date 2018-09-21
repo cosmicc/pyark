@@ -542,7 +542,10 @@ def checkcommands(minst):
                     nmsg = line.split(': ')
                     if len(nmsg) > 2:
                         try:
-                            print(f'{nmsg[0]}')
+                            if len(nmsg) > 1:
+                                print(f'{nmsg[1]}')
+                            elif len(nmsg) > 2:
+                                print(f'{nmsg[2]}')
                             if nmsg[0].startswith('"'):
                                 dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
                             else:
