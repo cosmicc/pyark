@@ -9,10 +9,10 @@ from colorama import Fore, Back, Style
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist',
                                                                   'linkrequests', 'delplayer', 'linkplayer', 'restartserver',
-                                                                  'discordnames', 'notlinked', 'newest', 'server', 'playerage'], help='Action to perform')
+                                                                  'discordnames', 'notlinked', 'newest', 'server', 'playertable', 'oldest'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('info', action='store_true', help='Cluster infomration')
-action_group.add_argument('players', action='store_true', help='Show players table')
+action_group.add_argument('playertable', action='store_true', help='Show players table')
 action_group.add_argument('kicklist', action='store_true', help='Show kick list table')
 action_group.add_argument('linkrequests', action='store_true', help='Show link requests table')
 action_group.add_argument('discordnames', action='store_true', help='Show discord users table')
@@ -20,11 +20,12 @@ action_group.add_argument('restartserver', action='store_true', help='Set a serv
 action_group.add_argument('delplayer', action='store_true', help='Remove a player from the table')
 action_group.add_argument('linkplayer', action='store_true', help='Link a player to a discord user')
 action_group.add_argument('notlinked', action='store_true', help='Show players not linked to discord')
-action_group.add_argument('newest', action='store_true', help='Show last 3 newest players joined')
+action_group.add_argument('newest', action='store_true', help='Show last 10 newest players joined')
+action_group.add_argument('oldest', action='store_true', help='Show last 10 oldest players lastseen')
 action_group.add_argument('server', action='store_true', help='Server information')
-action_group.add_argument('playerage', action='store_true', help='Show players by age')
+action_group.add_argument('players', action='store_true', help='Show players by last time seen')
 
-parser.add_argument('-s', '--servername', action='store', help='Ark serve rinstance name')
+parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='cancel a restart')
 
 
@@ -259,7 +260,7 @@ def info():
     c.execute('SELECT cfgver from general')
     gencfgver = c.fetchone()
 
-    print(f'Current Config Version: {BGRN}{gencfgver[0]}{RST}')
+    print(f'{BWHT}Current Config Version: {BCYN}{gencfgver[0]}{RST}')
 
     print('    ')
 
@@ -397,10 +398,52 @@ def delplayer():
         print(row)
 
 def newest():
-    c.execute('SELECT * from players ORDER BY firstseen DESC LIMIT 5')
-    plly = c.fetchall()
-    printcolmns('players')
-    showtable('players',plly)
+    print(f'{BCYN}TOP 10 NEWEST CLUSTER PLAYERS:{RST}')
+    print('   ')
+    c.execute('SELECT * from players ORDER BY firstseen DESC LIMIT 10')
+    lastones = c.fetchall()
+    for feach in lastones:
+        tt = now-float(feach[2])
+        tr = now-float(feach[6])
+        if tt < 86400:
+            tclr = f'{BGRN}'
+        elif tt < 604800:
+            tclr = f'{YEL}'
+        else:
+            tclr = f'{RED}'
+        if tr < 604800:
+            trclr = f'{BGRN}'
+        elif tr < 2592000:
+            trclr = f'{YEL}'
+        else:
+            trclr = f'{RED}'
+
+        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL} joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
+
+
+def oldest():
+    print(f'{BCYN}TOP 10 OLDEST LAST TIME SEEN PLAYERS:{RST}')
+    print('   ')
+    c.execute('SELECT * from players ORDER BY lastseen ASC LIMIT 10')
+    lastones = c.fetchall()
+    for feach in lastones:
+        tt = now-float(feach[2])
+        tr = now-float(feach[6])
+        if tt < 86400:
+            tclr = f'{BGRN}'
+        elif tt < 604800:
+            tclr = f'{YEL}'
+        else:
+            tclr = f'{RED}'
+        if tr < 604800:
+            trclr = f'{BGRN}'
+        elif tr < 2592000:
+            trclr = f'{YEL}'
+        else:
+            trclr = f'{RED}'
+
+        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL} joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
+
 
 def serverinfo(svr):
     c.execute('SELECT * from instances WHERE name = ?', (svr,))
@@ -434,17 +477,27 @@ def serverinfo(svr):
     print('   ')
 
 def playerage():
+    print(f'{BCYN}PLAYERS BY LAST TIME SEEN:{RST}')
+    print('    ')
     c.execute('SELECT * from players ORDER BY lastseen DESC')
     lastones = c.fetchall()
     for feach in lastones:
         tt = now-float(feach[2])
+        tr = now-float(feach[6])
         if tt < 86400:
             tclr = f'{BGRN}'
         elif tt < 604800:
             tclr = f'{YEL}'
         else:
             tclr = f'{RED}'
-        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL} joined {WHT}{feach[6]}{RST}')
+        if tr < 604800:
+            trclr = f'{BGRN}'
+        elif tr < 2592000:
+            trclr = f'{YEL}'
+        else:
+            trclr = f'{RED}'
+
+        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL} joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
     print('   ')
 
 
@@ -452,7 +505,7 @@ def playerage():
 try:
     if args.action_to_perform == 'info':
         info()
-    elif args.action_to_perform == 'players':
+    elif args.action_to_perform == 'playertable':
         printcolmns('players')
         listtable('players')
     elif args.action_to_perform == 'kicklist':
@@ -483,8 +536,11 @@ try:
             print('You must specify a server name with -s option.')
         else:
             serverinfo(args.servername)
-    elif args.action_to_perform == 'playerage':
+    elif args.action_to_perform == 'players':
         playerage()
+    elif args.action_to_perform == 'oldest':
+        oldest()
+
 
 
     print('       ')

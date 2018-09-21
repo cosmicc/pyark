@@ -48,9 +48,9 @@ def discordbot():
                         print(row[1],chktme)
                         pcnt += 1
                         if plist == '':
-                            plist = '%s' % (row[1])
+                            plist = '%s' % (row[1].capitalize())
                         else:
-                            plist=plist + ', %s' % (row[1])
+                            plist=plist + ', %s' % (row[1].capitalize())
                 if pcnt != 0:
                     msg = f'{each[0].capitalize()} has {pcnt} players online: {plist}'
                     await client.send_message(message.channel, msg)
@@ -82,9 +82,9 @@ def discordbot():
                         print(row[1],chktme)
                         pcnt += 1
                         if plist == '':
-                            plist = '%s' % (row[1])
+                            plist = '%s' % (row[1].capitalize())
                         else:
-                            plist=plist + ', %s' % (row[1])
+                            plist=plist + ', %s' % (row[1].capitalize())
                 if pcnt != 0:
                     msg = f'{each[0].capitalize()} has had {pcnt} players in last hour: {plist}'
                     await client.send_message(message.channel, msg)
@@ -188,9 +188,9 @@ def discordbot():
                         print(row[1],chktme)
                         pcnt += 1
                         if plist == '':
-                            plist = '%s' % (row[1])
+                            plist = '%s' % (row[1].capitalize())
                         else:
-                            plist=plist + ', %s' % (row[1])
+                            plist=plist + ', %s' % (row[1].capitalize())
                 if pcnt != 0:
                     msg = f'{each[0].capitalize()} has had {pcnt} players today: {plist}'
                     await client.send_message(message.channel, msg)
@@ -232,12 +232,13 @@ def discordbot():
             lsplayer = c.fetchone()
             log.info(f'responding to lastnew request on discord')
             lspago = elapsedTime(time.time(),float(lsplayer[6]))
-            msg = f'Newest cluster player is {lsplayer[1]} online {lspago} ago on {lsplayer[3]}'
+            msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
             await client.send_message(message.channel, msg)
             c.close()
             conn.close()
         elif message.content.startswith('!link') or message.content.startswith('!linkme'):
             whofor = str(message.author).lower()
+            user = message.author
             log.info(f'responding to link account request on discord from {whofor}')
             sw = message.content.split(' ')
             conn = sqlite3.connect(sqldb)
@@ -256,12 +257,12 @@ def discordbot():
                     if reqs:
                         log.info(f'link account request on discord from {whofor} accepted. {reqs[1]} {whofor} {reqs[0]}')
                         c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (whofor,reqs[0]))
-
                         c.execute('DELETE FROM linkrequests WHERE reqcode = ?', (rcode,))
                         conn.commit()
                         msg = f'Your discord account [{whofor}] is now linked to your player {reqs[1]}'
                         await client.send_message(message.channel, msg)
-                    
+                        role = discord.utils.get(user.server.roles, name="Verified Player")
+                        await client.add_roles(user, role)    
                     else:
                         log.info(f'link account request on discord from {whofor} denied, code not found')
                         msg = f'That link request code was not found. You must start a link request in-game to get your code'
