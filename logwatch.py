@@ -101,22 +101,22 @@ def processlogline(line,inst):
 def welcomenewplayer(steamid,inst):
         global welcomthreads
         log.info(f'welcome message thread started for new player {steamid} on {inst}')
-        #time.sleep(180)
-        #mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
-        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        #time.sleep(10)
-        #mtxt = 'Public teleporters and crafting area, rewards system points earned as you play. Build a rewards vault quick, free starter items.'
-        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        #time.sleep(10)
-        #mtxt = 'Lvl 1 tent makes a quick starter shelter, and you get all your items back when you die, The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
-        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        #time.sleep(10)
-        #imtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
-        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        #time.sleep(20)
-        #mtxt = 'Everyone welcome a new player to the cluster!'
-        #subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
-        #log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
+        time.sleep(180)
+        mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(10)
+        mtxt = 'Public teleporters and crafting area, rewards system points earned as you play. Build a rewards vault quick, free starter items.'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(10)
+        mtxt = 'Lvl 1 tent makes a quick starter shelter, and you get all your items back when you die, The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(10)
+        imtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(20)
+        mtxt = 'Everyone welcome a new player to the cluster!'
+        subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+        log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
         welcomthreads[:] = [d for d in welcomthreads if d.get('steamid') != steamid]
 
 
@@ -184,7 +184,7 @@ def onlineplayer(steamid,inst):
             conn1.close()
             laston = elapsedTime(float(time.time()),float(oplayer[2]))
             totplay = playedTime(float(oplayer[4].replace(',','')))
-            mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston}, total time played {totplay}'
+            mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston} ago, total time played {totplay}'
             time.sleep(3)
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
             if oplayer[8] == '':
