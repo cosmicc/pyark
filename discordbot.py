@@ -276,5 +276,11 @@ def discordbot():
             c.close()
             conn.close()
 
+    try:
+        client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')
+    except:
+        e = sys.exc_info()
+        log.critical(e)
+        c.close()
+        conn.close()
 
-    client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')

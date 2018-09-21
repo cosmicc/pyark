@@ -500,6 +500,15 @@ def linker(minst,whoasked):
     c.close()
     conn.close()
 
+def writebuffer(inst,whos,msg):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('INSERT INTO chatbuffer (server,name,message) VALUES (?, ?, ?)', (inst,whos,msg))
+    conn.commit()
+    c.close()
+    conn.close()
+
+
 def checkcommands(minst):
     inst = minst
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (minst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -593,18 +602,23 @@ def checkcommands(minst):
             linker(minst,whoasked)
         else:
             rawline = line.split('(')
-            if len(rawname) > 1:
+            if len(rawline) > 1:
                 rawname = rawline[1].split(')')
                 whoname = rawname[0].lower()
-                log.warning(whoname,rawname[1])
+                if len(rawname) > 1:
+                    cmsg = rawname[1]
+                    log.warning(f'[{inst}] {whoname} {cmsg}')
+                    writebuffer(inst,whoname,cmsg)
 
 
 def clisten(minst):
     log.info(f'starting the command listener thread for {minst}')
     while True:
-        #try:
+        try:
             checkcommands(minst)
             time.sleep(3)
-        #except:
-        #    e = sys.exc_info()
-        #    log.critical(e)
+        except:
+            e = sys.exc_info()
+            log.critical(e)
+            c.close()
+            conn.close()

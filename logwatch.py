@@ -271,20 +271,27 @@ def onlineupdate(inst):
             log.critical(e)
 
 def logwatch(inst):
-    log.debug(f'starting logwatch thread for instance {inst}')
-    for each in range(numinstances):
-        if instance[each]['name'] == inst:
-            weebo = threading.Thread(name = '%s-onlineupdater' % inst, target=onlineupdate, args=(inst,))
-            weebo.start()
+    try:
+        log.debug(f'starting logwatch thread for instance {inst}')
+        for each in range(numinstances):
+            if instance[each]['name'] == inst:
+                weebo = threading.Thread(name = '%s-onlineupdater' % inst, target=onlineupdate, args=(inst,))
+                weebo.start()
 
-            logfile = instance[each]['logfile']
-            logpath = f'{arkroot}/ShooterGame/Saved/Logs/{logfile}'
-            log.debug(f'watching log {logpath} for instance {inst}')
-    with open(logpath, 'rt') as following:
-        following.seek(0, 0)
-        try:
-            for line in follow(following):
-                processlogline(line,inst)
-        except KeyboardInterrupt:
-            c.close()
-            conn.close()
+                logfile = instance[each]['logfile']
+                logpath = f'{arkroot}/ShooterGame/Saved/Logs/{logfile}'
+                log.debug(f'watching log {logpath} for instance {inst}')
+        with open(logpath, 'rt') as following:
+            following.seek(0, 0)
+            try:
+                for line in follow(following):
+                    processlogline(line,inst)
+            except KeyboardInterrupt:
+                c.close()
+                conn.close()
+    except:
+        e = sys.exc_info()
+        log.critical(e)
+        c.close()
+        conn.close()
+

@@ -124,25 +124,29 @@ def main():
         discordt.start()
 
     while True:
-        time.sleep(60)
-        log.debug(threading.enumerate())
-        if not arkupdt.is_alive():
-            t = 'ark updater'
-            log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-        if imthedbot == "True":
-            if not discordt.is_alive():
-                t = 'discord bot'
+        try:
+            time.sleep(60)
+            log.debug(threading.enumerate())
+            if not arkupdt.is_alive():
+                t = 'ark updater'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-        for each in range(numinstances):
-            inst = instance[each]['name']
-            if not instance[each]['cmdthread'].is_alive():
-                t = f'{inst} command listener'
-                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-        for each in range(numinstances):
-            inst = instance[each]['name']
-            if not instance[each]['restartthread'].is_alive():
-                t = f'{inst} log watcher'
-                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if imthedbot == "True":
+                if not discordt.is_alive():
+                    t = 'discord bot'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            for each in range(numinstances):
+                inst = instance[each]['name']
+                if not instance[each]['cmdthread'].is_alive():
+                    t = f'{inst} command listener'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            for each in range(numinstances):
+                inst = instance[each]['name']
+                if not instance[each]['restartthread'].is_alive():
+                    t = f'{inst} log watcher'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+        except:
+            c.close()
+            conn.close()
 
 if __name__ == '__main__':
     main()

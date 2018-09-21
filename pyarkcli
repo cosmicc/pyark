@@ -8,7 +8,7 @@ from colorama import Fore, Back, Style
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist',
-                                                                  'linkrequests', 'delplayer', 'linkplayer', 'restartserver',
+                                                                  'linkrequests', 'delplayer', 'linkplayer', 'restartserver', 'chatbuffer',
                                                                   'discordnames', 'notlinked', 'newest', 'server', 'playertable', 'oldest'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('info', action='store_true', help='Cluster infomration')
@@ -24,6 +24,7 @@ action_group.add_argument('newest', action='store_true', help='Show last 10 newe
 action_group.add_argument('oldest', action='store_true', help='Show last 10 oldest players lastseen')
 action_group.add_argument('server', action='store_true', help='Server information')
 action_group.add_argument('players', action='store_true', help='Show players by last time seen')
+action_group.add_argument('chatbuffer', action='store_true', help='Show the chat buffer table')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='cancel a restart')
@@ -540,7 +541,9 @@ try:
         playerage()
     elif args.action_to_perform == 'oldest':
         oldest()
-
+    elif args.action_to_perform == 'chatbuffer':
+        printcolmns('chatbuffer')
+        listtable('chatbuffer')
 
 
     print('       ')
