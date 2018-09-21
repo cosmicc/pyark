@@ -539,17 +539,10 @@ def checkcommands(minst):
                 whoname = rawname[0].lower()
                 if len(rawname) > 1:
                     cmsg = rawname[1]
+                    print(cmsg)
                     nmsg = line.split(': ')
                     if len(nmsg) > 2:
                         try:
-                            print(f'{nmsg[1]}')
-                            if len(nmsg) > 3:
-                                print(f'{nmsg[2]}')
-                            elif len(nmsg) > 4:
-                                print(f'{nmsg[3]}')
-                            elif len(nmsg) > 5:
-                                print(f'{nmsg[4]}')
-
                             if nmsg[0].startswith('"'):
                                 dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
                             else:
