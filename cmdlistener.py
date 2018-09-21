@@ -533,13 +533,13 @@ def checkcommands(minst):
             whoasked = getnamefromchat(line)
             linker(minst,whoasked)
         else:
+            print(line)
             rawline = line.split('(')
             if len(rawline) > 1:
                 rawname = rawline[1].split(')')
                 whoname = rawname[0].lower()
                 if len(rawname) > 1:
                     cmsg = rawname[1]
-                    print(line)
                     nmsg = line.split(': ')
                     if len(nmsg) > 2:
                         try:
