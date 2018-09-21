@@ -19,7 +19,7 @@ def bufferreader():
         conn.commit()
     c.close()
     conn.close()
-    time.sleep(3)
+    time.sleep(120)
 
 
 def discordbot():

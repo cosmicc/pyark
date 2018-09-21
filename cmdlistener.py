@@ -610,10 +610,9 @@ def checkcommands(minst):
                     cmsg = rawname[1]
                     nmsg = line.split(': ')
                     if len(nmsg) > 2:
-                        print(nmsg[0])
-                        #dto = datetime.strptime(nmsg[0], '%Y.%M.%d_%H.%M.%S')
-                        #log.warning(dto)
-                        #writebuffer(inst,whoname,cmsg,tstamp)
+                        print(nmsg[0][3:])
+                        dto = datetime.strptime(nmsg[0][3:], '%Y.%M.%d_%H.%M.%S')
+                        writebuffer(inst,whoname,cmsg,tstamp)
 
 
 def clisten(minst):
