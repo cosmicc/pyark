@@ -592,7 +592,7 @@ def checkcommands(minst):
             whoasked = getnamefromchat(line)
             linker(minst,whoasked)
         else:
-            rawline = chat.split('(')
+            rawline = line.split('(')
             rawname = rawline[1].split(')')
             whoname = rawname[0].lower()
             log.warning(whoname,rawname[1])
