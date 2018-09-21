@@ -263,7 +263,7 @@ def discordbot():
                         await client.send_message(message.channel, msg)
                     else:
                         log.info(f'kickme request from {whofor} passed, kicking player on {kuser[3]}')
-                        msg = f'Kicking {kuser[1]} from the {kuser[3].capitalize()} server'
+                        msg = f'Kicking {kuser[1].capitalize()} from the {kuser[3].capitalize()} server'
                         await client.send_message(message.channel, msg)
                         conn = sqlite3.connect(sqldb)
                         c = conn.cursor()
