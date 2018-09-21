@@ -593,9 +593,10 @@ def checkcommands(minst):
             linker(minst,whoasked)
         else:
             rawline = line.split('(')
-            rawname = rawline[1].split(')')
-            whoname = rawname[0].lower()
-            log.warning(whoname,rawname[1])
+            if len(rawname) > 1:
+                rawname = rawline[1].split(')')
+                whoname = rawname[0].lower()
+                log.warning(whoname,rawname[1])
 
 
 def clisten(minst):
