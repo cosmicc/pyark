@@ -1,10 +1,26 @@
 #!/usr/bin/python3
 
+import time
 import discord
 import asyncio
 from cmdlistener import *
 
 client = discord.Client()
+
+def bufferreader():
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM chatbuffer')
+    cbuff = c.fetchall()
+    if cbuff:
+        for each in cbuff:
+        log.warning(each)
+        c.execute('DELETE FROM chatbuffer')
+        conn.commit()
+    c.close()
+    conn.close()
+    time.sleep(3)
+
 
 def discordbot():
     def savediscordtodb(author):
@@ -275,6 +291,9 @@ def discordbot():
 
             c.close()
             conn.close()
+
+    chatlistener = threading.Thread(name='chat-listener', target = bufferreader)
+    chatlistener.start()
 
     try:
         client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')
