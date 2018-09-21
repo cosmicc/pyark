@@ -428,10 +428,17 @@ def linker(minst,whoasked):
 def writebuffer(inst,whos,msg,tstamp):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
-    c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
-    conn.commit()
+    c.execute('SELECT * from players WHERE playername = ?', (whos,))
+    isindb = c.fetchone()
     c.close()
     conn.close()
+    if isindb:
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
+        conn.commit()
+        c.close()
+        conn.close()
 
 
 def checkcommands(minst):
