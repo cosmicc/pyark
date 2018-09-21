@@ -550,7 +550,7 @@ def checkcommands(minst):
                             log.warning('could not parse date from chat')
 
 def clisten(minst):
-    log.info(f'starting the command listener thread for {minst}')
+    log.debug(f'starting the command listener thread for {minst}')
     while True:
         try:
             checkcommands(minst)

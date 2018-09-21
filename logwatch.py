@@ -194,7 +194,7 @@ def onlineplayer(steamid,inst):
             serverisinrestart(steamid,inst,oplayer)
 
 def onlineupdate(inst):
-    log.info(f'starting online player watcher on {inst}')
+    log.debug(f'starting online player watcher on {inst}')
     while True:
         try:
             time.sleep(10)

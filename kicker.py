@@ -40,6 +40,7 @@ for each in range(numinstances):
         instr=instr + ', %s' % (a)
 
 def kicker(inst):
+    log.debug(f'starting kicklist kicker thread for {inst}')
     while True:
         try:
             conn2 = sqlite3.connect(sqldb)
