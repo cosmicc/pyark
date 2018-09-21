@@ -336,13 +336,26 @@ def discordbot():
     try:
         client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')
     except:
-        if c in vars():
-            c.close()
-        if conn in vars():
-            conn.close()
-        if c3 in vars():
-            c3.close()
-        if conn3 in vars():
-            conn3.close()
+        try:
+            if c in vars():
+                c.close()
+        except:
+            pass
+        try:
+            if conn in vars():
+                conn.close()
+        except:
+            pass
+        try:
+            if c3 in vars():
+                c3.close()
+        except:
+            pass
+        try:
+            if conn3 in vars():
+                conn3.close()
+        except:
+            pass
+
         e = sys.exc_info()
         log.critical(e)

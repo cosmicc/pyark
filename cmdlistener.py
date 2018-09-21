@@ -556,9 +556,26 @@ def clisten(minst):
             checkcommands(minst)
             time.sleep(3)
         except:
-            if c in vars():
-                c.close()
-            if conn in vars():
-                conn.close()
+            try:
+                if c in vars():
+                    c.close():
+            except:
+                pass
+            try:
+                if conn in vars():
+                    conn.close()
+            except:
+                pass
+            try:
+                if c1 in vars():
+                    c1.close()
+            except:
+                pass
+            try:
+                if conn1 in vars():
+                    conn1.close()
+            except:
+                pass
+
             e = sys.exc_info()
             log.critical(e)

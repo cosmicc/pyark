@@ -361,9 +361,15 @@ def arkupd():
                 checkpending(instance[each]['name'])
             time.sleep(300)
         except:
-            if c in vars():
-                c.close()
-            if conn in vars():
-                conn.close()
+            try:
+                if c in vars():
+                    c.close()
+            except:
+                pass
+            try:
+                if conn in vars():
+                    conn.close()
+            except:
+                pass
             e = sys.exc_info()
             log.critical(e)
