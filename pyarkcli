@@ -9,7 +9,7 @@ from colorama import Fore, Back, Style
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist',
                                                                   'linkrequests', 'delplayer', 'linkplayer', 'restartserver',
-                                                                  'discordnames', 'notlinked'], help='Action to perform')
+                                                                  'discordnames', 'notlinked', 'newest', 'server', 'playerage'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('info', action='store_true', help='Cluster infomration')
 action_group.add_argument('players', action='store_true', help='Show players table')
@@ -20,8 +20,11 @@ action_group.add_argument('restartserver', action='store_true', help='Set a serv
 action_group.add_argument('delplayer', action='store_true', help='Remove a player from the table')
 action_group.add_argument('linkplayer', action='store_true', help='Link a player to a discord user')
 action_group.add_argument('notlinked', action='store_true', help='Show players not linked to discord')
+action_group.add_argument('newest', action='store_true', help='Show last 3 newest players joined')
+action_group.add_argument('server', action='store_true', help='Server information')
+action_group.add_argument('playerage', action='store_true', help='Show players by age')
 
-parser.add_argument('-s', '--server', action='store', help='Ark serve rinstance name')
+parser.add_argument('-s', '--servername', action='store', help='Ark serve rinstance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='cancel a restart')
 
 
@@ -145,10 +148,11 @@ now = time.time()
 c.execute('DELETE from players WHERE playedtime = 0')
 conn.commit()
 
-
-def info():
+def printserverinfo(each):
     c.execute('SELECT * from players')
     allplayers = c.fetchall()
+    c.execute('SELECT cfgver from general')
+    gencfgver = c.fetchone()
 
     def howmanyon(inst):
         pcnt = 0
@@ -162,6 +166,68 @@ def info():
             if minutes <= 1 and hours < 1 and days < 1 and row[3] == inst:
                 pcnt += 1
         return pcnt
+
+    restarted = elapsedTime(float(now),float(each[1]))
+    if float(now)-float(each[1]) > 1209600:
+        restclr = f"{BRED}"
+    elif float(now)-float(each[1]) > 604800:
+        restclr = f"{BYEL}"
+    else:
+        restclr = f"{BGRN}"
+    lwipe = elapsedTime(float(now),float(each[2]))
+    if float(now)-float(each[2]) > 86400:
+        wipeclr = f"{BRED}"
+    elif float(now)-float(each[2]) > 43200:
+        wipeclr = f"{BYEL}"
+    else:
+        wipeclr = f"{BGRN}"
+    lvote = elapsedTime(float(now),float(each[4]))
+    if float(now)-float(each[4]) > 604800:
+        voteclr = f"{BRED}"
+    elif float(now)-float(each[4]) > 259200:
+        voteclr = f"{BYEL}"
+    else:
+        voteclr = f"{BGRN}"
+
+    ply = howmanyon(each[0])
+    if gencfgver[0] != each[6]:
+        vertxt = f'{BRED}({int(gencfgver[0])-int(each[6])} versions behind){RST}'
+    else:
+        vertxt = f'{GRN}(Current){RST}'
+
+    if each[3] == "False":
+        inrest = f"{GRN}False{RST}"
+    else:
+        inrest = f"{BYEL}TRUE{RST}"
+
+    if ply != 0:
+        mm = BGRN
+    else:
+        mm = BRED
+
+    if each[7] < 5:
+        nn = BRED
+    elif each[7] < 15:
+        nn = BYEL
+    else:
+        nn = BGRN
+
+    if each[3] == True:
+        tls = f'Time Left: {nn}{each[7]}'
+    else:
+        tls = ''
+    print(f'{BYEL}Server: {BMGT}{each[0].upper()}{BYEL} - Players: {mm}{ply}/50{RST}')
+    print(f'{BYEL}Configuration version: {each[6]} {vertxt}')
+    print(f'{BYEL}Server in restart: {inrest}{BYEL}{tls}{RST}')
+    print(f'{BYEL}Last restart: {restclr}{restarted}{BYEL}  Reason: {BCYN}{each[5]}{RST}')
+    print(f'{BYEL}Last wilddino wipe: {wipeclr}{lwipe}{RST}')
+    print(f'{BYEL}Last wipe vote: {voteclr}{lvote}{RST}')
+    print('  ')
+
+
+def info():
+    c.execute('SELECT * from players')
+    allplayers = c.fetchall()
 
     for row in allplayers:
         #print(row)
@@ -201,60 +267,7 @@ def info():
     allservers = c.fetchall()
 
     for each in allservers:
-
-        restarted = elapsedTime(float(now),float(each[1]))
-        if float(now)-float(each[1]) > 1209600:
-            restclr = f"{BRED}"
-        elif float(now)-float(each[1]) > 604800:
-            restclr = f"{BYEL}"
-        else:
-            restclr = f"{BGRN}"
-        lwipe = elapsedTime(float(now),float(each[2]))
-        if float(now)-float(each[2]) > 86400:
-            wipeclr = f"{BRED}"
-        elif float(now)-float(each[2]) > 43200:
-            wipeclr = f"{BYEL}"
-        else:
-            wipeclr = f"{BGRN}"
-        lvote = elapsedTime(float(now),float(each[4]))
-        if float(now)-float(each[4]) > 604800:
-            voteclr = f"{BRED}"
-        elif float(now)-float(each[4]) > 259200:
-            voteclr = f"{BYEL}"
-        else:
-            voteclr = f"{BGRN}"
-
-        ply = howmanyon(each[0])
-        if gencfgver[0] != each[6]:
-            vertxt = f'{BRED}({int(gencfgver[0])-int(each[6])} versions behind){RST}'
-        else:
-            vertxt = f'{GRN}(Current){RST}'
-
-        if each[3] == "False":
-            inrest = f"{GRN}False{RST}"
-        else:
-            inrest = f"{BYEL}TRUE{RST}"
-        
-        if ply != 0:
-            mm = BGRN
-        else:
-            mm = BRED
-
-        if each[7] < 5:
-            nn = BRED
-        elif each[7] < 15:
-            nn = BYEL
-        else:
-            nn = BGRN
-
-
-        print(f'Server: {BMGT}{each[0].upper()}{RST} - Players: {mm}{ply}/50{RST}')
-        print(f'Configuration version: {each[6]} {vertxt}')
-        print(f'Server in restart: {inrest} - Time Left: {nn}{each[7]}{RST}')
-        print(f'Last restart: {restclr}{restarted}{RST} - Reason: {each[5]}')
-        print(f'Last wilddino wipe: {wipeclr}{lwipe}{RST}')
-        print(f'Last wipe vote: {voteclr}{lvote}{RST}')
-        print('  ')
+        printserverinfo(each)
 
     conn.commit()
 
@@ -383,6 +396,59 @@ def delplayer():
     for row in alldata:
         print(row)
 
+def newest():
+    c.execute('SELECT * from players ORDER BY firstseen DESC LIMIT 5')
+    plly = c.fetchall()
+    printcolmns('players')
+    showtable('players',plly)
+
+def serverinfo(svr):
+    c.execute('SELECT * from instances WHERE name = ?', (svr,))
+    svrifo = c.fetchone()
+    printserverinfo(svrifo)
+    print(f'{BCYN}LAST 10 PLAYERS ONLINE:{RST}')
+    c.execute('SELECT * from players WHERE server = ? ORDER BY lastseen DESC LIMIT 10', (svr,))
+    lastones = c.fetchall()
+    for feach in lastones:
+        tt = now-float(feach[2])
+        if tt < 300:
+            tclr = f'{BGRN}'
+        elif tt < 86400:
+            tclr = f'{YEL}'
+        else:
+            tclr = f'{RED}'
+        print(f'{BYEL}Player {BMGT}{feach[1]}{RST} {BYEL}on {tclr}{elapsedTime(now,float(feach[2]))}{RST}')
+    print('   ')
+    print(f'{BCYN}LAST 3 NEWEST PLAYERS:{RST}')
+    c.execute('SELECT * from players WHERE server = ? ORDER BY firstseen DESC LIMIT 3', (svr,))
+    lastones = c.fetchall()
+    for feach in lastones:
+        tt = now-float(feach[2])
+        if tt < 300:
+            tclr = f'{BGRN}'
+        elif tt < 86400:
+            tclr = f'{YEL}'
+        else:
+            tclr = f'{RED}'
+        print(f'{BYEL}Player {BMGT}{feach[1]}{RST} {BYEL}on {tclr}{elapsedTime(now,float(feach[2]))}{RST}')
+    print('   ')
+
+def playerage():
+    c.execute('SELECT * from players ORDER BY lastseen DESC')
+    lastones = c.fetchall()
+    for feach in lastones:
+        tt = now-float(feach[2])
+        if tt < 86400:
+            tclr = f'{BGRN}'
+        elif tt < 604800:
+            tclr = f'{YEL}'
+        else:
+            tclr = f'{RED}'
+        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL} joined {WHT}{feach[6]}{RST}')
+    print('   ')
+
+
+
 try:
     if args.action_to_perform == 'info':
         info()
@@ -402,11 +468,25 @@ try:
         printcolmns('discordnames')
         listtable('discordnames')
     elif args.action_to_perform == 'restartserver':
-        restartserver(args.server)
+        if args.servername == '':
+            print('You must specify a server name with -s option.')
+        else:
+            restartserver(args.servername)
     elif args.action_to_perform == 'linkplayer':
         linkplayer()
     elif args.action_to_perform == 'delplayer':
         delplayer()
+    elif args.action_to_perform == 'newest':
+        newest()
+    elif args.action_to_perform == 'server':
+        if args.servername == None:
+            print('You must specify a server name with -s option.')
+        else:
+            serverinfo(args.servername)
+    elif args.action_to_perform == 'playerage':
+        playerage()
+
+
     print('       ')
     c.close()
     conn.close()
