@@ -182,6 +182,7 @@ def unsetstartbit(inst):
     conn.close()
 
 def checkwipe(inst):
+    global dwtimer
     lastwipe = getlastwipe(inst)
     if time.time()-float(lastwipe) > 86400:
         if playercount(inst) == 0:
@@ -400,13 +401,13 @@ def arkupd():
     log.info('arkupdater thread started')
     log.info(f'found {numinstances} instances: {instr}')
     while True:
-        try:
+        #try:
             checkupdates()
             checkconfig()
             for each in range(numinstances):
                 checkwipe(instance[each]['name'])
                 checkpending(instance[each]['name'])
             time.sleep(300)
-        except:
-            e = sys.exc_info()
-            log.critical(e)
+        #except:
+        #    e = sys.exc_info()
+        #    log.critical(e)
