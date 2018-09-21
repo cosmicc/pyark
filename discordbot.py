@@ -27,26 +27,32 @@ arkroot = config.get('general', 'arkroot')
 
 client = discord.Client()
 
-def bufferreader():
-    conn3 = sqlite3.connect(sqldb)
-    c3 = conn3.cursor()
-    c3.execute('SELECT * FROM chatbuffer')
-    cbuff = c3.fetchall()
-    c3.close()
-    conn3.close()
-    if cbuff:
-        for each in cbuff:
-            log.warning(each)
-        conn3 = sqlite3.connect(sqldb)
-        c3 = conn3.cursor()
-        c3.execute('DELETE FROM chatbuffer')
-        conn3.commit()
-        c3.close()
-        conn3.close()
-    time.sleep(120)
-
+channel = discord.Object(id='490643760758390813')
 
 def discordbot():
+    async def chatbuffer():
+        await client.wait_until_ready()
+        while not client.is_closed:
+            conn3 = sqlite3.connect(sqldb)
+            c3 = conn3.cursor()
+            c3.execute('SELECT * FROM chatbuffer')
+            cbuff = c3.fetchall()
+            c3.close()
+            conn3.close()
+            if cbuff:
+                for each in cbuff:
+                    log.warning(each)
+                    msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
+                    await client.send_message(channel, msg)
+                    await asyncio.sleep(1)
+                conn3 = sqlite3.connect(sqldb)
+                c3 = conn3.cursor()
+                c3.execute('DELETE FROM chatbuffer')
+                conn3.commit()
+                c3.close()
+                conn3.close()
+            await asyncio.sleep(2)
+
     def savediscordtodb(author):
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
@@ -319,7 +325,7 @@ def discordbot():
                         conn.close()
                         msg = f'Your discord account [{whofor}] is now linked to your player {reqs[1]}'
                         await client.send_message(message.channel, msg)
-                        role = discord.utils.get(user.server.roles, name="Verified Player")
+                        role = discord.utils.get(user.server.roles, name="Linked Player")
                         await client.add_roles(user, role)    
                     else:
                         log.info(f'link account request on discord from {whofor} denied, code not found')
@@ -330,32 +336,31 @@ def discordbot():
                     msg = f'You must start a link request in-game first to get a code, then specify that code here, to link your account'
                     await client.send_message(message.channel, msg)
 
-    chatlistener = threading.Thread(name='chat-listener', target = bufferreader)
-    chatlistener.start()
+    client.loop.create_task(chatbuffer())
+    print(config.get('general','discordtoken'))
+    client.run(config.get('general','discordtoken'))
 
-    try:
-        client.run('NDkwNjQ2MTI2MDI3MDc5Njgw.DoNcWg.5LU6rycTgXNnApPL_6L2e9Tr5j0')
-    except:
-        try:
-            if c in vars():
-                c.close()
-        except:
-            pass
-        try:
-            if conn in vars():
-                conn.close()
-        except:
-            pass
-        try:
-            if c3 in vars():
-                c3.close()
-        except:
-            pass
-        try:
-            if conn3 in vars():
-                conn3.close()
-        except:
-            pass
-
-        e = sys.exc_info()
-        log.critical(e)
+    #except:
+    #    try:
+    #        if c in vars():
+    #            c.close()
+    #    except:
+    #        pass
+    #    try:
+    #        if conn in vars():
+    #            conn.close()
+    #    except:
+    #        pass
+    #    try:
+    #        if c3 in vars():
+    #            c3.close()
+    #    except:
+    #        pass
+    #    try:
+    #        if conn3 in vars():
+    #            conn3.close()
+    #    except:
+    #        pass
+#
+#        e = sys.exc_info()
+#        log.critical(e)

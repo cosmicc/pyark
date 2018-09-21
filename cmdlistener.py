@@ -541,8 +541,8 @@ def checkcommands(minst):
                     cmsg = rawname[1]
                     nmsg = line.split(': ')
                     if len(nmsg) > 2:
-                        print(nmsg)
                         try:
+                            print(f'{nmsg[0]}')
                             dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
                             tstamp = dto.strftime('%m-%d %I:%M%p')
                             writebuffer(inst,whoname,cmsg,tstamp)
