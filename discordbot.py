@@ -1,15 +1,35 @@
 #!/usr/bin/python3
 
-import time
+import time, logging, sys, threading, sqlite3, subprocess
+from configparser import ConfigParser
 import discord
 import asyncio
 from timehelper import elapsedTime, playedTime
+
+log = logging.getLogger(__name__)
+
+class ExtConfigParser(ConfigParser):
+    def getlist(self, section, option):
+        value = self.get(section, option)
+        return list(filter(None, (x.strip() for x in value.split(','))))
+
+    def getlistint(self, section, option):
+        return [int(x) for x in self.getlist(section, option)]
+
+configfile = '/home/ark/pyark.cfg'
+
+config = ExtConfigParser()
+config.read(configfile)
+
+sharedpath = config.get('general', 'shared')
+sqldb = f'{sharedpath}/db/pyark.db'
+arkroot = config.get('general', 'arkroot')
 
 client = discord.Client()
 
 def bufferreader():
     conn3 = sqlite3.connect(sqldb)
-    c3 = conn.cursor()
+    c3 = conn3.cursor()
     c3.execute('SELECT * FROM chatbuffer')
     cbuff = c3.fetchall()
     c3.close()
@@ -18,7 +38,7 @@ def bufferreader():
         for each in cbuff:
             log.warning(each)
         conn3 = sqlite3.connect(sqldb)
-        c3 = conn.cursor()
+        c3 = conn3.cursor()
         c3.execute('DELETE FROM chatbuffer')
         conn3.commit()
         c3.close()
@@ -318,11 +338,11 @@ def discordbot():
     except:
         if c in vars():
             c.close()
-        if conn in vars()
+        if conn in vars():
             conn.close()
         if c3 in vars():
             c3.close()
-        if conn3 in vars()
+        if conn3 in vars():
             conn3.close()
         e = sys.exc_info()
         log.critical(e)

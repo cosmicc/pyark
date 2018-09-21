@@ -5,7 +5,7 @@ from datetime import datetime
 from datetime import timedelta
 import logging, sqlite3, threading, subprocess
 from configparser import ConfigParser
-from timehelper impoer elapsedTime, playedTime
+from timehelper import elapsedTime, playedTime
 
 log = logging.getLogger(__name__)
 
@@ -131,7 +131,7 @@ def iswelcoming(steamid):
 
 def serverisinrestart(steamid,inst,oplayer):
     conn1 = sqlite3.connect(sqldb)
-    c1 = conn.cursor()
+    c1 = conn1.cursor()
     c1.execute('SELECT * FROM instances WHERE name = ?', [inst])
     rbt = c1.fetchone()
     c1.close()
