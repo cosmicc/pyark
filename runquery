@@ -27,6 +27,7 @@ now = time.time()
 
 sqldb = f'{sharedpath}/db/pyark.db'
 
+
 conn = sqlite3.connect(sqldb)
 c = conn.cursor()
 
@@ -34,16 +35,17 @@ c = conn.cursor()
 #c.execute('DELETE from players WHERE steamid = 76561198408657294')
 
 #c.execute('SELECT * from players WHERE discordid = None')
-c.execute('UPDATE players SET discordid = "" WHERE playername = "eclipse"')
-#c.execute('CREATE TABLE IF NOT EXISTS linkrequests (steamid TEXT, name TEXT, reqcode TEXT)')
+#c.execute('UPDATE players SET discordid = "" WHERE playername = "eclipse"')
+c.execute('CREATE TABLE IF NOT EXISTS discoridnames (discordname TEXT)')
 #c.execute('ALTER TABLE discorids DEL COLUMN discordid TEXT')
-#c.execute('DROP TABLE discordids')
+#c.execute('DROP TABLE discornames')
 #c.execute('INSERT INTO general ("cfgver") VALUES ("1")')
 #c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
 conn.commit()
 
-c.execute('SELECT * from players')
+
+
 alldata = c.fetchall()
 ap = []
 for row in alldata:

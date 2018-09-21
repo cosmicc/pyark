@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import subprocess, time
+import sys,subprocess, time
 import argparse, sqlite3
 from configparser import ConfigParser
 from datetime import datetime
@@ -9,19 +9,21 @@ from colorama import Fore, Back, Style
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist',
                                                                   'linkrequests', 'delplayer', 'linkplayer', 'restartserver',
-                                                                  'discordlist', 'notlinked'], help='Action to perform')
+                                                                  'discordnames', 'notlinked'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('info', action='store_true', help='Cluster infomration')
 action_group.add_argument('players', action='store_true', help='Show players table')
 action_group.add_argument('kicklist', action='store_true', help='Show kick list table')
 action_group.add_argument('linkrequests', action='store_true', help='Show link requests table')
-action_group.add_argument('discordlist', action='store_true', help='Show discord users table')
+action_group.add_argument('discordnames', action='store_true', help='Show discord users table')
 action_group.add_argument('restartserver', action='store_true', help='Set a server for admin restart')
 action_group.add_argument('delplayer', action='store_true', help='Remove a player from the table')
 action_group.add_argument('linkplayer', action='store_true', help='Link a player to a discord user')
 action_group.add_argument('notlinked', action='store_true', help='Show players not linked to discord')
 
-parser.add_argument('-c', '--cancel', action='store_true', help='Set restart server to cancel')
+parser.add_argument('-s', '--server', action='store', help='Ark serve rinstance name')
+parser.add_argument('-c', '--cancel', action='store_true', help='cancel a restart')
+
 
 args = parser.parse_args()
 
@@ -256,6 +258,15 @@ def info():
 
     conn.commit()
 
+def restartserver(server):
+    if not args.cancel:
+        c.execute('UPDATE instances SET needsrestart = "True" WHERE name = ?', [args.server])
+        print(f'{BYEL}server {BMGT}{args.server}{BYEL} has been set to {BRED}RESTART{RST}')
+    else:
+        c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', [args.server])
+        print(f'{BYEL}server {BMGT}{args.server}{BYEL} has been set to {BGRN}NOT RESTART{RST}')
+    conn.commit()
+
 def printcolmns(mtable):
     c.execute('PRAGMA table_info({})'.format(mtable))
     alldata = c.fetchall()
@@ -267,7 +278,7 @@ def printcolmns(mtable):
 
 
 def listtablewhere(mtable,colmn,val):
-    print(mtable,colmn,val)
+    #print(mtable,colmn,val)
     c.execute('SELECT * from {} WHERE {} = ""'.format(mtable,colmn))
     showtable(mtable,c.fetchall())
 
@@ -291,21 +302,119 @@ def showtable(mtable,aplay):
     else:
         print(f'{BYEL}{mtable} table is empty.{RST}')
 
+def getresponce(question):
+    print('    ')
+    check = str(input(f"{question} : ")).lower().strip()
+    try:
+        return check
+    except Exception as error:
+        print("Please enter valid inputs")
+        print(error)
+        return ask_user()
 
-if args.action_to_perform == 'info':
-    info()
-elif args.action_to_perform == 'players':
+
+def ask_question(question):
+    print('   ')
+    check = str(input(f"{question} (Y/N): ")).lower().strip()
+    try:
+        if check[0] == 'y':
+            return True
+        elif check[0] == 'n':
+            return False
+        else:
+            print('Invalid Input')
+            return ask_user()
+    except Exception as error:
+        print("Please enter valid inputs")
+        print(error)
+        return ask_user()
+
+def linkplayer():
     printcolmns('players')
     listtable('players')
-elif args.action_to_perform == 'kicklist':
-    printcolmns('kicklist')
-    listtable('kicklist')
-elif args.action_to_perform == 'linkrequests':
-    listtable('linkrequests')
-elif args.action_to_perform == 'notlinked':
-    listtablewhere('players','discordid','') 
 
-print('       ')
-c.close()
-conn.close()
+    nsteamid = getresponce(f'{BGRN}Enter Steam ID of player to add a discord ID too{RST}')
+    print('    ')
+
+    printcolmns('discordnames')
+    listtable('discordnames')
+
+    sdid = getresponce(f'{BGRN}Enter Discord Name to add to player {nsteamid}{RST}')
+
+    if ask_question(f'{BGRN}Add Discord Name: {BMGT}{sdid}{BGRN} to Steam ID {BMGT}{nsteamid}{BYEL}?{RST}'):
+        c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (sdid,nsteamid))
+        print('    ')
+        print(f'{BYEL}Discord Name: {BMGT}{sdid}{BYEL} has been added to {BMGT}{nsteamid}{RST}')
+        print('    ')
+    else:
+        print('    ')
+        print(f'{BRED}Canceled. Nothing written{RST}')
+        print('    ')
+
+    conn.commit()
+    printcolmns('players')
+    listtable('players')    
+
+def delplayer():
+
+    printcolmns('players')
+    listtable('players')
+
+    nsteamid = getresponce(f'{BGRN}Enter Steam ID of player to remove{RST}')
+
+    c.execute('SELECT * from players')
+    oplayers = c.fetchall()
+    for each in oplayers:
+        if each[0] == nsteamid:
+            if ask_question(f'{BGRN}You will be deleting {BMGT}{each[1]}{BGRN} with steamid {BMGT}{each[0]}{BGRN} from the database. continue?{RST}'):
+                c.execute('DELETE from players WHERE steamid = ?', ([args.steamid]))
+                print('    ')
+                print(f'{BYEL}Player {BMGT}{each[1]}{BYEL} with steamid {BMGT}{each[0]}{BYEL} has been deleted.{RST}')
+                print('    ')
+            else:
+                print('    ')
+                print(f'{BRED}Canceled. Skipping delete{RST}')
+                print('   ')
+
+    conn.commit()
+
+    c.execute('SELECT * from players')
+    alldata = c.fetchall()
+    for row in alldata:
+        print(row)
+
+try:
+    if args.action_to_perform == 'info':
+        info()
+    elif args.action_to_perform == 'players':
+        printcolmns('players')
+        listtable('players')
+    elif args.action_to_perform == 'kicklist':
+        printcolmns('kicklist')
+        listtable('kicklist')
+    elif args.action_to_perform == 'linkrequests':
+        listtable('linkrequests')
+        listtable('linkrequests')
+    elif args.action_to_perform == 'notlinked':
+        listtable('players')
+        listtablewhere('players','discordid','') 
+    elif args.action_to_perform == 'discordnames':
+        printcolmns('discordnames')
+        listtable('discordnames')
+    elif args.action_to_perform == 'restartserver':
+        restartserver(args.server)
+    elif args.action_to_perform == 'linkplayer':
+        linkplayer()
+    elif args.action_to_perform == 'delplayer':
+        delplayer()
+    print('       ')
+    c.close()
+    conn.close()
+except:
+    c.close()
+    conn.close()
+    e = sys.exc_info()
+    print(e)
+
+
 
