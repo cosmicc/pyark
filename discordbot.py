@@ -14,7 +14,7 @@ def bufferreader():
     cbuff = c.fetchall()
     if cbuff:
         for each in cbuff:
-        log.warning(each)
+            log.warning(each)
         c.execute('DELETE FROM chatbuffer')
         conn.commit()
     c.close()

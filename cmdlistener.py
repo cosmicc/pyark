@@ -1,4 +1,5 @@
 import sys, logging, subprocess, sqlite3, time, threading, random
+from datetime import datetime
 from configparser import ConfigParser
 
 log = logging.getLogger(__name__)
@@ -607,18 +608,22 @@ def checkcommands(minst):
                 whoname = rawname[0].lower()
                 if len(rawname) > 1:
                     cmsg = rawname[1]
-                    log.warning(f'{line}')
-                    writebuffer(inst,whoname,cmsg)
+                    nmsg = line.split(': ')
+                    if len(nmsg) > 2:
+                        print(nmsg[0])
+                        #dto = datetime.strptime(nmsg[0], '%Y.%M.%d_%H.%M.%S')
+                        #log.warning(dto)
+                        #writebuffer(inst,whoname,cmsg,tstamp)
 
 
 def clisten(minst):
     log.info(f'starting the command listener thread for {minst}')
     while True:
-        try:
+        #try:
             checkcommands(minst)
             time.sleep(3)
-        except:
-            e = sys.exc_info()
-            log.critical(e)
-            c.close()
-            conn.close()
+        #except:
+        #    e = sys.exc_info()
+        #    log.critical(e)
+        #    c.close()
+        #    conn.close()
