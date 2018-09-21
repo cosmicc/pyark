@@ -607,7 +607,7 @@ def checkcommands(minst):
                 whoname = rawname[0].lower()
                 if len(rawname) > 1:
                     cmsg = rawname[1]
-                    log.warning(f'[{inst}] {whoname} {cmsg}')
+                    log.warning(f'{line}')
                     writebuffer(inst,whoname,cmsg)
 
 
