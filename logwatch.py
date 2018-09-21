@@ -240,9 +240,9 @@ def onlineplayer(steamid,inst):
             conn.commit()
             time.sleep(3)
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        if oplayer[8] == '':
-            mtxt = f'your player is not linked with a discord account yet. type !linkme in global chat'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+            if oplayer[8] == '':
+                mtxt = f'your player is not linked with a discord account yet. type !linkme in global chat'
+                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         if float(oplayer[2]) + 60 < float(time.time()):
             serverisinrestart(steamid,inst,oplayer)
     c.close()
