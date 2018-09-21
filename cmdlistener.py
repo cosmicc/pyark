@@ -558,7 +558,7 @@ def clisten(minst):
         except:
             try:
                 if c in vars():
-                    c.close():
+                    c.close()
             except:
                 pass
             try:
