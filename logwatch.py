@@ -218,7 +218,7 @@ def onlineplayer(steamid,inst):
     timestamp=time.time()
     if not oplayer:
         log.info(f'steamid {steamid} was not found. adding new player to cluster!')
-        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1))
+        c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,''))
         conn.commit()
         if not iswelcoming(steamid):
             welcom = threading.Thread(name = 'welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid,inst))
