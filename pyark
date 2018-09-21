@@ -143,6 +143,9 @@ def main():
             if not instance[each]['restartthread'].is_alive():
                 t = f'{inst} log watcher'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if not instance[each]['kickthread'].is_alive():
+                t = f'{inst} kicklist kicker'
+                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
 
 if __name__ == '__main__':
     main()
