@@ -337,30 +337,5 @@ def discordbot():
                     await client.send_message(message.channel, msg)
 
     client.loop.create_task(chatbuffer())
-    print(config.get('general','discordtoken'))
     client.run(config.get('general','discordtoken'))
 
-    #except:
-    #    try:
-    #        if c in vars():
-    #            c.close()
-    #    except:
-    #        pass
-    #    try:
-    #        if conn in vars():
-    #            conn.close()
-    #    except:
-    #        pass
-    #    try:
-    #        if c3 in vars():
-    #            c3.close()
-    #    except:
-    #        pass
-    #    try:
-    #        if conn3 in vars():
-    #            conn3.close()
-    #    except:
-    #        pass
-#
-#        e = sys.exc_info()
-#        log.critical(e)

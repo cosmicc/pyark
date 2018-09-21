@@ -543,7 +543,10 @@ def checkcommands(minst):
                     if len(nmsg) > 2:
                         try:
                             print(f'{nmsg[0]}')
-                            dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
+                            if nmsg[0].startswith('"'):
+                                dto = datetime.strptime(nmsg[0][4:], '%y.%m.%d_%H.%M.%S')
+                            else:
+                                dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
                             tstamp = dto.strftime('%m-%d %I:%M%p')
                             writebuffer(inst,whoname,cmsg,tstamp)
                         except:
