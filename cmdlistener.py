@@ -610,12 +610,10 @@ def checkcommands(minst):
                     cmsg = rawname[1]
                     nmsg = line.split(': ')
                     if len(nmsg) > 2:
-                        print(f':{nmsg[0][3:]}:')
+                        print(nmsg)
                         try:
                             dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
-                            print(dto)
                             tstamp = dto.strftime('%m-%d %I:%M%p')
-                            print(tstamp)
                             writebuffer(inst,whoname,cmsg,tstamp)
                         except:
                             log.warning('could not parse date from chat')
