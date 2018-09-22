@@ -16,7 +16,7 @@ def wcstamp():
 
 def elapsedTime(start_time, stop_time):
     result = []
-    seconds = start_time - stop_time
+    seconds = float(start_time) - float(stop_time)
     if seconds > 60 and seconds < 3600:
         granularity = 1
     else:
@@ -35,6 +35,7 @@ def elapsedTime(start_time, stop_time):
 
 def playedTime(seconds):
     result = []
+    seconds = float(seconds.replace(',', ''))
     if seconds < 3600:
         granularity = 1
     else:

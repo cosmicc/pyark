@@ -349,7 +349,7 @@ def newest():
         else:
             trclr = f'{RED}'
 
-        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL} joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
+        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL}for {BCYN}{playedTime(feach[4])} {BYEL}joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
 
 
 def oldest():
@@ -373,7 +373,7 @@ def oldest():
         else:
             trclr = f'{RED}'
 
-        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL} joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
+        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL}for {BCYN}{playedTime(feach[4])} {BYEL}joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
 
 
 def serverinfo(svr):

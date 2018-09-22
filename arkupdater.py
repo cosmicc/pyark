@@ -324,7 +324,20 @@ def isnewarkver(inst):
     else:
         return True, curver, avlver
 
-
+def checkbackup():
+    for seach in range(numinstances):
+        sinst = instance[seach]['name']
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT lastrestart FROM instances WHERE name = ?', [sinst])
+        lastrestr = c.fetchall()
+        c.close()
+        conn.close()
+        lt = float(time.time())-float(lastrestr[0][0])
+        if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
+            log.info(f'performing a world data backup on {sinst}')
+            subprocess.run('arkmanager backup @%s' % (sinst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            
 def checkupdates():
     pendingupdates = False
     arkupdate = False
@@ -388,6 +401,7 @@ def arkupd():
     log.info(f'found {numinstances} ark server instances: {instr}')
     while True:
         try:
+            checkbackup()
             checkupdates()
             checkconfig()
             for each in range(numinstances):
