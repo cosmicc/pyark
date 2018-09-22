@@ -350,8 +350,8 @@ def checkpending(inst):
                     instance[each]['restartthread'].start()
 
 def arkupd(): 
-    log.info('arkupdater thread started')
-    log.info(f'found {numinstances} instances: {instr}')
+    log.debug('arkupdater thread started')
+    log.info(f'found {numinstances} ark server instances: {instr}')
     while True:
         try:
             checkupdates()
