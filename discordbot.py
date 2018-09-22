@@ -59,7 +59,10 @@ def discordbot():
             conn3.close()
             if cbuff:
                 for each in cbuff:
-                    msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
+                    if each[1] = "Alert":
+                        msg = f'{each[3]} [{each[0].capitalize()}] {each[2]}'
+                    else:
+                        msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
                     await client.send_message(channel, msg)
                     await asyncio.sleep(2)
                 conn3 = sqlite3.connect(sqldb)
