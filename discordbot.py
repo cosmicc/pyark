@@ -4,7 +4,7 @@ import time, logging, sys, threading, sqlite3, subprocess
 from configparser import ConfigParser
 import discord
 import asyncio
-from timehelper import elapsedTime, playedTime
+from timehelper import *
 
 log = logging.getLogger(__name__)
 
