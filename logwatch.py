@@ -71,7 +71,6 @@ def writechat(inst,whos,msg,tstamp):
 def processlogline(line,inst):
     if line.find('[TCsAR]') != -1:
         try:
-            print(line)
             rawline = line.split('|')
             rawsteamid = rawline[2].split(':')
             steamid = rawsteamid[1].strip()
