@@ -260,7 +260,7 @@ def instancerestart(inst, reason):
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server restart for %s has been cancelled'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                 writechat(inst,'ALERT',f'# Server restart for {reason.capitalize()} has been canceled',datetime.now().strftime('%m-%d %I:%M%p'))
+                writechat(inst,'ALERT',f'# Server restart for {reason.capitalize()} has been canceled',datetime.now().strftime('%m-%d %I:%M%p'))
         else:
             unsetstartbit(inst)
             if confupdtimer == 0:
