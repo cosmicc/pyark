@@ -1,7 +1,7 @@
 import sys, logging, subprocess, sqlite3, time, threading, random
 from datetime import datetime
 from configparser import ConfigParser
-from timehelper import elapsedTime, playedTime, writechat
+from timehelper import elapsedTime, playedTime
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +37,20 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr=instr + ', %s' % (a)
+def writechat(inst,whos,msg,tstamp):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * from players WHERE playername = ?', (whos,))
+    isindb = c.fetchone()
+    c.close()
+    conn.close()
+    if isindb:
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
+        conn.commit()
+        c.close()
+        conn.close()
 
 def getsteamid(whoasked):
     conn = sqlite3.connect(sqldb)

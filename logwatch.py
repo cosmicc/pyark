@@ -5,7 +5,7 @@ from datetime import datetime
 from datetime import timedelta
 import logging, sqlite3, threading, subprocess
 from configparser import ConfigParser
-from timehelper import elapsedTime, playedTime, writechat
+from timehelper import elapsedTime, playedTime
 
 log = logging.getLogger(__name__)
 
@@ -52,6 +52,21 @@ def follow(stream):
         elif not block:
             # Wait for data.
             time.sleep(1.0)
+
+def writechat(inst,whos,msg,tstamp):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * from players WHERE playername = ?', (whos,))
+    isindb = c.fetchone()
+    c.close()
+    conn.close()
+    if isindb:
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
+        conn.commit()
+        c.close()
+        conn.close()
 
 def processlogline(line,inst):
     if line.find('[TCsAR]') != -1:
