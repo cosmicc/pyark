@@ -194,7 +194,9 @@ def instancerestart(inst, reason):
     log.debug(f'instance restart thread starting for {inst}')
     global confupdtimer
     setrestartbit(inst)
-    if playercount(inst) == 0:
+    t, s, e = datetime.now(), dt(10,0), dt(10,5)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
+    inmaint = is_time_between(t, s, e)
+    if playercount(inst) == 0 and (not inmaint and reason !wq= "maintenance restart"):
         log.info(f'server {inst} is empty and restarting now for a {reason}')
         writechat(inst,'ALERT',f'# Empty server restarting now for a {reason.capitalize()}',datetime.now().strftime('%m-%d %I:%M%p'))
         message = f'server is restarting now for a {reason}'
@@ -213,8 +215,6 @@ def instancerestart(inst, reason):
         log.info(f'server {inst} instance is starting')
         resetlastrestart(inst, reason)
     else:
-        t, s, e = datetime.now(), dt(10,0), dt(10,5)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
-        inmaint = is_time_between(t, s, e)
         if inmaint:
             log.info(f'maintenance window reached, running server os maintenance')
             subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)

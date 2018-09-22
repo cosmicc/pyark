@@ -98,9 +98,9 @@ def printserverinfo(each):
         return pcnt
 
     restarted = elapsedTime(float(now),float(each[1]))
-    if float(now)-float(each[1]) > 1209600:
+    if float(now)-float(each[1]) > 259200:
         restclr = f"{BRED}"
-    elif float(now)-float(each[1]) > 604800:
+    elif float(now)-float(each[1]) > 172800:
         restclr = f"{BYEL}"
     else:
         restclr = f"{BGRN}"
@@ -112,9 +112,9 @@ def printserverinfo(each):
     else:
         wipeclr = f"{BGRN}"
     lvote = elapsedTime(float(now),float(each[4]))
-    if float(now)-float(each[4]) > 604800:
+    if float(now)-float(each[4]) > 259200:
         voteclr = f"{BRED}"
-    elif float(now)-float(each[4]) > 259200:
+    elif float(now)-float(each[4]) > 86400:
         voteclr = f"{BYEL}"
     else:
         voteclr = f"{BGRN}"
@@ -147,7 +147,7 @@ def printserverinfo(each):
     else:
         tls = ''
     print(f'{BYEL}Server: {BMGT}{each[0].upper()}{BYEL} - Players: {mm}{ply}/50{RST}')
-    print(f'{BYEL}Configuration version: {each[6]} {vertxt}')
+    print(f'{BYEL}Configuration version: {BCYN}{each[6]}{RST} {vertxt}')
     print(f'{BYEL}Server in restart: {inrest}{BYEL}{tls}{RST}')
     print(f'{BYEL}Last restart: {restclr}{restarted}{BYEL}  Reason: {BCYN}{each[5]}{RST}')
     print(f'{BYEL}Last wilddino wipe: {wipeclr}{lwipe}{RST}')
