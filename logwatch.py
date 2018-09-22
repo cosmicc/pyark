@@ -186,6 +186,8 @@ def onlineplayer(steamid,inst):
         writechat(inst,'ALERT',f'>>> A New player has joined the cluster!',wcstamp())
     elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):
+            if oplayer[3] != inst:
+                writechat(inst,'ALERT',f'>>> {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}',wcstamp())
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
             conn1 = sqlite3.connect(sqldb)
             c1 = conn1.cursor()
