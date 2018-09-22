@@ -1,5 +1,5 @@
 import sys, logging, subprocess, sqlite3, time, threading, random
-from datetime import datetime
+from datetime import datetime, timedelta
 from configparser import ConfigParser
 from timehelper import elapsedTime, playedTime
 
@@ -559,11 +559,14 @@ def checkcommands(minst):
                     cmsg = rawname[1]
                     nmsg = line.split(': ')
                     if len(nmsg) > 2:
+                            td = timedelta(hours=4)
                         try:
                             if nmsg[0].startswith('"'):
                                 dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
+                                dto = dto - td
                             else:
                                 dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
+                                dto = dto - td
                             tstamp = dto.strftime('%m-%d %I:%M%p')
                             writechat(inst,whoname,cmsg,tstamp)
                         except:
