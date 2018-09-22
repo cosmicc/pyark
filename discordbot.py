@@ -59,7 +59,7 @@ def discordbot():
             conn3.close()
             if cbuff:
                 for each in cbuff:
-                    if each[0] == "Alert":
+                    if each[1] == "Alert":
                         msg = f'{each[3]} [{each[0].capitalize()}] {each[2]}'
                     else:
                         msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'

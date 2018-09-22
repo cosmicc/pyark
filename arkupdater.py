@@ -156,7 +156,7 @@ def checkwipe(inst):
     if time.time()-float(lastwipe) > 86400:
         if playercount(inst) == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
-            writechat(inst,'ALERT',f'# Empty server is over 24 hours since wild dino wipe. Wiping now.',wcstamp())
+            writechat(inst,'ALERT',f'### Empty server is over 24 hours since wild dino wipe. Wiping now.',wcstamp())
             subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             dwtimer = 0
             resetlastwipe(inst)            
@@ -198,7 +198,7 @@ def instancerestart(inst, reason):
     inmaint = is_time_between(t, s, e)
     if playercount(inst) == 0:
         log.info(f'server {inst} is empty and restarting now for a {reason}')
-        writechat(inst,'ALERT',f'# Empty server restarting now for a {reason.capitalize()}',wcstamp())
+        writechat(inst,'ALERT',f'### Empty server restarting now for a {reason.capitalize()}',wcstamp())
         message = f'server is restarting now for a {reason}'
         confupdtimer = 0
         subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -226,7 +226,7 @@ def instancerestart(inst, reason):
             gotime = False
             countstart = time.time()
             snr = stillneedsrestart(inst)
-            writechat(inst,'ALERT',f'# Server will restart in 30 minutes for a {reason.capitalize()}',wcstamp())
+            writechat(inst,'ALERT',f'### Server will restart in 30 minutes for a {reason.capitalize()}',wcstamp())
             while snr and not gotime:
                 updatetimer(inst,timeleft)
                 if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
@@ -241,7 +241,7 @@ def instancerestart(inst, reason):
                 log.info(f'server {inst} is restarting now for a {reason}')
                 message = f'server is restarting now for a {reason}'
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                writechat(inst,'ALERT',f'# Server restarting now for {reason.capitalize()}',wcstamp())
+                writechat(inst,'ALERT',f'### Server restarting now for {reason.capitalize()}',wcstamp())
                 time.sleep(30)
                 subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -260,7 +260,7 @@ def instancerestart(inst, reason):
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server restart for %s has been cancelled'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                writechat(inst,'ALERT',f'# Server restart for {reason.capitalize()} has been canceled',wcstamp())
+                writechat(inst,'ALERT',f'### Server restart for {reason.capitalize()} has been canceled',wcstamp())
         else:
             unsetstartbit(inst)
             if reason != "maintenance restart":
