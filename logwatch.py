@@ -97,7 +97,7 @@ def processlogline(line,inst):
             c.close()
             conn.close()
             if not pexist:
-                if pexists[0] != '':
+                if steamid != '':
                     log.info(f'player {playername} with steamid {steamid} was not found. adding.')
                     conn = sqlite3.connect(sqldb)
                     c = conn.cursor()
