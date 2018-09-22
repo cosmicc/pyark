@@ -247,8 +247,19 @@ def castedvote(inst,whoasked,myvote):
     if not isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat no vote is taking place now" @%s' % (inst), shell=True)
     else:
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT * FROM players WHERE playername = ?', [whoasked])
+        pdata = c.fetchall()
+        c.close()
+        conn.close()
+        
+
         if getvote(whoasked) == 99:
             mtxt = 'sorry, you are not eligible to vote in this round'
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
+        elif not pdata:
+            mtxt = 'sorry, you are not eligible to vote. Tell an admin they need to update your name!'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
         elif getvote(whoasked) == 2:
             mtxt = "you started the vote. you're assumed a YES vote."
