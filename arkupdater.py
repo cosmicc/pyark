@@ -286,7 +286,13 @@ def checkconfig():
         
     for each in range(numinstances):
         inst = instance[each]['name']
-        if float(time.time())-float(instance[each]['lastrestart']) > 259200:
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT lastrestart FROM instances WHERE name = ?', [inst])
+        lstsv = c.fetchone()
+        c.close()
+        conn.close()
+        if float(time.time())-float(lstsv[0]) > 259200:
             maintrest = "maintenance restart"
         else:
             maintrest = "configuration update"
