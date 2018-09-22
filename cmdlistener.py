@@ -283,7 +283,7 @@ def castedvote(inst,whoasked,myvote):
                 subprocess.run('arkmanager rconcmd "ServerChat voting has finished. NO has won." @%s' % (inst), shell=True)
                 time.sleep(1)
                 subprocess.run('arkmanager rconcmd "ServerChat NO wild dino wipe will be performed" @%s' % (inst), shell=True)
-                writechat(inst,'ALERT',f'# A wild dino wipe vote has failed with a NO vote from {whoasked.capitalize()}',wcstamp())
+                writechat(inst,'ALERT',f'### A wild dino wipe vote has failed with a NO vote from {whoasked.capitalize()}',wcstamp())
                 arewevoting=False
 
 def votingpassed():
@@ -341,7 +341,7 @@ def wipeit(inst):
     yesvoters, totvoters = howmanyvotes()
     log.info(f'voting yes has won ({yesvoters}/{totvoters}), wild dino wipe incoming for {inst}')
     subprocess.run('arkmanager rconcmd "ServerChat voting has finished. YES has won (%s of %s)" @%s' % (yesvoters,totvoters,inst), shell=True)
-    writechat(inst,'ALERT',f'# A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.',wcstamp())
+    writechat(inst,'ALERT',f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.',wcstamp())
     time.sleep(3)
     subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe commencing in 10 seconds" @%s' % (inst), shell=True)
     time.sleep(10)
@@ -362,7 +362,7 @@ def voting(inst,whoasked):
     subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe voting has started with %s players. vote !yes or !no in global chat now" @%s' % (pon,inst), shell=True)
     votestarttime = time.time()
     sltimer = 0
-    writechat(inst,'ALERT',f'# A wild dino wipe vote has been started by {whoasked.capitalize()}',wcstamp())
+    writechat(inst,'ALERT',f'### A wild dino wipe vote has been started by {whoasked.capitalize()}',wcstamp())
     while arewevoting:
         time.sleep(5)
         if votingpassed():
@@ -376,7 +376,7 @@ def voting(inst,whoasked):
                 yesvoters, totvoters = howmanyvotes()
                 subprocess.run('arkmanager rconcmd "ServerChat not enough votes (%s of %s). voting has ended." @%s' % (yesvoters,totvoters,inst), shell=True)
                 log.info(f'not enough votes ({yesvoters}/{totvoters}), voting has ended on {inst}')
-                writechat(inst,'ALERT',f'# Wild dino wipe vote failed with not enough votes ({yesvoters} of {totvoters})',wcstamp())
+                writechat(inst,'ALERT',f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of {totvoters})',wcstamp())
                 arewevoting = False
         else:
             if sltimer == 120 or sltimer == 240:
