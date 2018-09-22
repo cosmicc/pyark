@@ -1,3 +1,19 @@
+def writechat(inst,whos,msg,tstamp):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * from players WHERE playername = ?', (whos,))
+    isindb = c.fetchone()
+    c.close()
+    conn.close()
+    if isindb:
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
+        conn.commit()
+        c.close()
+        conn.close()
+
+
 def elapsedTime(start_time, stop_time, lshort=False):
     diff_time = start_time - stop_time
     total_min = diff_time / 60

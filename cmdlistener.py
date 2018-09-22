@@ -1,7 +1,7 @@
 import sys, logging, subprocess, sqlite3, time, threading, random
 from datetime import datetime
 from configparser import ConfigParser
-from timehelper import elapsedTime, playedTime
+from timehelper import elapsedTime, playedTime, writechat
 
 log = logging.getLogger(__name__)
 
@@ -332,6 +332,7 @@ def voting(inst,whoasked):
     subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe voting has started with %s players. vote !yes or !no in global chat now" @%s' % (pon,inst), shell=True)
     votestarttime = time.time()
     sltimer = 0
+    writechat(inst,'ALERT',f'# A wild dino wipe vote has been started by {whoasked.capitalize()}',datetime.now().strftime('%m-%d %I:%M%p'))
     while arewevoting:
         time.sleep(5)
         if votingpassed():
@@ -345,6 +346,7 @@ def voting(inst,whoasked):
                 yesvoters, totvoters = howmanyvotes()
                 subprocess.run('arkmanager rconcmd "ServerChat not enough votes (%s of %s). voting has ended." @%s' % (yesvoters,totvoters,inst), shell=True)
                 log.info(f'not enough votes ({yesvoters}/{totvoters}), voting has ended on {inst}')
+                writechat(inst,'ALERT',f'# Wild dino wipe vote failed with not enough votes ({yesvoters} of {totvoters})',datetime.now().strftime('%m-%d %I:%M%p'))
                 arewevoting = False
         else:
             if sltimer == 120 or sltimer == 240:
@@ -533,7 +535,6 @@ def checkcommands(minst):
             whoasked = getnamefromchat(line)
             linker(minst,whoasked)
         else:
-            print(line)
             rawline = line.split('(')
             if len(rawline) > 1:
                 rawname = rawline[1].split(')')
@@ -548,7 +549,7 @@ def checkcommands(minst):
                             else:
                                 dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
                             tstamp = dto.strftime('%m-%d %I:%M%p')
-                            writebuffer(inst,whoname,cmsg,tstamp)
+                            writechat(inst,whoname,cmsg,tstamp)
                         except:
                             log.warning('could not parse date from chat')
 
