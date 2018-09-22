@@ -29,6 +29,24 @@ client = discord.Client()
 
 channel = discord.Object(id='490643760758390813')
 
+def getlastwipe(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT lastdinowipe FROM instances WHERE name = ?', [inst])
+    lastwipe = c.fetchall()
+    c.close()
+    conn.close()
+    return ''.join(lastwipe[0])
+
+def getlastrestart(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT lastrestart FROM instances WHERE name = ?', [inst])
+    lastwipe = c.fetchall()
+    c.close()
+    conn.close()
+    return ''.join(lastwipe[0])
+
 def discordbot():
     async def chatbuffer():
         await client.wait_until_ready()
@@ -173,7 +191,7 @@ def discordbot():
             if len(lwt) > 1:
                 instr = lwt[1]
                 lastwipet = elapsedTime(time.time(),float(getlastwipe(instr)))
-                msg = f'Last wild dino wipe for {instr.upper()} was {lastwipet} ago'
+                msg = f'Last wild dino wipe for {instr.capitalize()} was {lastwipet} ago'
                 await client.send_message(message.channel, msg)
             else:
                 conn = sqlite3.connect(sqldb)
@@ -184,14 +202,14 @@ def discordbot():
                 conn.close()
                 for each in srvrs:
                     lastwipet = elapsedTime(time.time(),float(getlastwipe(each[0])))
-                    msg = f'Last wild dino wipe for {each[0].upper()} was {lastwipet} ago'
+                    msg = f'Last wild dino wipe for {each[0].capitalize()} was {lastwipet} ago'
                     await client.send_message(message.channel, msg)
         elif message.content.startswith('!lastrestart'):
             lwt = message.content.split(' ')
             if len(lwt) > 1:
                 instr = lwt[1]
                 lastrestartt = elapsedTime(time.time(),float(getlastrestart(instr)))
-                msg = f'Last server restart for {instr.upper()} was {lastrestartt} ago'
+                msg = f'Last server restart for {instr.capitalize()} was {lastrestartt} ago'
                 await client.send_message(message.channel, msg)
             else:
                 conn = sqlite3.connect(sqldb)
@@ -206,7 +224,7 @@ def discordbot():
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>'
+            msg = f'Commands: !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
