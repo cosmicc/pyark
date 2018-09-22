@@ -202,8 +202,6 @@ def instancerestart(inst, reason):
         subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         subprocess.run('arkmanager stop --saveworld @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         log.info(f'instance {inst} server has stopped')
-        #subprocess.run('arkmanager backup @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        #log.info(f'instance {inst} server has backed up world')
         subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, shell=True)
         subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, shell=True)
         log.debug(f'instance {inst} server updated config files')
@@ -219,8 +217,8 @@ def instancerestart(inst, reason):
             log.info(f'maintenance window reached, running server os maintenance')
             subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             subprocess.run('apt full-upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            ### IF /var/run/requires-reboot
-        if (inmaint and reason == "configuration update") or (reason != "configuration update"):
+            ### IF /var/run/requires-reboot 
+        if (inmaint and reason == "configuration update") or (inmaint and reason == "maintenance restart") or (reason != "configuration update" and reason != "maintenance restart"):
             log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
             timeleft = 30
             gotime = False
@@ -288,8 +286,12 @@ def checkconfig():
         
     for each in range(numinstances):
         inst = instance[each]['name']
-        if getcfgver('general') > getcfgver(inst) and not isrebooting(inst):
-                instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,"configuration update"))
+        if float(time.time())-float(instance[each]['lastrestart']) > 259200:
+            maintrest = "maintenance restart"
+        else:
+            maintrest = "configuration update"
+        if (getcfgver('general') > getcfgver(inst) or maintrest == 'maintenance restart') and not isrebooting(inst):
+                instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,maintrest))
                 instance[each]['restartthread'].start()
 
     else:
