@@ -327,7 +327,7 @@ def wipeit(inst):
     yesvoters, totvoters = howmanyvotes()
     log.info(f'voting yes has won ({yesvoters}/{totvoters}), wild dino wipe incoming for {inst}')
     subprocess.run('arkmanager rconcmd "ServerChat voting has finished. YES has won (%s of %s)" @%s' % (yesvoters,totvoters,inst), shell=True)
-    writechat(inst,'ALERT',f'# A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.',datetime.now().strftime('%m-%d %I:%M%p')
+    writechat(inst,'ALERT',f'# A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.',datetime.now().strftime('%m-%d %I:%M%p'))
     time.sleep(3)
     subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe commencing in 10 seconds" @%s' % (inst), shell=True)
     time.sleep(10)
