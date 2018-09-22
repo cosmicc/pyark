@@ -35,7 +35,8 @@ def elapsedTime(start_time, stop_time):
 
 def playedTime(seconds):
     result = []
-    seconds = float(seconds.replace(',', ''))
+    if type(seconds) != float:
+        seconds = float(seconds.replace(',', ''))
     if seconds < 3600:
         granularity = 1
     else:

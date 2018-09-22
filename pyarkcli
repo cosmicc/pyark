@@ -8,11 +8,11 @@ from colorama import Fore, Back, Style
 from timehelper import elapsedTime, playedTime
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 
-    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'say',
+parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 
+    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw',
     'playertable', 'oldest'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
-action_group.add_argument('info', action='store_true', help='Cluster infomration')
+action_group.add_argument('servers', action='store_true', help='Server infomration')
 action_group.add_argument('playertable', action='store_true', help='Show players table')
 action_group.add_argument('kicklist', action='store_true', help='Show kick list table')
 action_group.add_argument('linkrequests', action='store_true', help='Show link requests table')
@@ -28,7 +28,7 @@ action_group.add_argument('players', action='store_true', help='Show players by 
 action_group.add_argument('chatbuffer', action='store_true', help='Show the chat buffer table')
 action_group.add_argument('servertable', action='store_true', help='Show the servers table table')
 action_group.add_argument('dinowipe', action='store_true', help='Initiate a wild dino wipe on a server')
-action_group.add_argument('say', action='store_true', help='Say something to a server global chat')
+action_group.add_argument('playersraw', action='store_true', help='Show raw player list')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='cancel a restart')
@@ -70,6 +70,9 @@ sqldb = f'{sharedpath}/db/pyark.db'
 clr1 = f'{BYEL}'
 clr2 = f'{BCYN}'
 
+tclr=''
+trclr=''
+
 print('    ')
 
 conn = sqlite3.connect(sqldb)
@@ -79,6 +82,10 @@ now = time.time()
 
 c.execute('DELETE from players WHERE playedtime = 0')
 conn.commit()
+
+def printplayer(feach):
+    print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}ago on {BMGT}{feach[3]} {BYEL}for {BCYN}{playedTime(feach[4])} {BYEL}joined {trclr}{elapsedTime(now,float(feach[6]))}{BYEL} ago{RST}')
+
 
 def printserverinfo(each):
     c.execute('SELECT * from players')
@@ -157,37 +164,35 @@ def printserverinfo(each):
     print('  ')
 
 
-def info():
+def playersraw():
     c.execute('SELECT * from players')
     allplayers = c.fetchall()
 
     for row in allplayers:
-        #print(row)
-        if row[0] == '' or row[0].startswith(' '):
-            print(f'deleting id: {row[0]}')
-            c.execute('DELETE from players WHERE steamid = ?', (row[0],))
+        pltime = playedTime(float(row[4].replace(',','')))
+        laston = elapsedTime(float(now),float(row[2]))
+        diff_time = float(now) -  float(row[2])
+        total_min = diff_time / 60
+        minutes = int(total_min % 60)
+        hours = int(total_min / 60)
+        days = int(hours / 24)
+        if minutes <= 1 and hours < 1 and days < 1:
+            active = BGRN
+        elif days > 7 <= 14:
+            active = YEL
+        elif days > 14:
+            active = BRED
         else:
-            pltime = playedTime(float(row[4].replace(',','')))
-            laston = elapsedTime(float(now),float(row[2]))
-            diff_time = float(now) -  float(row[2])
-            total_min = diff_time / 60
-            minutes = int(total_min % 60)
-            hours = int(total_min / 60)
-            days = int(hours / 24)
-            if minutes <= 1 and hours < 1 and days < 1:
-                active = BGRN
-            elif days > 7 <= 14:
-                active = YEL
-            elif days > 14:
-                active = BRED
-            else:
-                active = BCYN
-            firston = datetime.fromtimestamp(float(row[6])-14400).strftime('%a, %b %d %I:%M%p')
-            print(f'{active}{row[0]} \"{row[1]}\" - Connections: {row[7]} - Reward Points: {row[5]}')
-            print(f' FirstON: {firston} | PlayedTime: {pltime} | LastON: {laston} on {row[3]}{RST}')
-            print('  ')
+            active = BCYN
+        firston = datetime.fromtimestamp(float(row[6])-14400).strftime('%a, %b %d %I:%M%p')
+        print(f'{active}{row[0]} \"{row[1]}\" - Connections: {row[7]} - Reward Points: {row[5]}')
+        print(f' FirstON: {firston} | PlayedTime: {pltime} | LastON: {laston} on {row[3]}{RST}')
+        print('  ')
 
 
+def showservers():
+    global tclr
+    global trclr
     c.execute('SELECT cfgver from general')
     gencfgver = c.fetchone()
 
@@ -200,8 +205,28 @@ def info():
 
     for each in allservers:
         printserverinfo(each)
+    print(f'{BCYN}CLUSTER PLAYERS ONLINE:{RST}')
+    print('   ')
+    lst = time.time()-41
+    c.execute('SELECT * from players WHERE lastseen > ?', (lst,))
+    lastones = c.fetchall()
+    for feach in lastones:
+        tt = now-float(feach[2])
+        tr = now-float(feach[6])
+        if tt < 86400:
+            tclr = f'{BGRN}'
+        elif tt < 604800:
+            tclr = f'{YEL}'
+        else:
+            tclr = f'{RED}'
+        if tr < 604800:
+            trclr = f'{BGRN}'
+        elif tr < 2592000:
+            trclr = f'{YEL}'
+        else:
+            trclr = f'{RED}'
 
-    conn.commit()
+        printplayer(feach)
 
 def restartserver(server):
     if not args.cancel:
@@ -329,6 +354,8 @@ def delplayer():
         print(row)
 
 def newest():
+    global tclr
+    global trclr
     print(f'{BCYN}TOP 10 NEWEST CLUSTER PLAYERS:{RST}')
     print('   ')
     c.execute('SELECT * from players ORDER BY firstseen DESC LIMIT 10')
@@ -349,10 +376,11 @@ def newest():
         else:
             trclr = f'{RED}'
 
-        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL}for {BCYN}{playedTime(feach[4])} {BYEL}joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
-
+        printplayer(feach)
 
 def oldest():
+    global tclr
+    global trclr
     print(f'{BCYN}TOP 10 OLDEST LAST TIME SEEN PLAYERS:{RST}')
     print('   ')
     c.execute('SELECT * from players ORDER BY lastseen ASC LIMIT 10')
@@ -373,72 +401,78 @@ def oldest():
         else:
             trclr = f'{RED}'
 
-        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL}for {BCYN}{playedTime(feach[4])} {BYEL}joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
-
+        printplayer(feach)
 
 def serverinfo(svr):
+    global tclr
+    global trclr
     c.execute('SELECT * from instances WHERE name = ?', (svr,))
     svrifo = c.fetchone()
-    printserverinfo(svrifo)
-    c.execute('SELECT * from players WHERE server = ?',(svr,))
-    upo = c.fetchall()
-    bcnt = 0
-    for ueach in upo:
-        if float(time.time()) - float(ueach[2]) < 3600:
-            bcnt += 1
-    if bcnt == 0:
-        pp = f'{BRED}'
+    if not svrifo:
+        print(f'{BMGT}{svr}{BRED} is not a server instance{RST}')
     else:
-        pp = f'{BGRN}'
-    print(f'{BCYN}NUMBER OF PLAYERS IN LAST HOUR: {pp}{bcnt}{RST}')
-    print('    ')
-    bcnt = 0
-    for ueach in upo:
-        if float(time.time()) - float(ueach[2]) < 86400:
-            bcnt += 1
-    if bcnt == 0:
-        pp = f'{BRED}'
-    else:
-        pp = f'{BGRN}'
-    print(f'{BCYN}NUMBER OF PLAYERS IN LAST DAY: {pp}{bcnt}{RST}')
-    print('    ')
-    bcnt = 0
-    for ueach in upo:
-        if float(time.time()) - float(ueach[2]) < 604800:
-            bcnt += 1
-    if bcnt == 0:
-        pp = f'{BRED}'
-    else:
-        pp = f'{BGRN}'
-    print(f'{BCYN}NUMBER OF PLAYERS IN LAST WEEK: {pp}{bcnt}{RST}')
-    print('    ')
+        printserverinfo(svrifo)
+        c.execute('SELECT * from players WHERE server = ?',(svr,))
+        upo = c.fetchall()
+        bcnt = 0
+        for ueach in upo:
+            if float(time.time()) - float(ueach[2]) < 3600:
+                bcnt += 1
+        if bcnt == 0:
+            pp = f'{BRED}'
+        else:
+            pp = f'{BGRN}'
+        print(f'{BCYN}NUMBER OF PLAYERS IN LAST HOUR: {pp}{bcnt}{RST}')
+        print('    ')
+        bcnt = 0
+        for ueach in upo:
+            if float(time.time()) - float(ueach[2]) < 86400:
+                bcnt += 1
+        if bcnt == 0:
+            pp = f'{BRED}'
+        else:
+            pp = f'{BGRN}'
+        print(f'{BCYN}NUMBER OF PLAYERS IN LAST DAY: {pp}{bcnt}{RST}')
+        print('    ')
+        bcnt = 0
+        for ueach in upo:
+            if float(time.time()) - float(ueach[2]) < 604800:
+                bcnt += 1
+        if bcnt == 0:
+            pp = f'{BRED}'
+        else:
+            pp = f'{BGRN}'
+        print(f'{BCYN}NUMBER OF PLAYERS IN LAST WEEK: {pp}{bcnt}{RST}')
+        print('    ')
 
-    print(f'{BCYN}LAST 10 PLAYERS ONLINE:{RST}')
-    c.execute('SELECT * from players WHERE server = ? ORDER BY lastseen DESC LIMIT 10', (svr,))
-    lastones = c.fetchall()
-    for feach in lastones:
-        tt = now-float(feach[2])
-        if tt < 300:
-            tclr = f'{BGRN}'
-        elif tt < 86400:
-            tclr = f'{YEL}'
-        else:
-            tclr = f'{RED}'
-        print(f'{BYEL}Player {BMGT}{feach[1]}{RST} {BYEL}on {tclr}{elapsedTime(now,float(feach[2]))}{RST}')
-    print('   ')
-    print(f'{BCYN}LAST 3 NEWEST PLAYERS:{RST}')
-    c.execute('SELECT * from players WHERE server = ? ORDER BY firstseen DESC LIMIT 3', (svr,))
-    lastones = c.fetchall()
-    for feach in lastones:
-        tt = now-float(feach[2])
-        if tt < 300:
-            tclr = f'{BGRN}'
-        elif tt < 86400:
-            tclr = f'{YEL}'
-        else:
-            tclr = f'{RED}'
-        print(f'{BYEL}Player {BMGT}{feach[1]}{RST} {BYEL}on {tclr}{elapsedTime(now,float(feach[2]))}{RST}')
-    print('   ')
+        print(f'{BCYN}LAST 10 PLAYERS ONLINE:{RST}')
+        print('   ')
+        c.execute('SELECT * from players WHERE server = ? ORDER BY lastseen DESC LIMIT 10', (svr,))
+        lastones = c.fetchall()
+        for feach in lastones:
+            tt = now-float(feach[2])
+            if tt < 300:
+                tclr = f'{BGRN}'
+            elif tt < 86400:
+                tclr = f'{YEL}'
+            else:
+                tclr = f'{RED}'
+            printplayer(feach)
+        print('   ')
+        print(f'{BCYN}LAST 5 NEWEST PLAYERS:{RST}')
+        print('   ')
+        c.execute('SELECT * from players WHERE server = ? ORDER BY firstseen DESC LIMIT 5', (svr,))
+        lastones = c.fetchall()
+        for feach in lastones:
+            tt = now-float(feach[2])
+            if tt < 300:
+                tclr = f'{BGRN}'
+            elif tt < 86400:
+                tclr = f'{YEL}'
+            else:
+                tclr = f'{RED}'
+            printplayer(feach)
+        print('   ')
 
 def playerage():
     print(f'{BCYN}PLAYERS BY LAST TIME SEEN:{RST}')
@@ -461,7 +495,7 @@ def playerage():
         else:
             trclr = f'{RED}'
 
-        print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL} joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
+        printplayer(feach)
     print('   ')
 
 def writechat(inst,whos,msg,tstamp):
@@ -499,8 +533,8 @@ def initdinowipe(sinst):
 
 
 try:
-    if args.action_to_perform == 'info':
-        info()
+    if args.action_to_perform == 'servers':
+        showservers()
     elif args.action_to_perform == 'playertable':
         printcolmns('players')
         listtable('players')
@@ -547,6 +581,9 @@ try:
     elif args.action_to_perform == 'chatbuffer':
         printcolmns('chatbuffer')
         listtable('chatbuffer')
+    elif args.action_to_perform == 'playersraw':
+        playersraw()
+
 
 
     print('       ')
