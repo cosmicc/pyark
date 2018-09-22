@@ -187,7 +187,7 @@ def onlineplayer(steamid,inst):
     elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):
             if oplayer[3] != inst:
-                writechat(inst,'ALERT',f'>>> {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}',wcstamp())
+                writechat(inst,'ALERT',f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}',wcstamp())
                 log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
             conn1 = sqlite3.connect(sqldb)
@@ -213,7 +213,7 @@ def onlineplayer(steamid,inst):
                 mtxt = f'your player is not linked with a discord account yet. type !linkme in global chat'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         if float(oplayer[2]) + 60 < float(time.time()):
-            writechat(inst,'ALERT',f'>>> {oplayer[1].capitalize()} has joined the server',wcstamp())
+            writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())
             serverisinrestart(steamid,inst,oplayer)
 
 def onlineupdate(inst):
