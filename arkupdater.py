@@ -75,9 +75,9 @@ def updatetimer(inst,ctime):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('UPDATE instances SET restartcountdown = ? WHERE name = ?', [ctime,inst])
-    conn1.commit()
+    conn.commit()
     c.close()
-    conn1.close()
+    conn.close()
 
 def setcfgver(inst,cver):
     conn = sqlite3.connect(sqldb)
