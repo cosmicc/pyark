@@ -263,11 +263,12 @@ def instancerestart(inst, reason):
                 writechat(inst,'ALERT',f'# Server restart for {reason.capitalize()} has been canceled',datetime.now().strftime('%m-%d %I:%M%p'))
         else:
             unsetstartbit(inst)
-            if confupdtimer == 0:
-                log.info(f'waiting on {reason} for {inst} because players are online')
-            confupdtimer += 1
-            if confupdtimer == 24:
-                confupdtimer = 0
+            if reason != "maintenance restart":
+                if confupdtimer == 0:
+                    log.info(f'waiting on {reason} for {inst} because players are online')
+                confupdtimer += 1
+                if confupdtimer == 24:
+                    confupdtimer = 0
 
 
 def checkconfig():
