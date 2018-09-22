@@ -184,7 +184,7 @@ def onlineplayer(steamid,inst):
             welcom.start()
         else:
             log.warning(f'welcome message thread already running for new player {steamid}')
-        writechat(inst,'ALERT',f'>>> A New player has joined the cluster!',wcstamp())
+        writechat(inst,'ALERT',f'<<< A New player has joined the cluster!',wcstamp())
     elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):
             if oplayer[3] != inst:

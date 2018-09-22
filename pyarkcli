@@ -9,8 +9,8 @@ from timehelper import elapsedTime, playedTime
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 
-    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw',
-    'playertable', 'oldest'], help='Action to perform')
+    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'checklog',
+    'playertable', 'oldest', 'logsearch'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('servers', action='store_true', help='Server infomration')
 action_group.add_argument('playertable', action='store_true', help='Show players table')
@@ -29,10 +29,12 @@ action_group.add_argument('chatbuffer', action='store_true', help='Show the chat
 action_group.add_argument('servertable', action='store_true', help='Show the servers table table')
 action_group.add_argument('dinowipe', action='store_true', help='Initiate a wild dino wipe on a server')
 action_group.add_argument('playersraw', action='store_true', help='Show raw player list')
+action_group.add_argument('checklog', action='store_true', help='Show any errors/warnings in log')
+action_group.add_argument('logsearch', action='store_true', help='Seach log by string (with -l)')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
-parser.add_argument('-c', '--cancel', action='store_true', help='cancel a restart')
-
+parser.add_argument('-c', '--cancel', action='store_true', help='Cancel a instance restart')
+parser.add_argument('-l', '--logsearch', action='store', help='Search string for log file searching')
 
 args = parser.parse_args()
 
@@ -87,26 +89,57 @@ def printplayer(feach):
     print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}ago on {BMGT}{feach[3]} {BYEL}for {BCYN}{playedTime(feach[4])} {BYEL}joined {trclr}{elapsedTime(now,float(feach[6]))}{BYEL} ago{RST}')
 
 def alogparser():
+    log_file_path = '/home/ark/shared/logs/pyark.log'
+    lwarns = []
+    lerrs = []
+    lcrits = []
+    warning_regex = re.compile(r".*WARNING.*$")
+    error_regex = re.compile(r".*ERROR.*$")
+    critical_regex = re.compile(r".*CRITICAL.*$")
+    print(f'{BMGT}parsing log...{RST}')
+    with open(log_file_path, "r") as in_file:
+        for line in in_file:
+            if (warning_regex.search(line)):
+                lwarns.append(line)
+            elif (error_regex.search(line)):
+                lerrs.append(line)
+            elif (critical_regex.search(line)):
+                lcrits.append(line)
+    in_file.close()
+    print('    ')
+    if len(lcrits) > 0:
+        print(f'{BRED}CRITICAL ERRORS: {BMGT}{lcrits}{RST}')
+        for each in lcrits:
+            print(each)
+    else:
+        print(f'{BGRN}No Criticals{RST}')
+    print('   ')
+    if len(lerrs) > 0:
+        print(f'{BYEL}NON-CRITICAL ERRORS: {BMGT}{lerrs}{RST}')
+        for each in lerrs:
+            print(each)
+    else:
+        print(f'{BGRN}No Errors{RST}')
+    print('   ')
+    if len(lwarns) > 0:
+        print(f'{BGRN}WARNINGS: {BMGT}{lwarns}{RST}')
+        for each in lwarns:
+            print(each)
+    else:
+        print(f'{BGRN}No Warnings{RST}')
+    print('    ')
 
-    log_file_path = '/home/ark/shared/logs/arkpy.log'
-    regex = '(<property name="(.*?)">(.*?)<\/property>)'
-    read_line = True
-
-    with open(log_file_path, "r") as file:
-        match_list = []
-        if read_line == True:
-            for line in file:
-                for match in re.finditer(regex, line, re.S):
-                    match_text = match.group()
-                    match_list.append(match_text)
-                    print match_text
-        else:
-            data = f.read()
-            for match in re.finditer(regex, data, re.S):
-                match_text = match.group()
-                match_list.append(match_text)
-    file.close()
-
+def alogsearcher(searchparm):
+    log_file_path = '/home/ark/shared/logs/pyark.log'
+    print(f'{BMGT}log {RST}')
+    print('   ')
+    with open(log_file_path, "r") as in_file:
+        for line in in_file:
+            if (line.find(searchparm)) != -1:
+                #if jk = 0: ################
+                print(f'{nc}{line}{RST}', end='', flush=True)
+    print('   ')
+    print(f'{BGRN}Complete.{RST}')
 
 def printserverinfo(each):
     c.execute('SELECT * from players')
@@ -604,9 +637,13 @@ try:
         listtable('chatbuffer')
     elif args.action_to_perform == 'playersraw':
         playersraw()
-
-
-
+    elif args.action_to_perform == 'checklog':
+        alogparser()
+    elif args.action_to_perform == 'logsearch':
+        if args.logsearch == None:
+            print('You must specify a search value with the -l option.')
+        else:
+            alogsearcher(args.logsearch)
     print('       ')
     c.close()
     conn.close()

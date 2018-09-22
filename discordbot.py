@@ -93,7 +93,7 @@ def discordbot():
             conn3 = sqlite3.connect(sqldb)
             c3 = conn3.cursor()
             now = float(time.time())
-            c3.execute('SELECT * FROM players WHERE lastseen < ? AND lastseen > ?',(now-40,now-44))
+            c3.execute('SELECT * FROM players WHERE lastseen < ? AND lastseen > ?',(now-40,now-42))
             cbuffr = c3.fetchall()
             c3.close()
             conn3.close()
