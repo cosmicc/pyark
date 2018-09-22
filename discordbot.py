@@ -277,6 +277,27 @@ def discordbot():
                         conn.commit()
                         c.close()
                         conn.close()
+
+        elif message.content.startswith('!myinfo') or message.content.startswith('!points'):
+            whofor = str(message.author).lower()
+            log.info(f'myinfo request from {whofor} on discord')
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
+            kuser = c.fetchone()
+            c.close()
+            conn.close()
+            if kuser:
+                if kuser[8] != whofor:
+                    log.info(f'myinfo request from {whofor} denied, no account linked')
+                    msg = f'Your discord account is not connected to a player yet.'
+                    await client.send_message(message.channel, msg)
+                else:
+                    log.info(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
+                    ptime = playedTime(float(kuser[4].replace(',','')))
+                    msg = f"Your current reward points: {kuser[5]}. your total play time is {ptime} last on {kuser[1].capitalize()}"
+                    await client.send_message(message.channel, msg)
+
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
