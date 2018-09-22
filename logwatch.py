@@ -5,7 +5,7 @@ from datetime import datetime
 from datetime import timedelta
 import logging, sqlite3, threading, subprocess
 from configparser import ConfigParser
-from timehelper import elapsedTime, playedTime
+from timehelper import *
 
 log = logging.getLogger(__name__)
 
@@ -183,7 +183,7 @@ def onlineplayer(steamid,inst):
             welcom.start()
         else:
             log.warning(f'welcome message thread already running for new player {steamid}')
-        writechat(inst,'ALERT',f'>>> A New player has joined the cluster!',datetime.now().strftime('%m-%d %I:%M%p'))
+        writechat(inst,'ALERT',f'>>> A New player has joined the cluster!',wcstamp())
     elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
@@ -210,7 +210,7 @@ def onlineplayer(steamid,inst):
                 mtxt = f'your player is not linked with a discord account yet. type !linkme in global chat'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         if float(oplayer[2]) + 60 < float(time.time()):
-            writechat(inst,'ALERT',f'>>> {oplayer[1].capitalize()} has joined the server',datetime.now().strftime('%m-%d %I:%M%p'))
+            writechat(inst,'ALERT',f'>>> {oplayer[1].capitalize()} has joined the server',wcstamp())
             serverisinrestart(steamid,inst,oplayer)
 
 def onlineupdate(inst):
