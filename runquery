@@ -45,7 +45,11 @@ c = conn.cursor()
 #conn.commit()
 
 
+<<<<<<< HEAD
 c.execute('select * from instances')
+=======
+c.execute('SELECT * FROM players WHERE lastseen > 60 AND lastseen < 120')
+>>>>>>> 0aca134289aad8c7e9472e5c6c8cf9e2b8035416
 alldata = c.fetchall()
 ap = []
 for row in alldata:
