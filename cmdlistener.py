@@ -38,13 +38,14 @@ for each in range(numinstances):
     else:
         instr=instr + ', %s' % (a)
 def writechat(inst,whos,msg,tstamp):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * from players WHERE playername = ?', (whos,))
-    isindb = c.fetchone()
-    c.close()
-    conn.close()
-    if isindb:
+    if whos != 'Alert':
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT * from players WHERE playername = ?', (whos,))
+        isindb = c.fetchone()
+        c.close()
+        conn.close()
+    if isindb or whos == 'Alert':
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
         c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))

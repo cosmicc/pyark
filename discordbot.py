@@ -41,7 +41,6 @@ def discordbot():
             conn3.close()
             if cbuff:
                 for each in cbuff:
-                    log.warning(each)
                     msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
                     await client.send_message(channel, msg)
                     await asyncio.sleep(1)
