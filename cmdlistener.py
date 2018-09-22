@@ -559,7 +559,7 @@ def checkcommands(minst):
                     cmsg = rawname[1]
                     nmsg = line.split(': ')
                     if len(nmsg) > 2:
-                            td = timedelta(hours=4)
+                        td = timedelta(hours=4)
                         try:
                             if nmsg[0].startswith('"'):
                                 dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
