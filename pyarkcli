@@ -378,6 +378,39 @@ def serverinfo(svr):
     c.execute('SELECT * from instances WHERE name = ?', (svr,))
     svrifo = c.fetchone()
     printserverinfo(svrifo)
+    c.execute('SELECT * from players WHERE server = ?',(svr,))
+    upo = c.fetchall()
+    bcnt = 0
+    for ueach in upo:
+        if float(time.time()) - float(ueach[2]) < 3600:
+            bcnt += 1
+    if bcnt == 0:
+        pp = f'{BRED}'
+    else:
+        pp = f'{BGRN}'
+    print(f'{BCYN}NUMBER OF PLAYERS IN LAST HOUR: {pp}{bcnt}{RST}')
+    print('    ')
+    bcnt = 0
+    for ueach in upo:
+        if float(time.time()) - float(ueach[2]) < 86400:
+            bcnt += 1
+    if bcnt == 0:
+        pp = f'{BRED}'
+    else:
+        pp = f'{BGRN}'
+    print(f'{BCYN}NUMBER OF PLAYERS IN LAST DAY: {pp}{bcnt}{RST}')
+    print('    ')
+    bcnt = 0
+    for ueach in upo:
+        if float(time.time()) - float(ueach[2]) < 604800:
+            bcnt += 1
+    if bcnt == 0:
+        pp = f'{BRED}'
+    else:
+        pp = f'{BGRN}'
+    print(f'{BCYN}NUMBER OF PLAYERS IN LAST WEEK: {pp}{bcnt}{RST}')
+    print('    ')
+
     print(f'{BCYN}LAST 10 PLAYERS ONLINE:{RST}')
     c.execute('SELECT * from players WHERE server = ? ORDER BY lastseen DESC LIMIT 10', (svr,))
     lastones = c.fetchall()
