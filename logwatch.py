@@ -187,7 +187,8 @@ def onlineplayer(steamid,inst):
     elif len(oplayer) > 2:
         if float(oplayer[2]) + 300 > float(time.time()):
             if oplayer[3] != inst:
-                writechat(inst,'ALERT',f'>>> {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}',wcstamp())
+                writechat(inst,'ALERT',f'>>> {oplayer[1].capitalize()} has transferred from {oplayer[3]capitalize()} to {inst.capitalize()}',wcstamp())
+                log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]capitalize()} to {inst.capitalize()}')
             log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
             conn1 = sqlite3.connect(sqldb)
             c1 = conn1.cursor()
