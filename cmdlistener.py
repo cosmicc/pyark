@@ -283,7 +283,7 @@ def castedvote(inst,whoasked,myvote):
                 subprocess.run('arkmanager rconcmd "ServerChat voting has finished. NO has won." @%s' % (inst), shell=True)
                 time.sleep(1)
                 subprocess.run('arkmanager rconcmd "ServerChat NO wild dino wipe will be performed" @%s' % (inst), shell=True)
-                writechat(inst,'ALERT',f'# A wild dino wipe vote has failed with a NO vote from {whoasked.capitalize()}',wcstamp))
+                writechat(inst,'ALERT',f'# A wild dino wipe vote has failed with a NO vote from {whoasked.capitalize()}',wcstamp())
                 arewevoting=False
 
 def votingpassed():
