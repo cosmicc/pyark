@@ -59,7 +59,7 @@ def discordbot():
             conn3.close()
             if cbuff:
                 for each in cbuff:
-                    if each[1] == "Alert":
+                    if each[1] == "ALERT":
                         msg = f'{each[3]} [{each[0].capitalize()}] {each[2]}'
                     else:
                         msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
@@ -74,7 +74,7 @@ def discordbot():
             conn3 = sqlite3.connect(sqldb)
             c3 = conn3.cursor()
             now = float(time.time())
-            c3.execute('SELECT * FROM players WHERE lastseen > ? AND lastseen < ?',(now+40,now+44))
+            c3.execute('SELECT * FROM players WHERE lastseen > ? AND lastseen < ?',(now-40,now-44))
             cbuffr = c3.fetchall()
             c3.close()
             conn3.close()
