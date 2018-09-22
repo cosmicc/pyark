@@ -37,6 +37,7 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr=instr + ', %s' % (a)
+
 def writechat(inst,whos,msg,tstamp):
     if whos != 'ALERT':
         conn = sqlite3.connect(sqldb)

@@ -54,13 +54,14 @@ def follow(stream):
             time.sleep(1.0)
 
 def writechat(inst,whos,msg,tstamp):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * from players WHERE playername = ?', (whos,))
-    isindb = c.fetchone()
-    c.close()
-    conn.close()
-    if isindb:
+    if whos != 'ALERT':
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT * from players WHERE playername = ?', (whos,))
+        isindb = c.fetchone()
+        c.close()
+        conn.close()
+    if isindb or whos == 'ALERT':
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
         c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
