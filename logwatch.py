@@ -71,6 +71,7 @@ def writechat(inst,whos,msg,tstamp):
 def processlogline(line,inst):
     if line.find('[TCsAR]') != -1:
         try:
+            print(line)
             rawline = line.split('|')
             rawsteamid = rawline[2].split(':')
             steamid = rawsteamid[1].strip()
@@ -108,7 +109,6 @@ def processlogline(line,inst):
                 log.debug(f'player {playername} with steamid {steamid} was found. updating.')
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
-                print(playername)
                 c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
                 conn.commit()
                 c.close()
