@@ -47,6 +47,24 @@ def getlastrestart(inst):
     conn.close()
     return ''.join(lastwipe[0])
 
+def writechat(inst,whos,msg,tstamp):
+    isindb = False
+    if whos != 'ALERT':
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT * from players WHERE playername = ?', (whos,))
+        isindb = c.fetchone()
+        c.close()
+        conn.close()
+    elif whos == "ALERT" or isindb:
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
+        conn.commit()
+        c.close()
+        conn.close()
+
+
 def discordbot():
     async def chatbuffer():
         await client.wait_until_ready()
@@ -79,7 +97,7 @@ def discordbot():
             c3.close()
             conn3.close()
             for reach in cbuffr:
-                writechat(inst,'ALERT',f'<<< {cbuffr[1].capitalize()} has left the server',wcstamp())
+                writechat(reach[3],'ALERT',f'<<< {reach[1].capitalize()} has left the server',wcstamp())
             await asyncio.sleep(2)
 
     def savediscordtodb(author):

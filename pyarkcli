@@ -128,7 +128,7 @@ def printserverinfo(each):
     if each[3] == "False":
         inrest = f"{GRN}False{RST}"
     else:
-        inrest = f"{BYEL}TRUE{RST}"
+        inrest = f"{BRED}TRUE{RST}"
 
     if ply != 0:
         mm = BGRN
@@ -138,17 +138,17 @@ def printserverinfo(each):
     if each[7] < 5:
         nn = BRED
     elif each[7] < 15:
-        nn = BYEL
+        nn = YEL
     else:
         nn = BGRN
 
-    if each[3] == True:
-        tls = f'Time Left: {nn}{each[7]}'
+    if each[3] == "True":
+        tls = f'Time Left: {nn}{each[7]} Minutes'
     else:
         tls = ''
     print(f'{BYEL}Server: {BMGT}{each[0].upper()}{BYEL} - Players: {mm}{ply}/50{RST}')
     print(f'{BYEL}Configuration version: {BCYN}{each[6]}{RST} {vertxt}')
-    print(f'{BYEL}Server in restart: {inrest}{BYEL}{tls}{RST}')
+    print(f'{BYEL}Server in restart: {inrest} {BYEL}{tls}{RST}')
     print(f'{BYEL}Last restart: {restclr}{restarted}{BYEL}  Reason: {BCYN}{each[5]}{RST}')
     print(f'{BYEL}Last wilddino wipe: {wipeclr}{lwipe}{RST}')
     print(f'{BYEL}Last wipe vote: {voteclr}{lvote}{RST}')
