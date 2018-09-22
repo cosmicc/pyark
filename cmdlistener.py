@@ -158,7 +158,7 @@ def whoisonlinewrapper(inst,oinst,whoasked,crnt):
 def whoisonline(inst,oinst,whoasked,filt,crnt):
     try:
         if crnt == 1:
-            potime = 70
+            potime = 40
         elif crnt == 2:
             potime = 3600
         elif crnt == 3:

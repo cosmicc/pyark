@@ -94,7 +94,7 @@ def discordbot():
         savediscordtodb(message.author)
         if message.content.startswith('!who') or message.content.startswith('!whoson') or message.content.startswith('!whosonline'):
             log.info('responding to whos online request from discord')
-            potime = 70
+            potime = 40
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
             c.execute('SELECT * FROM instances')
