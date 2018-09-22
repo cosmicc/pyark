@@ -61,7 +61,7 @@ def discordbot():
                 for each in cbuff:
                     msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
                     await client.send_message(channel, msg)
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(2)
                 conn3 = sqlite3.connect(sqldb)
                 c3 = conn3.cursor()
                 c3.execute('DELETE FROM chatbuffer')
