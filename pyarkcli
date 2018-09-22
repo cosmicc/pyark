@@ -88,7 +88,7 @@ def printplayer(feach):
 
 def alogparser():
 
-    log_file_path = '/home/ark/arkpy.log'
+    log_file_path = '/home/ark/shared/logs/arkpy.log'
     regex = '(<property name="(.*?)">(.*?)<\/property>)'
     read_line = True
 

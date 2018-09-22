@@ -1,11 +1,12 @@
-import sys, logging, subprocess, sqlite3, time, filecmp, threading
+import sys, logging, subprocess, sqlite3, time, filecmp, threading, socket
 from configparser import ConfigParser
 from datetime import datetime
 from datetime import time as dt
 from timebetween import is_time_between
 from timehelper import *
 
-log = logging.getLogger(__name__)
+hstname = socket.gethostname()
+log = logging.getLogger(name=hstname)
 
 class ExtConfigParser(ConfigParser):
     def getlist(self, section, option):

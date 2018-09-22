@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 
-import time, logging, sys, threading, sqlite3, subprocess
+import time, logging, sys, threading, sqlite3, subprocess, socket
 from configparser import ConfigParser
 import discord
 import asyncio
 from timehelper import *
 
-log = logging.getLogger(__name__)
+hstname = socket.gethostname()
+log = logging.getLogger(name=hstname)
 
 class ExtConfigParser(ConfigParser):
     def getlist(self, section, option):

@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 
-import time, sys
+import time, sys, socket
 from datetime import datetime
 from datetime import timedelta
 import logging, sqlite3, threading, subprocess
 from configparser import ConfigParser
 from timehelper import *
 
-log = logging.getLogger(__name__)
+hstname = socket.gethostname()
+log = logging.getLogger(name=hstname)
 
 class ExtConfigParser(ConfigParser):
     def getlist(self, section, option):
