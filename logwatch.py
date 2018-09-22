@@ -245,7 +245,7 @@ def logwatch(inst):
                 logpath = f'{arkroot}/ShooterGame/Saved/Logs/{logfile}'
                 log.debug(f'watching log {logpath} for instance {inst}')
         with open(logpath, 'rt') as following:
-            following.seek(0, 2)
+            following.seek(0, 0)
             try:
                 for line in follow(following):
                     processlogline(line,inst)
