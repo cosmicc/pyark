@@ -196,7 +196,7 @@ def instancerestart(inst, reason):
     setrestartbit(inst)
     t, s, e = datetime.now(), dt(10,0), dt(10,5)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
     inmaint = is_time_between(t, s, e)
-    if playercount(inst) == 0 and (not inmaint and reason == "maintenance restart"):
+    if playercount(inst) == 0:
         log.info(f'server {inst} is empty and restarting now for a {reason}')
         writechat(inst,'ALERT',f'# Empty server restarting now for a {reason.capitalize()}',wcstamp())
         message = f'server is restarting now for a {reason}'
@@ -295,7 +295,9 @@ def checkconfig():
         lstsv = c.fetchone()
         c.close()
         conn.close()
-        if float(time.time())-float(lstsv[0]) > 259200:
+        t, s, e = datetime.now(), dt(10,0), dt(10,5)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
+        inmaint = is_time_between(t, s, e)
+        if float(time.time())-float(lstsv[0]) > 259200 and inmaint:
             maintrest = "maintenance restart"
         else:
             maintrest = "configuration update"
