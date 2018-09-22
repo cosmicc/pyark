@@ -97,21 +97,22 @@ def processlogline(line,inst):
             c.close()
             conn.close()
             if not pexist:
-                log.info(f'player {playername} with steamid {steamid} was not found. adding.')
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('INSERT INTO players (steamid, playername, lastseen, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?,?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1,''))
-                conn.commit()
-                c.close()
-                conn.close()
-            elif steamid != '':
-                log.debug(f'player {playername} with steamid {steamid} was found. updating.')
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
-                conn.commit()
-                c.close()
-                conn.close()
+                if pexists[0] != '':
+                    log.info(f'player {playername} with steamid {steamid} was not found. adding.')
+                    conn = sqlite3.connect(sqldb)
+                    c = conn.cursor()
+                    c.execute('INSERT INTO players (steamid, playername, lastseen, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?,?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1,''))
+                    conn.commit()
+                    c.close()
+                    conn.close()
+                elif steamid != '':
+                    log.debug(f'player {playername} with steamid {steamid} was found. updating.')
+                    conn = sqlite3.connect(sqldb)
+                    c = conn.cursor()
+                    c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
+                    conn.commit()
+                    c.close()
+                    conn.close()
 
 def welcomenewplayer(steamid,inst):
         global welcomthreads
