@@ -8,9 +8,9 @@ from colorama import Fore, Back, Style
 from timehelper import elapsedTime, playedTime
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist',
-                                                                  'linkrequests', 'delplayer', 'linkplayer', 'restartserver', 'chatbuffer', 'servertable',
-                                                                  'discordnames', 'notlinked', 'newest', 'server', 'playertable', 'oldest'], help='Action to perform')
+parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 
+    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'say',
+    'playertable', 'oldest'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('info', action='store_true', help='Cluster infomration')
 action_group.add_argument('playertable', action='store_true', help='Show players table')
@@ -27,6 +27,8 @@ action_group.add_argument('server', action='store_true', help='Server informatio
 action_group.add_argument('players', action='store_true', help='Show players by last time seen')
 action_group.add_argument('chatbuffer', action='store_true', help='Show the chat buffer table')
 action_group.add_argument('servertable', action='store_true', help='Show the servers table table')
+action_group.add_argument('dinowipe', action='store_true', help='Initiate a wild dino wipe on a server')
+action_group.add_argument('say', action='store_true', help='Say something to a server global chat')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='cancel a restart')
@@ -462,6 +464,38 @@ def playerage():
         print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}on {BMGT}{feach[3]} {BYEL} joined {trclr}{elapsedTime(now,float(feach[6]))}{RST}')
     print('   ')
 
+def writechat(inst,whos,msg,tstamp):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * from players WHERE playername = ?', (whos,))
+    isindb = c.fetchone()
+    c.close()
+    conn.close()
+    if isindb:
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
+        conn.commit()
+        c.close()
+        conn.close()
+
+def resetlastwipe(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    newtime = time.time()
+    c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', [newtime,inst])
+    conn.commit()
+    c.close()
+    conn.close()
+
+def initdinowipe(sinst):
+    print(f'{BYEL}Initiating a Wild Dino Wipe on server {BMGT}{sinst.capitalize()}{RST}')
+    resetlastwipe(sinst)
+    subprocess.run('arkmanager rconcmd "ServerChat admin initated a wild dino wipe, wiping in 10 seconds" @%s' % (yesvoters,totvoters,inst), shell=True)
+    writechat(inst,'ALERT',f'### A wild dino wipe as been initiated by admin. Wiping wild dinos now.',wcstamp())
+    time.sleep(10)
+    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    time.sleep(2)
 
 
 try:
@@ -487,6 +521,11 @@ try:
             print('You must specify a server name with -s option.')
         else:
             restartserver(args.servername)
+    elif args.action_to_perform == 'dinowipe':
+        if args.servername == '':
+            print('You must specify a server name with -s option.')
+        else:
+            initdinowipe(args.servername)
     elif args.action_to_perform == 'linkplayer':
         linkplayer()
     elif args.action_to_perform == 'delplayer':

@@ -97,6 +97,7 @@ def discordbot():
             c3.close()
             conn3.close()
             for reach in cbuffr:
+                log.info(f'{reach[1]} has left the server {each[0]}')
                 writechat(reach[3],'ALERT',f'>>> {reach[1].capitalize()} has left the server',wcstamp())
             await asyncio.sleep(2)
 
