@@ -1,53 +1,48 @@
-def elapsedTime(start_time, stop_time, lshort=False):
-    diff_time = start_time - stop_time
-    total_min = diff_time / 60
-    minutes = int(total_min % 60)
-    if minutes == 1:
-        if lshort is False:
-            minstring = 'Minute'
-        else:
-            minstring = 'Min'
+intervals = (
+    ('weeks', 604800),  # 60 * 60 * 24 * 7
+    ('days', 86400),    # 60 * 60 * 24
+    ('hours', 3600),    # 60 * 60
+    ('minutes', 60),
+    ('seconds', 1),
+    )
+
+def elapsedTime(start_time, stop_time):
+    result = []
+    seconds = start_time - stop_time
+    if seconds > 60 and seconds < 3600:
+        granularity = 1
     else:
-        if lshort is False:
-            minstring = 'Minutes'
-        else:
-            minstring = 'Mins'
-    hours = int(total_min / 60)
-    if hours == 1:
-        if lshort is False:
-            hourstring = 'Hour'
-        else:
-            hourstring = 'Hr'
+        granularity = 2
+    if seconds > 60:
+        for name, count in intervals:
+            value = seconds // count
+            if value:
+                seconds -= value * count
+                if value == 1:
+                    name = name.rstrip('s')
+                result.append("{} {}".format(int(value), name))
+        return ', '.join(result[:granularity])
     else:
-        if lshort is False:
-            hourstring = 'Hours'
-        else:
-            hourstring = 'Hrs'
-    days = int(hours / 24)
-    if days == 1:
-        if lshort is False:
-            daystring = 'Day'
-        else:
-            daystring = 'Day'
+        return 'now'
+
+def playedTime(seconds):
+    result = []
+    if seconds < 3600:
+        granularity = 1
     else:
-        if lshort is False:
-            daystring = 'Days'
-        else:
-            daystring = 'Days'
-    if days != 0:
-        return('{} {}, {} {}'.format(days, daystring, hours, hourstring))
-    elif hours != 0:
-        return('{} {}, {} {}'.format(hours, hourstring, minutes, minstring))
-    elif minutes != 0:
-        return('{} {}'.format(minutes, minstring))
-    elif minutes == 0:
-        return('now')
-    else:
-        log.error('Elapsed time function failed. Could not convert.')
-        return('Error')
+        granularity = 2
+    
+    for name, count in intervals:
+        value = seconds // count
+        if value:
+            seconds -= value * count
+            if value == 1:
+                name = name.rstrip('s')
+            result.append("{} {}".format(int(value), name))
+    return ', '.join(result[:granularity])
 
 
-def playedTime(ptime):
+def playedTimeold(ptime):
     total_min = ptime / 60
     minutes = int(ptime % 60)
     if minutes == 1:
