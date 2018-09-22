@@ -9,7 +9,7 @@ from timehelper import elapsedTime, playedTime
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['info', 'players', 'kicklist',
-                                                                  'linkrequests', 'delplayer', 'linkplayer', 'restartserver', 'chatbuffer',
+                                                                  'linkrequests', 'delplayer', 'linkplayer', 'restartserver', 'chatbuffer', 'servertable',
                                                                   'discordnames', 'notlinked', 'newest', 'server', 'playertable', 'oldest'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('info', action='store_true', help='Cluster infomration')
@@ -26,6 +26,7 @@ action_group.add_argument('oldest', action='store_true', help='Show last 10 olde
 action_group.add_argument('server', action='store_true', help='Server information')
 action_group.add_argument('players', action='store_true', help='Show players by last time seen')
 action_group.add_argument('chatbuffer', action='store_true', help='Show the chat buffer table')
+action_group.add_argument('servertable', action='store_true', help='Show the servers table table')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='cancel a restart')
@@ -466,6 +467,9 @@ try:
             serverinfo(args.servername)
     elif args.action_to_perform == 'players':
         playerage()
+    elif args.action_to_perform == 'servertable':
+        printcolmns('instances')
+        listtable('instances')
     elif args.action_to_perform == 'oldest':
         oldest()
     elif args.action_to_perform == 'chatbuffer':

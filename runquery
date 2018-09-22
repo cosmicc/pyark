@@ -35,17 +35,17 @@ c = conn.cursor()
 #c.execute('DELETE from players WHERE steamid = 76561198408657294')
 
 #c.execute('SELECT * from players WHERE discordid = None')
-c.execute('UPDATE players SET playername = "dude" WHERE playername = "human"')
+#c.execute('UPDATE players SET playername = "dude" WHERE playername = "human"')
 #c.execute('CREATE TABLE IF NOT EXISTS chatbuffer (server TEXT, name TEXT, message TEXT)')
 #c.execute('ALTER TABLE chatbuffer ADD COLUMN timestamp TEXT')
 #c.execute('DROP TABLE discornames')
 #c.execute('INSERT INTO general ("cfgver") VALUES ("1")')
 #c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
-conn.commit()
+#conn.commit()
 
 
-
+c.execute('select * from instances')
 alldata = c.fetchall()
 ap = []
 for row in alldata:
