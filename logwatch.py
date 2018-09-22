@@ -108,6 +108,7 @@ def processlogline(line,inst):
                 log.debug(f'player {playername} with steamid {steamid} was found. updating.')
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
+                print(playername)
                 c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
                 conn.commit()
                 c.close()
