@@ -194,7 +194,7 @@ def instancerestart(inst, reason):
     log.debug(f'instance restart thread starting for {inst}')
     global confupdtimer
     setrestartbit(inst)
-    t, s, e = datetime.now(), dt(10,0), dt(10,5)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
+    t, s, e = datetime.now(), dt(10,0), dt(10,30)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
     inmaint = is_time_between(t, s, e)
     if playercount(inst) == 0:
         log.info(f'server {inst} is empty and restarting now for a {reason}')
