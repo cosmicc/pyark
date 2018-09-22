@@ -44,8 +44,12 @@ c = conn.cursor()
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
 #conn.commit()
 
+now = float(time.time())
+print(now-40)
+print(now-44)
+c.execute('SELECT * FROM players WHERE lastseen > ? AND lastseen < ?',(now-40,now-44))
 
-c.execute('SELECT * FROM players WHERE lastseen > 60 AND lastseen < 120')
+#c.execute('SELECT * FROM players WHERE lastseen > 60 AND lastseen < 120')
 alldata = c.fetchall()
 ap = []
 for row in alldata:

@@ -457,7 +457,7 @@ def linker(minst,whoasked):
         pass
         # user not found in db (wierd)
 
-def writebuffer(inst,whos,msg,tstamp):
+def writechat(inst,whos,msg,tstamp):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('SELECT * from players WHERE playername = ?', (whos,))
