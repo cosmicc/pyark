@@ -19,7 +19,6 @@ __progname__ = "pyark-daemon"
 __description__ = "pyark daemon service"
 __detaildesc__ = ""
 
-logfile = '/home/ark/pyark.log'
 configfile = '/home/ark/pyark.cfg'
 
 log = logging.getLogger()
@@ -34,16 +33,6 @@ else:
     log.setLevel(logging.INFO)
 console_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(threadName)s:%(message)s')
 log_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(threadName)s:%(message)s')
-if args.quiet is False:
-    log_console = logging.StreamHandler()
-    log.addHandler(log_console)
-    log_console.setFormatter(console_format)
-log_fileh = logging.FileHandler(logfile)
-log.addHandler(log_fileh)
-log_fileh.setFormatter(log_format)
-
-log.info('pyark daemon is starting')
-log.debug('reading config file')
 
 class ExtConfigParser(ConfigParser):
     def getlist(self, section, option):
@@ -55,6 +44,19 @@ class ExtConfigParser(ConfigParser):
 
 config = ExtConfigParser()
 config.read(configfile)
+
+logfile = config.get('general','log')
+
+if args.quiet is False:
+    log_console = logging.StreamHandler()
+    log.addHandler(log_console)
+    log_console.setFormatter(console_format)
+log_fileh = logging.FileHandler(logfile)
+log.addHandler(log_fileh)
+log_fileh.setFormatter(log_format)
+
+log.info('pyark daemon is starting')
+log.debug('reading config file')
 
 def main():
     numinstances = int(config.get('general', 'instances'))

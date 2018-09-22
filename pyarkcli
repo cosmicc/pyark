@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys,subprocess, time
+import sys,subprocess, time, re
 import argparse, sqlite3
 from configparser import ConfigParser
 from datetime import datetime
@@ -85,6 +85,27 @@ conn.commit()
 
 def printplayer(feach):
     print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}ago on {BMGT}{feach[3]} {BYEL}for {BCYN}{playedTime(feach[4])} {BYEL}joined {trclr}{elapsedTime(now,float(feach[6]))}{BYEL} ago{RST}')
+
+def alogparser():
+
+    log_file_path = '/home/ark/arkpy.log'
+    regex = '(<property name="(.*?)">(.*?)<\/property>)'
+    read_line = True
+
+    with open(log_file_path, "r") as file:
+        match_list = []
+        if read_line == True:
+            for line in file:
+                for match in re.finditer(regex, line, re.S):
+                    match_text = match.group()
+                    match_list.append(match_text)
+                    print match_text
+        else:
+            data = f.read()
+            for match in re.finditer(regex, data, re.S):
+                match_text = match.group()
+                match_list.append(match_text)
+    file.close()
 
 
 def printserverinfo(each):
