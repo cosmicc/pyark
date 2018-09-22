@@ -346,7 +346,7 @@ def voting(inst,whoasked):
     subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe voting has started with %s players. vote !yes or !no in global chat now" @%s' % (pon,inst), shell=True)
     votestarttime = time.time()
     sltimer = 0
-    writechat(inst,'ALERT',f'# A wild dino wipe vote has been started by {whoasked.capitalize()}',datetime.now().strftime('%m-%d %I:%M%p'))
+    #writechat(inst,'ALERT',f'# A wild dino wipe vote has been started by {whoasked.capitalize()}',datetime.now().strftime('%m-%d %I:%M%p'))
     while arewevoting:
         time.sleep(5)
         if votingpassed():
@@ -360,7 +360,7 @@ def voting(inst,whoasked):
                 yesvoters, totvoters = howmanyvotes()
                 subprocess.run('arkmanager rconcmd "ServerChat not enough votes (%s of %s). voting has ended." @%s' % (yesvoters,totvoters,inst), shell=True)
                 log.info(f'not enough votes ({yesvoters}/{totvoters}), voting has ended on {inst}')
-                writechat(inst,'ALERT',f'# Wild dino wipe vote failed with not enough votes ({yesvoters} of {totvoters})',datetime.now().strftime('%m-%d %I:%M%p'))
+                #writechat(inst,'ALERT',f'# Wild dino wipe vote failed with not enough votes ({yesvoters} of {totvoters})',datetime.now().strftime('%m-%d %I:%M%p'))
                 arewevoting = False
         else:
             if sltimer == 120 or sltimer == 240:
