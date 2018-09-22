@@ -266,7 +266,7 @@ def instancerestart(inst, reason):
             if confupdtimer == 0:
                 log.info(f'waiting on {reason} for {inst} because players are online')
             confupdtimer += 1
-            if confupdtimer == 12:
+            if confupdtimer == 24:
                 confupdtimer = 0
 
 
