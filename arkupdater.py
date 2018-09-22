@@ -264,7 +264,7 @@ def instancerestart(inst, reason):
         else:
             unsetstartbit(inst)
             if confupdtimer == 0:
-                log.info(f'waiting on configuration update restart for {inst} because players are online')
+                log.info(f'waiting on {reason} for {inst} because players are online')
             confupdtimer += 1
             if confupdtimer == 12:
                 confupdtimer = 0
