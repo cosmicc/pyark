@@ -295,7 +295,8 @@ def discordbot():
                 else:
                     log.info(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
                     ptime = playedTime(float(kuser[4].replace(',','')))
-                    msg = f"Your current reward points: {kuser[5]}. your total play time is {ptime} last on {kuser[1].capitalize()}"
+                    ptr = elapsedTime(float(time.time()),float(kuser[2]))
+                    msg = f"Your current reward points: {kuser[5]}. Last played on {kuser[3].capitalize()} {ptr} ago. Your total play time is {ptime}."
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
