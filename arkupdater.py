@@ -196,7 +196,7 @@ def instancerestart(inst, reason):
     setrestartbit(inst)
     t, s, e = datetime.now(), dt(10,0), dt(10,5)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
     inmaint = is_time_between(t, s, e)
-    if playercount(inst) == 0 and (not inmaint and reason !wq= "maintenance restart"):
+    if playercount(inst) == 0 and (not inmaint and reason == "maintenance restart"):
         log.info(f'server {inst} is empty and restarting now for a {reason}')
         writechat(inst,'ALERT',f'# Empty server restarting now for a {reason.capitalize()}',datetime.now().strftime('%m-%d %I:%M%p'))
         message = f'server is restarting now for a {reason}'
