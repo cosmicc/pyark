@@ -11,7 +11,8 @@ intervals = (
     )
 
 def wcstamp():
-    return datetime.now().strftime('%m-%d %I:%M%p')-tzfix
+    a = datetime.now()-tzfix
+    return a.strftime('%m-%d %I:%M%p')
 
 def elapsedTime(start_time, stop_time):
     result = []
