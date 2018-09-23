@@ -96,7 +96,7 @@ def processlogline(line,inst):
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
             c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
-            pexist = c.fetchall()
+            pexist = c.fetchone()
             c.close()
             conn.close()
             if not pexist:
@@ -108,14 +108,14 @@ def processlogline(line,inst):
                     conn.commit()
                     c.close()
                     conn.close()
-                elif steamid != '':
-                    log.debug(f'player {playername} with steamid {steamid} was found. updating.')
-                    conn = sqlite3.connect(sqldb)
-                    c = conn.cursor()
-                    c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
-                    conn.commit()
-                    c.close()
-                    conn.close()
+            elif steamid != '':
+                log.debug(f'player {playername} with steamid {steamid} was found. updating.')
+                conn = sqlite3.connect(sqldb)
+                c = conn.cursor()
+                c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
+                conn.commit()
+                c.close()
+                conn.close()
 
 def welcomenewplayer(steamid,inst):
         global welcomthreads
