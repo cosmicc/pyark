@@ -545,16 +545,22 @@ def newest():
 def tribewipe():
     tribeid = getresponce(f'{BGRN}Enter Tribe ID of tribe to DESTROY{RST}')
     if ask_question(f'{BGRN}You will be DESTROYING {BMGT}{tribeid}{BGRN} from the cluster. continue?{RST}'):
-        subrun = f'arkmanager rconcmd "DestroyTribeIdDinos {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdStructures {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd "DestroyTribeId {tribeid}" @all'
+        subrun = f"""arkmanager rconcmd 'DestroyTribeIdStructures {tribeid}' @ragnarok"""
+        subprocess.run(subrun, shell=True)
+        
+        
+        
+        
+        #subrun = f"""arkmanager rconcmd 'DestroyTribeIdDinos {tribeid}' @all && arkmanager rconcmd 'DestroyTribeIdStructures {tribeid}' @all && arkmanager rconcmd 'DestroyTribeIdPlayers {tribeid}' @all && arkmanager rconcmd 'DestroyTribeId {tribeid}' @all"""
         print('    ')
         print(f'{BYEL}Removing tribeid {BMGT}{tribeid}{BYEL} from local server{RST}')
         print('   ')
-        subprocess.run('arkmanager rconcmd "saveworld" @all && arkmanager backup @all', shell=True)
+        #subprocess.run('arkmanager rconcmd "saveworld" @all && arkmanager backup @all', shell=True)
         subprocess.run(subrun, shell=True)
         print(f'{BYEL}Removing tribeid {BMGT}{tribeid}{BYEL} from remote server{RST}')
-        sendtoserver(tribeid)
-        print('   ')
-        print(f'{BGRN}TribeID {BMGT}{tribeid}{BGRN} has been DESTROYED from all servers!{RST}')
+        #sendtoserver(tribeid)
+        #print('   ')
+        #print(f'{BGRN}TribeID {BMGT}{tribeid}{BGRN} has been DESTROYED from all servers!{RST}')
 
 
 def oldest():
