@@ -93,8 +93,8 @@ def sendtoserver(tribeid):
     sshuser = config.get('general','sshuser').rstrip()
     sshhost = config.get('general','otherserverip').rstrip()
     sshpass = config.get('general','sshpass').rstrip()
-    commands = f'arkmanager rconcmd "DestroyTribeIdDinos {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdStructures {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd "DestroyTribeId {tribeid}" @all'}
-    command = f'sshpass -p {sshpass} ssh {sshuser}@{sshhost} "{commands}"'
+    commands = f"""arkmanager rconcmd "saveworld" @all && arkmanager backup @all && arkmanager rconcmd "DestroyTribeIdDinos {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdStructures {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd "DestroyTribeId {tribeid}" @all"""
+    command = f"""sshpass -p {sshpass} ssh {sshuser}@{sshhost} '{commands}'"""
     subprocess.run(command, shell=True)
 
 def printplayer(feach):
@@ -549,6 +549,7 @@ def tribewipe():
         print('    ')
         print(f'{BYEL}Removing tribeid {BMGT}{tribeid}{BYEL} from local server{RST}')
         print('   ')
+        subprocess.run('arkmanager rconcmd "saveworld" @all && arkmanager backup @all', shell=True)
         subprocess.run(subrun, shell=True)
         print(f'{BYEL}Removing tribeid {BMGT}{tribeid}{BYEL} from remote server{RST}')
         sendtoserver(tribeid)
