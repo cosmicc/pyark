@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys,subprocess, time, re
+import sys, subprocess, time, re
 import argparse, sqlite3
 from configparser import ConfigParser
 from datetime import datetime
@@ -10,7 +10,7 @@ from timehelper import elapsedTime, playedTime
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 
     'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'checklog',
-    'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist', 'unbanplayer'], help='Action to perform')
+    'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist', 'unbanplayer', 'tribewipe'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('servers', action='store_true', help='Server infomration')
 action_group.add_argument('playertable', action='store_true', help='Show players table')
@@ -34,6 +34,7 @@ action_group.add_argument('logsearch', action='store_true', help='Seach log by s
 action_group.add_argument('banplayer', action='store_true', help='Ban a player from the cluster')
 action_group.add_argument('unban', action='store_true', help='UN-Ban a player from the cluster')
 action_group.add_argument('banlist', action='store_true', help='Show the list of banned players')
+action_group.add_argument('tribewipe', action='store_true', help='Wipe a tribe and all its dinos and belongings from a server')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='Cancel a instance restart')
@@ -87,6 +88,14 @@ now = time.time()
 
 c.execute('DELETE from players WHERE playedtime = 0')
 conn.commit()
+
+def sendtoserver(tribeid):
+    sshuser = config.get('general','sshuser').rstrip()
+    sshhost = config.get('general','otherserverip').rstrip()
+    sshpass = config.get('general','sshpass').rstrip()
+    commands = f'arkmanager rconcmd "DestroyTribeIdDinos {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdStructures {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd "DestroyTribeId {tribeid}" @all'}
+    command = f'sshpass -p {sshpass} ssh {sshuser}@{sshhost} "{commands}"'
+    subprocess.run(command, shell=True)
 
 def printplayer(feach):
     print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}ago on {BMGT}{feach[3]} {BYEL}for {BCYN}{playedTime(feach[4])} {BYEL}joined {trclr}{elapsedTime(now,float(feach[6]))}{BYEL} ago{RST}')
@@ -533,6 +542,20 @@ def newest():
 
         printplayer(feach)
 
+def tribewipe():
+    tribeid = getresponce(f'{BGRN}Enter Tribe ID of tribe to DESTROY{RST}')
+    if ask_question(f'{BGRN}You will be DESTROYING {BMGT}{tribeid}{BGRN} from the cluster. continue?{RST}'):
+        subrun = f'arkmanager rconcmd "DestroyTribeIdDinos {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdStructures {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd "DestroyTribeId {tribeid}" @all'
+        print('    ')
+        print(f'{BYEL}Removing tribeid {BMGT}{tribeid}{BYEL} from local server{RST}')
+        print('   ')
+        subprocess.run(subrun, shell=True)
+        print(f'{BYEL}Removing tribeid {BMGT}{tribeid}{BYEL} from remote server{RST}')
+        sendtoserver(tribeid)
+        print('   ')
+        print(f'{BGRN}TribeID {BMGT}{tribeid}{BGRN} has been DESTROYED from all servers!{RST}')
+
+
 def oldest():
     global tclr
     global trclr
@@ -751,6 +774,8 @@ try:
         banplayer()
     elif args.action_to_perform == 'unbanplayer':
         unbanplayer()
+    elif args.action_to_perform == 'tribewipe':
+        tribewipe()
 
     print('       ')
     c.close()
