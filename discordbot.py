@@ -256,7 +256,7 @@ def discordbot():
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>'
+            msg = f'Commands: !mods, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
