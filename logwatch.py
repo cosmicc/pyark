@@ -248,15 +248,18 @@ def onlineupdate(inst):
                         pass
                     else:
                         rawline = line.split(',')
-                        nsteamid = rawline[1]
-                        onlineplayer(nsteamid.strip(),inst)
+                        if len(rawline) > 1:
+                            nsteamid = rawline[1]
+                            onlineplayer(nsteamid.strip(),inst)
+                        else:
+                            log.error(f'problem with parsing online player - {rawline}')
             time.sleep(30)
         except:
             e = sys.exc_info()
             log.critical(e)
 
 def logwatch(inst):
-    try:
+    #try:
         log.debug(f'starting logwatch thread for instance {inst}')
         for each in range(numinstances):
             if instance[each]['name'] == inst:
@@ -268,39 +271,39 @@ def logwatch(inst):
                 log.debug(f'watching log {logpath} for instance {inst}')
         with open(logpath, 'rt') as following:
             following.seek(0, 0)
-            try:
-                for line in follow(following):
-                    processlogline(line,inst)
-            except KeyboardInterrupt:
-                if c in vars():
-                    c.close()
-                if conn in vars():
-                    conn.close()
-                if c1 in vars():
-                    c1.close()
-                if conn1 in vars():
-                    conn1.close()
-    except:
-        e = sys.exc_info()
-        log.critical(e)
-        try:
-            if c in vars():
-                c.close()
-        except:
-            pass
-        try:
-            if conn in vars():
-                conn.close()
-        except:
-            pass
-        try:
-            if c1 in vars():
-                c1.close()
-        except:
-            pass
-        try:
-            if conn1 in vars():
-                conn1.close()
-        except:
-            pass
+            #try:
+            for line in follow(following):
+                processlogline(line,inst)
+            #except KeyboardInterrupt:
+            #    if c in vars():
+            #        c.close()
+            #    if conn in vars():
+            #        conn.close()
+            #    if c1 in vars():
+            #        c1.close()
+            #    if conn1 in vars():
+            #        conn1.close()
+    #except:
+    #    e = sys.exc_info()
+    #    log.critical(e)
+    #    try:
+    #        if c in vars():
+    #            c.close()
+    #    except:
+    #        pass
+    #    try:
+    #        if conn in vars():
+    #            conn.close()
+    #    except:
+    #        pass
+    #    try:
+    #        if c1 in vars():
+    #            c1.close()
+    #    except:
+    #        pass
+    #    try:
+    #        if conn1 in vars():
+    #            conn1.close()
+    #    except:
+    #        pass
 

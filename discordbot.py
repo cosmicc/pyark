@@ -256,7 +256,7 @@ def discordbot():
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>'
+            msg = f'Commands: !mods, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
@@ -361,6 +361,12 @@ def discordbot():
             lspago = elapsedTime(time.time(),float(lsplayer[6]))
             msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
             await client.send_message(message.channel, msg)
+
+        elif message.content.startswith('!mods'):
+            whofor = str(message.author).lower()
+            msg = f'https://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
+            await client.send_message(message.channel, msg)
+
         elif message.content.startswith('!link') or message.content.startswith('!linkme'):
             whofor = str(message.author).lower()
             user = message.author
@@ -373,7 +379,7 @@ def discordbot():
             c.close()
             conn.close()
             if dplayer:
-                log.info(f'link account request on discord from {whofor}i denied, already linked')
+                log.info(f'link account request on discord from {whofor} denied, already linked')
                 msg = f'Your discord account is already linked to your game account'
                 await client.send_message(message.channel, msg)
             else:
