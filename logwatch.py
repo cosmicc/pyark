@@ -119,23 +119,23 @@ def processlogline(line,inst):
 
 def welcomenewplayer(steamid,inst):
         global welcomthreads
-        log.info(f'welcome message thread started for new player {steamid} on {inst}')
+        #log.info(f'welcome message thread started for new player {steamid} on {inst}')
         time.sleep(180)
-        mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(10)
-        mtxt = 'Public teleporters and crafting area, rewards system points earned as you play. Build a rewards vault quick, free starter items.'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(10)
-        mtxt = 'Lvl 1 tent makes a quick starter shelter, and you get all your items back when you die, The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(10)
-        imtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(20)
-        mtxt = 'Everyone welcome a new player to the cluster!'
-        subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
-        log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
+        #mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
+        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        #time.sleep(10)
+        #mtxt = 'Public teleporters and crafting area, rewards system points earned as you play. Build a rewards vault quick, free starter items.'
+        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        #time.sleep(10)
+        #mtxt = 'Lvl 1 tent makes a quick starter shelter, and you get all your items back when you die, The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
+        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        #time.sleep(10)
+        #imtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
+        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        #time.sleep(20)
+        #mtxt = 'Everyone welcome a new player to the cluster!'
+        ##subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+        #log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
         welcomthreads[:] = [d for d in welcomthreads if d.get('steamid') != steamid]
 
 
@@ -161,61 +161,97 @@ def serverisinrestart(steamid,inst,oplayer):
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
 
+def checkbanned(steamid,inst):
+    conn1 = sqlite3.connect(sqldb)
+    c1 = conn1.cursor()
+    c1.execute('SELECT * FROM players WHERE steamid = ? AND banned != ""', [steamid])
+    poplayer = c1.fetchone()
+    c1.execute('SELECT * FROM banlist WHERE steamid = ?', [steamid])
+    bplayer = c1.fetchone()
+    c1.close()
+    conn1.close()
+    if poplayer:
+        if not bplayer:
+            log.error(f'banned player out of sync issue {steamid} on instance {inst}. not in banlist')
+    if bplayer:
+        if not poplayer:
+            log.error(f'banned player out of sync issue {steamid} on instance {inst}. not banned in playerlist')
+    if poplayer or bplayer:
+        log.warning(f'banned player with steamid {steamid} has tried to connect to {inst}. kicking and rebanning.')
+        #### kick and reban rcon commands
+
+
 def onlineplayer(steamid,inst):
     global welcomthreads
     conn1 = sqlite3.connect(sqldb)
     c1 = conn1.cursor()
     c1.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
     oplayer = c1.fetchone()
+    timestamp=time.time()
+    c1.execute('SELECT * FROM players WHERE steamid = ? AND banned != ""', [steamid])
+    poplayer = c1.fetchone()
+    c1.execute('SELECT * FROM banlist WHERE steamid = ?', [steamid])
+    bplayer = c1.fetchone()
     c1.close()
     conn1.close()
     timestamp=time.time()
-    if not oplayer:
-        log.info(f'steamid {steamid} was not found. adding new player to cluster!')
-        conn1 = sqlite3.connect(sqldb)
-        c1 = conn1.cursor()
-        c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,''))
-        conn1.commit()
-        c1.close()
-        conn1.close()
-        if not iswelcoming(steamid):
-            welcom = threading.Thread(name = 'welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid,inst))
-            welcomthreads.append({'steamid':steamid,'sthread':welcom})
-            welcom.start()
-        else:
-            log.warning(f'welcome message thread already running for new player {steamid}')
-        writechat(inst,'ALERT',f'<<< A New player has joined the cluster!',wcstamp())
-    elif len(oplayer) > 2:
-        if float(oplayer[2]) + 300 > float(time.time()):
-            if oplayer[3] != inst:
-                writechat(inst,'ALERT',f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}',wcstamp())
-                log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
-            log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
+    if poplayer:
+        if not bplayer:
+            log.error(f'banned player out of sync issue {steamid} on instance {inst}. not in banlist')
+    if bplayer:
+        if not poplayer:
+            log.error(f'banned player out of sync issue {steamid} on instance {inst}. not banned in playerlist')
+    if poplayer or bplayer:
+        log.warning(f'banned player with steamid {steamid} has tried to connect to {inst}. kicking and rebanning.')
+        ###subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (steamid, inst), shell=True)
+        ###subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
+    else:
+        if not oplayer:
+            log.info(f'steamid {steamid} was not found. adding new player to cluster!')
             conn1 = sqlite3.connect(sqldb)
             c1 = conn1.cursor()
-            c1.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
+            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,''))
             conn1.commit()
             c1.close()
             conn1.close()
-        else:
-            log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. updating info.")
-            conn1 = sqlite3.connect(sqldb)
-            c1 = conn1.cursor()
-            c1.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(oplayer[7])+1,steamid))
-            conn1.commit()
-            c1.close()
-            conn1.close()
-            laston = elapsedTime(float(time.time()),float(oplayer[2]))
-            totplay = playedTime(float(oplayer[4].replace(',','')))
-            mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston} ago, total time played {totplay}'
-            time.sleep(3)
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-            if oplayer[8] == '':
-                mtxt = f'your player is not linked with a discord account yet. type !linkme in global chat'
+            if not iswelcoming(steamid):
+                welcom = threading.Thread(name = 'welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid,inst))
+                welcomthreads.append({'steamid':steamid,'sthread':welcom})
+                welcom.start()
+            else:
+                log.warning(f'welcome message thread already running for new player {steamid}')
+            writechat(inst,'ALERT',f'<<< A New player has joined the cluster!',wcstamp())
+        elif len(oplayer) > 2:
+            if float(oplayer[2]) + 300 > float(time.time()):
+                if oplayer[3] != inst:
+                    writechat(inst,'ALERT',f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}',wcstamp())
+                    log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
+                log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
+                conn1 = sqlite3.connect(sqldb)
+                c1 = conn1.cursor()
+                c1.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp,inst,steamid))
+                conn1.commit()
+                c1.close()
+                conn1.close()
+            else:
+                log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. updating info.")
+                conn1 = sqlite3.connect(sqldb)
+                c1 = conn1.cursor()
+                c1.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?', (timestamp,inst,int(oplayer[7])+1,steamid))
+                conn1.commit()
+                c1.close()
+                conn1.close()
+                laston = elapsedTime(float(time.time()),float(oplayer[2]))
+                totplay = playedTime(float(oplayer[4].replace(',','')))
+                mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston} ago, total time played {totplay}'
+                time.sleep(3)
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        if float(oplayer[2]) + 60 < float(time.time()):
-            writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())
-            serverisinrestart(steamid,inst,oplayer)
+                if oplayer[8] == '':
+                    mtxt = f'your player is not linked with a discord account yet. type !linkme in global chat'
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+            if float(oplayer[2]) + 60 < float(time.time()):
+                writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())
+                serverisinrestart(steamid,inst,oplayer)
 
 def onlineupdate(inst):
     log.debug(f'starting online player watcher on {inst}')
