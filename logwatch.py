@@ -206,6 +206,7 @@ def onlineplayer(steamid,inst):
         ###subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (steamid, inst), shell=True)
         ###subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
+        log.debug(f'player {steamid} passed ban checks')
         if not oplayer:
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
             conn1 = sqlite3.connect(sqldb)
