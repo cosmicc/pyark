@@ -103,6 +103,26 @@ def discordbot():
                     writechat(reach[3],'ALERT',f'>>> {reach[1].capitalize()} has left the server',wcstamp())
             except:
                 log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
+                try:
+                    if c in vars():
+                        c.close()
+                except:
+                    pass
+                try:
+                    if conn in vars():
+                        conn.close()
+                except:
+                    pass
+                try:
+                    if c3 in vars():
+                        c3.close()
+                except:
+                    pass
+                try:
+                    if conn3 in vars():
+                        conn3.close()
+                except:
+                    pass
             await asyncio.sleep(2)
 
     def savediscordtodb(author):
@@ -421,4 +441,25 @@ def discordbot():
         client.run(config.get('general','discordtoken'))
     except:
         log.critical('Critical Error in Discord Bot Routine!', exc_info=True)
+        try:
+            if c in vars():
+                c.close()
+        except:
+            pass
+        try:
+            if conn in vars():
+                conn.close()
+        except:
+            pass
+        try:
+            if c3 in vars():
+                c3.close()
+        except:
+            pass
+        try:
+            if conn3 in vars():
+                conn3.close()
+        except:
+            pass
+
 
