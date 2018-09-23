@@ -161,26 +161,6 @@ def serverisinrestart(steamid,inst,oplayer):
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
 
-def checkbanned(steamid,inst):
-    conn1 = sqlite3.connect(sqldb)
-    c1 = conn1.cursor()
-    c1.execute('SELECT * FROM players WHERE steamid = ? AND banned != ""', [steamid])
-    poplayer = c1.fetchone()
-    c1.execute('SELECT * FROM banlist WHERE steamid = ?', [steamid])
-    bplayer = c1.fetchone()
-    c1.close()
-    conn1.close()
-    if poplayer:
-        if not bplayer:
-            log.error(f'banned player out of sync issue {steamid} on instance {inst}. not in banlist')
-    if bplayer:
-        if not poplayer:
-            log.error(f'banned player out of sync issue {steamid} on instance {inst}. not banned in playerlist')
-    if poplayer or bplayer:
-        log.warning(f'banned player with steamid {steamid} has tried to connect to {inst}. kicking and rebanning.')
-        #### kick and reban rcon commands
-
-
 def onlineplayer(steamid,inst):
     global welcomthreads
     conn1 = sqlite3.connect(sqldb)
@@ -202,9 +182,9 @@ def onlineplayer(steamid,inst):
         if not poplayer:
             log.error(f'banned player out of sync issue {steamid} on instance {inst}. not banned in playerlist')
     if poplayer or bplayer:
-        log.warning(f'banned player with steamid {steamid} has tried to connect to {inst}. kicking and rebanning.')
-        ###subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (steamid, inst), shell=True)
-        ###subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
+        log.warning(f'banned player with steamid {steamid} has tried to connect or is online on {inst}. kicking and banning.')
+        subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (steamid, inst), shell=True)
+        subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
         log.debug(f'player {steamid} passed ban checks')
         if not oplayer:

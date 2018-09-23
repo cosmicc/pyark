@@ -10,7 +10,7 @@ from timehelper import elapsedTime, playedTime
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 
     'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'checklog',
-    'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist'], help='Action to perform')
+    'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist', 'unbanplayer'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('servers', action='store_true', help='Server infomration')
 action_group.add_argument('playertable', action='store_true', help='Show players table')
@@ -32,6 +32,7 @@ action_group.add_argument('playersraw', action='store_true', help='Show raw play
 action_group.add_argument('checklog', action='store_true', help='Show any errors/warnings in log')
 action_group.add_argument('logsearch', action='store_true', help='Seach log by string (with -l)')
 action_group.add_argument('banplayer', action='store_true', help='Ban a player from the cluster')
+action_group.add_argument('unban', action='store_true', help='UN-Ban a player from the cluster')
 action_group.add_argument('banlist', action='store_true', help='Show the list of banned players')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
@@ -429,10 +430,10 @@ def banplayer():
         if each[0] == nsteamid:
             juu = each[1]
 
-    if ask_question(f'{BGRN}You will be BANNING {BMGT}{juu}{BGRN} with steamid {BMGT}{nsteamid}{BGRN} from the database. continue?{RST}'):
+    if ask_question(f'{BGRN}You will be BANNING {BMGT}{juu}{BGRN} with steamid {BMGT}{nsteamid}{BGRN} from the cluster. continue?{RST}'):
         if juu != 'noname':
             c.execute('UPDATE players SET banned = ? WHERE steamid = ?', (time.time(),nsteamid))
-            c.commit()
+            conn.commit()
         c.execute('SELECT * from banlist WHERE steamid = ?', (nsteamid,))
         blid = c.fetchall()
         if not blid:
@@ -451,6 +452,44 @@ def banplayer():
     alldata = c.fetchall()
     for row in alldata:
         print(row)
+
+def unbanplayer():
+    popper = []
+    printcolmns('players')
+    listtable('players')
+
+    nsteamid = getresponce(f'{BGRN}Enter Steam ID of player to UN-BAN{RST}')
+
+    c.execute('SELECT * from players')
+    oplayers = c.fetchall()
+    juu = 'noname'
+    for each in oplayers:
+        if each[0] == nsteamid:
+            juu = each[1]
+
+    if ask_question(f'{BGRN}You will be UN-BANNING {BMGT}{juu}{BGRN} with steamid {BMGT}{nsteamid}{BGRN} from the cluster. continue?{RST}'):
+        if juu != 'noname':
+            c.execute('UPDATE players SET banned = "" WHERE steamid = ?', (nsteamid,))
+            conn.commit()
+        c.execute('SELECT * from banlist WHERE steamid = ?', (nsteamid,))
+        blid = c.fetchall()
+        if blid:
+            c.execute('DELETE FROM banlist WHERE steamid = ?', (nsteamid,))
+            conn.commit()
+
+        print('    ')
+        print(f'{BYEL}Player {BMGT}{each[1]}{BYEL} with steamid {BMGT}{each[0]}{BYEL} has been UN-BANNED from all servers in the cluster!{RST}')
+        print('    ')
+    else:
+        print('    ')
+        print(f'{BRED}Canceled. Skipping un-ban{RST}')
+        print('    ')
+
+    c.execute('SELECT * from banlist')
+    alldata = c.fetchall()
+    for row in alldata:
+        print(row)
+
 
 def banlist():
     c.execute('SELECT * from players WHERE banned != ""')
@@ -710,6 +749,8 @@ try:
         banlist()
     elif args.action_to_perform == 'banplayer':
         banplayer()
+    elif args.action_to_perform == 'unbanplayer':
+        unbanplayer()
 
     print('       ')
     c.close()
