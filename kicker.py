@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import time, sys, socket
+import time, socket
 from datetime import datetime
 from datetime import timedelta
 import logging, sqlite3, threading, subprocess
@@ -61,9 +61,8 @@ def kicker(inst):
                 conn2.close()
             time.sleep(2)
         except:
+            log.critical('Critical Error in kick watcher!', exc_info=True)
             if c2 in vars():
                 c2.close()
             if conn2 in vars():
                 conn2.close()
-            e = sys.exc_info()
-            log.critical(e)

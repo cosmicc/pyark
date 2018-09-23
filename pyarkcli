@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys, subprocess, time, re
+import subprocess, time, re, logging
 import argparse, sqlite3
 from configparser import ConfigParser
 from datetime import datetime
@@ -41,6 +41,13 @@ parser.add_argument('-c', '--cancel', action='store_true', help='Cancel a instan
 parser.add_argument('-l', '--searcharg', action='store', help='Search string for log file searching')
 
 args = parser.parse_args()
+
+log = logging.getLogger()
+log.setLevel(logging.INFO)
+console_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(message)s')
+log_console = logging.StreamHandler()
+log.addHandler(log_console)
+log_console.setFormatter(console_format)
 
 configfile = '/home/ark/pyark.cfg'
 
@@ -698,11 +705,11 @@ def writechat(inst,whos,msg,tstamp):
         c.close()
         conn.close()
 
-def resetlastwipe(inst):
+def resetlastwipe(sinst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     newtime = time.time()
-    c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', [newtime,inst])
+    c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', [newtime,sinst])
     conn.commit()
     c.close()
     conn.close()
@@ -788,7 +795,8 @@ try:
     c.close()
     conn.close()
 except:
+    log.critical('error!', exc_info=True)
     c.close()
     conn.close()
-    e = sys.exc_info()
-    print(e)
+    #e = sys.exc_info()
+    #print(e)

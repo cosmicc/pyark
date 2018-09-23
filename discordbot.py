@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import time, logging, sys, threading, sqlite3, subprocess, socket
+import time, logging, threading, sqlite3, subprocess, socket
 from configparser import ConfigParser
 import discord
 import asyncio
@@ -70,36 +70,39 @@ def discordbot():
     async def chatbuffer():
         await client.wait_until_ready()
         while not client.is_closed:
-            conn3 = sqlite3.connect(sqldb)
-            c3 = conn3.cursor()
-            c3.execute('SELECT * FROM chatbuffer')
-            cbuff = c3.fetchall()
-            c3.close()
-            conn3.close()
-            if cbuff:
-                for each in cbuff:
-                    if each[1] == "ALERT":
-                        msg = f'{each[3]} [{each[0].capitalize()}] {each[2]}'
-                    else:
-                        msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
-                    await client.send_message(channel, msg)
-                    await asyncio.sleep(2)
+            try:
                 conn3 = sqlite3.connect(sqldb)
                 c3 = conn3.cursor()
-                c3.execute('DELETE FROM chatbuffer')
-                conn3.commit()
+                c3.execute('SELECT * FROM chatbuffer')
+                cbuff = c3.fetchall()
                 c3.close()
                 conn3.close()
-            conn3 = sqlite3.connect(sqldb)
-            c3 = conn3.cursor()
-            now = float(time.time())
-            c3.execute('SELECT * FROM players WHERE lastseen < ? AND lastseen > ?',(now-40,now-42))
-            cbuffr = c3.fetchall()
-            c3.close()
-            conn3.close()
-            for reach in cbuffr:
-                log.info(f'{reach[1]} has left the server {each[0]}')
-                writechat(reach[3],'ALERT',f'>>> {reach[1].capitalize()} has left the server',wcstamp())
+                if cbuff:
+                    for each in cbuff:
+                        if each[1] == "ALERT":
+                            msg = f'{each[3]} [{each[0].capitalize()}] {each[2]}'
+                        else:
+                            msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
+                        await client.send_message(channel, msg)
+                        await asyncio.sleep(2)
+                    conn3 = sqlite3.connect(sqldb)
+                    c3 = conn3.cursor()
+                    c3.execute('DELETE FROM chatbuffer')
+                    conn3.commit()
+                    c3.close()
+                    conn3.close()
+                conn3 = sqlite3.connect(sqldb)
+                c3 = conn3.cursor()
+                now = float(time.time())
+                c3.execute('SELECT * FROM players WHERE lastseen < ? AND lastseen > ?',(now-40,now-42))
+                cbuffr = c3.fetchall()
+                c3.close()
+                conn3.close()
+                for reach in cbuffr:
+                    log.info(f'{reach[1]} has left the server {each[0]}')
+                    writechat(reach[3],'ALERT',f'>>> {reach[1].capitalize()} has left the server',wcstamp())
+            except:
+                log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
             await asyncio.sleep(2)
 
     def savediscordtodb(author):
@@ -414,5 +417,8 @@ def discordbot():
                     await client.send_message(message.channel, msg)
 
     client.loop.create_task(chatbuffer())
-    client.run(config.get('general','discordtoken'))
+    try:
+        client.run(config.get('general','discordtoken'))
+    except:
+        log.critical('Critical Error in Discord Bot Routine!', exc_info=True)
 

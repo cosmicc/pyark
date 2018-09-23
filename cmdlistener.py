@@ -1,4 +1,4 @@
-import sys, logging, subprocess, sqlite3, time, threading, random, socket
+import logging, subprocess, sqlite3, time, threading, random, socket
 from datetime import datetime, timedelta
 from configparser import ConfigParser
 from timehelper import *
@@ -593,6 +593,7 @@ def clisten(minst):
             checkcommands(minst)
             time.sleep(3)
         except:
+            log.critical('Critical Error in Command Listener!', exc_info=True)
             try:
                 if c in vars():
                     c.close()
@@ -613,6 +614,3 @@ def clisten(minst):
                     conn1.close()
             except:
                 pass
-
-            e = sys.exc_info()
-            log.critical(e)

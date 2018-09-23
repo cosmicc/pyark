@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import time, sys, socket
+import time, socket
 from datetime import datetime
 from datetime import timedelta
 import logging, sqlite3, threading, subprocess
@@ -119,23 +119,23 @@ def processlogline(line,inst):
 
 def welcomenewplayer(steamid,inst):
         global welcomthreads
-        #log.info(f'welcome message thread started for new player {steamid} on {inst}')
+        log.info(f'welcome message thread started for new player {steamid} on {inst}')
         time.sleep(180)
-        #mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
-        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        #time.sleep(10)
-        #mtxt = 'Public teleporters and crafting area, rewards system points earned as you play. Build a rewards vault quick, free starter items.'
-        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        #time.sleep(10)
-        #mtxt = 'Lvl 1 tent makes a quick starter shelter, and you get all your items back when you die, The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
-        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        #time.sleep(10)
+        mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(8)
+        mtxt = 'Public teleporters and crafting area, ARc rewards points earned as you play. Build a rewards vault, free starter items.'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(8)
+        mtxt = 'You get all your items back when you die automatically, The engram menu is laggy, sorry. Admins and help in discord. Press F1 at anytime for help. Have Fun!'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        time.sleep(15)
         #imtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
         #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         #time.sleep(20)
-        #mtxt = 'Everyone welcome a new player to the cluster!'
-        ##subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
-        #log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
+        mtxt = 'Everyone welcome a new player to the cluster!'
+        subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+        log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
         welcomthreads[:] = [d for d in welcomthreads if d.get('steamid') != steamid]
 
 
@@ -224,11 +224,11 @@ def onlineplayer(steamid,inst):
                 conn1.close()
                 laston = elapsedTime(float(time.time()),float(oplayer[2]))
                 totplay = playedTime(float(oplayer[4].replace(',','')))
-                mtxt = f'welcome back {oplayer[1]}, you have {oplayer[5]} reward points. you were last on {laston} ago, total time played {totplay}'
+                mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points. You were last on {laston} ago, total time played {totplay}'
                 time.sleep(3)
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 if oplayer[8] == '':
-                    mtxt = f'your player is not linked with a discord account yet. type !linkme in global chat'
+                    mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
             if float(oplayer[2]) + 60 < float(time.time()):
                 writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())
@@ -259,7 +259,7 @@ def onlineupdate(inst):
             log.critical(e)
 
 def logwatch(inst):
-    #try:
+    try:
         log.debug(f'starting logwatch thread for instance {inst}')
         for each in range(numinstances):
             if instance[each]['name'] == inst:
@@ -271,39 +271,28 @@ def logwatch(inst):
                 log.debug(f'watching log {logpath} for instance {inst}')
         with open(logpath, 'rt') as following:
             following.seek(0, 0)
-            #try:
             for line in follow(following):
                 processlogline(line,inst)
-            #except KeyboardInterrupt:
-            #    if c in vars():
-            #        c.close()
-            #    if conn in vars():
-            #        conn.close()
-            #    if c1 in vars():
-            #        c1.close()
-            #    if conn1 in vars():
-            #        conn1.close()
-    #except:
-    #    e = sys.exc_info()
-    #    log.critical(e)
-    #    try:
-    #        if c in vars():
-    #            c.close()
-    #    except:
-    #        pass
-    #    try:
-    #        if conn in vars():
-    #            conn.close()
-    #    except:
-    #        pass
-    #    try:
-    #        if c1 in vars():
-    #            c1.close()
-    #    except:
-    #        pass
-    #    try:
-    #        if conn1 in vars():
-    #            conn1.close()
-    #    except:
-    #        pass
+    except:
+        log.critical('Critical Error in Log Watcher!', exc_info=True)
+        try:
+            if c in vars():
+                c.close()
+        except:
+            pass
+        try:
+            if conn in vars():
+                conn.close()
+        except:
+            pass
+        try:
+            if c1 in vars():
+                c1.close()
+        except:
+            pass
+        try:
+            if conn1 in vars():
+                conn1.close()
+        except:
+            pass
 

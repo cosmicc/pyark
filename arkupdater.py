@@ -1,4 +1,4 @@
-import sys, logging, subprocess, sqlite3, time, filecmp, threading, socket
+import logging, subprocess, sqlite3, time, filecmp, threading, socket
 from configparser import ConfigParser
 from datetime import datetime
 from datetime import time as dt
@@ -410,6 +410,7 @@ def arkupd():
                 checkpending(instance[each]['name'])
             time.sleep(300)
         except:
+            log.critical('Critical Error in Ark Updater!', exc_info=True)
             try:
                 if c in vars():
                     c.close()
@@ -420,5 +421,3 @@ def arkupd():
                     conn.close()
             except:
                 pass
-            e = sys.exc_info()
-            log.critical(e)
