@@ -123,7 +123,7 @@ def discordbot():
                         conn3.close()
                 except:
                     pass
-            await asyncio.sleep(2)
+            await asyncio.sleep(5)
 
     def savediscordtodb(author):
         conn = sqlite3.connect(sqldb)
