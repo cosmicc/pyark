@@ -479,28 +479,35 @@ def checkcommands(minst):
             subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, !myinfo, !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
             log.info(f'responded to help request on {minst} from {whoasked}')
 
-        elif line.find('!global') != -1 or line.find('!chat') != -1 or line.find('@all') != -1:
-            whoasked = getnamefromchat(line)
-            rawline = line.split('(')
-            if len(rawline) > 1:
-                rawname = rawline[1].split(')')
-                whoname = rawname[0].lower()
-                if len(rawname) > 1:
-                    cmsg = rawname[1].split(' ')[2]
-                    nmsg = line.split(': ')
-                    if len(nmsg) > 2:
-                        try:
-                            if nmsg[0].startswith('"'):
-                                dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
-                                dto = dto - tzfix
-                            else:
-                                dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
-                                dto = dto - tzfix
-                            tstamp = dto.strftime('%m-%d %I:%M%p')
-                            writeglobal(minst,whoname,cmsg)
-                            writechat('Global',whoname,cmsg,tstamp)
-                        except:
-                            log.warning('could not parse date from chat')
+        elif line.find('!global') != -1 or line.find('@all') != -1:
+            try:
+                whoasked = getnamefromchat(line)
+                rawline = line.split('(')
+                if len(rawline) > 1:
+                    rawname = rawline[1].split(')')
+                    whoname = rawname[0].lower()
+                    if len(rawname) > 2:
+                        cmsg = rawname[1].split(' ')[2]
+                        nmsg = line.split(': ')
+                        if len(nmsg) > 2:
+                            try:
+                                if nmsg[0].startswith('"'):
+                                    dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
+                                    dto = dto - tzfix
+                                else:
+                                    dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
+                                    dto = dto - tzfix
+                                tstamp = dto.strftime('%m-%d %I:%M%p')
+                                writeglobal(minst,whoname,cmsg)
+                                writechat('Global',whoname,cmsg,tstamp)
+                            except:
+                                log.warning('could not parse date from chat')
+                    else:
+                        subprocess.run("""arkmanager rconcmd "ServerChat Commands: You didn't supply a message to send to all servers" @%s""" % (minst), shell=True)
+
+
+            except:
+                log.critical('Critical Error in global chat writer!', exc_info=True)
 
 
         elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
