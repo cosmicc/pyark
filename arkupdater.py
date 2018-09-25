@@ -351,7 +351,7 @@ def checkupdates():
         ismodupd = ismodupd.split('\n')
         print(f'###{ismodupd}')
         for teach in ismodupd:
-            if teach.find('has been updated') != -1 or teach.find('needs to be applied'):
+            if teach.find('has been updated') != -1 or teach.find('needs to be applied') != -1:
                 modchk += 1
                 al = teach.split(' ')
                 modid = al[1]
