@@ -348,6 +348,7 @@ def checkupdates():
         ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
         ismodupd = ismodupd.stdout.decode('utf-8')
         modchk = 0
+        print(ismodupd)
         for teach in ismodupd:
             if teach.find('has been updated') != -1:
                 modchk += 1
