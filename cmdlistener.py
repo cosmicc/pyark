@@ -614,7 +614,7 @@ def clisten(minst):
     while True:
         try:
             checkcommands(minst)
-            time.sleep(3)
+            time.sleep(2)
         except:
             log.critical('Critical Error in Command Listener!', exc_info=True)
             try:
