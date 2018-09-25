@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 
-import time, socket
-from datetime import datetime
-from datetime import timedelta
-import logging, sqlite3, threading, subprocess
+import time, socket, json, logging, sqlite3, threading, subprocess
+from urllib.request import urlopen
+from datetime import datetime, timedelta
 from configparser import ConfigParser
 from timehelper import *
 
@@ -41,6 +40,41 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr=instr + ', %s' % (a)
+
+def fetchauctiondata(steamid):
+    try:
+        data = urlopen(f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}").read()
+        data = data.decode()[:-20].encode()
+        adata = json.loads(data)
+        auctions = adata['Auctions']
+        if auctions:
+            return auctions
+        else:
+            return False
+    except:
+        return False
+
+def getauctionstats(auctiondata):
+    if auctiondata != False:
+        numdinos = 0
+        numitems = 0
+        numauctions = len(auctiondata)
+        for eauct in auctiondata:
+            if eauct['Type'] == 'Dino':
+                numdinos += 1
+            elif eauct['Type'] == 'Item':
+                numitems += 1
+        return numauctions, numitems, numdinos
+    else:
+        return 0, 0, 0
+
+def writeauctionstats(steamid,numauctions,numitems,numdinos):
+    conn4 = sqlite3.connect(sqldb)
+    c4 = conn4.cursor()
+    c4.execute('UPDATE players SET numauctions = ?, numitems = ?, numdinos = ? WHERE steamid = ?', (numauctions,numitems,numdinos,steamid))
+    conn4.commit()
+    c4.close()
+    conn4.close()
 
 def follow(stream):
     "Follow the live contents of a text file."
@@ -224,8 +258,13 @@ def onlineplayer(steamid,inst):
                 conn1.close()
                 laston = elapsedTime(float(time.time()),float(oplayer[2]))
                 totplay = playedTime(float(oplayer[4].replace(',','')))
-                mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points. You were last on {laston} ago, total time played {totplay}'
-                time.sleep(3)
+                
+                log.debug(f'fetching steamid {steamid} auctions from auction api website')
+                pauctions = fetchauctiondata(steamid)
+                totauctions, iauctions, dauctions = getauctionstats(pauctions)
+                writeauctionstats(steamid,totauctions,iauctions,dauctions)
+
+                mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points and {totauctions} auctions.You were last on {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 if oplayer[8] == '':
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'

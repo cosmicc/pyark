@@ -35,9 +35,9 @@ c = conn.cursor()
 #c.execute('DELETE from players WHERE steamid = 76561198408657294')
 
 #c.execute('SELECT * from players WHERE discordid = None')
-c.execute('UPDATE players SET banned = ""')
-#c.execute('CREATE TABLE IF NOT EXISTS banlist (steamid TEXT)')
-#c.execute('ALTER TABLE players ADD COLUMN banned TEXT')
+#c.execute('UPDATE players SET banned = ""')
+c.execute('CREATE TABLE IF NOT EXISTS auctions (steamid TEXT, date TEXT, Type TEXT, name TEXT, sellingclass TEXT, quantity TEXT, askingclass TEXT, askingamount TEXT, tamedname TEXT, baselevel INTEGER, extrlevel INTEGER, level INTEGER, gender TEXT, quality INTEGER, rating REAL, armor REAL, durability REAL, damage REAL, blueprint TEXT)')
+#c.execute('ALTER TABLE players ADD COLUMN dinoauctions INTEGER')
 #c.execute('UPDATE players SET banned = ""')
 #c.execute('DROP TABLE discornames')
 #c.execute('INSERT INTO players ("cfgver") VALUES ("1")')
@@ -45,7 +45,7 @@ c.execute('UPDATE players SET banned = ""')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
 conn.commit()
 
-c.execute('SELECT * FROM players')
+c.execute('SELECT * FROM auctions')
 alldata = c.fetchall()
 ap = []
 for row in alldata:

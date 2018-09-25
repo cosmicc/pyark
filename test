@@ -1,0 +1,86 @@
+#!/usr/bin/python3
+
+import json 
+from urllib.request import urlopen
+
+
+def fetchauctiondata(steamid):
+    data = urlopen(f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}").read()
+    data = data.decode()[:-20].encode()
+    adata = json.loads(data)
+    auctions = adata['Auctions']
+    if auctions:
+        return auctions
+    else:
+        return False
+
+def getauctionstats(auctiondata):
+    if auctiondata != False:
+        numdinos = 0
+        numitems = 0
+        numauctions = len(auctiondata)
+        for eauct in auctiondata:
+            if eauct['Type'] == 'Dino':
+                numdinos += 1
+            elif eauct['Type'] == 'Item':
+                numitems += 1
+        return numauctions, numitems, numdinos
+    else:
+        return 0, 0, 0
+
+#def writeauctionstats(steamid,numauctions,numitems,numdinos):
+#    conn4 = sqlite3.connect(sqldb)
+#    c4 = conn4.cursor()
+#    c4.execute('UPDATE players SET numauctions = ?, numitems = ?, numdinos = ? WHERE steamid = ?', (numauctions,numitems,numdinos,steamid))
+#    conn4.commit()
+#    c4.close()
+#    conn4.close()
+
+auctions = fetchauctiondata('76561197973691379')
+
+if auctions != False:
+    for auc in auctions:
+        adate = auc['Date']
+        atype = auc['Type']
+        aname = auc['Name']
+        aselling = auc['SellingClass']
+        aquant = auc['Quantity']
+        asellfor = auc['AskingClass']
+        asellamt = auc['AskingAmount']
+        if auc['Type'] == 'Item':
+            quality = auc['Item']['Quality']
+            rating = auc['Item']['Rating']
+            armor = auc['Item']['Stats']['Armor']
+            durability = auc['Item']['Stats']['MaxDurability']
+            damage = auc['Item']['Stats']['Damage']
+            isbp = auc['Item']['Flags']['IsBlueprint']
+        elif auc['Type'] == 'Dino':
+            tamedname = auc['Dino']['TamedName']
+            baselevel = auc['Dino']['BaseLevel']
+            extralevel = auc['Dino']['ExtraLevel']
+            level = auc['Dino']['Level']
+            gender = auc['Dino']['Gender']
+
+else:
+    print('No Player auctions exist.')
+            
+    #conn4 = sqlite3.connect(sqldb)
+    #c4 = conn4.cursor()
+    #c4.execute('SELECT * FROM auctions WHERE steamid = ? AND date = ?', (steamid,adate))
+    #eaucts = c4.fetchall()
+    #c4.close()
+    #conn4.close()
+
+    #if not eaucts:
+    #    if iauc == 'Item':
+    #        quality = auc['Item']['Quality']
+    #        print(quality)
+
+        #conn4 = sqlite3.connect(sqldb)
+        #c4 = conn4.cursor()
+        #c4.execute('INSERT INTO auctions () VALUES ()', (steamid,adate))
+        #eaucts = c4.fetchall()
+        #c4.close()
+        #conn4.close()
+
+
