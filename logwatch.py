@@ -71,7 +71,7 @@ def getauctionstats(auctiondata):
 def writeauctionstats(steamid,numauctions,numitems,numdinos):
     conn4 = sqlite3.connect(sqldb)
     c4 = conn4.cursor()
-    c4.execute('UPDATE players SET numauctions = ?, numitems = ?, numdinos = ? WHERE steamid = ?', (numauctions,numitems,numdinos,steamid))
+    c4.execute('UPDATE players SET totalauctions = ?, itemauctions = ?, dinoauctions = ? WHERE steamid = ?', (numauctions,numitems,numdinos,steamid))
     conn4.commit()
     c4.close()
     conn4.close()
