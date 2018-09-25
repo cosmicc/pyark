@@ -7,6 +7,7 @@ from logwatch import logwatch
 from discordbot import discordbot
 from kicker import kicker
 from configreader import *
+from gchatrelay import *
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -93,20 +94,24 @@ def main():
     arkupdt = threading.Thread(name='arkupdater', target = arkupd)
     arkupdt.start()
 
+    log.debug('deleting global chat buffer')
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('DELETE FROM globalbuffer')
+    conn.commit()
+    c.close()
+    conn.close()
+
     for each in range(numinstances):
         inst = instance[each]['name']
         instance[each]['kickthread'] = threading.Thread(name='%s-kicker' % inst, target = kicker, args=(inst,))
         instance[each]['kickthread'].start()
-
-    for each in range(numinstances):
-        inst = instance[each]['name']
         instance[each]['cmdthread'] = threading.Thread(name='%s-cmdlistener' % inst, target = clisten, args=(inst,))
         instance[each]['cmdthread'].start()
-
-    for each in range(numinstances):
-        inst = instance[each]['name']
         instance[each]['restartthread'] = threading.Thread(name = '%s-logwatch' % inst, target=logwatch, args=(inst,))
         instance[each]['restartthread'].start()
+        instance[each]['gchatthread'] = threading.Thread(name = '%s-gchatrelay' % inst, target=gchatrelay, args=(inst,))
+        instance[each]['gchatthread'].start()
 
     if imthedbot == "True":
         discordt = threading.Thread(name='discord-bot', target = discordbot)
@@ -135,6 +140,10 @@ def main():
             if not instance[each]['kickthread'].is_alive():
                 t = f'{inst} kicklist kicker'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if not instance[each]['gchatthread'].is_alive():
+                t = f'{inst} global chat relay'
+                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+
 
 if __name__ == '__main__':
     main()
