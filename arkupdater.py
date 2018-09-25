@@ -356,8 +356,9 @@ def checkupdates():
                 al = teach.split(' ')
                 modid = al[1]
                 modname = al[2]    
+        inst = instance[each]['name']
         if modchk != 0 and not isrebooting(instance[each]['name']):
-            log.info(f'ark mod update [{modname}] id {modid} detected for instance {instance[each]["name"]}')
+            log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
             log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
             subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
