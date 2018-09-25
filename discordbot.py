@@ -49,6 +49,17 @@ def writechat(inst,whos,msg,tstamp):
         c.close()
         conn.close()
 
+def islinkeduser(duser):
+    conn3 = sqlite3.connect(sqldb)
+    c3 = conn3.cursor()
+    c3.execute('SELECT * FROM players WHERE discordid = ?')
+    islinked = c3.fetchall()
+    c3.close()
+    conn3.close()
+    if islinked:
+        return True
+    else:
+        return False
 
 def discordbot():
     async def chatbuffer():
@@ -383,6 +394,7 @@ def discordbot():
             msg = f'https://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
             await client.send_message(message.channel, msg)
 
+
         elif message.content.startswith('!link') or message.content.startswith('!linkme'):
             whofor = str(message.author).lower()
             user = message.author
@@ -428,6 +440,9 @@ def discordbot():
                     log.info(f'link account request on discord from {whofor} denied, no code specified')
                     msg = f'You must start a link request in-game first to get a code, then specify that code here, to link your account'
                     await client.send_message(message.channel, msg)
+        else:
+            print(dir(message))
+            print(message.channel)
 
     client.loop.create_task(chatbuffer())
     try:
