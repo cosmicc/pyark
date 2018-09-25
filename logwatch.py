@@ -294,8 +294,28 @@ def onlineupdate(inst):
                             log.error(f'problem with parsing online player - {rawline}')
             time.sleep(30)
         except:
-            e = sys.exc_info()
-            log.critical(e)
+            log.critical('Critical Error in Online Updater!', exc_info=True)
+            try:
+                if c1 in vars():
+                    c1.close()
+            except:
+                pass
+            try:
+                if conn1 in vars():
+                    conn1.close()
+            except:
+                pass
+            try:
+                if c in vars():
+                    c.close()
+            except:
+                pass
+            try:
+                if conn in vars():
+                    conn.close()
+            except:
+                pass
+
 
 def logwatch(inst):
     try:
