@@ -355,13 +355,13 @@ def discordbot():
                     writeauctionstats(kuser[0],au1,au2,au3)
                     ptime = playedTime(float(kuser[4].replace(',','')))
                     ptr = elapsedTime(float(time.time()),float(kuser[2]))
-                    msg = f'Your current reward points: {kuser[5]}.'
+                    msg = f'Your current ARc reward points: {kuser[5]}.'
                     await client.send_message(message.channel, msg)
                     msg = f'Last played on {kuser[3].capitalize()} {ptr} ago.'
                     await client.send_message(message.channel, msg)
                     msg = f'Your total play time is {ptime}.'
                     await client.send_message(message.channel, msg)
-                    msg = f'You have {au1} current auctions. {au2} Items / {au3} Dinos'
+                    msg = f'You have {au1} current auctions: {au2} Items & {au3} Dinos'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):

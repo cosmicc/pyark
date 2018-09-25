@@ -457,6 +457,13 @@ def writechat(inst,whos,msg,tstamp):
         c.close()
         conn.close()
 
+def writeglobal(inst,whos,msg):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,time.time()))
+    conn.commit()
+    c.close()
+    conn.close()
 
 def checkcommands(minst):
     inst = minst
@@ -469,8 +476,33 @@ def checkcommands(minst):
             pass
         elif line.find('!help') != -1:
             whoasked = getnamefromchat(line)
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: !who, !lasthour, !lastday, !timeleft, !myinfo, !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: !who, !lasthour, !lastday, !timeleft, !myinfo, !global !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
             log.info(f'responded to help request on {minst} from {whoasked}')
+
+        elif line.find('!global') != -1 or line.find('!chat') != -1 or line.find('!globalchat') != -1:
+            whoasked = getnamefromchat(line)
+            rawline = line.split('(')
+            if len(rawline) > 1:
+                rawname = rawline[1].split(')')
+                whoname = rawname[0].lower()
+                if len(rawname) > 1:
+                    cmsg = rawname[1]
+                    nmsg = line.split(': ')
+                    if len(nmsg) > 2:
+                        try:
+                            if nmsg[0].startswith('"'):
+                                dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
+                                dto = dto - tzfix
+                            else:
+                                dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
+                                dto = dto - tzfix
+                            tstamp = dto.strftime('%m-%d %I:%M%p')
+                            writeglobal(minst,whoname,cmsg)
+                            writechat('Global',whoname,cmsg,tstamp)
+                        except:
+                            log.warning('could not parse date from chat')
+
+
         elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
             whoasked = getnamefromchat(line)
             lastwipe = elapsedTime(time.time(),float(getlastwipe(minst)))
