@@ -22,7 +22,7 @@ def gchatrelay(inst):
                     if float(each[4]) < time.time()-10:
                         conn3 = sqlite3.connect(sqldb)
                         c3 = conn3.cursor()
-                        c3.execute('DELETE * FROM globalbuffer WHERE id = ?', (each[0],))
+                        c3.execute('DELETE FROM globalbuffer WHERE id = ?', (each[0],))
                         conn3.commit()
                         c3.close()
                         conn3.close()
