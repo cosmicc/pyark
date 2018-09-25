@@ -486,8 +486,10 @@ def checkcommands(minst):
                 if len(rawline) > 1:
                     rawname = rawline[1].split(')')
                     whoname = rawname[0].lower()
+                    print(f'###{rawname}')
                     if len(rawname) > 2:
                         cmsg = rawname[1].split(' ')[2]
+                        print(f'!!!{cmsg}')
                         nmsg = line.split(': ')
                         if len(nmsg) > 2:
                             try:
