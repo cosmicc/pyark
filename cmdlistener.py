@@ -479,7 +479,7 @@ def checkcommands(minst):
             subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, !myinfo, !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
             log.info(f'responded to help request on {minst} from {whoasked}')
 
-        elif line.find('!global') != -1 or line.find('@all') != -1:
+        elif line.find('@all') != -1:
             try:
                 whoasked = getnamefromchat(line)
                 rawline = line.split('(')
@@ -487,9 +487,9 @@ def checkcommands(minst):
                     rawname = rawline[1].split(')')
                     whoname = rawname[0].lower()
                     if len(rawname) > 1:
-                        print(cmsg)
-                        cmsg = rawname[1].split(whoname)[2]
-                        #print(f'!!!{cmsg}')
+                        print(rawname)
+                        cmsg = rawname[1].split('@all')
+                        print(f'!!!{cmsg}')
                         nmsg = line.split(': ')
                         if len(nmsg) > 2:
                             try:
