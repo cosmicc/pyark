@@ -2,29 +2,12 @@
 
 import time, socket, logging, sqlite3, threading, subprocess
 from datetime import datetime, timedelta
-from configparser import ConfigParser
 from timehelper import *
 from auctionhelper import *
+from configreader import *
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
-
-class ExtConfigParser(ConfigParser):
-    def getlist(self, section, option):
-        value = self.get(section, option)
-        return list(filter(None, (x.strip() for x in value.split(','))))
-
-    def getlistint(self, section, option):
-        return [int(x) for x in self.getlist(section, option)]
-
-configfile = '/home/ark/pyark.cfg'
-
-config = ExtConfigParser()
-config.read(configfile)
-
-sharedpath = config.get('general', 'shared')
-sqldb = f'{sharedpath}/db/pyark.db'
-arkroot = config.get('general', 'arkroot')
 
 welcomthreads = []
 

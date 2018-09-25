@@ -1,5 +1,4 @@
 import logging, subprocess, sqlite3, time, filecmp, threading, socket
-from configparser import ConfigParser
 from datetime import datetime
 from datetime import time as dt
 from timebetween import is_time_between

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import time, logging, threading, sqlite3, subprocess, socket
-from configparser import ConfigParser
 import discord
 import asyncio
 from timehelper import *

@@ -1,6 +1,5 @@
 import logging, subprocess, sqlite3, time, threading, random, socket
 from datetime import datetime, timedelta
-from configparser import ConfigParser
 from timehelper import *
 from configreader import *
 

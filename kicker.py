@@ -2,7 +2,6 @@
 
 import time, socket, logging, sqlite3, threading, subprocess
 from datetime import datetime, timedelta
-from configparser import ConfigParser
 from configreader import *
 
 hstname = socket.gethostname()
