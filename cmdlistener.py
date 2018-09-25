@@ -488,7 +488,7 @@ def checkcommands(minst):
                     whoname = rawname[0].lower()
                     if len(rawname) > 1:
                         print(rawname)
-                        cmsg = rawname[1].split('@all')
+                        cmsg = rawname[1].split('@all')[1]
                         print(f'!!!{cmsg}')
                         nmsg = line.split(': ')
                         if len(nmsg) > 2:
