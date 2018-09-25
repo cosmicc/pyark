@@ -5,30 +5,15 @@ from configparser import ConfigParser
 import discord
 import asyncio
 from timehelper import *
+from auctionhelper import *
+from configreader import *
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
-class ExtConfigParser(ConfigParser):
-    def getlist(self, section, option):
-        value = self.get(section, option)
-        return list(filter(None, (x.strip() for x in value.split(','))))
-
-    def getlistint(self, section, option):
-        return [int(x) for x in self.getlist(section, option)]
-
-configfile = '/home/ark/pyark.cfg'
-
-config = ExtConfigParser()
-config.read(configfile)
-
-sharedpath = config.get('general', 'shared')
-sqldb = f'{sharedpath}/db/pyark.db'
-arkroot = config.get('general', 'arkroot')
-
 client = discord.Client()
 
-channel = discord.Object(id='490643760758390813')
+channel = discord.Object(id=config.get('general','discordchatchan'))
 
 def getlastwipe(inst):
     conn = sqlite3.connect(sqldb)
@@ -366,9 +351,18 @@ def discordbot():
                     await client.send_message(message.channel, msg)
                 else:
                     log.info(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
+                    pauctions = fetchauctiondata(kuser[0])
+                    au1, au2, au3 = getauctionstats(pauctions)
+                    writeauctionstats(kuser[0],au1,au2,au3)
                     ptime = playedTime(float(kuser[4].replace(',','')))
                     ptr = elapsedTime(float(time.time()),float(kuser[2]))
-                    msg = f"Your current reward points: {kuser[5]}. Last played on {kuser[3].capitalize()} {ptr} ago. Your total play time is {ptime}."
+                    msg = f'Your current reward points: {kuser[5]}.'
+                    await client.send_message(message.channel, msg)
+                    msg = f'Last played on {kuser[3].capitalize()} {ptr} ago.'
+                    await client.send_message(message.channel, msg)
+                    msg = f'Your total play time is {ptime}.'
+                    await client.send_message(message.channel, msg)
+                    msg = f'You have {au1} current auctions. {au2} Items / {au3} Dinos'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):

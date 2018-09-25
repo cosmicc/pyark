@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
 import logging, argparse, sqlite3, time, threading, socket, subprocess
-from configparser import ConfigParser
 from arkupdater import arkupd
 from cmdlistener import clisten
 from logwatch import logwatch
 from discordbot import discordbot
 from kicker import kicker
+from configreader import *
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -34,19 +34,6 @@ else:
     log.setLevel(logging.INFO)
 console_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(name)s:%(threadName)s:%(message)s')
 log_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(name)s:%(threadName)s:%(message)s')
-
-class ExtConfigParser(ConfigParser):
-    def getlist(self, section, option):
-        value = self.get(section, option)
-        return list(filter(None, (x.strip() for x in value.split(','))))
-
-    def getlistint(self, section, option):
-        return [int(x) for x in self.getlist(section, option)]
-
-config = ExtConfigParser()
-config.read(configfile)
-
-logfile = config.get('general','log')
 
 if args.quiet is False:
     log_console = logging.StreamHandler()

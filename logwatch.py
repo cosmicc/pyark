@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
-import time, socket, json, logging, sqlite3, threading, subprocess
-from urllib.request import urlopen
+import time, socket, logging, sqlite3, threading, subprocess
 from datetime import datetime, timedelta
 from configparser import ConfigParser
 from timehelper import *
+from auctionhelper import *
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -40,41 +40,6 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr=instr + ', %s' % (a)
-
-def fetchauctiondata(steamid):
-    try:
-        data = urlopen(f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}").read()
-        data = data.decode()[:-20].encode()
-        adata = json.loads(data)
-        auctions = adata['Auctions']
-        if auctions:
-            return auctions
-        else:
-            return False
-    except:
-        return False
-
-def getauctionstats(auctiondata):
-    if auctiondata != False:
-        numdinos = 0
-        numitems = 0
-        numauctions = len(auctiondata)
-        for eauct in auctiondata:
-            if eauct['Type'] == 'Dino':
-                numdinos += 1
-            elif eauct['Type'] == 'Item':
-                numitems += 1
-        return numauctions, numitems, numdinos
-    else:
-        return 0, 0, 0
-
-def writeauctionstats(steamid,numauctions,numitems,numdinos):
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('UPDATE players SET totalauctions = ?, itemauctions = ?, dinoauctions = ? WHERE steamid = ?', (numauctions,numitems,numdinos,steamid))
-    conn4.commit()
-    c4.close()
-    conn4.close()
 
 def follow(stream):
     "Follow the live contents of a text file."
@@ -157,10 +122,10 @@ def welcomenewplayer(steamid,inst):
         time.sleep(180)
         mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(8)
-        mtxt = 'Public teleporters and crafting area, ARc rewards points earned as you play. Build a rewards vault, free starter items.'
+        time.sleep(10)
+        mtxt = 'Public teleporters and crafting area, ARc rewards points earned as you play. Public auction house. Build a rewards vault, free starter items.'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(8)
+        time.sleep(10)
         mtxt = 'You get all your items back when you die automatically, The engram menu is laggy, sorry. Admins and help in discord. Press F1 at anytime for help. Have Fun!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         time.sleep(15)
@@ -263,10 +228,12 @@ def onlineplayer(steamid,inst):
                 pauctions = fetchauctiondata(steamid)
                 totauctions, iauctions, dauctions = getauctionstats(pauctions)
                 writeauctionstats(steamid,totauctions,iauctions,dauctions)
+                time.sleep(3)
 
-                mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points and {totauctions} auctions.You were last on {laston} ago, total time played {totplay}'
+                mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 if oplayer[8] == '':
+                    time.sleep(8)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
             if float(oplayer[2]) + 60 < float(time.time()):
@@ -289,10 +256,11 @@ def onlineupdate(inst):
                         rawline = line.split(',')
                         if len(rawline) > 1:
                             nsteamid = rawline[1]
-                            onlineplayer(nsteamid.strip(),inst)
+                            mumu = threading.Thread(name = '%s-greeting' % inst, target=onlineplayer, args=(nsteamid.strip(),inst))
+                            mumu.start()
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
-            time.sleep(30)
+            time.sleep(10)
         except:
             log.critical('Critical Error in Online Updater!', exc_info=True)
             try:
