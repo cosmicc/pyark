@@ -349,7 +349,6 @@ def checkupdates():
         ismodupd = ismodupd.stdout.decode('utf-8')
         modchk = 0
         ismodupd = ismodupd.split('\n')
-        print(f'###{ismodupd}')
         for teach in ismodupd:
             if teach.find('has been updated') != -1 or teach.find('needs to be applied') != -1:
                 modchk += 1
