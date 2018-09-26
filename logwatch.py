@@ -215,6 +215,29 @@ def onlineplayer(steamid,inst):
 
                 mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+                time.sleep(1)
+                conn = sqlite3.connect(sqldb)
+                c = conn.cursor()
+                c.execute('SELECT * FROM players WHERE server = ? AND steamid != ?', (inst,steamid))
+                flast = c.fetchall()
+                c.close()
+                conn.close()
+                pcnt = 0
+                plist = ''
+                potime - 40
+                for row in flast:
+                    chktme = time.time()-float(row[2])
+                    if chktme < potime:
+                        pcnt += 1
+                        if plist == '':
+                            plist = '%s' % (row[1].capitalize())
+                        else:
+                            plist=plist + ', %s' % (row[1].capitalize())
+                if pcnt != 0:
+                    msg = f'There are {pcnt} other players online: {plist}'
+                else:
+                    msg = f'There are no other players online.'
+                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 if oplayer[8] == '':
                     time.sleep(8)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'

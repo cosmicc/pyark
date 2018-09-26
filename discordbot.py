@@ -49,10 +49,18 @@ def writechat(inst,whos,msg,tstamp):
         c.close()
         conn.close()
 
+def writeglobal(inst,whos,msg):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,time.time()))
+    conn.commit()
+    c.close()
+    conn.close()
+
 def islinkeduser(duser):
     conn3 = sqlite3.connect(sqldb)
     c3 = conn3.cursor()
-    c3.execute('SELECT * FROM players WHERE discordid = ?')
+    c3.execute('SELECT * FROM players WHERE discordid = ?', (duser.lower(),))
     islinked = c3.fetchall()
     c3.close()
     conn3.close()
@@ -440,9 +448,16 @@ def discordbot():
                     log.info(f'link account request on discord from {whofor} denied, no code specified')
                     msg = f'You must start a link request in-game first to get a code, then specify that code here, to link your account'
                     await client.send_message(message.channel, msg)
-        else:
-            print(dir(message))
-            print(message.channel)
+        elif str(message.channel) == 'server-chat':
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT playername FROM players WHERE discordid = ?', (str(message.author).lower(),))
+            whos = c.fetchone()
+            c.close()
+            conn.close()
+            if whos:
+                writeglobal('discord',whos[0],str(message.content))
+
 
     client.loop.create_task(chatbuffer())
     try:
