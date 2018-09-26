@@ -1,14 +1,6 @@
 #!/usr/bin/python3
 
-import json 
-from urllib.request  import urlopen, Request
+import subprocess 
 
-def fetcharkserverdata():
-    url = 'https://ark-servers.net/api/?object=servers&element=detail&key=6TO5zDDQk9uiywI9aJp9IYjmZmNHZn98DzE'
-    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    html = urlopen(req).read()
-    adata = json.loads(html)
-    return adata
-
-sdata = fetcharkserverdata()
-print(sdata['votes'])
+def tcaddpoints(steamid, points, inst):
+    subprocess.run("""arkmanager rconcmd 'ScriptCommand TCsAR AddARcTotal "%s" %s' @%s""" % (steamid, points, inst), shell=True)
