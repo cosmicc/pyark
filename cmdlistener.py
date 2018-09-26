@@ -538,9 +538,10 @@ def checkcommands(minst):
             rawseenname = line.split(':')
             orgname = rawseenname[1].strip()
             lsnname = rawseenname[2].split('!playedtime')
+            seenname = lsnname[1].strip().lower()
             whoasked = getnamefromchat(line)
             if lsnname:
-                lpt = gettimeplayed(lsnname)
+                lpt = gettimeplayed(seenname)
             else:
                 lpt = gettimeplayed(whoasked)
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, minst), shell=True)
