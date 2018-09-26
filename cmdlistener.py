@@ -534,11 +534,17 @@ def checkcommands(minst):
             else:
                 subprocess.run('arkmanager rconcmd "ServerChat you must specify a player name to search" @%s' % (minst), shell=True)
             log.info(f'responding to a lastseen request for {seenname} from {orgname}')
-        elif line.find('!playedtime') != -1 or line.find('!playtime') != -1 or line.find('!totalplayed') != -1:
+        elif line.find('!playedtime') != -1:
+            rawseenname = line.split(':')
+            orgname = rawseenname[1].strip()
+            lsnname = rawseenname[2].split('!playedtime')
             whoasked = getnamefromchat(line)
-            lpt = gettimeplayed(whoasked)
+            if lsnname:
+                lpt = gettimeplayed(lsnname)
+            else:
+                lpt = gettimeplayed(whoasked)
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, minst), shell=True)
-            log.info(f'responding to a playedtime request for {orgname}')
+            log.info(f'responding to a playedtime request for {whoasked}')
         elif line.find('!recent') != -1 or line.find('!whorecent') != -1 or line.find('!lasthour') != -1:
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
