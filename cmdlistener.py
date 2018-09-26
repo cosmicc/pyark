@@ -536,9 +536,9 @@ def checkcommands(minst):
             log.info(f'responding to a lastseen request for {seenname} from {orgname}')
         elif line.find('!playedtime') != -1 or line.find('!playtime') != -1 or line.find('!totalplayed') != -1:
             whoasked = getnamefromchat(line)
-            rawline = line.split(':')
-            seenname = rawline[4].lower()
-            lpt = gettimeplayed(seenname)
+            rawseenname = line.split(':')
+            orgname = rawseenname[1].strip()
+            lpt = gettimeplayed(orgname)
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, minst), shell=True)
             log.info(f'responding to a playedtime request for {seenname} on {minst} from {whoasked}')
         elif line.find('!recent') != -1 or line.find('!whorecent') != -1 or line.find('!lasthour') != -1:
