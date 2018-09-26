@@ -37,21 +37,22 @@ c = conn.cursor()
 #c.execute('SELECT * from players WHERE discordid = None')
 #c.execute('UPDATE players SET banned = ""')
 #c.execute('CREATE TABLE IF NOT EXISTS auctions (steamid TEXT, date TEXT, Type TEXT, name TEXT, sellingclass TEXT, quantity TEXT, askingclass TEXT, askingamount TEXT, tamedname TEXT, baselevel INTEGER, extrlevel INTEGER, level INTEGER, gender TEXT, quality INTEGER, rating REAL, armor REAL, durability REAL, damage REAL, blueprint TEXT)')
-c.execute('ALTER TABLE players ADD COLUMN homeserver TEXT')
+#c.execute('ALTER TABLE players ADD COLUMN homeserver TEXT')
 #c.execute('CREATE TABLE globalbuffer (id INTEGER PRIMARY KEY AUTOINCREMENT, server TEXT, name TEXT, message TEXT, timestamp TEXT)')
 #c.execute('UPDATE instances SET arkserverkey = "6TO5zDDQk9uiywI9aJp9IYjmZmNHZn98DzE" WHERE name = "ragnarok"')
 #c.execute('DROP TABLE globalbuffer')
 #c.execute('INSERT INTO players ("cfgver") VALUES ("1")')
 #c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
-conn.commit()
+#conn.commit()
 
 c.execute('SELECT * FROM players')
 alldata = c.fetchall()
 ap = []
 for row in alldata:
     print(row)
-
+    #c.execute(f'UPDATE players SET homeserver = ? WHERE steamid = ?', (row[3],row[0]))
+conn.commit()
 c.close()
 conn.close()
 

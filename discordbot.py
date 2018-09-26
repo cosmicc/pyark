@@ -386,6 +386,8 @@ def discordbot():
                     await client.send_message(message.channel, msg)
                     msg = f'Last played on {kuser[3].capitalize()} {ptr} ago.'
                     await client.send_message(message.channel, msg)
+                    msg = f'Your home server is {kuser[15].capitalize()}.'
+                    await client.send_message(message.channel, msg)
                     msg = f'Your total play time is {ptime}.'
                     await client.send_message(message.channel, msg)
                     msg = f'You have {au1} current auctions: {au2} Items & {au3} Dinos'
