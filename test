@@ -1,20 +1,14 @@
 #!/usr/bin/python3
 
 import json 
-from urllib.request import urlopen
-import urllib.request
-import io
-u = urllib.request.urlopen("https://ark-servers.net/api/?object=servers&element=detail&key=6TO5zDDQk9uiywI9aJp9IYjmZmNHZn98DzE", data = None)
-f = io.TextIOWrapper(u,encoding='utf-8')
-print(f.read())
+from urllib.request  import urlopen, Request
 
 def fetcharkserverdata():
-    #data = urlopen('https://ark-servers.net/api/?object=servers&element=detail&key=6TO5zDDQk9uiywI9aJp9IYjmZmNHZn98DzE').read()
-    #print(data)
-    data = urlopen('https://ark-servers.net/api/?object=servers&element=detail&key=6TO5zDDQk9uiywI9aJp9IYjmZmNHZn98DzE')
-    print(data.read())
-    adata = json.loads(data)
-    print(adata)
-    for each in adata:
-        print(each)
+    url = 'https://ark-servers.net/api/?object=servers&element=detail&key=6TO5zDDQk9uiywI9aJp9IYjmZmNHZn98DzE'
+    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    html = urlopen(req).read()
+    adata = json.loads(html)
+    return adata
 
+sdata = fetcharkserverdata()
+print(sdata['votes'])

@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
-import subprocess, time, re, logging, argparse, sqlite3
+import subprocess, time, re, logging, argparse, sqlite3, json
 from datetime import datetime
 from colorama import Fore, Back, Style
 from timehelper import elapsedTime, playedTime
 from configreader import *
+from urllib.request  import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 
@@ -81,6 +82,13 @@ now = time.time()
 c.execute('DELETE from players WHERE playedtime = 0')
 conn.commit()
 
+def fetcharkserverdata(key):
+    url = f'https://ark-servers.net/api/?object=servers&element=detail&key={key}'
+    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    html = urlopen(req).read()
+    adata = json.loads(html)
+    return adata
+
 def sendtoserver(tribeid):
     sshuser = config.get('general','sshuser').rstrip()
     sshhost = config.get('general','otherserverip').rstrip()
@@ -144,6 +152,22 @@ def alogsearcher(searchparm):
                 print(f'{nc}{line}{RST}', end='', flush=True)
     print('   ')
     print(f'{BGRN}Complete.{RST}')
+
+def printarkserverdata(sdata):
+    if int(sdata['is_online']) == 1:
+        fug = f'{BGRN}True{RST}'
+    else:
+        fug = f'{BRED}True{RST}'
+    print(f'{BYEL}Hostname: {BMGT}{sdata["hostname"]}{RST}')
+    print(f'{BYEL}Ark Server Name: {BCYN}{sdata["name"]}{RST}')
+    print(f'{BYEL}Address: {BMGT}{sdata["address"]}{RST}  {BYEL}Port: {BMGT}{sdata["port"]}{BYEL}  Query Port: {BMGT}{sdata["query_port"]}{BYEL}  Map: {BMGT}{sdata["map"]}{RST}')
+    print(f'{BYEL}Server Version: {BMGT}{sdata["version"]}{BYEL}  Online: {fug}{BYEL}  Uptime: {BMGT}{sdata["uptime"]}{BYEL}')
+    print(f'{BYEL}Rank: {BCYN}{sdata["rank"]}{BYEL}  Score: {BCYN}{sdata["score"]}{BYEL}  Votes: {BCYN}{sdata["votes"]}{BYEL}  Favorited: {BCYN}{sdata["favorited"]}{BYEL}  Comments: {BCYN}{sdata["comments"]}{RST}')
+    print(f'{BYEL}Ark-Servers URL: {BMGT}{sdata["url"]}{RST}')
+    print(f'{BYEL}Last Update: {BCYN}{sdata["last_check"]}{RST}')
+    print(f'{BYEL}Last Online: {BCYN}{sdata["last_online"]}{RST}')
+    print('  ')
+
 
 def printserverinfo(each):
     c.execute('SELECT * from players')
@@ -588,6 +612,8 @@ def serverinfo(svr):
     if not svrifo:
         print(f'{BMGT}{svr}{BRED} is not a server instance{RST}')
     else:
+        sdata = fetcharkserverdata(svrifo[8])
+        printarkserverdata(sdata)
         printserverinfo(svrifo)
         c.execute('SELECT * from players WHERE server = ?',(svr,))
         upo = c.fetchall()
