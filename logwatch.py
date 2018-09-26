@@ -248,8 +248,9 @@ def onlineplayer(steamid,inst):
                     msg = f'There are no other players online.'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 time.sleep(2)
+                print(oplayer[14],oplayer[13], oplayer[3], inst)
                 if int(oplayer[14]) == 1 and int(oplayer[13]) == 1 and oplayer[3] == inst:
-                    mtxt = f'WARNING: Server has restarted since you logged in, vivarium your primodrials!'
+                    mtxt = f'WARNING: Server has restarted since you logged in, vivarium your primordials!'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                     resetplayerbit(steamid)
                 if oplayer[8] == '':
