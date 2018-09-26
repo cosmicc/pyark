@@ -36,6 +36,15 @@ def follow(stream):
             # Wait for data.
             time.sleep(1.0)
 
+def resetplayerbit(steamid):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('UPDATE players SET restartbit = 0 WHERE steamid = ?', (steamid,))
+    conn.commit()
+    c.close()
+    conn.close()
+
+
 def writechat(inst,whos,msg,tstamp):
     isindb = False
     if whos != 'ALERT':
@@ -86,7 +95,7 @@ def processlogline(line,inst):
                     log.info(f'player {playername} with steamid {steamid} was not found. adding.')
                     conn = sqlite3.connect(sqldb)
                     c = conn.cursor()
-                    c.execute('INSERT INTO players (steamid, playername, lastseen, playedtime, rewardpoints, firstseen, connects, discordid, banned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1,'',''))
+                    c.execute('INSERT INTO players (steamid, playername, lastseen, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1,'','',0,0,0,0,0))
                     conn.commit()
                     c.close()
                     conn.close()
@@ -173,7 +182,7 @@ def onlineplayer(steamid,inst):
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
             conn1 = sqlite3.connect(sqldb)
             c1 = conn1.cursor()
-            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,'',''))
+            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,'','',0,0,0,0,0))
             conn1.commit()
             c1.close()
             conn1.close()
@@ -238,6 +247,11 @@ def onlineplayer(steamid,inst):
                 else:
                     msg = f'There are no other players online.'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
+                time.sleep(2)
+                if int(oplayer[14]) == 1 and int(oplayer[13]) == 1:
+                    mtxt = f'WARNING: Server has restarted since you logged in, vivarium your primodrials!'
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+                resetplayerbit(steamid)
                 if oplayer[8] == '':
                     time.sleep(8)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'

@@ -414,7 +414,7 @@ def discordbot():
             whofor = str(message.author).lower()
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
-            c.execute('SELECT * from players WHERE discordid = ?', (whofor))
+            c.execute('SELECT * from players WHERE discordid = ?', (whofor,))
             pplayer = c.fetchone()
             c.close()
             conn.close()
@@ -422,13 +422,14 @@ def discordbot():
                 msg = f'Your discord account needs to be linked to you game account first. !link in game'
                 await client.send_message(message.channel, msg)
             else:
-                if pplayer[14] == 1:
-                    setprimordialbit(pplayer[0],1)
-                    msg = f'Your primordial server restart warning is now ON'
-                    await client.send_message(message.channel, msg)
-                else:
+                print(pplayer[14])
+                if int(pplayer[14]) == 1:
                     setprimordialbit(pplayer[0],0)
                     msg = f'Your primordial server restart warning is now OFF'
+                    await client.send_message(message.channel, msg)
+                else:
+                    setprimordialbit(pplayer[0],1)
+                    msg = f'Your primordial server restart warning is now ON'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!link') or message.content.startswith('!linkme'):
