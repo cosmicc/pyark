@@ -307,15 +307,14 @@ def checkconfig():
 def isnewarkver(inst):
     isarkupd = subprocess.run('arkmanager checkupdate @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
     for each in isarkupd.stdout.decode('utf-8').split('\n'):
-        try:
-            if each.find('Current version:') != -1:
-                m = each.split(':')
-                k = m[1].split(' ')
-                curver = int((k[2]))
-            elif each.find('Available version:') != -1:
-                m = each.split(':')
-                k = m[1].split(' ')
-                avlver = int((k[2]))
+        if each.find('Current version:') != -1:
+            m = each.split(':')
+            k = m[1].split(' ')
+            curver = int((k[2]))
+        elif each.find('Available version:') != -1:
+            m = each.split(':')
+            k = m[1].split(' ')
+            avlver = int((k[2]))
     if curver == avlver:
         return False, curver, avlver
     else:
