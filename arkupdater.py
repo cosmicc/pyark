@@ -135,6 +135,16 @@ def unsetstartbit(inst):
     c.close()
     conn.close()
 
+def restartbit(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    newtime = time.time()
+    c.execute('UPDATE players SET restartbit = 1 WHERE server = ?', (inst,))
+    conn.commit()
+    c.close()
+    conn.close()
+
+
 def checkwipe(inst):
     global dwtimer
     lastwipe = getlastwipe(inst)
@@ -242,6 +252,7 @@ def instancerestart(inst, reason):
                 subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.info(f'server {inst} instance server is starting')
                 resetlastrestart(inst, reason)
+                resetbit(inst)
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server restart for %s has been cancelled'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)

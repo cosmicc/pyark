@@ -69,6 +69,14 @@ def islinkeduser(duser):
     else:
         return False
 
+def setprimordialbit(steamid,pbit):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('UPDATE players SET primordialbit = ? WHERE steamid = ?', (pbit,steamid))
+    conn.commit()
+    c.close()
+    conn.close()
+
 def discordbot():
     async def chatbuffer():
         await client.wait_until_ready()
@@ -282,7 +290,7 @@ def discordbot():
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !mods, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>'
+            msg = f'Commands: !mods, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>, !primordial'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
@@ -402,6 +410,26 @@ def discordbot():
             msg = f'https://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
             await client.send_message(message.channel, msg)
 
+        elif message.content.startswith('!primordial'):
+            whofor = str(message.author).lower()
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * from players WHERE discordid = ?', (whofor))
+            pplayer = c.fetchone()
+            c.close()
+            conn.close()
+            if not pplayer:
+                msg = f'Your discord account needs to be linked to you game account first. !link in game'
+                await client.send_message(message.channel, msg)
+            else:
+                if pplayer[14] == 1:
+                    setprimordialbit(pplayer[0],1)
+                    msg = f'Your primordial server restart warning is now ON'
+                    await client.send_message(message.channel, msg)
+                else:
+                    setprimordialbit(pplayer[0],0)
+                    msg = f'Your primordial server restart warning is now OFF'
+                    await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!link') or message.content.startswith('!linkme'):
             whofor = str(message.author).lower()
