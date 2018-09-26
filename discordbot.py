@@ -422,7 +422,6 @@ def discordbot():
                 msg = f'Your discord account needs to be linked to you game account first. !link in game'
                 await client.send_message(message.channel, msg)
             else:
-                print(pplayer[14])
                 if int(pplayer[14]) == 1:
                     setprimordialbit(pplayer[0],0)
                     msg = f'Your primordial server restart warning is now OFF'

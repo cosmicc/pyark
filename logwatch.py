@@ -248,10 +248,10 @@ def onlineplayer(steamid,inst):
                     msg = f'There are no other players online.'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 time.sleep(2)
-                if int(oplayer[14]) == 1 and int(oplayer[13]) == 1:
+                if int(oplayer[14]) == 1 and int(oplayer[13]) == 1 and oplayer[3] == inst:
                     mtxt = f'WARNING: Server has restarted since you logged in, vivarium your primodrials!'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-                resetplayerbit(steamid)
+                    resetplayerbit(steamid)
                 if oplayer[8] == '':
                     time.sleep(8)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
