@@ -224,7 +224,7 @@ def onlineplayer(steamid,inst):
                 conn.close()
                 pcnt = 0
                 plist = ''
-                potime - 40
+                potime = 40
                 for row in flast:
                     chktme = time.time()-float(row[2])
                     if chktme < potime:
