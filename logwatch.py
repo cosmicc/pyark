@@ -239,10 +239,6 @@ def onlineplayer(steamid,inst):
                 mtxt = f'Welcome back {oplayer[1]}, you have {newpoints} ARc reward points on {oplayer[15].capitalize()}, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 time.sleep(1)
-                if xferpoints != 0 and oplayer[1] == 'admin':
-                    mtxt = f'{xferpoints} rewards points were added from a non-home server'
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-                    time.sleep(1)
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
                 c.execute('SELECT * FROM players WHERE server = ? AND steamid != ?', (inst,steamid))
@@ -273,6 +269,10 @@ def onlineplayer(steamid,inst):
                 if oplayer[8] == '':
                     time.sleep(8)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+            if xferpoints != 0 and oplayer[1] == 'admin':
+                    time.sleep(1)
+                    mtxt = f'{xferpoints} rewards points were added from a non-home server'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
             if float(oplayer[2]) + 60 < float(time.time()):
                 writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())
