@@ -465,11 +465,12 @@ def writeglobal(inst,whos,msg):
     c.close()
     conn.close()
 
-def processtcdata(tcdata):
-    tsobj = datetime.strptime(tstimestamp, '%Y.%m.%d-%H.%M.%S')
-    newts = tsobj
-    timestamp = newts.timestamp()
-    playername = playername.lower()
+def processtcdata(inst,tcdata):
+    timestamp = time.time()
+    steamid = tcdata['SteamID']
+    playername = tcdata['PlayerName'].lower()
+    playtime = tcdata['TotalPlayed']
+    rewardpoints = tcdata['Points']
     
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -634,7 +635,7 @@ def checkcommands(minst):
             for each in dfh:
                 ee = each.strip().split(': ')
                 tcdata.update( {ee[0]:ee[1]} )
-            processtcdata(tcdata)
+            processtcdata(minst,tcdata)
         else:
             rawline = line.split('(')
             if len(rawline) > 1:
