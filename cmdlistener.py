@@ -597,7 +597,9 @@ def checkcommands(minst):
             whoasked = getnamefromchat(line)
             linker(minst,whoasked)
         elif line.find('[TCsAR]') != -1:
-            print(line)
+            dfg = line.split('||')
+            dfh = dfg[1].split('|')
+            print(dfh)
         else:
             rawline = line.split('(')
             if len(rawline) > 1:
