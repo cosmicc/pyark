@@ -153,6 +153,7 @@ def serverisinrestart(steamid,inst,oplayer):
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
 
 def onlineplayer(steamid,inst):
+    xferpoints = 0
     global welcomthreads
     conn1 = sqlite3.connect(sqldb)
     c1 = conn1.cursor()
@@ -225,8 +226,6 @@ def onlineplayer(steamid,inst):
                     c1.close()
                     conn1.close()
                     #subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s %s" @%s' % (steamid,xferpoints,inst), shell=True)
-                else:
-                    xferpoints = 0
 
                 log.debug(f'fetching steamid {steamid} auctions from auction api website')
                 pauctions = fetchauctiondata(steamid)
