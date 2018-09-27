@@ -222,7 +222,7 @@ def onlineplayer(steamid,inst):
                 writeauctionstats(steamid,totauctions,iauctions,dauctions)
                 time.sleep(3)
 
-                mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
+                mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points on {oplayer[15].capitalize()}, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 time.sleep(1)
                 conn = sqlite3.connect(sqldb)
