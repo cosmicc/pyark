@@ -360,6 +360,22 @@ def discordbot():
                         conn.commit()
                         c.close()
                         conn.close()
+        elif message.content.startswith('!home') or message.content.startswith('!myhome'):
+            whofor = str(message.author).lower()
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
+            kuser = c.fetchone()
+            c.close()
+            conn.close()
+            if kuser:
+                if kuser[8] != whofor:
+                    log.info(f'home server request from {whofor} denied, no account linked')
+                    msg = f'Your discord account is not connected to a player yet.'
+                    await client.send_message(message.channel, msg)
+                else:
+                    msg = f'meh'
+                    await client.send_message(message.channel, msg)    
 
         elif message.content.startswith('!myinfo') or message.content.startswith('!points'):
             whofor = str(message.author).lower()
@@ -386,11 +402,11 @@ def discordbot():
                     await client.send_message(message.channel, msg)
                     msg = f'Last played on {kuser[3].capitalize()} {ptr} ago.'
                     await client.send_message(message.channel, msg)
-                    msg = f'Your home server is {kuser[15].capitalize()}.'
+                    msg = f'Your home server is: {kuser[15].capitalize()}.'
                     await client.send_message(message.channel, msg)
                     msg = f'Your total play time is {ptime}.'
                     await client.send_message(message.channel, msg)
-                    msg = f'You have {au1} current auctions: {au2} Items & {au3} Dinos'
+                    msg = f'You have {au1} current auctions: {au2} Items - {au3} Dinos'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
