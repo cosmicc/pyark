@@ -215,10 +215,19 @@ def onlineplayer(steamid,inst):
                 conn1.close()
                 laston = elapsedTime(float(time.time()),float(oplayer[2]))
                 totplay = playedTime(float(oplayer[4].replace(',','')))
-                if oplayer[16] != 0:
-                    xferpoints = oplayer[16]
+                if oplayer[16] != 0 and oplayer[15] == oplayer[3]:
+                    xferpoints = int(oplayer[16])
+                    log.info(f'transferring {xferpoints} non home server points into account for {oplayer[1]} on {inst}')
+                    conn1 = sqlite3.connect(sqldb)
+                    c1 = conn1.cursor()
+                    c1.execute('UPDATE players SET transferpoints = 0 WHERE steamid = ?', (steamid,))
+                    conn1.commit()
+                    c1.close()
+                    conn1.close()
+                    #subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s %s" @%s' % (steamid,xferpoints,inst), shell=True)
                 else:
                     xferpoints = 0
+
                 log.debug(f'fetching steamid {steamid} auctions from auction api website')
                 pauctions = fetchauctiondata(steamid)
                 totauctions, iauctions, dauctions = getauctionstats(pauctions)
@@ -226,10 +235,14 @@ def onlineplayer(steamid,inst):
 
                 
                 time.sleep(3)
-
-                mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points on {oplayer[15].capitalize()}, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
+                newpoints = int(oplayer[5])+xferpoints
+                mtxt = f'Welcome back {oplayer[1]}, you have {newpoints} ARc reward points on {oplayer[15].capitalize()}, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 time.sleep(1)
+                if xferpoints != 0 and oplayer[1] == 'admin':
+                    mtxt = f'{xferpoints} rewards points were added from a non-home server'
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+                    time.sleep(1)
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
                 c.execute('SELECT * FROM players WHERE server = ? AND steamid != ?', (inst,steamid))
