@@ -465,6 +465,37 @@ def writeglobal(inst,whos,msg):
     c.close()
     conn.close()
 
+def processtcdata(tcdata):
+    tsobj = datetime.strptime(tstimestamp, '%Y.%m.%d-%H.%M.%S')
+    newts = tsobj
+    timestamp = newts.timestamp()
+    playername = playername.lower()
+    
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
+    pexist = c.fetchone()
+    c.close()
+    conn.close()
+    if not pexist:
+        if steamid != '':
+            log.info(f'player {playername} with steamid {steamid} was not found. adding.')
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,inst,playtime,rewardpoints,timestamp,1,'','',0,0,0,0,0,inst))
+            conn.commit()
+            c.close()
+            conn.close()
+    elif steamid != '':
+        log.debug(f'player {playername} with steamid {steamid} was found. updating.')
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
+        conn.commit()
+        c.close()
+        conn.close()
+
+
 def checkcommands(minst):
     inst = minst
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (minst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -603,7 +634,7 @@ def checkcommands(minst):
             for each in dfh:
                 ee = each.strip().split(': ')
                 tcdata.update( {ee[0]:ee[1]} )
-            print(tcdata)
+            processtcdata(tcdata)
         else:
             rawline = line.split('(')
             if len(rawline) > 1:

@@ -182,7 +182,7 @@ def onlineplayer(steamid,inst):
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
             conn1 = sqlite3.connect(sqldb)
             c1 = conn1.cursor()
-            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,'','',0,0,0,0,0,inst))
+            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,'','',0,0,0,0,0,inst))
             conn1.commit()
             c1.close()
             conn1.close()
@@ -319,6 +319,7 @@ def logwatch(inst):
         with open(logpath, 'rt') as following:
             following.seek(0, 0)
             for line in follow(following):
+                pass #############################################
                 processlogline(line,inst)
     except:
         log.critical('Critical Error in Log Watcher!', exc_info=True)
