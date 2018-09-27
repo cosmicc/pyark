@@ -499,7 +499,7 @@ def processtcdata(inst,tcdata):
             conn.close()
         else:
             log.info(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
-            if int(pexist[16] != rewardpoints:
+            if int(pexist[16]) != rewardpoints:
                 log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for {playername} on {inst}')
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
