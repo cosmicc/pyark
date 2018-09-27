@@ -599,9 +599,12 @@ def checkcommands(minst):
         elif line.find('[TCsAR]') != -1:
             dfg = line.split('||')
             dfh = dfg[1].split('|')
+            tcdata = {}
             for each in dfh:
                 dfh[each] = each.strip()
-            print(dfh)
+                ee = each.split(': ')
+                tcdata.update( {ee[0]:ee[1]} )
+            print(tcdata)
         else:
             rawline = line.split('(')
             if len(rawline) > 1:
