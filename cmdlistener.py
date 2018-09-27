@@ -503,7 +503,7 @@ def processtcdata(inst,tcdata):
                 log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for {playername} on {inst}')
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
-                c.execute('UPDATE players transferpoints = ? WHERE steamid = ?', (str(rewardpoints+pexist[16]),steamid))
+                c.execute('UPDATE players transferpoints = ? WHERE steamid = ?', (str(rewardpoints+pexist[16]),str(steamid)))
                 conn.commit()
                 c.close()
                 conn.close()
