@@ -470,6 +470,7 @@ def checkcommands(minst):
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (minst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
+        print(line)
         whoasked = 'nobody' 
         #log.warning(f'###{line}')
         if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
@@ -597,7 +598,6 @@ def checkcommands(minst):
             whoasked = getnamefromchat(line)
             linker(minst,whoasked)
         else:
-            print(line)
             rawline = line.split('(')
             if len(rawline) > 1:
                 rawname = rawline[1].split(')')
