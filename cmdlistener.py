@@ -498,15 +498,16 @@ def processtcdata(inst,tcdata):
             c.close()
             conn.close()
         else:
-            log.info(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
-            if int(pexist[16]) != rewardpoints:
+            #log.info(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
+            if int(pexist[16]) != int(rewardpoints) and int(rewardpoints) != 0 and time.time()-float(pexist[17]) > 60 and pexist[1] == 'admin':
                 log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for {playername} on {inst}')
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
-                c.execute('UPDATE players SET transferpoints = ? WHERE steamid = ?', (str(rewardpoints+pexist[16]),str(steamid)))
+                c.execute('UPDATE players SET transferpoints = ?, lastpointtimestamp = ? WHERE steamid = ?', (int(rewardpoints)+int(pexist[16]),str(time.time()),str(steamid)))
                 conn.commit()
                 c.close()
                 conn.close()
+                subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)        
 
             else:
                 log.info(f'duplicate reward points to account for {playername} on {inst}, skipping')

@@ -215,11 +215,16 @@ def onlineplayer(steamid,inst):
                 conn1.close()
                 laston = elapsedTime(float(time.time()),float(oplayer[2]))
                 totplay = playedTime(float(oplayer[4].replace(',','')))
-                
+                if oplayer[16] != 0:
+                    xferpoints = oplayer[16]
+                else:
+                    xferpoints = 0
                 log.debug(f'fetching steamid {steamid} auctions from auction api website')
                 pauctions = fetchauctiondata(steamid)
                 totauctions, iauctions, dauctions = getauctionstats(pauctions)
                 writeauctionstats(steamid,totauctions,iauctions,dauctions)
+
+                
                 time.sleep(3)
 
                 mtxt = f'Welcome back {oplayer[1]}, you have {oplayer[5]} ARc reward points on {oplayer[15].capitalize()}, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
