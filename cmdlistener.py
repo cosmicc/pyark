@@ -480,7 +480,7 @@ def processtcdata(inst,tcdata):
     conn.close()
     if not pexist:
         if steamid != '':
-            log.info(f'player {playername} with steamid {steamid} was not found. adding.')
+            log.info(f'player {playername} with steamid {steamid} was not found on {inst}. adding new player to cluster.')
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
             c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,inst,playtime,rewardpoints,timestamp,1,'','',0,0,0,0,0,inst))
@@ -488,13 +488,28 @@ def processtcdata(inst,tcdata):
             c.close()
             conn.close()
     elif steamid != '':
-        log.debug(f'player {playername} with steamid {steamid} was found. updating.')
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
-        conn.commit()
-        c.close()
-        conn.close()
+        if pexist[3] == pexists[15]:
+ 
+            log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating.')
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
+            conn.commit()
+            c.close()
+            conn.close()
+        else:
+            log.info(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
+            if int(pexist[16] != rewardpoints:
+                log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for {playername} on {inst}')
+                conn = sqlite3.connect(sqldb)
+                c = conn.cursor()
+                c.execute('UPDATE players transferpoints = ? WHERE steamid = ?', (rewardpoints+pexist[16],steamid))
+                conn.commit()
+                c.close()
+                conn.close()
+
+            else:
+                log.info(f'duplicate reward points to account for {playername} on {inst}, skipping')
 
 
 def checkcommands(minst):
