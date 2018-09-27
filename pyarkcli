@@ -157,7 +157,7 @@ def printarkserverdata(sdata):
     if int(sdata['is_online']) == 1:
         fug = f'{BGRN}True{RST}'
     else:
-        fug = f'{BRED}True{RST}'
+        fug = f'{BRED}False{RST}'
     print(f'{BYEL}Hostname: {BMGT}{sdata["hostname"]}{RST}')
     print(f'{BYEL}Ark Server Name: {BCYN}{sdata["name"]}{RST}')
     print(f'{BYEL}Address: {BMGT}{sdata["address"]}{RST}  {BYEL}Port: {BMGT}{sdata["port"]}{BYEL}  Query Port: {BMGT}{sdata["query_port"]}{BYEL}  Map: {BMGT}{sdata["map"]}{RST}')
