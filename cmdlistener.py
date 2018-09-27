@@ -601,8 +601,7 @@ def checkcommands(minst):
             dfh = dfg[1].split('|')
             tcdata = {}
             for each in dfh:
-                dfh[each] = each.strip()
-                ee = each.split(': ')
+                ee = each.strip().split(': ')
                 tcdata.update( {ee[0]:ee[1]} )
             print(tcdata)
         else:
