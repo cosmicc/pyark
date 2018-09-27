@@ -651,7 +651,8 @@ def checkcommands(minst):
             tcdata = {}
             for each in dfh:
                 ee = each.strip().split(': ')
-                tcdata.update( {ee[0]:ee[1]} )
+                if len(ee) > 1:
+                    tcdata.update( {ee[0]:ee[1]} )
             processtcdata(minst,tcdata)
         else:
             rawline = line.split('(')
