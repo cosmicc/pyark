@@ -204,7 +204,7 @@ def onlineplayer(steamid,inst):
                 conn1.close()
                 laston = elapsedTime(float(time.time()),float(oplayer[2]))
                 totplay = playedTime(float(oplayer[4].replace(',','')))
-                if oplayer[16] != 0 and oplayer[15] == oplayer[3]:
+                if oplayer[16] != 0 and oplayer[15] == oplayer[3] and oplayer[1] == 'admin':
                     xferpoints = int(oplayer[16].replace(',',''))
                     log.info(f'transferring {xferpoints} non home server points into account for {oplayer[1]} on {inst}')
                     conn1 = sqlite3.connect(sqldb)
@@ -213,7 +213,7 @@ def onlineplayer(steamid,inst):
                     conn1.commit()
                     c1.close()
                     conn1.close()
-                    #subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s %s" @%s' % (steamid,xferpoints,inst), shell=True)
+                    subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s %s" @%s' % (steamid,xferpoints,inst), shell=True)
 
                 log.debug(f'fetching steamid {steamid} auctions from auction api website')
                 pauctions = fetchauctiondata(steamid)

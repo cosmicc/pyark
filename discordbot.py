@@ -507,7 +507,8 @@ def discordbot():
 
     client.loop.create_task(chatbuffer())
     try:
-        client.run(config.get('general','discordtoken'))
+        while True:
+            client.run(config.get('general','discordtoken'))
     except:
         log.critical('Critical Error in Discord Bot Routine!', exc_info=True)
         try:

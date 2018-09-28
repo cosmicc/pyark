@@ -528,31 +528,35 @@ def homeserver(inst,whoasked,ext):
     pinfo = c.fetchone()
     c.close()
     conn.close()
-
+    print(inst,whoasked,ext)
     if ext != '':
         tservers = ['ragnarok','island','volcano']
         if ext in tservers:
             if ext != pinfo[15]:
-                if inst == pinfo[15]:
+                if inst == pinfo[15] and pinfo[1] == 'admin':
 
                     log.info(f'{whoasked} has transferred home servers from {pinfo[15]} to {ext} with {pinfo[5]} points')
-                    #subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)
-
+                    subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)
                     conn1 = sqlite3.connect(sqldb)
                     c1 = conn1.cursor()
-                    c1.execute('UPDATE players SET transferpoints = ? WHERE steamid = ?', (int(pinfo[5].replace(',','')),steamid))
+                    c1.execute('UPDATE players SET transferpoints = ?, homeserver = ? WHERE steamid = ?', (int(pinfo[5].replace(',','')),ext,steamid))
                     conn1.commit()
                     c1.close()
                     conn1.close()
                 else:
                     msg = f'You must be on your home server {pinfo[15].capitalize()} to change your home'
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
             else:
                 msg = f'{ext} is already your home server'
+                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
         else:
             msg = f'{ext} is not a server in the cluster.'
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
     else:
         msg = f'Your current home server is: {pinfo[15].capitalize()}'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
         msg = f'Type !myhome <servername> to change your home.'
+        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
 
 def checkcommands(minst):
     inst = minst

@@ -9,7 +9,7 @@ from urllib.request  import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 
-    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'checklog',
+    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'checklog', 'lotterytables',
     'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist', 'unbanplayer', 'tribewipe', 'backupdb'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('servers', action='store_true', help='Server infomration')
@@ -36,6 +36,7 @@ action_group.add_argument('unban', action='store_true', help='UN-Ban a player fr
 action_group.add_argument('banlist', action='store_true', help='Show the list of banned players')
 action_group.add_argument('tribewipe', action='store_true', help='Wipe a tribe and all its dinos and belongings from a server')
 action_group.add_argument('backupdb', action='store_true', help='Run a manual pyark database backup')
+action_group.add_argument('lotterytables', action='store_true', help='Show Lottery tables')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='Cancel a instance restart')
@@ -752,8 +753,14 @@ try:
         printcolmns('kicklist')
         listtable('kicklist')
     elif args.action_to_perform == 'linkrequests':
+        printcolmns('linkrequests')
         listtable('linkrequests')
-        listtable('linkrequests')
+    elif args.action_to_perform == 'lotterytables':
+        printcolmns('lotteryinfo')
+        listtable('lotteryinfo')
+        print('    ')
+        printcolmns('lotteryplayers')
+        listtable('lotteryplayers')
     elif args.action_to_perform == 'notlinked':
         listtable('players')
         listtablewhere('players','discordid','') 

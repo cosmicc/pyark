@@ -45,7 +45,7 @@ c.execute('CREATE TABLE lotteryplayers (steamid TEXT, playername TEXT, timestamp
 #c.execute('INSERT INTO players ("cfgver") VALUES ("1")')
 #c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
-#conn.commit()
+conn.commit()
 
 #alldata = c.fetchall()
 ap = []
