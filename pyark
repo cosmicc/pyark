@@ -3,7 +3,7 @@
 import logging, argparse, sqlite3, time, threading, socket, subprocess
 from arkupdater import arkupd
 from cmdlistener import clisten
-from logwatch import logwatch
+from onlinemonitor import onlineupdate
 from discordbot import discordbot
 from kicker import kicker
 from configreader import *
@@ -108,10 +108,10 @@ def main():
         instance[each]['kickthread'].start()
         instance[each]['cmdthread'] = threading.Thread(name='%s-cmdlistener' % inst, target = clisten, args=(inst,))
         instance[each]['cmdthread'].start()
-        instance[each]['restartthread'] = threading.Thread(name = '%s-logwatch' % inst, target=logwatch, args=(inst,))
-        instance[each]['restartthread'].start()
         instance[each]['gchatthread'] = threading.Thread(name = '%s-gchatrelay' % inst, target=gchatrelay, args=(inst,))
         instance[each]['gchatthread'].start()
+        instance[each]['onlinethread'] = threading.Thread(name = '%s-onlinemon' % inst, target=onlineupdate, args=(inst,))
+        instance[each]['onlinethread'].start()
 
     if imthedbot == "True":
         discordt = threading.Thread(name='discord-bot', target = discordbot)
@@ -134,15 +134,16 @@ def main():
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         for each in range(numinstances):
             inst = instance[each]['name']
-            if not instance[each]['restartthread'].is_alive():
-                t = f'{inst} log watcher'
-                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
             if not instance[each]['kickthread'].is_alive():
                 t = f'{inst} kicklist kicker'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
             if not instance[each]['gchatthread'].is_alive():
                 t = f'{inst} global chat relay'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if not instance[each]['onlinethread'].is_alive():
+                t = f'{inst} online monitor'
+                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+
 
 
 if __name__ == '__main__':
