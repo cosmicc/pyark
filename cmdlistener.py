@@ -576,7 +576,6 @@ def checkcommands(minst):
                     rawname = rawline[1].split(')')
                     whoname = rawname[0].lower()
                     if len(rawname) > 1:
-                        print(rawname)
                         cmsg = rawname[1].split('@all')[1].strip()
                         if cmsg != '':
                             nmsg = line.split(': ')
@@ -696,7 +695,6 @@ def checkcommands(minst):
             whoasked = getnamefromchat(line)
             linker(minst,whoasked)
         elif line.find('[TCsAR]') != -1:
-            print(line)
             dfg = line.split('||')
             dfh = dfg[1].split('|')
             tcdata = {}
