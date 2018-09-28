@@ -539,7 +539,7 @@ def homeserver(inst,whoasked,ext):
                     subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)
                     conn1 = sqlite3.connect(sqldb)
                     c1 = conn1.cursor()
-                    c1.execute('UPDATE players SET transferpoints = ?, homeserver = ? WHERE steamid = ?', (int(pinfo[5].replace(',','')),ext,steamid))
+                    c1.execute('UPDATE players SET transferpoints = ?, homeserver = ? WHERE steamid = ?', (pinfo[5],ext,steamid))
                     conn1.commit()
                     c1.close()
                     conn1.close()
