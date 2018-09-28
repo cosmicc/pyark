@@ -381,11 +381,11 @@ def startvoter(inst,whoasked):
     #print(time.time()-float(getlastvote(inst)))
     if isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat voting has already started. cast your vote" @%s' % (inst), shell=True)
-    elif time.time()-float(getlastvote(inst)) < 14400:          # 2 hours between wipes
+    elif time.time()-float(getlastvote(inst)) < 14400:          # 4 hours between wipes
         rawtimeleft = 14400-(time.time()-float(getlastvote(inst)))
         timeleft = playedTime(rawtimeleft)
         subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' % (timeleft,inst), shell=True)
-        log.info(f'vote start denied for {whoasked} on {inst} because 2 hour timer')
+        log.info(f'vote start denied for {whoasked} on {inst} because 4 hour timer')
     elif time.time()-float(lastvoter) < 600:  # 10 min between attempts   
         rawtimeleft = 600-(time.time()-lastvoter)
         timeleft = playedTime(rawtimeleft)
@@ -499,19 +499,60 @@ def processtcdata(inst,tcdata):
             conn.close()
         else:
             #log.info(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
-            if int(pexist[16]) != int(rewardpoints) and int(rewardpoints) != 0 and time.time()-float(pexist[17]) > 60 and pexist[1] == 'admin':
-                log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for {playername} on {inst}')
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('UPDATE players SET transferpoints = ?, lastpointtimestamp = ? WHERE steamid = ?', (int(rewardpoints)+int(pexist[16]),str(time.time()),str(steamid)))
-                conn.commit()
-                c.close()
-                conn.close()
-                subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)        
-
+            if int(pexist[16]) != int(rewardpoints):
+                if int(rewardpoints) != 0:
+                    if time.time()-float(pexist[17]) > 60:
+                        if pexist[1] == 'admin':
+                            log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for {playername} on {inst}')
+                            conn = sqlite3.connect(sqldb)
+                            c = conn.cursor()
+                            c.execute('UPDATE players SET transferpoints = ?, lastpointtimestamp = ? WHERE steamid = ?', (int(rewardpoints)+int(pexist[16]),str(time.time()),str(steamid)))
+                            conn.commit()
+                            c.close()
+                            conn.close()
+                            subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)        
+                        else:
+                            log.info(f'not admin reward points to account for {playername} on {inst}, skipping')
+                    else:
+                        log.info(f'too early reward points to account for {playername} on {inst}, skipping')
+                else:
+                    log.info(f'zero reward points to account for {playername} on {inst}, skipping')
             else:
                 log.info(f'duplicate reward points to account for {playername} on {inst}, skipping')
 
+def homeserver(inst,whoasked,ext):
+    steamid = getsteamid(whoasked)    
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
+    pinfo = c.fetchone()
+    c.close()
+    conn.close()
+
+    if ext != '':
+        tservers = ['ragnarok','island','volcano']
+        if ext in tservers:
+            if ext != pinfo[15]:
+                if inst == pinfo[15]:
+
+                    log.info(f'{whoasked} has transferred home servers from {pinfo[15]} to {ext} with {pinfo[5]} points')
+                    #subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)
+
+                    conn1 = sqlite3.connect(sqldb)
+                    c1 = conn1.cursor()
+                    c1.execute('UPDATE players SET transferpoints = ? WHERE steamid = ?', (int(pinfo[5].replace(',','')),steamid))
+                    conn1.commit()
+                    c1.close()
+                    conn1.close()
+                else:
+                    msg = f'You must be on your home server {pinfo[15].capitalize()} to change your home'
+            else:
+                msg = f'{ext} is already your home server'
+        else:
+            msg = f'{ext} is not a server in the cluster.'
+    else:
+        msg = f'Your current home server is: {pinfo[15].capitalize()}'
+        msg = f'Type !myhome <servername> to change your home.'
 
 def checkcommands(minst):
     inst = minst
@@ -524,7 +565,7 @@ def checkcommands(minst):
             pass
         elif line.find('!help') != -1:
             whoasked = getnamefromchat(line)
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, !myinfo, !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, !myinfo, !myhome, !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
             log.info(f'responded to help request on {minst} from {whoasked}')
 
         elif line.find('@all') != -1:
@@ -625,6 +666,16 @@ def checkcommands(minst):
             else:
                 ninst = minst
             whoisonlinewrapper(ninst,minst,whoasked,1)
+        elif line.find('!myhome') != -1:
+            whoasked = getnamefromchat(line)
+            rawline = line.split(':')
+            lastlline = rawline[2].strip().split(' ')
+            if len(lastlline) == 2:
+                ninst = lastlline[1]
+            else:
+                ninst = ''
+            homeserver(minst,whoasked,ninst)
+
         elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!votestart') != -1:
             whoasked = getnamefromchat(line)
             log.info(f'responding to a dino wipe vote request on {minst} from {whoasked}')
