@@ -234,7 +234,7 @@ def onlineplayer(steamid,inst):
 
                 
                 time.sleep(3)
-                newpoints = int(oplayer[5].replace(',',''))+xferpoints
+                newpoints = int(str(oplayer[5].replace(',','')))+xferpoints
                 mtxt = f'Welcome back {oplayer[1]}, you have {newpoints} ARc reward points on {oplayer[15].capitalize()}, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 time.sleep(1)
