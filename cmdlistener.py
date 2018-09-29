@@ -488,7 +488,7 @@ def processtcdata(inst,tcdata):
             c.close()
             conn.close()
     elif steamid != '':
-        if pexist[3] == pexist[15]:
+        if inst == pexist[15]:
  
             log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating.')
             conn = sqlite3.connect(sqldb)
