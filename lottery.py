@@ -16,6 +16,15 @@ def writediscord(msg,tstamp):
     c4.close()
     conn4.close()
 
+def writeglobal(inst,whos,msg):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,time.time()))
+    conn.commit()
+    c.close()
+    conn.close()
+
+
 def determinewinner(linfo):
     log.info('Lottery time has ended. Determining winner.')
     winners = []
@@ -108,21 +117,28 @@ def lotteryloop():
 
 def startlottery(lottoinfo):
     if lottoinfo[1] == 1:
-        lottotype = 'ARc reward points'
-        litm = '0'
+        lottotype = 'Points'
+        litm = 'ARc reward points accumulated pot'
     else:
         lottotype = 'Item'
         litm = lottoinfo[2]
     lottostart = estshift(datetime.fromtimestamp(float(lottoinfo[3])+(86400*int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
 
     log.info(f'New lottery has started. Type: {lottotype} Payout: {lottoinfo[2]} Buyin: {lottoinfo[4]} Days: {lottoinfo[5]}')
-    msg = f'A new {lottotype} lottery has started! Lottery will end {lottostart} EST'
+    msg = f'A new {lottotype} lottery has started! Cost to enter: {lottoinfo[4]} ARc Points'
     writediscord(msg,time.time())
-    msg = f'Lottery prize: {litm} - ARc points cost to enter lottery: {lottoinfo[4]}'
+    msg = f'Winning prize: {litm}'
     writediscord(msg,time.time())
-    msg = f'Type !lottery for more information or to enter and win!'
+    msg = f'Type !lottery or !lotto for more information'
     writediscord(msg,time.time())
-    ### print this to global all servers
+
+    msg = f'A new {lottotype} lottery has started! Cost to enter: {lottoinfo[4]} ARc Points'
+    writeglobal('ALERT','ALERT',msg)
+    msg = f'Winning prize: {litm}'
+    writeglobal('ALERT','ALERT',msg)
+    msg = f'Type !lottery or !lotto for more information'
+    writeglobal('ALERT','ALERT',msg)
+
     lotteryloop()
 
 def checkfornewlottery():
