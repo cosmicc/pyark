@@ -171,7 +171,7 @@ def onlineplayer(steamid,inst):
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
             conn1 = sqlite3.connect(sqldb)
             c1 = conn1.cursor()
-            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,'','',0,0,0,0,0,inst,0,timestamp))
+            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,'','',0,0,0,0,0,inst,0,timestamp,0))
             conn1.commit()
             c1.close()
             conn1.close()
@@ -183,7 +183,7 @@ def onlineplayer(steamid,inst):
                 log.warning(f'welcome message thread already running for new player {steamid}')
             writechat(inst,'ALERT',f'<<< A New player has joined the cluster!',wcstamp())
         elif len(oplayer) > 2:
-            if oplayer[16] != 0 and oplayer[15] == inst and oplayer[1] == 'admin':
+            if oplayer[16] != 0 and oplayer[15] == inst:
                     xferpoints = int(oplayer[16])
                     log.info(f'transferring {xferpoints} non home server points into account for {oplayer[1]} on {inst}')
                     conn1 = sqlite3.connect(sqldb)
@@ -257,7 +257,7 @@ def onlineplayer(steamid,inst):
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
             if xferpoints != 0 and oplayer[1] == 'admin':
                     time.sleep(1)
-                    mtxt = f'{xferpoints} rewards points were transferred to you from a non-home server'
+                    mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
             if float(oplayer[2]) + 60 < float(time.time()):
                 writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())

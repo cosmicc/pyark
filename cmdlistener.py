@@ -103,7 +103,7 @@ def respmyinfo(inst,whoasked):
     c.close()
     conn.close()
     ptime = playedTime(float(pinfo[4].replace(',','')))
-    mtxt = f"your current reward points: {pinfo[5]}. your total play time is {ptime}"
+    mtxt = f"your current reward points: {pinfo[5]}. your total play time is {ptime}, your home server is {pinfo[15].capitalize()}"
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 def gettimeplayed(seenname):
@@ -483,7 +483,7 @@ def processtcdata(inst,tcdata):
             log.info(f'player {playername} with steamid {steamid} was not found on {inst}. adding new player to cluster.')
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
-            c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,inst,playtime,rewardpoints,timestamp,1,'','',0,0,0,0,0,inst,0,timestamp))
+            c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,inst,playtime,rewardpoints,timestamp,1,'','',0,0,0,0,0,inst,0,timestamp,0))
             conn.commit()
             c.close()
             conn.close()
@@ -502,19 +502,16 @@ def processtcdata(inst,tcdata):
             if int(pexist[16]) != int(rewardpoints):
                 if int(rewardpoints) != 0:
                     if time.time()-float(pexist[17]) > 60:
-                        if pexist[1] == 'admin':
-                            log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for {playername} on {inst}')
-                            conn = sqlite3.connect(sqldb)
-                            c = conn.cursor()
-                            c.execute('UPDATE players SET transferpoints = ?, lastpointtimestamp = ? WHERE steamid = ?', (int(rewardpoints)+int(pexist[16]),str(time.time()),str(steamid)))
-                            conn.commit()
-                            c.close()
-                            conn.close()
-                            subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)        
-                        else:
-                            log.info(f'not admin reward points to account for {playername} on {inst}, skipping')
+                        log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for {playername} on {inst}')
+                        conn = sqlite3.connect(sqldb)
+                        c = conn.cursor()
+                        c.execute('UPDATE players SET transferpoints = ?, lastpointtimestamp = ? WHERE steamid = ?', (int(rewardpoints)+int(pexist[16]),str(time.time()),str(steamid)))
+                        conn.commit()
+                        c.close()
+                        conn.close()
+                        subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)        
                     else:
-                        log.info(f'too early reward points to account for {playername} on {inst}, skipping')
+                        log.info(f'reward points not past threshold for wait (to avoid duplicates) for {playername} on {inst}, skipping')
                 else:
                     log.info(f'zero reward points to account for {playername} on {inst}, skipping')
             else:
@@ -543,7 +540,7 @@ def homeserver(inst,whoasked,ext):
                     conn1.commit()
                     c1.close()
                     conn1.close()
-                    msg = f'Your {pinfo[5]} points have been transferred to you new home server {ext.capitalize()}'
+                    msg = f'Your {pinfo[5]} points have been transferred to your new home server: {ext.capitalize()}'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
                 else:
                     msg = f'You must be on your home server {pinfo[15].capitalize()} to change your home'
