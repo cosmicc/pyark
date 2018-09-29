@@ -103,15 +103,12 @@ def welcomenewplayer(steamid,inst):
         mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         time.sleep(10)
-        mtxt = 'Public teleporters and crafting area, ARc rewards points earned as you play. Public auction house. Build a rewards vault, free starter items.'
+        mtxt = 'ARc rewards points earned as you play. Public teleporters, crafting area, and auction house. Build or find a rewards vault, free starter items.'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         time.sleep(10)
         mtxt = 'You get all your items back when you die automatically, The engram menu is laggy, sorry. Admins and help in discord. Press F1 at anytime for help. Have Fun!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         time.sleep(15)
-        #imtxt = 'The engram menu is laggy, sorry. Admins & players in discord. Press F1 at anytime for help. Have Fun!'
-        #subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        #time.sleep(20)
         mtxt = 'Everyone welcome a new player to the cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
         log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
