@@ -543,6 +543,8 @@ def homeserver(inst,whoasked,ext):
                     conn1.commit()
                     c1.close()
                     conn1.close()
+                    msg = f'Your {pinfo[5]} points have been transferred to you new home server {ext.capitalize()}'
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
                 else:
                     msg = f'You must be on your home server {pinfo[15].capitalize()} to change your home'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
