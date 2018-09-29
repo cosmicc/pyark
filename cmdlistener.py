@@ -483,7 +483,7 @@ def processtcdata(inst,tcdata):
             log.info(f'player {playername} with steamid {steamid} was not found on {inst}. adding new player to cluster.')
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
-            c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,inst,playtime,rewardpoints,timestamp,1,'','',0,0,0,0,0,inst))
+            c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,inst,playtime,rewardpoints,timestamp,1,'','',0,0,0,0,0,inst,0,timestamp))
             conn.commit()
             c.close()
             conn.close()

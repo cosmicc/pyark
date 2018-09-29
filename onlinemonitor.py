@@ -171,7 +171,7 @@ def onlineplayer(steamid,inst):
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
             conn1 = sqlite3.connect(sqldb)
             c1 = conn1.cursor()
-            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,'','',0,0,0,0,0,inst))
+            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,'newplayer',timestamp,inst,'1',50,timestamp,1,'','',0,0,0,0,0,inst,0,timestamp))
             conn1.commit()
             c1.close()
             conn1.close()
