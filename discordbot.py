@@ -13,6 +13,7 @@ log = logging.getLogger(name=hstname)
 client = discord.Client()
 
 channel = discord.Object(id=config.get('general','discordchatchan'))
+channel2 = discord.Object(id=config.get('general','discordgenchan'))
 
 def getlastwipe(inst):
     conn = sqlite3.connect(sqldb)
@@ -90,12 +91,17 @@ def discordbot():
                 conn3.close()
                 if cbuff:
                     for each in cbuff:
-                        if each[1] == "ALERT":
-                            msg = f'{each[3]} [{each[0].capitalize()}] {each[2]}'
+                        if each[0] == "generalchat":
+                            msg = each[2]
+                            await client.send_message(channel2, msg)
+                            await asyncio.sleep(2)
                         else:
-                            msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
-                        await client.send_message(channel, msg)
-                        await asyncio.sleep(2)
+                            if each[1] == "ALERT":
+                                msg = f'{each[3]} [{each[0].capitalize()}] {each[2]}'
+                            else:
+                                msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
+                            await client.send_message(channel, msg)
+                            await asyncio.sleep(2)
                     conn3 = sqlite3.connect(sqldb)
                     c3 = conn3.cursor()
                     c3.execute('DELETE FROM chatbuffer')

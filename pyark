@@ -8,6 +8,7 @@ from discordbot import discordbot
 from kicker import kicker
 from configreader import *
 from gchatrelay import *
+from lottery import *
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -116,6 +117,8 @@ def main():
     if imthedbot == "True":
         discordt = threading.Thread(name='discord-bot', target = discordbot)
         discordt.start()
+        lotteryt = threading.Thread(name='lottery-watcher', target = lotterywatcher)
+        lotteryt.start()
 
     while True:
         time.sleep(60)
@@ -126,6 +129,9 @@ def main():
         if imthedbot == "True":
             if not discordt.is_alive():
                 t = 'discord bot'
+                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if not lotteryt.is_alive():
+                t = 'lottery watch'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         for each in range(numinstances):
             inst = instance[each]['name']

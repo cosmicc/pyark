@@ -3,12 +3,12 @@
 import subprocess, time, re, logging, argparse, sqlite3, json
 from datetime import datetime
 from colorama import Fore, Back, Style
-from timehelper import elapsedTime, playedTime
+from timehelper import *
 from configreader import *
 from urllib.request  import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 
+parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 'startlottery', 
     'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'checklog', 'lotterytables',
     'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist', 'unbanplayer', 'tribewipe', 'backupdb'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
@@ -37,6 +37,7 @@ action_group.add_argument('banlist', action='store_true', help='Show the list of
 action_group.add_argument('tribewipe', action='store_true', help='Wipe a tribe and all its dinos and belongings from a server')
 action_group.add_argument('backupdb', action='store_true', help='Run a manual pyark database backup')
 action_group.add_argument('lotterytables', action='store_true', help='Show Lottery tables')
+action_group.add_argument('startlottery', action='store_true', help='Start a lottery')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='Cancel a instance restart')
@@ -743,6 +744,36 @@ def backupdb():
     subprocess.run("""/usr/bin/sqlite3 /home/ark/shared/db/pyark.db '.backup "/home/ark/shared/db/pyark.db.old"'""",shell=True)
     print(f'{BYEL}Database backed up to {sharedpath}/db/pyark.db.old{RST}')
 
+def startlottery():
+    listtable('lotteryinfo')
+    print('    ')
+    ltype = getresponce('Select Lottery Type (points / item) ')
+    lbuyin = int(getresponce('Enter rewards points buyin amount '))
+    ldays = int(getresponce('Enter lottery length in days '))
+    print('    ')
+    print(f'{BGRN}Starting the new lottery:{RST}')
+    print('    ')
+    if ltype.lower() == 'item':
+        litm = getresponce('Enter the Item display name ')
+    else:
+        litm = str(lbuyin*2)
+    now = time.time()
+    lottostart = datetime.fromtimestamp(now+(86400*int(ldays))).strftime('%a, %b %d %I:%M%p')
+    print(f'{BYEL}Lottery ends on {BMGT}{lottostart}{RST}')
+    print(f'{BYEL}Lottery Type: {BMGT}{ltype.capitalize()}{RST}')
+    print(f'{BYEL}Lottery Prize: {BMGT}{litm}{RST}')
+    print(f'{BYEL}Buyin Points: {BMGT}{lbuyin}{RST}')
+    print(f'{BYEL}Lottery Length: {BMGT}{ldays} Days{RST}')
+    print('    ')
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    newtime = time.time()
+    c.execute('INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner) VALUES (?,?,?,?,?,0,"Incomplete")', (ltype,litm,now,lbuyin,ldays))
+    conn.commit()
+    c.close()
+    conn.close()
+     
+
 try:
     if args.action_to_perform == 'servers':
         showservers()
@@ -761,6 +792,9 @@ try:
         print('    ')
         printcolmns('lotteryplayers')
         listtable('lotteryplayers')
+        print('     ')
+        printcolmns('lotterydeposits')
+        listtable('lotterydeposits')
     elif args.action_to_perform == 'notlinked':
         listtable('players')
         listtablewhere('players','discordid','') 
@@ -817,6 +851,8 @@ try:
         tribewipe()
     elif args.action_to_perform == 'backupdb':
         backupdb()
+    elif args.action_to_perform == 'startlottery':
+        startlottery()
 
 
     print('       ')

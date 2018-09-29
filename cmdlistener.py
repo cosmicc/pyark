@@ -525,7 +525,6 @@ def homeserver(inst,whoasked,ext):
     pinfo = c.fetchone()
     c.close()
     conn.close()
-    print(inst,whoasked,ext)
     if ext != '':
         tservers = ['ragnarok','island','volcano']
         if ext in tservers:
@@ -557,6 +556,59 @@ def homeserver(inst,whoasked,ext):
         msg = f'Type !myhome <servername> to change your home.'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
 
+def sendlotteryinfo(linfo, inst):
+    if linfo[1] == 'points':
+        msg = f'Current lottery is up to {linfo[2]} ARc reward points. The more people join, the more the winnings will be.'
+    else:
+        msg = f'Current lottery is for a {linfo[2]}.'
+    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg,inst), shell=True)
+    msg = f'{linfo[6]} players have joined this lottery so far.'
+    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg,inst), shell=True)
+    ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(86400*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+    msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(86400*int(linfo[5])),time.time())}'
+    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg,inst), shell=True)
+
+def lotteryquery(whoasked, lchoice, inst):
+    conn4 = sqlite3.connect(sqldb)
+    c4 = conn4.cursor()
+    c4.execute('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"')
+    linfo = c4.fetchone()
+    c4.execute('SELECT * FROM players WHERE playername = ?', (whoasked,))
+    lpinfo = c4.fetchone()
+    c4.close()
+    conn4.close()
+    if linfo:
+        if lchoice == 'join':
+            conn4 = sqlite3.connect(sqldb)
+            c4 = conn4.cursor()
+            c4.execute('SELECT * FROM lotteryplayers WHERE steamid = ?', (lpinfo[0],))
+            lpcheck = c4.fetchone()
+            c4.close()
+            conn4.close()
+            if linfo[1] == 'points':
+                lfo = 'ARc Rewards Points'
+            else:
+                lfo = linfo[2]
+            ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(86400*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+            if lpcheck == None:
+                conn4 = sqlite3.connect(sqldb)
+                c4 = conn4.cursor()
+                c4.execute('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES (?, ?, ?, ?)', (lpinfo[0],lpinfo[1],time.time(),0))
+                conn4.commit()
+                c4.close()
+                conn4.close()
+                msg = f'You have been added to the {lfo} lottery! A winner will be choosen on {ltime} in {elapsedTime(float(linfo[3])+(86400*int(linfo[5])),time.time())}. Good Luck!'
+                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0],msg,inst), shell=True)
+                log.info(f'player {whoasked} has joined the current active lottery.')
+            else:
+                msg = f'You are already participating in this lottery for {lfo}.  Lottery ends {ltime} in {elapsedTime(float(linfo[3])+(86400*int(linfo[5])),time.time())}'
+                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0],msg,inst), shell=True)
+        else:
+            sendlotteryinfo(linfo, inst)
+    else:
+        msg = f'There are no current lotterys underway. Type !lastlottery to see results of the last lottery.'
+        subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg,inst), shell=True)
+
 def checkcommands(minst):
     inst = minst
     cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (minst), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -568,7 +620,7 @@ def checkcommands(minst):
             pass
         elif line.find('!help') != -1:
             whoasked = getnamefromchat(line)
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, !myinfo, !myhome, !lastwipe, !lastrestart, !vote, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, !myinfo, !myhome, !lastwipe, !lastrestart, !vote, !lottery, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
             log.info(f'responded to help request on {minst} from {whoasked}')
 
         elif line.find('@all') != -1:
@@ -677,7 +729,6 @@ def checkcommands(minst):
             else:
                 ninst = ''
             homeserver(minst,whoasked,ninst)
-
         elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!votestart') != -1:
             whoasked = getnamefromchat(line)
             log.info(f'responding to a dino wipe vote request on {minst} from {whoasked}')
@@ -697,6 +748,16 @@ def checkcommands(minst):
         elif line.find('!linkme') != -1 or line.find('!link') != -1:
             whoasked = getnamefromchat(line)
             linker(minst,whoasked)
+        elif line.find('!lottery') != -1 or line.find('!lotto') != -1:
+            whoasked = getnamefromchat(line)
+            rawline = line.split(':')
+            lastlline = rawline[2].strip().split(' ')
+            if len(lastlline) == 2:
+                lchoice = lastlline[1]
+            else:
+                lchoice = False
+            lotteryquery(whoasked,lchoice,minst)
+
         elif line.find('[TCsAR]') != -1:
             dfg = line.split('||')
             dfh = dfg[1].split('|')
@@ -705,7 +766,8 @@ def checkcommands(minst):
                 ee = each.strip().split(': ')
                 if len(ee) > 1:
                     tcdata.update( {ee[0]:ee[1]} )
-            processtcdata(minst,tcdata)
+            if tcdata['SteamID']:
+                processtcdata(minst,tcdata)
         else:
             rawline = line.split('(')
             if len(rawline) > 1:

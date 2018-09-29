@@ -10,6 +10,9 @@ intervals = (
     ('seconds', 1),
     )
 
+def estshift(otime):
+    return otime-tzfix
+
 def wcstamp():
     a = datetime.now()-tzfix
     return a.strftime('%m-%d %I:%M%p')

@@ -50,52 +50,6 @@ def writechat(inst,whos,msg,tstamp):
         c.close()
         conn.close()
 
-def processlogline(line,inst):
-    if line.find('[TCsAR]') != -1:
-        try:
-            rawline = line.split('|')
-            rawsteamid = rawline[2].split(':')
-            steamid = rawsteamid[1].strip()
-            rawname = rawline[3].split(':') 
-            playername = rawname[1].strip()
-            rawplaytime = rawline[8].split(':') 
-            playtime = rawplaytime[1].strip()
-            rawtimestamp = rawline[0].split(':')
-            tstimestamp = rawtimestamp[0][1:]
-            rawpoints = rawline[4].split(':')
-            rewardpoints = rawpoints[1].strip()
-            tsobj = datetime.strptime(tstimestamp, '%Y.%m.%d-%H.%M.%S')
-            newts = tsobj
-            timestamp = newts.timestamp()
-            playername = playername.lower()
-        except:
-            log.debug(f'error processing TCsAR logline for instance {inst}')
-            #log.error(line)
-        else:
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
-            pexist = c.fetchone()
-            c.close()
-            conn.close()
-            if not pexist:
-                if steamid != '':
-                    log.info(f'player {playername} with steamid {steamid} was not found. adding.')
-                    conn = sqlite3.connect(sqldb)
-                    c = conn.cursor()
-                    c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid,playername,timestamp,playtime,rewardpoints,timestamp,1,'','',0,0,0,0,inst))
-                    conn.commit()
-                    c.close()
-                    conn.close()
-            elif steamid != '':
-                log.debug(f'player {playername} with steamid {steamid} was found. updating.')
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?', (playername,playtime,rewardpoints,steamid))
-                conn.commit()
-                c.close()
-                conn.close()
-
 def welcomenewplayer(steamid,inst):
         global welcomthreads
         log.info(f'welcome message thread started for new player {steamid} on {inst}')
@@ -241,7 +195,7 @@ def onlineplayer(steamid,inst):
                 if pcnt != 0:
                     msg = f'There are {pcnt} other players online: {plist}'
                 else:
-                    msg = f'There are no other players online.'
+                    msg = f'There are no other players are online on this server.'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 time.sleep(2)
                 if int(oplayer[14]) == 1 and int(oplayer[13]) == 1 and oplayer[3] == inst:
