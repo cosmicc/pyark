@@ -192,7 +192,7 @@ def onlineplayer(steamid,inst):
                     conn1.commit()
                     c1.close()
                     conn1.close()
-                    subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s %s" @%s' % (steamid,xferpoints,inst), shell=True)
+                    subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR AddARcTotal %s %s" @%s' % (steamid,xferpoints,inst), shell=True)
 
             if float(oplayer[2]) + 300 > float(time.time()):
                 if oplayer[3] != inst:
