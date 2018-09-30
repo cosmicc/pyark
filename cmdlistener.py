@@ -597,7 +597,7 @@ def lotteryquery(whoasked, lchoice, inst):
                 c4.execute('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES (?, ?, ?, ?)', (lpinfo[0],lpinfo[1],time.time(),0))
                 if linfo[1] == 'points':
                     c4.execute('UPDATE lotteryinfo SET payoutitem = ? WHERE winner = "Incomplete"', (str(int(linfo[2])+int(linfo[4])),))
-                c4.execute('UPDATE lotteryinfo SET players = ?', (int(linfo[6])+1,))
+                c4.execute('UPDATE lotteryinfo SET players = ? WHERE id = ?', (int(linfo[6])+1,linfo[0]))
                 conn4.commit()
                 c4.close()
                 conn4.close()

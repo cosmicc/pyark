@@ -32,6 +32,8 @@ def determinewinner(linfo):
     c4 = conn4.cursor()
     c4.execute('SELECT * FROM lotteryplayers')
     lottoers = c4.fetchall()
+    c4.execute('SELECT * FROM lotteryinfo WHERE id = ?', (linfo[0],))
+    linfo = c4.fetchone()
     c4.close()
     conn4.close()
     print(lottoers)
@@ -43,7 +45,7 @@ def determinewinner(linfo):
         c4 = conn4.cursor()
         c4.execute('SELECT * FROM players WHERE steamid = ?', (winnersid[1],))
         lwinner = c4.fetchone()
-        c4.execute('UPDATE lotteryinfo SET winner = ?', (lwinner[1],))
+        c4.execute('UPDATE lotteryinfo SET winner = ? WHERE id = ?', (lwinner[1],linfo[0]))
         conn4.commit()
         c4.close()
         conn4.close()
@@ -62,6 +64,7 @@ def determinewinner(linfo):
         msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!'
         writediscord(msg,time.time())
         writeglobal('ALERT','ALERT',msg)
+        time.sleep(2)
         if linfo[1] == 'points': 
             msg = f'{lwinner[1].capitalize()} has won {linfo[2]} ARc Reward Points'
             writediscord(msg,time.time())
