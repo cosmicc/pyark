@@ -335,14 +335,13 @@ def wipeit(inst):
     log.debug(f'voted wild dino wipe complete for {inst}')
 
 def voting(inst,whoasked):
-    log.info(f'wild dino wipe voting has started for {inst}')
+    log.info(f'wild dino wipe voting has started for {inst} by {whoasked}')
     global lastvoter
     global votestarttime
     global arewevoting
     global votertable
     arewevoting = True
     pon = populatevoters(inst)
-    log.info(f'making {whoasked} the vote leader')
     setvote(whoasked,2)
     subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe voting has started with %s players. vote !yes or !no in global chat now" @%s' % (pon,inst), shell=True)
     votestarttime = time.time()
@@ -365,7 +364,7 @@ def voting(inst,whoasked):
                 arewevoting = False
         else:
             if sltimer == 120 or sltimer == 240:
-                log.info(f'sending voting waiting message to vote on {inst}')
+                log.debug(f'sending voting waiting message to vote on {inst}')
                 subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe vote is waiting. make sure you have cast your vote !yes or !no in global chat" @%s' % (inst), shell=True)
 
         sltimer += 5
@@ -511,11 +510,11 @@ def processtcdata(inst,tcdata):
                         conn.close()
                         subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)        
                     else:
-                        log.info(f'reward points not past threshold for wait (to avoid duplicates) for {playername} on {inst}, skipping')
+                        log.debug(f'reward points not past threshold for wait (to avoid duplicates) for {playername} on {inst}, skipping')
                 else:
-                    log.info(f'zero reward points to account for {playername} on {inst}, skipping')
+                    log.debug(f'zero reward points to account for {playername} on {inst}, skipping')
             else:
-                log.info(f'duplicate reward points to account for {playername} on {inst}, skipping')
+                log.debug(f'duplicate reward points to account for {playername} on {inst}, skipping')
 
 def homeserver(inst,whoasked,ext):
     steamid = getsteamid(whoasked)    

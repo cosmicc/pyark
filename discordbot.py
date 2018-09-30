@@ -440,7 +440,7 @@ def discordbot():
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
             c.execute('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"')
-            linfo = c.fetchall()
+            linfo = c.fetchone()
             c.close()
             conn.close()
             if len(newname) > 1:
