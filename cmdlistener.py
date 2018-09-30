@@ -609,7 +609,7 @@ def lotteryquery(whoasked, lchoice, inst):
         else:
             sendlotteryinfo(linfo, inst)
     else:
-        msg = f'There are no current lotterys underway. Type !lastlottery to see results of the last lottery.'
+        msg = f'There are no current lotterys underway. Type !lastlotto to see results of the last lottery.'
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg,inst), shell=True)
 
 def checkcommands(minst):
