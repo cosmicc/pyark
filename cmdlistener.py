@@ -555,17 +555,29 @@ def homeserver(inst,whoasked,ext):
         msg = f'Type !myhome <servername> to change your home.'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0],msg,inst), shell=True)
 
-def sendlotteryinfo(linfo, inst):
+def sendlotteryinfo(linfo, lpinfo, inst):
     if linfo[1] == 'points':
         msg = f'Current lottery is up to {linfo[2]} ARc reward points.'
     else:
         msg = f'Current lottery is for a {linfo[2]}.'
-    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg,inst), shell=True)
-    msg = f'{linfo[6]} players have entered into this lottery so far.'
-    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg,inst), shell=True)
+    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0],msg,inst), shell=True)
+    msg = f'{linfo[6]} players have entered into this lottery so far'
+    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0],msg,inst), shell=True)
     ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
     msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
-    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg,inst), shell=True)
+    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0],msg,inst), shell=True)
+    conn4 = sqlite3.connect(sqldb)
+    c4 = conn4.cursor()
+    c4.execute('SELECT * FROM lotteryplayers WHERE steamid = ?', (lpinfo[0],))
+    amiin = c4.fetchone()
+    c4.close()
+    conn4.close()
+    if amiin:
+        msg = f'You are enterted into this lottery. Good Luck!'
+    else:
+        msg = f'Type !lotto join to spend {linfo[4]} points and enter into this lottery'
+    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0],msg,inst), shell=True)
+
 
 def lotteryquery(whoasked, lchoice, inst):
     conn4 = sqlite3.connect(sqldb)
@@ -607,7 +619,7 @@ def lotteryquery(whoasked, lchoice, inst):
                 msg = f'You are already participating in this lottery for {lfo}.  Lottery ends {ltime} in {elapsedTime(float(linfo[3])+(86400*int(linfo[5])),time.time())}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0],msg,inst), shell=True)
         else:
-            sendlotteryinfo(linfo, inst)
+            sendlotteryinfo(linfo,lpinfo,inst)
     else:
         msg = f'There are no current lotterys underway. Type !lastlotto to see results of the last lottery.'
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg,inst), shell=True)

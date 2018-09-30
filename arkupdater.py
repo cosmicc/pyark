@@ -189,82 +189,83 @@ def instancerestart(inst, reason):
     log.debug(f'instance restart thread starting for {inst}')
     global confupdtimer
     setrestartbit(inst)
-    t, s, e = datetime.now(), dt(10,0), dt(10,30)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
+    t, s, e = datetime.now(), dt(11,0), dt(11,30)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
     inmaint = is_time_between(t, s, e)
-    if playercount(inst) == 0:
-        log.info(f'server {inst} is empty and restarting now for a {reason}')
-        writechat(inst,'ALERT',f'### Empty server restarting now for a {reason.capitalize()}',wcstamp())
-        message = f'server is restarting now for a {reason}'
-        confupdtimer = 0
-        subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        subprocess.run('arkmanager stop --saveworld @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        log.info(f'server {inst} instance has stopped')
-        subprocess.run('arkmanager backup @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        log.info(f'server {inst} instance has backed up world data')
-        subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, shell=True)
-        subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, shell=True)
-        log.debug(f'server {inst} updated config files')
-        log.info(f'server {inst} is updating from staging directory')
-        subprocess.run('arkmanager update --no-download -no-autostart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        log.info(f'server {inst} instance is starting')
-        resetlastrestart(inst, reason)
-    else:
-        if inmaint:
-            log.info(f'maintenance window reached, running server os maintenance')
-            subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            subprocess.run('apt full-upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            ### IF /var/run/requires-reboot 
-        if (inmaint and reason == "configuration update") or (inmaint and reason == "maintenance restart") or (reason != "configuration update" and reason != "maintenance restart"):
-            log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
-            timeleft = 30
-            gotime = False
-            countstart = time.time()
-            snr = stillneedsrestart(inst)
-            writechat(inst,'ALERT',f'### Server will restart in 30 minutes for a {reason.capitalize()}',wcstamp())
-            while snr and not gotime:
-                updatetimer(inst,timeleft)
-                if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
-                    log.info(f'{timeleft} broadcast message sent to {inst}')
-                    subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n          The server will be restarting in %s minutes for a %s'" @%s""" % (timeleft,reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                time.sleep(60)
-                timeleft = timeleft - 1
-                snr = stillneedsrestart(inst)
-                if playercount(inst) == 0 or timeleft == 0:
-                    gotime = True
-            if snr:
-                log.info(f'server {inst} is restarting now for a {reason}')
-                message = f'server is restarting now for a {reason}'
-                subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                writechat(inst,'ALERT',f'### Server restarting now for {reason.capitalize()}',wcstamp())
-                time.sleep(30)
-                subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                log.info(f'server {inst} instance has stopped')
-                updatetimer(inst,30)
-                subprocess.run('arkmanager backup @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                log.info(f'server {inst} instance has backed up world data')
-                subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                log.debug(f'server {inst} instance updated config files')
-                log.info(f'server {inst} is updating from staging directory')
-                subprocess.run('arkmanager update --no-download -no-autostart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                log.info(f'server {inst} instance server is starting')
-                resetlastrestart(inst, reason)
-                resetbit(inst)
-            else:
-                log.warning(f'server restart on {inst} has been canceled from forced cancel')
-                subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server restart for %s has been cancelled'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                writechat(inst,'ALERT',f'### Server restart for {reason.capitalize()} has been canceled',wcstamp())
+    if inmaint:
+                log.info(f'maintenance window reached, running server os maintenance')
+                subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                subprocess.run('apt full-upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                #### if requires-reboot
+    if (inmaint and reason == "configuration update") or (inmaint and reason == "maintenance restart") or (reason != "configuration update" and reason != "maintenance restart"):
+        if playercount(inst) == 0:
+            log.info(f'server {inst} is empty and restarting now for a {reason}')
+            writechat(inst,'ALERT',f'### Empty server restarting now for a {reason.capitalize()}',wcstamp())
+            message = f'server is restarting now for a {reason}'
+            confupdtimer = 0
+            subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('arkmanager stop --saveworld @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            log.info(f'server {inst} instance has stopped')
+            subprocess.run('arkmanager backup @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            log.info(f'server {inst} instance has backed up world data')
+            subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, shell=True)
+            subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, shell=True)
+            log.debug(f'server {inst} updated config files')
+            log.info(f'server {inst} is updating from staging directory')
+            subprocess.run('arkmanager update --no-download -no-autostart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            log.info(f'server {inst} instance is starting')
+            resetlastrestart(inst, reason)
         else:
-            unsetstartbit(inst)
-            if reason != "maintenance restart":
-                if confupdtimer == 0:
-                    log.info(f'waiting on {reason} for {inst} because players are online')
-                confupdtimer += 1
-                if confupdtimer == 24:
-                    confupdtimer = 0
+            if (inmaint and reason == "configuration update") or (inmaint and reason == "maintenance restart") or (reason != "configuration update" and reason != "maintenance restart"):
+                log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
+                timeleft = 30
+                gotime = False
+                countstart = time.time()
+                snr = stillneedsrestart(inst)
+                writechat(inst,'ALERT',f'### Server will restart in 30 minutes for a {reason.capitalize()}',wcstamp())
+                while snr and not gotime:
+                    updatetimer(inst,timeleft)
+                    if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
+                        log.info(f'{timeleft} broadcast message sent to {inst}')
+                        subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n          The server will be restarting in %s minutes for a %s'" @%s""" % (timeleft,reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    time.sleep(60)
+                    timeleft = timeleft - 1
+                    snr = stillneedsrestart(inst)
+                    if playercount(inst) == 0 or timeleft == 0:
+                        gotime = True
+                if snr:
+                    log.info(f'server {inst} is restarting now for a {reason}')
+                    message = f'server is restarting now for a {reason}'
+                    subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    writechat(inst,'ALERT',f'### Server restarting now for {reason.capitalize()}',wcstamp())
+                    time.sleep(30)
+                    subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    log.info(f'server {inst} instance has stopped')
+                    updatetimer(inst,30)
+                    subprocess.run('arkmanager backup @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    log.info(f'server {inst} instance has backed up world data')
+                    subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    log.debug(f'server {inst} instance updated config files')
+                    log.info(f'server {inst} is updating from staging directory')
+                    subprocess.run('arkmanager update --no-download -no-autostart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    log.info(f'server {inst} instance server is starting')
+                    resetlastrestart(inst, reason)
+                    resetbit(inst)
+                else:
+                    log.warning(f'server restart on {inst} has been canceled from forced cancel')
+                    subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server restart for %s has been cancelled'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    writechat(inst,'ALERT',f'### Server restart for {reason.capitalize()} has been canceled',wcstamp())
+            else:
+                unsetstartbit(inst)
+                if reason != "maintenance restart":
+                    if confupdtimer == 0:
+                        log.info(f'waiting on {reason} for {inst} because players are online')
+                    confupdtimer += 1
+                    if confupdtimer == 24:
+                        confupdtimer = 0
 
 
 def checkconfig():
