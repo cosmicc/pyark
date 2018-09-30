@@ -297,7 +297,7 @@ def discordbot():
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !mods, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>, !primordial'
+            msg = f'Commands: !mods, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !lotto, !timeleft, !lastwipe, !lastrestart, !ark-servers, !lastseen <playername>, !primordial'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
@@ -433,6 +433,11 @@ def discordbot():
         elif message.content.startswith('!mods'):
             whofor = str(message.author).lower()
             msg = f'https://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
+            await client.send_message(message.channel, msg)
+
+        elif message.content.startswith('!ark-servers'):
+            whofor = str(message.author).lower()
+            msg = f'https://ark-servers.net/group/396/'
             await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!lotto'):
