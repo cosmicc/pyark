@@ -55,6 +55,7 @@ def determinewinner(linfo):
             c4 = conn4.cursor()
             c4.execute('SELECT playername FROM players WHERE steamid = ?', (ueach,))
             kk = c4.fetchone()
+            print(f'!!!{kk}')
             c4.execute('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES (?, ?, ?, ?, ?)', (kk[0],kk[1],time.time(),linfo[4],0))
             conn4.commit()
             c4.close()
