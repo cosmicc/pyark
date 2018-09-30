@@ -53,18 +53,19 @@ def determinewinner(linfo):
         for ueach in winners:
             conn4 = sqlite3.connect(sqldb)
             c4 = conn4.cursor()
-            c4.execute('SELECT playername FROM players WHERE steamid = ?', (ueach,))
+            c4.execute('SELECT * FROM players WHERE steamid = ?', (ueach,))
             kk = c4.fetchone()
-            print(f'!!!{kk}')
             c4.execute('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES (?, ?, ?, ?, ?)', (kk[0],kk[1],time.time(),linfo[4],0))
             conn4.commit()
             c4.close()
             conn4.close()
         msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!'
         writediscord(msg,time.time())
+        writeglobal('ALERT','ALERT',msg)
         if linfo[1] == 'points': 
             msg = f'{lwinner[1].capitalize()} has won {linfo[2]} ARc Reward Points'
             writediscord(msg,time.time())
+            writeglobal('ALERT','ALERT',msg)
             conn4 = sqlite3.connect(sqldb)
             c4 = conn4.cursor()
             ku = c4.fetchone()
@@ -77,7 +78,7 @@ def determinewinner(linfo):
         else:
             msg = f'{lwinner[1].capitalize()} has won a {linfo[2]}'
             writediscord(msg,time.time())
-
+            writeglobal('ALERT','ALERT',msg)
     else:
         log.info(f'Lottery has ended. Not enough players: {len(lottoers)}')
         conn4 = sqlite3.connect(sqldb)
@@ -88,8 +89,11 @@ def determinewinner(linfo):
         conn4.close()
         msg = f'Lottery has ended. Not enough players have participated.  Requires at least 4.'
         writediscord(msg,time.time())
+        writeglobal('ALERT','ALERT',msg)
+        time.sleep(1)
         msg = f'No points will be withdawn from any participants.'
         writediscord(msg,time.time())
+        writeglobal('ALERT','ALERT',msg)
 
 
 
@@ -135,8 +139,10 @@ def startlottery(lottoinfo):
 
     msg = f'A new {lottotype} lottery has started! Cost to enter: {lottoinfo[4]} ARc Points'
     writeglobal('ALERT','ALERT',msg)
+    time.sleep(1)
     msg = f'Winning prize: {litm}'
     writeglobal('ALERT','ALERT',msg)
+    time.sleep(1)
     msg = f'Type !lottery or !lotto for more information'
     writeglobal('ALERT','ALERT',msg)
 
