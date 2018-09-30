@@ -117,6 +117,7 @@ def discordbot():
                 conn3.close()
                 for reach in cbuffr:
                     log.info(f'{reach[1]} has left the server {reach[0]}')
+                    #### Add server alerts msg to server about player leaving
                     writechat(reach[3],'ALERT',f'>>> {reach[1].capitalize()} has left the server',wcstamp())
             except:
                 log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
