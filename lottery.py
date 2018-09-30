@@ -120,7 +120,7 @@ def lotteryloop():
     log.info('starting lottery wait loop')
     while inlottery:
         time.sleep(60)
-        tdy = float(linfo[3])+(3600*int(linfo[5])
+        tdy = float(linfo[3])+(3600*int(linfo[5]))
         #tdy = float(linfo[3])+300*int(linfo[5]) ## quick 5 min for testing
         if time.time() >= tdy:
             determinewinner(linfo)
