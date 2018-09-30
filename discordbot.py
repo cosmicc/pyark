@@ -434,6 +434,34 @@ def discordbot():
             msg = f'https://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
             await client.send_message(message.channel, msg)
 
+        elif message.content.startswith('!lotto'):
+            whofor = str(message.author).lower()
+            newname = message.content.split(' ')
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"')
+            linfo = c.fetchall()
+            c.close()
+            conn.close()
+            if len(newname) > 1:
+                if newname[1] == 'enter' or newname[1] == 'join':
+                    msg = 'You must be in game to enter into a lottery'
+            if linfo:
+                if linfo[1] == 'points':
+                    msg = f'Current lottery is up to {linfo[2]} ARc reward points.'
+                else:
+                    msg = f'Current lottery is for a {linfo[2]}.'
+                await client.send_message(message.channel, msg)
+                msg = f'{linfo[6]} players have entered into this lottery so far.'
+                await client.send_message(message.channel, msg)
+                ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+                msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
+                await client.send_message(message.channel, msg)
+     
+            else:
+                msg = 'There are no lotterys currently underway.'
+                await client.send_message(message.channel, msg)
+
         elif message.content.startswith('!primordial'):
             whofor = str(message.author).lower()
             conn = sqlite3.connect(sqldb)

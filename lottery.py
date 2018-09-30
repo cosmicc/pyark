@@ -82,6 +82,12 @@ def determinewinner(linfo):
             msg = f'{lwinner[1].capitalize()} has won a {linfo[2]}'
             writediscord(msg,time.time())
             writeglobal('ALERT','ALERT',msg)
+            conn4 = sqlite3.connect(sqldb)
+            c4 = conn4.cursor()
+            c4.execute('UPDATE players SET lottowins = ? WHERE steamid = ?', (int(lwinner[18])+1,lwinner[0]))
+            conn4.commit()
+            c4.close()
+            conn4.close()
     else:
         log.info(f'Lottery has ended. Not enough players: {len(lottoers)}')
         conn4 = sqlite3.connect(sqldb)
@@ -114,8 +120,8 @@ def lotteryloop():
     log.info('starting lottery wait loop')
     while inlottery:
         time.sleep(60)
-        #tdy = float(linfo[3])+(84600*int(linfo[5])
-        tdy = float(linfo[3])+300*int(linfo[5])
+        tdy = float(linfo[3])+(3600*int(linfo[5])
+        #tdy = float(linfo[3])+300*int(linfo[5]) ## quick 5 min for testing
         if time.time() >= tdy:
             determinewinner(linfo)
             inlottery = False
@@ -130,7 +136,7 @@ def startlottery(lottoinfo):
     else:
         lottotype = 'Item'
         litm = lottoinfo[2]
-    lottostart = estshift(datetime.fromtimestamp(float(lottoinfo[3])+(86400*int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
+    lottostart = estshift(datetime.fromtimestamp(float(lottoinfo[3])+(3600*int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
 
     log.info(f'New lottery has started. Type: {lottotype} Payout: {lottoinfo[2]} Buyin: {lottoinfo[4]} Days: {lottoinfo[5]}')
 
