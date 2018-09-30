@@ -91,6 +91,54 @@ def serverisinrestart(steamid,inst,oplayer):
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
 
+def isinlottery(steamid):
+    conn1 = sqlite3.connect(sqldb)
+    c1 = conn1.cursor()
+    c1.execute('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"')
+    isinlotto = c1.fetchone()
+    c1.close()
+    conn1.close()
+    if isinlotto:
+        conn1 = sqlite3.connect(sqldb)
+        c1 = conn1.cursor()
+        c1.execute('SELECT * FROM lotteryplayers WHERE steamid = ?', (steamid,))
+        isinlotto2 = c1.fetchone()
+        c1.close()
+        conn1.close()
+        if isinlotto2:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+def checklottodeposits(steamid,inst):
+    conn1 = sqlite3.connect(sqldb)
+    c1 = conn1.cursor()
+    c1.execute('SELECT * FROM lotterydeposits WHERE steamid = ?', (steamid,))
+    lottocheck = c1.fetchall()
+    c1.execute('SELECT * FROM players WHERE steamid = ?', (steamid,))
+    elpinfo = c1.fetchone()
+    c1.close()
+    conn1.close()
+    if lottocheck:
+        for weach in lottocheck:
+            if weach[4] == 1:
+                msg = f'{weach[3]} ARc points have been deposited into your account for a lottery win!'
+                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
+                subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR AddARcTotal %s %s" @%s' % (steamid,weach[3],inst), shell=True)
+            elif weach[4] == 0:
+                msg = f'{weach[3]} ARc points have been withdrawn from your account for a lottery entry'
+                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
+                subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s %s" @%s' % (steamid,str(int(elpinfo[5])-int(weach[3])),inst), shell=True)
+            conn1 = sqlite3.connect(sqldb)
+            c1 = conn1.cursor()
+            c1.execute('DELETE FROM lotterydeposits WHERE timestamp = ?', (weach[2],))
+            conn1.commit()
+            c1.close()
+            conn1.close()
+
+
 def onlineplayer(steamid,inst):
     xferpoints = 0
     global welcomthreads
@@ -203,13 +251,19 @@ def onlineplayer(steamid,inst):
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                     resetplayerbit(steamid)
                 if oplayer[8] == '':
-                    time.sleep(8)
+                    time.sleep(5)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-            if xferpoints != 0 and oplayer[1] == 'admin':
-                    time.sleep(1)
+                if not isinlotto(steamid):
+                    time.sleep(3)
+                    mtxt = f'A lottery you have not entered yet is underway. Type !lotto for more information'
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+
+            if xferpoints != 0:
+                    time.sleep(2)
                     mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+            checklottodeposits(steamid,inst)
             if float(oplayer[2]) + 60 < float(time.time()):
                 writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())
                 serverisinrestart(steamid,inst,oplayer)

@@ -64,7 +64,7 @@ def determinewinner(linfo):
         msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!'
         writediscord(msg,time.time())
         writeglobal('ALERT','ALERT',msg)
-        time.sleep(2)
+        time.sleep(3)
         if linfo[1] == 'points': 
             msg = f'{lwinner[1].capitalize()} has won {linfo[2]} ARc Reward Points'
             writediscord(msg,time.time())
@@ -93,7 +93,7 @@ def determinewinner(linfo):
         msg = f'Lottery has ended. Not enough players have participated.  Requires at least 4.'
         writediscord(msg,time.time())
         writeglobal('ALERT','ALERT',msg)
-        time.sleep(1)
+        time.sleep(3)
         msg = f'No points will be withdawn from any participants.'
         writediscord(msg,time.time())
         writeglobal('ALERT','ALERT',msg)
@@ -133,22 +133,18 @@ def startlottery(lottoinfo):
     lottostart = estshift(datetime.fromtimestamp(float(lottoinfo[3])+(86400*int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
 
     log.info(f'New lottery has started. Type: {lottotype} Payout: {lottoinfo[2]} Buyin: {lottoinfo[4]} Days: {lottoinfo[5]}')
-    msg = f'A new {lottotype} lottery has started! Cost to enter: {lottoinfo[4]} ARc Points'
-    writediscord(msg,time.time())
-    msg = f'Winning prize: {litm}'
-    writediscord(msg,time.time())
-    msg = f'Type !lottery or !lotto for more information'
-    writediscord(msg,time.time())
 
     msg = f'A new {lottotype} lottery has started! Cost to enter: {lottoinfo[4]} ARc Points'
-    writeglobal('ALERT','ALERT',msg)
-    time.sleep(1)
+    writeglobal('ALERT','ALERT',msg)i
+    writediscord(msg,time.time())
+    time.sleep(3)
     msg = f'Winning prize: {litm}'
     writeglobal('ALERT','ALERT',msg)
-    time.sleep(1)
+    writediscord(msg,time.time())
+    time.sleep(3)
     msg = f'Type !lottery or !lotto for more information'
     writeglobal('ALERT','ALERT',msg)
-
+    writediscord(msg,time.time())
     lotteryloop()
 
 def checkfornewlottery():
