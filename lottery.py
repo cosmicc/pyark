@@ -135,7 +135,7 @@ def startlottery(lottoinfo):
     log.info(f'New lottery has started. Type: {lottotype} Payout: {lottoinfo[2]} Buyin: {lottoinfo[4]} Days: {lottoinfo[5]}')
 
     msg = f'A new {lottotype} lottery has started! Cost to enter: {lottoinfo[4]} ARc Points'
-    writeglobal('ALERT','ALERT',msg)i
+    writeglobal('ALERT','ALERT',msg)
     writediscord(msg,time.time())
     time.sleep(3)
     msg = f'Winning prize: {litm}'
