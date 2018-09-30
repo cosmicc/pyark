@@ -578,7 +578,7 @@ def lotteryquery(whoasked, lchoice, inst):
     c4.close()
     conn4.close()
     if linfo:
-        if lchoice == 'join':
+        if lchoice == 'join' or lchoice == 'enter':
             conn4 = sqlite3.connect(sqldb)
             c4 = conn4.cursor()
             c4.execute('SELECT * FROM lotteryplayers WHERE steamid = ?', (lpinfo[0],))
@@ -619,7 +619,6 @@ def checkcommands(minst):
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
         whoasked = 'nobody' 
-        #log.warning(f'###{line}')
         if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
             pass
         elif line.find('!help') != -1:

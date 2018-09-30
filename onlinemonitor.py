@@ -124,10 +124,12 @@ def checklottodeposits(steamid,inst):
     if lottocheck:
         for weach in lottocheck:
             if weach[4] == 1:
+                log.info(f'{weach[3]} points added to {elpinfo[1]} for a lottery win')
                 msg = f'{weach[3]} ARc points have been deposited into your account for a lottery win!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR AddARcTotal %s %s" @%s' % (steamid,weach[3],inst), shell=True)
             elif weach[4] == 0:
+                log.info(f'{weach[3]} points removed from {elpinfo[1]} for a lottery entry')
                 msg = f'{weach[3]} ARc points have been withdrawn from your account for a lottery entry'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s %s" @%s' % (steamid,str(int(elpinfo[5])-int(weach[3])),inst), shell=True)
@@ -137,7 +139,6 @@ def checklottodeposits(steamid,inst):
             conn1.commit()
             c1.close()
             conn1.close()
-
 
 def onlineplayer(steamid,inst):
     xferpoints = 0
@@ -254,7 +255,7 @@ def onlineplayer(steamid,inst):
                     time.sleep(5)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-                if not isinlotto(steamid):
+                if not isinlottery(steamid):
                     time.sleep(3)
                     mtxt = f'A lottery you have not entered yet is underway. Type !lotto for more information'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)

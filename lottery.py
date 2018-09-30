@@ -94,7 +94,7 @@ def determinewinner(linfo):
         writediscord(msg,time.time())
         writeglobal('ALERT','ALERT',msg)
         time.sleep(3)
-        msg = f'No points will be withdawn from any participants.'
+        msg = f'No points will be withdrawn from any participants.'
         writediscord(msg,time.time())
         writeglobal('ALERT','ALERT',msg)
 
@@ -124,9 +124,9 @@ def lotteryloop():
     
 
 def startlottery(lottoinfo):
-    if lottoinfo[1] == 1:
+    if lottoinfo[1] == 'points':
         lottotype = 'Points'
-        litm = 'ARc reward points accumulated pot'
+        litm = 'ARc points lottery pool'
     else:
         lottotype = 'Item'
         litm = lottoinfo[2]
@@ -134,17 +134,14 @@ def startlottery(lottoinfo):
 
     log.info(f'New lottery has started. Type: {lottotype} Payout: {lottoinfo[2]} Buyin: {lottoinfo[4]} Days: {lottoinfo[5]}')
 
-    msg = f'A new {lottotype} lottery has started! Cost to enter: {lottoinfo[4]} ARc Points'
+    msg = f'A new {lottotype} lottery has started! {lottoinfo[4]} ARc Points to enter'
     writeglobal('ALERT','ALERT',msg)
     writediscord(msg,time.time())
     time.sleep(3)
-    msg = f'Winning prize: {litm}'
+    msg = f'Winning prize: {litm}, type !lotto for more info'
     writeglobal('ALERT','ALERT',msg)
     writediscord(msg,time.time())
     time.sleep(3)
-    msg = f'Type !lottery or !lotto for more information'
-    writeglobal('ALERT','ALERT',msg)
-    writediscord(msg,time.time())
     lotteryloop()
 
 def checkfornewlottery():
