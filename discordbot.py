@@ -293,7 +293,7 @@ def discordbot():
                 conn.close()
                 for each in srvrs:
                     lastwipet = elapsedTime(time.time(),float(getlastrestart(each[0])))
-                    msg = f'Last server restart for {each[0].upper()} was {lastwipet} ago'
+                    msg = f'Last server restart for {each[0].capitalize()} was {lastwipet} ago'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
