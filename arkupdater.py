@@ -292,7 +292,7 @@ def checkconfig():
         lstsv = c.fetchone()
         c.close()
         conn.close()
-        t, s, e = datetime.now(), dt(10,0), dt(10,30)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
+        t, s, e = datetime.now(), dt(11,0), dt(11,30)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
         inmaint = is_time_between(t, s, e)
         if float(time.time())-float(lstsv[0]) > 432000 and inmaint:
             maintrest = "maintenance restart"
