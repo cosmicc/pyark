@@ -110,7 +110,7 @@ def isinlottery(steamid):
         else:
             return False
     else:
-        return False
+        return True
 
 def checklottodeposits(steamid,inst):
     conn1 = sqlite3.connect(sqldb)
