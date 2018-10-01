@@ -779,7 +779,7 @@ def checkcommands(minst):
                 ee = each.strip().split(': ')
                 if len(ee) > 1:
                     tcdata.update( {ee[0]:ee[1]} )
-            if tcdata['SteamID']:
+            if 'SteamID' in tcdata:
                 processtcdata(minst,tcdata)
         else:
             rawline = line.split('(')
