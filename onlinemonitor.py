@@ -110,7 +110,7 @@ def isinlottery(steamid):
         else:
             return False
     else:
-        return False
+        return True
 
 def checklottodeposits(steamid,inst):
     conn1 = sqlite3.connect(sqldb)
@@ -122,6 +122,7 @@ def checklottodeposits(steamid,inst):
     c1.close()
     conn1.close()
     if lottocheck and inst == elpinfo[15]:
+        print(lottocheck)
         for weach in lottocheck:
             if weach[4] == 1:
                 log.info(f'{weach[3]} points added to {elpinfo[1]} for a lottery win')

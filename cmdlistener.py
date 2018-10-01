@@ -213,7 +213,7 @@ def populatevoters(inst):
             pcnt += 1
             newvoter = [row[0],row[1],3]
             votertable.append(newvoter)
-    log.info(votertable)
+    log.debug(votertable)
     return pcnt
 
 def setvote(whoasked,myvote):
@@ -368,7 +368,7 @@ def voting(inst,whoasked):
                 subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe vote is waiting. make sure you have cast your vote !yes or !no in global chat" @%s' % (inst), shell=True)
 
         sltimer += 5
-    log.info(f'final votertable for vote on {inst}')
+    #log.info(f'final votertable for vote on {inst}')
     log.info(votertable)
     votertable = []
     lastvoter = time.time()
@@ -377,7 +377,6 @@ def voting(inst,whoasked):
 
 def startvoter(inst,whoasked):
     global instance
-    #print(time.time()-float(getlastvote(inst)))
     if isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat voting has already started. cast your vote" @%s' % (inst), shell=True)
     elif time.time()-float(getlastvote(inst)) < 14400:          # 4 hours between wipes

@@ -17,6 +17,7 @@ def gchatrelay(inst):
             conn3.close()
             if cbuff:
                 for each in cbuff:
+                    print(each)
                     if each[1] == 'ALERT' and float(each[4]) > time.time()-3:
                         subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each[3],inst), shell=True)
                     elif each[1] != inst and float(each[4]) > time.time()-3:
