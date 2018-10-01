@@ -319,11 +319,13 @@ def showservers():
         printplayer(feach)
 
 def restartserver(server):
+    print(server)
+    print(args.cancel)
     if not args.cancel:
-        c.execute('UPDATE instances SET needsrestart = "True" WHERE name = ?', [args.server])
+        c.execute('UPDATE instances SET needsrestart = "True" WHERE name = ?', (server,))
         print(f'{BYEL}server {BMGT}{args.server}{BYEL} has been set to {BRED}RESTART{RST}')
     else:
-        c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', [args.server])
+        c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', (server,))
         print(f'{BYEL}server {BMGT}{args.server}{BYEL} has been set to {BGRN}NOT RESTART{RST}')
     conn.commit()
 

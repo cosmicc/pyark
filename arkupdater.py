@@ -256,7 +256,7 @@ def instancerestart(inst, reason):
                 log.info(f'server {inst} instance server is starting')
                 confupdtimer = 0
                 resetlastrestart(inst, reason)
-                resetbit(inst)
+                unsetstartbit(inst)
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server restart for %s has been cancelled'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -308,7 +308,7 @@ def checkconfig():
             instance[each]['restartthread'].start()
 
         else:
-            log.info(f'no config difference detected for instance {inst}')
+            log.debug(f'no config difference detected for instance {inst}')
 
 def isnewarkver(inst):
     isarkupd = subprocess.run('arkmanager checkupdate @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
@@ -391,10 +391,10 @@ def checkpending(inst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('SELECT needsrestart FROM instances WHERE name = ?', [inst])
-    lastwipe = c.fetchall()
+    lastwipe = c.fetchone()
     c.close()
     conn.close()
-    ded = ''.join(lastwipe[0])
+    ded  = lastwipe[0]
     if ded == "True":
         if not isrebooting(inst):
             log.info(f'detected admin forced instance restart for instance {inst}')
@@ -409,11 +409,11 @@ def arkupd():
     while True:
         try:
             checkbackup()
-            checkupdates()
-            checkconfig()
             for each in range(numinstances):
                 checkwipe(instance[each]['name'])
                 checkpending(instance[each]['name'])
+            checkupdates()
+            checkconfig()
             time.sleep(300)
         except:
             log.critical('Critical Error in Ark Updater!', exc_info=True)
