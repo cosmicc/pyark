@@ -297,18 +297,21 @@ def checkconfig():
         lstsv = c.fetchone()
         c.close()
         conn.close()
-        t, s, e = datetime.now(), dt(11,0), dt(11,30)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
+        t, s, e = datetime.now(), dt(11,0), dt(11,30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
         inmaint = is_time_between(t, s, e)
         if float(time.time())-float(lstsv[0]) > 432000 and inmaint:
             maintrest = "maintenance restart"
         else:
             maintrest = "configuration update"
-        if (int(getcfgver('general')) > int(getcfgver(inst)) or maintrest == 'maintenance restart') and not isrebooting(inst):
-            instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,maintrest))
-            instance[each]['restartthread'].start()
+        if (int(getcfgver('general')) > int(getcfgver(inst)) or maintrest == 'maintenance restart'):
+            if not isrebooting(inst):
+                instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,maintrest))
+                instance[each]['restartthread'].start()
+            else:
+                log.warning(f'config updates detected for {inst}, but instance is already restarting')
 
         else:
-            log.debug(f'no config difference detected for instance {inst}')
+            log.debug(f'no config changes detected for instance {inst}')
 
 def isnewarkver(inst):
     isarkupd = subprocess.run('arkmanager checkupdate @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
@@ -362,6 +365,8 @@ def checkupdates():
                 if not isrebooting(inst):
                     instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,"ark game update"))
                     instance[each]['restartthread'].start()
+                else:
+                    log.warning(f'ark game update waiting, but instance {inst} already restarting')
     except:
         log.error(f'error in determining ark version')
     for each in range(numinstances):
@@ -376,14 +381,15 @@ def checkupdates():
                 modid = al[1]
                 modname = al[2]    
         inst = instance[each]['name']
-        if modchk != 0 and not isrebooting(instance[each]['name']):
+        if modchk != 0:
             log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
             log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
             subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
             aname = f'{modname} mod update'
-            instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,aname))
-            instance[each]['restartthread'].start()
+            if not isrebooting(instance[each]['name']):
+                instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,aname))
+                instance[each]['restartthread'].start()
         else:
             log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
 
@@ -402,6 +408,7 @@ def checkpending(inst):
                 if instance[each]['name'] == inst:
                     instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,"admin restart"))
                     instance[each]['restartthread'].start()
+
 
 def arkupd(): 
     log.debug('arkupdater thread started')
