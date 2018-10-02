@@ -111,12 +111,12 @@ def discordbot():
                 conn3 = sqlite3.connect(sqldb)
                 c3 = conn3.cursor()
                 now = float(time.time())
-                print('.')
-                c3.execute('SELECT * FROM players WHERE lastseen < ? AND lastseen > ?',(now-40,now-42))
+                c3.execute('SELECT * FROM players WHERE lastseen < ? AND lastseen > ?',(now-40,now-45))
                 cbuffr = c3.fetchall()
                 c3.close()
                 conn3.close()
                 for reach in cbuffr:
+                    print(cbuffr)
                     log.info(f'{reach[1]} has left the server {reach[3]}')
                     mt = f'{reach[1].capitalize()} has left the server'
                     writeglobal(reach[3],'ALERT',mt)
