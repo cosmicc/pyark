@@ -196,7 +196,7 @@ def onlineplayer(steamid,inst):
 
             if float(oplayer[2]) + 300 > float(time.time()):
                 if oplayer[3] != inst:
-                    mtxt = f'{oplayer[1].capitalize()} has transferred here from {oplayer[3].capitalize()}')
+                    mtxt = f'{oplayer[1].capitalize()} has transferred here from {oplayer[3].capitalize()}'
                     subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                     writechat(inst,'ALERT',f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}',wcstamp())
                     log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
