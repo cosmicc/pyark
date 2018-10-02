@@ -35,7 +35,7 @@ c = conn.cursor()
 #c.execute('DELETE from players WHERE steamid = 76561198408657294')
 
 #c.execute('DELETE from chatbuffer')
-c.execute('UPDATE instances SET needsrestart = "False" WHERE name = "island"')
+#c.execute('UPDATE instances SET needsrestart = "False" WHERE name = "island"')
 #c.execute('CREATE TABLE IF NOT EXISTS auctions (steamid TEXT, date TEXT, Type TEXT, name TEXT, sellingclass TEXT, quantity TEXT, askingclass TEXT, askingamount TEXT, tamedname TEXT, baselevel INTEGER, extrlevel INTEGER, level INTEGER, gender TEXT, quality INTEGER, rating REAL, armor REAL, durability REAL, damage REAL, blueprint TEXT)')
 #c.execute('ALTER TABLE lotteryinfo ADD COLUMN announced INTEGER')
 #c.execute('CREATE TABLE lotteryinfo (id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, payoutitem TEXT, timestamp TEXT, buyinpoints INTEGER, lengthdays INTEGER, players INTEGER, winner TEXT)')
@@ -47,7 +47,7 @@ c.execute('UPDATE instances SET needsrestart = "False" WHERE name = "island"')
 #c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
 conn.commit()
-c.execute('SELECT * FROM lotteryinfo')
+c.execute('SELECT * FROM globalbuffer')
 alldata = c.fetchall()
 ap = []
 for row in alldata:
