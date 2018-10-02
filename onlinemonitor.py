@@ -267,7 +267,7 @@ def onlineplayer(steamid,inst):
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
             checklottodeposits(steamid,inst)
             if float(oplayer[2]) + 60 < float(time.time()):
-                mtxt = f'{oplayer[1]} has joined the server'
+                mtxt = f'{oplayer[1].capitalize()} has joined the server'
                 subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                 writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())
                 serverisinrestart(steamid,inst,oplayer)
