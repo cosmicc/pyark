@@ -189,7 +189,7 @@ def stillneedsrestart(inst):
         return False
 
 def instancerestart(inst, reason):
-    log.info(f'instance restart thread starting for {inst}')
+    log.debug(f'instance restart thread starting for {inst}')
     global confupdtimer
     setrestartbit(inst)
     t, s, e = datetime.now(), dt(11,0), dt(11,30)  # Maintenance reboot 10:00-10:05am GMT (6:00AM EST)
