@@ -319,14 +319,12 @@ def showservers():
         printplayer(feach)
 
 def restartserver(server):
-    print(server)
-    print(args.cancel)
     if not args.cancel:
         c.execute('UPDATE instances SET needsrestart = "True" WHERE name = ?', (server,))
-        print(f'{BYEL}server {BMGT}{args.server}{BYEL} has been set to {BRED}RESTART{RST}')
+        print(f'{BYEL}server {BMGT}{server}{BYEL} has been set to {BRED}RESTART{RST}')
     else:
         c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', (server,))
-        print(f'{BYEL}server {BMGT}{args.server}{BYEL} has been set to {BGRN}NOT RESTART{RST}')
+        print(f'{BYEL}server {BMGT}{server}{BYEL} has been set to {BGRN}NOT RESTART{RST}')
     conn.commit()
 
 def printcolmns(mtable):
@@ -832,8 +830,8 @@ try:
     elif args.action_to_perform == 'oldest':
         oldest()
     elif args.action_to_perform == 'chatbuffer':
-        printcolmns('chatbuffer')
-        listtable('chatbuffer')
+        printcolmns('globalbuffer')
+        listtable('globalbuffer')
     elif args.action_to_perform == 'playersraw':
         playersraw()
     elif args.action_to_perform == 'checklog':
