@@ -116,9 +116,9 @@ def discordbot():
                 c3.close()
                 conn3.close()
                 for reach in cbuffr:
-                    log.info(f'{reach[1]} has left the server {reach[0]}')
+                    log.info(f'{reach[1]} has left the server {reach[3]}')
                     mt = f'{reach[1].capitalize()} has left the server'
-                    writeglobal(reach[0],'ALERT',mt)
+                    writeglobal(reach[3],'ALERT',mt)
                     writechat(reach[3],'ALERT',f'>>> {reach[1].capitalize()} has left the server',wcstamp())
             except:
                 log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
