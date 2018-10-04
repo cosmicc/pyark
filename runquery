@@ -46,8 +46,8 @@ c = conn.cursor()
 #c.execute('INSERT INTO players ("cfgver") VALUES ("1")')
 #c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
-conn.commit()
-c.execute('SELECT * FROM globalbuffer')
+#conn.commit()
+c.execute('SELECT playername, homeserver FROM players')
 alldata = c.fetchall()
 ap = []
 for row in alldata:

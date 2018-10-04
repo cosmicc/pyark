@@ -9,7 +9,7 @@ from urllib.request  import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 'startlottery', 
-    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'checklog', 'lotterytables',
+    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'checklog', 'lotterytables', 'log',
     'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist', 'unbanplayer', 'tribewipe', 'backupdb'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('servers', action='store_true', help='Server infomration')
@@ -38,10 +38,12 @@ action_group.add_argument('tribewipe', action='store_true', help='Wipe a tribe a
 action_group.add_argument('backupdb', action='store_true', help='Run a manual pyark database backup')
 action_group.add_argument('lotterytables', action='store_true', help='Show Lottery tables')
 action_group.add_argument('startlottery', action='store_true', help='Start a lottery')
+action_group.add_argument('log', action='store_true', help='Show the log (requires log length)')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='Cancel a instance restart')
 parser.add_argument('-l', '--searcharg', action='store', help='Search string for log file searching')
+parser.add_argument('-j', '--loglines', action='store', help='Number of log lines to show')
 
 args = parser.parse_args()
 
@@ -100,7 +102,9 @@ def sendtoserver(tribeid):
     subprocess.run(command, shell=True)
 
 def printplayer(feach):
-    print(f'{BYEL}Player {BWHT}{feach[0]} {BMGT}{feach[1]}{RST} {BYEL}last on {tclr}{elapsedTime(now,float(feach[2]))} {BYEL}ago on {BMGT}{feach[3]} {BYEL}for {BCYN}{playedTime(feach[4])} {BYEL}joined {trclr}{elapsedTime(now,float(feach[6]))}{BYEL} ago{RST}')
+    print(f'{BWHT}{feach[0]} {BMGT}{feach[1].capitalize()}{RST} {WHT}last on {tclr}{elapsedTime(now,float(feach[2]))} {WHT}ago on {BMGT}{feach[3].capitalize()} {WHT}Home Server: {BCYN}{feach[15].capitalize()} {WHT}Discord: {BWHT}{feach[8]}{RST}')
+    print(f'{WHT}Connections: {BGRN}{feach[7]} {WHT}Last played for {BCYN}{playedTime(feach[4])} {WHT}joined {trclr}{elapsedTime(now,float(feach[6]))}{WHT} ago{RST}')
+    print(f'{WHT}Points: {BGRN}{feach[5]} {WHT}Transfer Points: {BGRN}{feach[16]} {WHT}Auctions: {BGRN}{feach[10]} ({feach[11]}/{feach[12]}) {WHT}Primordial Warning: {BCYN}{feach[14]} {WHT}Lotto Wins: {BGRN}{feach[18]}{RST}\n')
 
 def alogparser():
     log_file_path = '/home/ark/shared/logs/pyark.log'
@@ -239,12 +243,12 @@ def printserverinfo(each):
         tls = f'Time Left: {nn}{each[7]} Minutes'
     else:
         tls = ''
-    print(f'{BYEL}Server: {BMGT}{each[0].upper()}{BYEL} - Players: {mm}{ply}/50{RST}')
-    print(f'{BYEL}Configuration version: {BCYN}{each[6]}{RST} {vertxt}')
-    print(f'{BYEL}Server in restart: {inrest} {BYEL}{tls}{RST}')
-    print(f'{BYEL}Last restart: {restclr}{restarted}{BYEL}  Reason: {BCYN}{each[5]}{RST}')
-    print(f'{BYEL}Last wilddino wipe: {wipeclr}{lwipe}{RST}')
-    print(f'{BYEL}Last wipe vote: {voteclr}{lvote}{RST}')
+    print(f'{WHT}Server: {BMGT}{each[0].upper()}{WHT}  Players: {mm}{ply}/50{RST}')
+    print(f'{WHT}Configuration version: {BCYN}{each[6]}{RST} {vertxt}')
+    print(f'{WHT}Server in restart: {inrest} {WHT}{tls}{RST}')
+    print(f'{WHT}Last restart: {restclr}{restarted}{WHT}  Reason: {BCYN}{each[5]}{RST}')
+    print(f'{WHT}Last wilddino wipe: {wipeclr}{lwipe}{RST}')
+    print(f'{WHT}Last wipe vote: {voteclr}{lvote}{RST}')
     print('  ')
 
 
@@ -280,7 +284,7 @@ def showservers():
     c.execute('SELECT cfgver from general')
     gencfgver = c.fetchone()
 
-    print(f'{BWHT}Current Config Version: {BCYN}{gencfgver[0]}{RST}')
+    print(f'{BYEL}CURRENT CONFIG VERSION: {BCYN}{gencfgver[0]}{RST}')
 
     print('    ')
 
@@ -297,7 +301,7 @@ def showservers():
         moo = f'{BRED}'
     else:
         moo = f'{BGRN}'
-    print(f'{BCYN}CLUSTER PLAYERS ONLINE: {moo}{jo}{RST}')
+    print(f'{BYEL}CLUSTER PLAYERS ONLINE: {moo}{jo}{RST}')
     print('   ')
 
     for feach in lastones:
@@ -427,7 +431,7 @@ def delplayer():
     for each in oplayers:
         if each[0] == nsteamid:
             if ask_question(f'{BGRN}You will be DELETING {BMGT}{each[1]}{BGRN} with steamid {BMGT}{each[0]}{BGRN} from the database. continue?{RST}'):
-                c.execute('DELETE from players WHERE steamid = ?', ([args.steamid]))
+                c.execute('DELETE from players WHERE steamid = ?', (nsteamid,))
                 print('    ')
                 print(f'{BYEL}Player {BMGT}{each[1]}{BYEL} with steamid {BMGT}{each[0]}{BYEL} has been deleted.{RST}')
                 print('    ')
@@ -703,6 +707,25 @@ def playerage():
         printplayer(feach)
     print('   ')
 
+def pyarklogs():
+    a = 0
+    arklog = subprocess.run('tail -%s /home/ark/shared/logs/pyark.log' % (args.loglines,),stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    for each in arklog.stdout.decode('utf-8').split('\n'):
+        if each.find('[CRITICAL]') != -1:
+            ar = f'{BRED}'
+        elif each.find('[ERROR]') != -1:
+            ar = f'{BRED}'
+        elif each.find('[WARNING]') != -1:
+            ar = f'{BYEL}'
+        elif each.find('[INFO]') != -1:
+            if each.find('svr1') != -1:
+                ar = f'{BGRN}'
+            else:
+                ar = f'{BCYN}'
+        print(f'{ar}{each}{RST}')
+
+
+
 def writechat(inst,whos,msg,tstamp):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -853,7 +876,11 @@ try:
         backupdb()
     elif args.action_to_perform == 'startlottery':
         startlottery()
-
+    elif args.action_to_perform == 'log':
+        if args.loglines == None:
+            print('You must specify number of log lines to show with -j option.')
+        else:
+            pyarklogs()
 
     print('       ')
     c.close()
