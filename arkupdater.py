@@ -10,7 +10,7 @@ log = logging.getLogger(name=hstname)
 
 confupdtimer = 0
 dwtimer = 0
-updgennotify = time.time()-2100
+ugennotify = time.time()-2100
 
 numinstances = int(config.get('general', 'instances'))
 isupdater = config.get('general', 'isupdater')
@@ -353,7 +353,7 @@ def checkbackup():
             subprocess.run('arkmanager backup @%s' % (sinst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             
 def checkupdates():
-    global updgennotice
+    global ugennotify
     pendingupdates = False
     arkupdate = False
     modupdate = False
@@ -394,8 +394,8 @@ def checkupdates():
                 modid = al[1]
                 modname = al[2]    
         inst = instance[each]['name']
-        if modchk != 0 and time.time()-updgennotify > 2100:
-            updgennotify = time.time()
+        if modchk != 0 and time.time()-ugennotify > 2100:
+            ugennotify = time.time()
             log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
             log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
             subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
