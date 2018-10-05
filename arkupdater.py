@@ -394,8 +394,8 @@ def checkupdates():
                 modid = al[1]
                 modname = al[2]    
         inst = instance[each]['name']
-        if modchk != 0 and time.time()-updgennotice > 2100:
-            updgennotice = time.time()
+        if modchk != 0 and time.time()-updgennotify > 2100:
+            updgennotify = time.time()
             log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
             log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
             subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
