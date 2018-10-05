@@ -103,7 +103,7 @@ def sendtoserver(tribeid):
 
 def printplayer(feach):
     print(f'{BWHT}{feach[0]} {BMGT}{feach[1].capitalize()}{RST} {WHT}last on {tclr}{elapsedTime(now,float(feach[2]))} {WHT}ago on {BMGT}{feach[3].capitalize()} {WHT}Home Server: {BCYN}{feach[15].capitalize()} {WHT}Discord: {BWHT}{feach[8]}{RST}')
-    print(f'{WHT}Connections: {BGRN}{feach[7]} {WHT}Last played for {BCYN}{playedTime(feach[4])} {WHT}joined {trclr}{elapsedTime(now,float(feach[6]))}{WHT} ago{RST}')
+    print(f'{WHT}Connections: {BGRN}{feach[7]} {WHT}Total Playtime: {BCYN}{playedTime(feach[4])} {WHT}joined {trclr}{elapsedTime(now,float(feach[6]))}{WHT} ago{RST}')
     print(f'{WHT}Points: {BGRN}{feach[5]} {WHT}Transfer Points: {BGRN}{feach[16]} {WHT}Auctions: {BGRN}{feach[10]} ({feach[11]}/{feach[12]}) {WHT}Primordial Warning: {BCYN}{feach[14]} {WHT}Lotto Wins: {BGRN}{feach[18]}{RST}\n')
 
 def alogsearcher(searchparm):
