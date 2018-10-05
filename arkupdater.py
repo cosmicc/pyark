@@ -10,6 +10,7 @@ log = logging.getLogger(name=hstname)
 
 confupdtimer = 0
 dwtimer = 0
+updgennotify = time.time()-2100
 
 numinstances = int(config.get('general', 'instances'))
 isupdater = config.get('general', 'isupdater')
@@ -24,6 +25,14 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr=instr + ', %s' % (a)
+
+def writediscord(msg,tstamp):
+    conn4 = sqlite3.connect(sqldb)
+    c4 = conn4.cursor()
+    c4.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', ('generalchat','ALERT',msg,tstamp))
+    conn4.commit()
+    c4.close()
+    conn4.close()
 
 def writechat(inst,whos,msg,tstamp):
     isindb = False
@@ -344,6 +353,7 @@ def checkbackup():
             subprocess.run('arkmanager backup @%s' % (sinst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             
 def checkupdates():
+    global updgennotice
     pendingupdates = False
     arkupdate = False
     modupdate = False
@@ -358,6 +368,9 @@ def checkupdates():
             if isupdater:
                 subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug('ark update downloaded to staging area')
+                if time.time()-updgennotify > 2100:
+                    msg = f'Ark update has been released. Servers will start a reboot countdown now.\nhttps://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-283112-server-283112/'
+                    writediscord(msg,time.time())
             else:
                 time.sleep(60)
             for each in range(numinstances):
@@ -381,12 +394,16 @@ def checkupdates():
                 modid = al[1]
                 modname = al[2]    
         inst = instance[each]['name']
-        if modchk != 0:
+        if modchk != 0 and time.time()-updgennotice > 2100:
+            updgennotice = time.time()
             log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
             log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
             subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
             aname = f'{modname} mod update'
+            if instance[each]["name"] == 'volcano':
+                msg = f'Mod {modname} has been updated. Servers will start a reboot countdown now.\nhttps://steamcommunity.com/sharedfiles/filedetails/?id={modid}'
+                writediscord(msg,time.time())    
             if not isrebooting(instance[each]['name']):
                 instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,aname))
                 instance[each]['restartthread'].start()
