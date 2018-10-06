@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import logging, argparse, subprocess, socket, re 
+import time, logging, argparse, subprocess, socket, re 
 from configreader import *
 
 __author__ = "Ian Perry"
@@ -95,16 +95,15 @@ def main():
         a = config.get('instance%s' % (each), 'name')
         instance[each] = {'name':a,}
     
-    if didserverjustboot():
-        log.info(f'server boot detected, starting instances')
-        for eat in instance:
-            log.info(f'starting instance {eat["name"]}')
-            subprocess.run('arkmanager start --alwaysrestart @%s' % (eat['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    for eat in instance:
+        log.info(f'starting instance {eat["name"]}')
+        subprocess.run('arkmanager start --alwaysrestart @%s' % (eat['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     while True:
-    try:
-        time.sleep(300)
-    except:
-        log.critical('Critical Error in Ark Watchdog!', exc_info=True)
+        try:
+            
+            time.sleep(300)
+        except:
+            log.critical('Critical Error in Ark Watchdog!', exc_info=True)
 
 if __name__ == '__main__':
     main()

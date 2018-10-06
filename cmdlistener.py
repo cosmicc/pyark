@@ -801,7 +801,7 @@ def checkcommands(minst):
                                 dto = dto - tzfix
                             tstamp = dto.strftime('%m-%d %I:%M%p')
                             writechat(inst,whoname,cmsg,tstamp)
-                            clog = f'{tstamp} [{whoname.upper()}] - {cmsg}\n'
+                            clog = f'{tstamp} [{whoname.upper()}]{cmsg}\n'
                             with open(f"/home/ark/shared/logs/chatlogs/{minst}/chat.log", "at") as f:
                                 f.write(clog)
                             f.close()
