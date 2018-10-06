@@ -667,6 +667,8 @@ def watchlog():
                     ar = f'{GRN}'
                 elif each.find('arkupdater') != -1:
                     ar = f'{CYN}'
+                elif each.find('lottery') != -1:
+                    ar = f'{MGT}'
                 elif each.find('points') != -1:
                     ar = f'{YEL}'
                 elif each.find('-restart') != -1:

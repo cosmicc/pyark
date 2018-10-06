@@ -126,27 +126,28 @@ def lotteryloop(linfo):
         if time.time() >= tdy:
             determinewinner(linfo)
             inlottery = False
-    log.info(f'Lottery lopopas completed')
+    log.info(f'Lottery loop has completed')
 
 def startlottery(lottoinfo):
     if lottoinfo[1] == 'points':
-        lottotype = 'Points'
+        lottotype = 'points'
         litm = 'ARc points lottery pool'
     else:
         lottotype = 'Item'
         litm = lottoinfo[2]
     lottostart = estshift(datetime.fromtimestamp(float(lottoinfo[3])+(3600*int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
-    if lottoinfo[8] == 0:
+    if lottoinfo[8] == 0 or lottoinfo[8] == None:
         log.info(f'A lottery has started. Type: {lottotype} Payout: {lottoinfo[2]} Buyin: {lottoinfo[4]} Days: {lottoinfo[5]}')
-        msg = f'A new {lottotype} lottery has started! {lottoinfo[4]} ARc Points to enter'
+        #msg = f'A new {lottotype} lottery has started! {lottoinfo[4]} ARc Points to enter'
+        msg = f'test\ntest'
         writeglobal('ALERT','ALERT',msg)
         writediscord(msg,time.time())
         time.sleep(3.1)
-        msg = f'Winning prize: {litm}, type !lotto for more info'
-        writeglobal('ALERT','ALERT',msg)
-        writediscord(msg,time.time())
-        time.sleep(3.1)
-    lotteryloop(lottoinfo)
+        #msg = f'Winning prize: {litm}, type !lotto for more info'
+        #writeglobal('ALERT','ALERT',msg)
+        #writediscord(msg,time.time())
+        #time.sleep(3.1)
+    #lotteryloop(lottoinfo)
 
 def checkfornewlottery():
     conn4 = sqlite3.connect(sqldb)

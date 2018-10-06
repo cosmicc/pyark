@@ -402,7 +402,7 @@ def checkupdates():
             log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
             aname = f'{modname} mod update'
             if instance[each]["name"] == 'volcano':
-                msg = f'Mod {modname} has been updated. Servers will start a reboot countdown now.\nhttps://steamcommunity.com/sharedfiles/filedetails/?id={modid}'
+                msg = f'Mod {modname} has been updated. Servers will start a reboot countdown now.\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
                 writediscord(msg,time.time())    
             if not isrebooting(instance[each]['name']):
                 instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,aname))
