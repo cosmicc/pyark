@@ -397,8 +397,9 @@ def startvoter(inst,whoasked):
 
 def getnamefromchat(chat):
     rawline = chat.split('(')
-    rawname = rawline[1].split(')')
-    return rawname[0].lower()
+    if len(rawline) > 1:
+        rawname = rawline[1].split(')')
+        return rawname[0].lower()
 
 def isserver(line):
     rawissrv = line.split(':')
@@ -764,12 +765,13 @@ def checkcommands(minst):
         elif line.find('!lottery') != -1 or line.find('!lotto') != -1:
             whoasked = getnamefromchat(line)
             rawline = line.split(':')
-            lastlline = rawline[2].strip().split(' ')
-            if len(lastlline) == 2:
-                lchoice = lastlline[1]
-            else:
-                lchoice = False
-            lotteryquery(whoasked,lchoice,minst)
+            if len(rawline) > 2:
+                lastlline = rawline[2].strip().split(' ')
+                if len(lastlline) == 2:
+                    lchoice = lastlline[1]
+                else:
+                    lchoice = False
+                lotteryquery(whoasked,lchoice,minst)
 
         elif line.find('[TCsAR]') != -1:
             dfg = line.split('||')

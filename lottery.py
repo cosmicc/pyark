@@ -105,7 +105,7 @@ def determinewinner(linfo):
         writeglobal('ALERT','ALERT',msg)
 
 def lotteryloop(linfo):
-    if linfo[8] == 0:
+    if linfo[8] == 0 or linfo[8] == None:
         log.debug('clearing lotteryplayers table')
         conn4 = sqlite3.connect(sqldb)
         c4 = conn4.cursor()

@@ -34,7 +34,7 @@ c = conn.cursor()
 ##delete the admin account from db
 #c.execute('DELETE from players WHERE steamid = 76561198408657294')
 
-c.execute('DELETE from lotteryinfo WHERE id = 12')
+c.execute('DELETE from lotteryinfo WHERE id = 13')
 #c.execute('UPDATE instances SET needsrestart = "False" WHERE name = "island"')
 #c.execute('CREATE TABLE IF NOT EXISTS auctions (steamid TEXT, date TEXT, Type TEXT, name TEXT, sellingclass TEXT, quantity TEXT, askingclass TEXT, askingamount TEXT, tamedname TEXT, baselevel INTEGER, extrlevel INTEGER, level INTEGER, gender TEXT, quality INTEGER, rating REAL, armor REAL, durability REAL, damage REAL, blueprint TEXT)')
 #c.execute('ALTER TABLE lotteryinfo ADD COLUMN announced INTEGER')
