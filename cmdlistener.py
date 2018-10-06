@@ -801,8 +801,19 @@ def checkcommands(minst):
                                 dto = dto - tzfix
                             tstamp = dto.strftime('%m-%d %I:%M%p')
                             writechat(inst,whoname,cmsg,tstamp)
+                            clog = f'{tstamp} [{whoname.upper()}] - {cmsg}'
+                            with open(f"/home/ark/shared/logs/chatlogs/{minst}/chat.log", "at") as f:
+                                f.write(clog)
+                            f.close()
                         except:
                             log.warning('could not parse date from chat')
+        if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
+            pass
+        else:
+            with open(f"/home/ark/shared/logs/gamelogs/{minst}/game.log", "at") as f:
+                f.write(line)
+            f.close()
+
 
 def clisten(minst):
     log.debug(f'starting the command listener thread for {minst}')
