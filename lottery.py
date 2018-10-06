@@ -141,8 +141,8 @@ def startlottery(lottoinfo):
         #msg = f'A new {lottotype} lottery has started! {lottoinfo[4]} ARc Points to enter'
         msg = f'test\ntest'
         writeglobal('ALERT','ALERT',msg)
-        writediscord(msg,time.time())
-        time.sleep(3.1)
+        #writediscord(msg,time.time())
+        #time.sleep(3.1)
         #msg = f'Winning prize: {litm}, type !lotto for more info'
         #writeglobal('ALERT','ALERT',msg)
         #writediscord(msg,time.time())
