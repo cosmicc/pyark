@@ -636,7 +636,7 @@ def follow(stream):
 
 def pyarklogs():
     a = 0
-    arklog = subprocess.run('tail -%s /home/ark/shared/logs/pyark.log' % (args.loglines,),stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    arklog = subprocess.run('tail -%s /home/ark/shared/logs/pyark/pyark.log' % (args.loglines,),stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
     for each in arklog.stdout.decode('utf-8').split('\n'):
         if each.find('[CRITICAL]') != -1:
             ar = f'{BRED}'

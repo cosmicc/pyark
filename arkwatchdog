@@ -99,7 +99,7 @@ def main():
         log.info(f'starting instance {eat["name"]}')
         subprocess.run('arkmanager start --alwaysrestart @%s' % (eat['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.debug('sleeping while instances start')
-    log.sleep(900)
+    time.sleep(900)
     log.debug('starting watchdog loop')
     while True:
         try:

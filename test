@@ -15,4 +15,4 @@ def getinstmem(inst):
     instvsz = int(instvsz)/1000000 // 0.01 / 100
     return instrss,instvsz
 
-print(getinstmem('island'))
+print(getinstmem('ragnarok'))
