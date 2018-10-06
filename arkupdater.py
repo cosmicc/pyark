@@ -223,9 +223,9 @@ def instancerestart(inst, reason):
             subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, shell=True)
             log.debug(f'server {inst} updated config files')
             log.info(f'server {inst} is updating from staging directory')
-            subprocess.run('arkmanager update --no-download -no-autostart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('arkmanager update --no-download --update-mods --no-autostart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             log.info(f'server {inst} instance is starting')
+            subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             resetlastrestart(inst, reason)
         else:
             log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
@@ -260,9 +260,9 @@ def instancerestart(inst, reason):
                 subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath,arkroot), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug(f'server {inst} instance updated config files')
                 log.info(f'server {inst} is updating from staging directory')
-                subprocess.run('arkmanager update --no-download -no-autostart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                subprocess.run('arkmanager update --no-download --update-mods --no-autostart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.info(f'server {inst} instance server is starting')
+                subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 confupdtimer = 0
                 resetlastrestart(inst, reason)
                 unsetstartbit(inst)
