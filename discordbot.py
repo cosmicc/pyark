@@ -159,6 +159,12 @@ def discordbot():
             conn.commit()
             c.close()
             conn.close()
+    
+    @client.event
+    async def on_member_join(member):
+        server = member.server
+        fmt = 'Welcome to the Galaxy Cluster Ultimate Extinction Core Server Discord.\nIf you are already a player on the servers, you can !linkme in game to link your discord account to your ark player.\n!servers for links to the servers, !mods for a link to the mod collection, !help for everything else\nIf you need any help ask in #general-chat'
+        await client.send_message(server, fmt.format(member, server))
 
     @client.event
     async def on_ready():
@@ -370,6 +376,7 @@ def discordbot():
                         c.close()
                         conn.close()
         elif message.content.startswith('!home') or message.content.startswith('!myhome'):
+            newsrv = message.content.split(' ')
             whofor = str(message.author).lower()
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
@@ -378,15 +385,20 @@ def discordbot():
             c.close()
             conn.close()
             if kuser:
-                if kuser[8] != whofor:
-                    log.info(f'home server request from {whofor} denied, no account linked')
-                    msg = f'Your discord account is not connected to a player yet.'
+                if len(newsrv) > 1:
+                    log.info(f'home server change request for {kuser[1]}')
+                    msg = f'You have to type !myhome on your current home server {kuser[15].capitalize()} to change home servers'
                     await client.send_message(message.channel, msg)
                 else:
-                    msg = f'meh'
-                    await client.send_message(message.channel, msg)    
+                    log.info(f'home server request granted for {kuser[1]}')
+                    msg = f'Your home server is: {kuser[15].capitalize()}'
+                    await client.send_message(message.channel, msg)
+            else:
+                log.info(f'home server request from {whofor} denied, no account linked')
+                msg = f"Your discord account is not connected to a player yet, so I don't know your home server."
+                await client.send_message(message.channel, msg)
 
-        elif message.content.startswith('!myinfo') or message.content.startswith('!points'):
+        elif message.content.startswith('!myinfo') or message.content.startswith('!mypoints'):
             whofor = str(message.author).lower()
             log.info(f'myinfo request from {whofor} on discord')
             conn = sqlite3.connect(sqldb)
@@ -437,10 +449,30 @@ def discordbot():
             msg = f'https://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
             await client.send_message(message.channel, msg)
 
+        elif message.content.startswith('!servers'):
+            whofor = str(message.author).lower()
+            msg = f'Galaxy Clsuter Ultimate Extinction Core Servers:\nRagnarok: steam://connect/173.15.226.42:47016\nTheVolcano: steam://connect/173.15.226.42:47018\nTheIsland: steam://connect/173.15.226.42:47020'
+            await client.send_message(message.channel, msg)
+
         elif message.content.startswith('!ark-servers'):
             whofor = str(message.author).lower()
             msg = f'https://ark-servers.net/group/396/'
             await client.send_message(message.channel, msg)
+
+        elif message.content.startswith('!lastlotto') or message.content.startswith('!lastlottery'):
+            whofor = str(message.author).lower()
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM lotteryinfo ORDER BY id DESC')
+            linfo = c.fetchone()
+            c.close()
+            conn.close()
+            if linfo[1] == 'item':
+                msg = f'Last lottery was {linfo[2]} won by {linfo[7].capitalize()}. {elapsedTime(time.time(),linfo[3])} ago'
+                await client.send_message(message.channel, msg)
+            elif linfo[1] == 'points':
+                msg = f'Last lottery was {linfo[2]} Arc reward points won by {linfo[7].capitalize()}. {elapsedTime(time.time(),linfo[3])} ago'
+                await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!lotto'):
             whofor = str(message.author).lower()

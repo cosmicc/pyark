@@ -141,6 +141,7 @@ def checklottodeposits(steamid,inst):
             conn1.close()
 
 def onlineplayer(steamid,inst):
+    gogo = 0
     xferpoints = 0
     global welcomthreads
     conn1 = sqlite3.connect(sqldb)
@@ -196,6 +197,7 @@ def onlineplayer(steamid,inst):
 
             if float(oplayer[2]) + 300 > float(time.time()):
                 if oplayer[3] != inst:
+                    gogo = 1
                     mtxt = f'{oplayer[1].capitalize()} has transferred here from {oplayer[3].capitalize()}'
                     subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                     writechat(inst,'ALERT',f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}',wcstamp())
@@ -267,7 +269,7 @@ def onlineplayer(steamid,inst):
                     mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
             checklottodeposits(steamid,inst)
-            if float(oplayer[2]) + 60 < float(time.time()):
+            if float(oplayer[2]) + 60 < float(time.time()) and gogo == 0:
                 mtxt = f'{oplayer[1].capitalize()} has joined the server'
                 subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                 writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())

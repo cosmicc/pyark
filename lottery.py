@@ -37,7 +37,7 @@ def determinewinner(linfo):
     c4.close()
     conn4.close()
     print(lottoers)
-    if len(lottoers) > 0:   ### change back to 3
+    if len(lottoers) > 2:
         for eachn in lottoers:
             winners.append(eachn[0])
         winnersid = random.choice(list(enumerate(winners)))
@@ -119,11 +119,14 @@ def lotteryloop(linfo):
     log.info('a lottery is pending, waiting for entries')
     while inlottery:
         time.sleep(60)
-        tdy = float(linfo[3])+(3600*int(linfo[5]))
+        try:
+            tdy = float(linfo[3])+(3600*int(linfo[5]))
         #tdy = float(linfo[3])+300*int(linfo[5]) ## quick 5 min for testing
-        if time.time() >= tdy:
-            determinewinner(linfo)
-            inlottery = False
+            if time.time() >= tdy:
+                determinewinner(linfo)
+                inlottery = False
+        except:
+            log.error('lottery loop error, ignoring')
     log.info(f'Lottery loop has completed')
 
 def startlottery(lottoinfo):
