@@ -206,12 +206,14 @@ def printserverinfo(each):
         isr = f'{BRED}NO{RST}'
     elif int(each[11]) == 1:
         isr = f'{BGRN}Yes{RST}'
-    lastuc = elapsedTime(time.time()-each[12])
-
-
+    if time.time()-float(each[12]) > 600:
+        boo = f'{BRED}'
+    else:
+        boo = f'{BGRN}'
+    lastuc = elapsedTime(time.time(),float(each[12]))
     print(f'{WHT}Server: {BMGT}{each[0].upper()}{WHT}  Players: {mm}{ply}/50{RST}')
-    print(f'{WHT}Online: {iso}  Listening: {isl}  Running: {isr}  Last Check: {BYEL}{lastuc}{RST}')
-    print(f'{WHT}Active Memory: {BWHT}{each[13]} Gig{WHT}  Total Memory: {BWHT}{each[14]} Gig{RST}')
+    print(f'{WHT}Online: {iso}  {WHT}Listening: {isl}  {WHT}Running: {isr}  {WHT}Last Check: {boo}{lastuc}{RST}')
+    print(f'{WHT}Active Memory: {BYEL}{each[13]} Gig{WHT}  Total Memory: {BYEL}{each[14]} Gig{RST}')
     print(f'{WHT}Configuration version: {BCYN}{each[6]}{RST} {vertxt}')
     print(f'{WHT}Server in restart: {inrest} {WHT}{tls}{RST}')
     print(f'{WHT}Last restart: {restclr}{restarted}{WHT}  Reason: {BCYN}{each[5]}{RST}')
@@ -669,7 +671,7 @@ def pyarklogs():
         print(f'{ar}{each}{RST}')
 
 def watchlog():
-    logpath = f'/home/ark/shared/logs/pyark.log'
+    logpath = f'/home/ark/shared/logs/pyark/pyark.log'
     with open(logpath, 'rt') as following:
         following.seek(0, 0)
         for each in follow(following):
