@@ -107,7 +107,7 @@ def printplayer(feach):
     print(f'{WHT}Points: {BGRN}{feach[5]} {WHT}Transfer Points: {BGRN}{feach[16]} {WHT}Auctions: {BGRN}{feach[10]} ({feach[11]}/{feach[12]}) {WHT}Primordial Warning: {BCYN}{feach[14]} {WHT}Lotto Wins: {BGRN}{feach[18]}{RST}\n')
 
 def alogsearcher(searchparm):
-    log_file_path = '/home/ark/shared/logs/pyark.log'
+    log_file_path = '/home/ark/shared/logs/pyark/pyark.log'
     print(f'{BMGT}log {RST}')
     print('   ')
     with open(log_file_path, "r") as in_file:
