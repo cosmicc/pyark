@@ -72,11 +72,13 @@ def getrunning(inst):
                 srunning = True
             elif (stripansi(ea.split(':')[1]).strip() == 'No'):
                 srunning = False
+                sonline = False
         if (sttitle == 'Server listening'):
             if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
                 slistening = True
             elif (stripansi(ea.split(':')[1]).strip() == 'No'):
                 slistening = False
+                sonline = False
         if (sttitle == 'Server online'):
             if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
                 sonline = True
@@ -85,8 +87,8 @@ def getrunning(inst):
     return (srunning, slistening, sonline)
 
 def restartserver(inst):
-    log.warning(f'restarting instance {inst} (fake for now)')
-#    subprocess.run('arkmanager start --alwaysrestart @%s' % (eat['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    log.warning(f'restarting instance {inst}')
+    subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 def main():
     isrunningcnt = 0
@@ -108,6 +110,8 @@ def main():
         log.sleep(600)
     log.debug('starting watchdog loop')
     while True:
+        actmem = 0
+        totmem = 0
         try:
             for eachinst in instance:
                 isrunning, islistening, isonline = getrunning(eachinst['name'])
@@ -117,6 +121,7 @@ def main():
                     log.warning(f'{eachinst["name"]} failed is instance running check {isrunningcnt}/2')
                 else:
                     isrunningint = 1
+                    actmem, totmem = getinstmem(eachinst['name'])
                 if islistening == False:
                     log.warning(f'{eachinst["name"]} failed is instance listening check {islisteningcnt}/2')
                     islisteningcnt += 1
@@ -129,7 +134,6 @@ def main():
                     isonlineint = 0
                 else:
                     isonlineint = 1
-                actmem, totmem = getinstmem(eachinst['name'])
                 log.debug(isonlineint,islisteningint,isrunningint,time.time(),actmem,totmem,eachinst['name'])
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
@@ -138,7 +142,7 @@ def main():
                 c.close()
                 conn.close()
 
-                if isrunningcnt == 3 or isonlinecnt == 3 or islistening == 3:
+                if isrunningcnt == 2 or isonlinecnt == 10 or islistening == 5:
                     isrunningcnt = 0
                     islisteningcnt = 0
                     isonlinecnt = 0
@@ -146,7 +150,7 @@ def main():
         except:
             log.critical('Critical Error in Ark Watchdog!', exc_info=True)
         log.debug('sleeping 3 min between checks')
-        time.sleep(180)
+        time.sleep(60)
 
 if __name__ == '__main__':
     main()
