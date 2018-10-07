@@ -394,7 +394,7 @@ def checkupdates():
                 modid = al[1]
                 modname = al[2]    
         inst = instance[each]['name']
-        if modchk != 0 and time.time()-ugennotify > 2100:
+        if modchk != 0 and not isrebooting(instance[each]['name']):
             ugennotify = time.time()
             log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
             log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
