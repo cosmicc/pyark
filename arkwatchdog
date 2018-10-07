@@ -150,7 +150,7 @@ def main():
         except:
             log.critical('Critical Error in Ark Watchdog!', exc_info=True)
         log.debug('sleeping 3 min between checks')
-        time.sleep(60)
+        time.sleep(120)
 
 if __name__ == '__main__':
     main()
