@@ -9,13 +9,13 @@ repo = Repo(localdir)
 
 
 origin = repo.remotes.origin
-for each in dir(origin.repo):
-    print(each)
+#for each in dir(repo.remotes):
+#    print(each)
 
 print(repo.head.commit)
 origin.fetch()
-print(origin.repo.head.commit)
-if repo.head.commit != origin.repo.head.commit:
-    print('mismatched version. pulling')
-    origin.pull()
-print(repo.head.commit)
+print(origin.refs[0].commit)
+#if repo.head.commit != origin.repo.head.commit:
+#    print('mismatched version. pulling')
+#    origin.pull()
+#print(repo.head.commit)
