@@ -39,7 +39,7 @@ if len(lottoers) >= 4:
             adjj = wins[eachw]
         adjpicks.append(picks[eachw]-adjj*5)
     winneridx = argmax(adjpicks)
-
+    winnersid = winners[winneridx]
 
 
 print(winners)

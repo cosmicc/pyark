@@ -600,7 +600,7 @@ def lotteryquery(whoasked, lchoice, inst):
                 lfo = 'ARc Rewards Points'
             else:
                 lfo = linfo[2]
-            ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(86400*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+            ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
             if lpcheck == None:
                 conn4 = sqlite3.connect(sqldb)
                 c4 = conn4.cursor()
