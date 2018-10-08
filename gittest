@@ -19,3 +19,4 @@ if repo.head.commit != origin.repo.head.commit:
     print('mismatched version. pulling')
     origin.pull()
 print(repo.head.commit)
+
