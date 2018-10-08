@@ -1,0 +1,8 @@
+#!/usr/bin/python3
+
+from git import Repo
+
+repo = Repo('/home/ark/pyark')
+
+print(repo.untracked_files  )
+

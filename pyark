@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import logging, argparse, sqlite3, time, threading, socket, subprocess
+import sys, os, logging, argparse, sqlite3, time, threading, socket, subprocess
 from arkupdater import arkupd
 from cmdlistener import clisten
 from onlinemonitor import onlineupdate
@@ -152,3 +152,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    os.execv(__file__, sys.argv)
