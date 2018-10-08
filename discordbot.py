@@ -116,7 +116,6 @@ def discordbot():
                 c3.close()
                 conn3.close()
                 for reach in cbuffr:
-                    print(cbuffr)
                     log.info(f'{reach[1]} has left the server {reach[3]}')
                     mt = f'{reach[1].capitalize()} has left the server'
                     writeglobal(reach[3],'ALERT',mt)
