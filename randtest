@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+
+from numpy.random import seed, shuffle, randint
+from numpy import argmax
+
+winners = ['rykker','markimus','dude','sheffin','weiser']
+wins = [5,8,1,0,2]
+pick = []
+adjpick = []
+
+seed(randint(100))
+shuffle(winners)
+seed(randint(100))
+
+for a in range(len(winners)):
+    pick.append(randint(100))
+    adjpick.append(pick[a]-wins[a]*5)
+
+print(winners)
+print(pick)
+print(wins)
+print(adjpick)
+
+ind = argmax(adjpick)
+print(winners[ind])

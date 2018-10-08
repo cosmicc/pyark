@@ -394,7 +394,7 @@ def checkupdates():
                 modid = al[1]
                 modname = al[2]    
         inst = instance[each]['name']
-        if modchk != 0 and not isrebooting(instance[each]['name']):
+        if modchk != 0:
             ugennotify = time.time()
             log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
             log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
@@ -404,9 +404,10 @@ def checkupdates():
             if instance[each]["name"] == 'volcano':
                 msg = f'Mod {modname} has been updated. Servers will start a reboot countdown now.\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
                 writediscord(msg,time.time())    
-            if not isrebooting(instance[each]['name']):
-                instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(inst,aname))
-                instance[each]['restartthread'].start()
+            for neo in range(numinstances):
+                if not isrebooting(instance[neo]['name']):
+                    instance[neo]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=instancerestart, args=(instance[neo]['name'],aname))
+                    instance[neo]['restartthread'].start()
         else:
             log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
 

@@ -2,6 +2,8 @@
 
 import time, logging, sqlite3, subprocess, socket, random
 from datetime import datetime
+from numpy.random import seed, shuffle, randint
+from numpy import argmax
 from configreader import *
 from timehelper import estshift
 
@@ -28,6 +30,9 @@ def writeglobal(inst,whos,msg):
 def determinewinner(linfo):
     log.info('Lottery time has ended. Determining winner.')
     winners = []
+    picks = []
+    adjpicks = []
+    wins = []
     conn4 = sqlite3.connect(sqldb)
     c4 = conn4.cursor()
     c4.execute('SELECT * FROM lotteryplayers')
@@ -36,21 +41,38 @@ def determinewinner(linfo):
     linfo = c4.fetchone()
     c4.close()
     conn4.close()
-    print(lottoers)
-    if len(lottoers) > 2:
+    if len(lottoers) >= 4:
         for eachn in lottoers:
             winners.append(eachn[0])
-        winnersid = random.choice(list(enumerate(winners)))
+        seed(randint(100))
+        shuffle(winners)
+        seed (randint(100))
+        for eachw in range(len(winners)):
+            picks.append(randint(100))
+            conn4 = sqlite3.connect(sqldb)
+            c4 = conn4.cursor()
+            c4.execute('SELECT lottowins FROM players WHERE steamid = ?', (winners[eachw],))
+            lwins = c4.fetchone()
+            c4.close()
+            conn4.close()
+            wins.append(lwins[0])
+            if wins[eachw] > 10:
+                adjj = 10
+            else:
+                adjj = wins[eachw]
+            adjpicks.append(picks[eachw]-adjj*5)
+        winneridx = argmax(adjpicks)
+        winnersid = winners[winneridx]
         conn4 = sqlite3.connect(sqldb)
         c4 = conn4.cursor()
-        c4.execute('SELECT * FROM players WHERE steamid = ?', (winnersid[1],))
+        c4.execute('SELECT * FROM players WHERE steamid = ?', (winnersid,))
         lwinner = c4.fetchone()
         c4.execute('UPDATE lotteryinfo SET winner = ? WHERE id = ?', (lwinner[1],linfo[0]))
         conn4.commit()
         c4.close()
         conn4.close()
         log.info(f'Lottery winner is: {lwinner[1]}')
-        winners.remove(winnersid[1])
+        winners.remove(winnersid)
         log.info(f'queuing up lottery deposits for {winners}')
         for ueach in winners:
             conn4 = sqlite3.connect(sqldb)
@@ -112,7 +134,6 @@ def lotteryloop(linfo):
         c4.execute('UPDATE lotteryinfo SET announced = 1 WHERE id = ?', (linfo[0],))
         c4.execute('DELETE FROM lotteryplayers')
         conn4.commit()
-        linfo = c4.fetchone()
         c4.close()
         conn4.close()
     inlottery = True
