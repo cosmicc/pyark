@@ -4,5 +4,7 @@ from git import Repo
 
 repo = Repo('/home/ark/pyark')
 
-print(repo.untracked_files  )
-
+commits_behind = repo.iter_commits('master..origin/master')
+commits_ahead = repo.iter_commits('origin/master..master')
+count = sum(1 for c in commits_ahead)
+print(count)
