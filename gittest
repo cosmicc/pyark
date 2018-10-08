@@ -3,23 +3,19 @@
 import os
 from git import Repo
 
-rw_dir = '/home/ark/pyark'
-cloneUrl = 'git@github.com:cosmicc/pyark.git'
+localdir = '/home/ark/pyark'
 
-repo = Repo(rw_dir)
+repo = Repo(localdir)
 
-empty_repo = Repo.init(os.path.join(rw_dir, 'empty'))
-origin = empty_repo.create_remote('origin', repo.remotes.origin.url)
-assert origin.exists()
-assert origin == empty_repo.remotes.origin == empty_repo.remotes['origin']
-origin.fetch()                  # assure we actually have data. fetch() returns useful information
-# Setup a local tracking branch of a remote branch
-empty_repo.create_head('master', origin.refs.master)  # create local branch "master" from remote "master"
-empty_repo.heads.master.set_tracking_branch(origin.refs.master)  # set local "master" to track remote "master
-empty_repo.heads.master.checkout()  # checkout local "master" to working tree
-# Three above commands in one:
-empty_repo.create_head('master', origin.refs.master).set_tracking_branch(origin.refs.master).checkout()
-# rename remotes
-origin.rename('new_origin')
-#origin.pull()
-#origin.push()
+
+origin = repo.remotes.origin
+for each in dir(origin.repo):
+    print(each)
+
+print(repo.head.commit)
+origin.fetch()
+print(origin.repo.head.commit)
+if repo.head.commit != origin.repo.head.commit:
+    print('mismatched version. pulling')
+    origin.pull()
+print(repo.head.commit)
