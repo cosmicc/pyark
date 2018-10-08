@@ -4,7 +4,12 @@ from git import Repo
 
 repo = Repo('/home/ark/pyark')
 
-commits_behind = repo.iter_commits('master..origin/master')
-commits_ahead = repo.iter_commits('origin/master..master')
-count = sum(1 for c in commits_ahead)
-print(count)
+
+if repo.is_dirty():
+    raise EnvironmentError('Current working directory is dirty.')
+
+current_commit = repo.head.object.hexsha.encode('utf-8')
+exp_commit = self.metadata['commit']
+if current_commit != exp_commit:
+    raise EnvironmentError("Commits don't match.\nCurrent: {}\nRecorded: {}".format(current_commit, exp_commit)) 
+
