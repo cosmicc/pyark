@@ -2,6 +2,7 @@
 
 import sys, os, logging, argparse, sqlite3, time, threading, socket, subprocess
 from git import Repo
+import processlock
 from arkupdater import arkupd
 from cmdlistener import clisten
 from onlinemonitor import onlineupdate
@@ -20,6 +21,8 @@ __email__ = "ianperry99@gmail.com"
 __progname__ = "pyark-daemon"
 __description__ = "pyark daemon service"
 __detaildesc__ = ""
+
+processlock.lock()
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
