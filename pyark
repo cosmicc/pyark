@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sys, os, logging, argparse, sqlite3, time, threading, socket, subprocess
+from git import Repo
 from arkupdater import arkupd
 from cmdlistener import clisten
 from onlinemonitor import onlineupdate
@@ -44,6 +45,17 @@ log.addHandler(log_fileh)
 log_fileh.setFormatter(log_format)
 
 log.info(f'>>> pyark daemon is starting on {hstname}')
+
+def gitupdatecheck():
+    localdir = '/home/ark/pyark'
+    repo = Repo(localdir)
+    origin = repo.remotes.origin
+    origin.fetch()
+    if repo.head.commit != origin.refs[0].commit:
+        log.info(f'git version mismatch. updating and restarting...')
+        origin.pull()
+        origin.push()
+        subprocess.run('systemctl restart pyark', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 def main():
     numinstances = int(config.get('general', 'instances'))
@@ -148,8 +160,6 @@ def main():
                 t = f'{inst} online monitor'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
 
-
-
 if __name__ == '__main__':
+    gitupdatecheck()
     main()
-    os.execv(__file__, sys.argv)
