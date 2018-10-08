@@ -4,9 +4,10 @@ import time
 import fcntl
 import logging
 import atexit
+import socket
 
-log = logging.getLogger(__name__)
-
+hstname = socket.gethostname()
+log = logging.getLogger(name=hstname)
 
 def cleanName(filename):
     filename = os.path.basename(filename)

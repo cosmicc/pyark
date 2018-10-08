@@ -22,8 +22,6 @@ __progname__ = "pyark-daemon"
 __description__ = "pyark daemon service"
 __detaildesc__ = ""
 
-processlock.lock()
-
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
@@ -46,6 +44,8 @@ if args.quiet is False:
 log_fileh = logging.FileHandler(logfile)
 log.addHandler(log_fileh)
 log_fileh.setFormatter(log_format)
+
+processlock.lock()
 
 log.info(f'>>> pyark daemon is starting on {hstname}')
 
