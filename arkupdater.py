@@ -114,13 +114,12 @@ def resetlastwipe(inst):
     c.close()
     conn.close()
 
-def resetlastrestart(inst,reason):
+def resetlastrestart(inst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     newtime = time.time()
     c.execute('UPDATE instances SET lastrestart = ? WHERE name = ?', [newtime,inst])
     c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', [inst])
-    c.execute('UPDATE instances SET restartreason = ? WHERE name = ?', [reason,inst])
     c.execute('UPDATE instances SET cfgver = ? WHERE name = ?', [getcfgver('general'),inst])
     c.execute('UPDATE instances SET restartcountdown = 30')
     conn.commit()
@@ -199,7 +198,6 @@ def stillneedsrestart(inst):
         return False
 
 def restartinstnow(inst, reason):
-    subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     subprocess.run('arkmanager stop --saveworld @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.info(f'server {inst} instance has stopped')
     subprocess.run('arkmanager backup @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -211,27 +209,28 @@ def restartinstnow(inst, reason):
     subprocess.run('arkmanager update --no-download --update-mods --no-autostart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.info(f'server {inst} instance is starting')
     subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-    resetlastrestart(inst, reason)
+    resetlastrestart(inst)
     unsetstartbit(inst)
 
-
-def restartloop(inst, reason):
-    log.beug(f'{inst} restart loop has started for reason {reason}')
+def restartloop(inst):
+    log.debug(f'{inst} restart loop has started')
     setrestartbit(inst)
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT restartcountdown, restartreason from instances WHERE name = ?', (inst,))
+    timeleftraw = c.fetchone()
+    timeleft = int(timeleftraw[0])
+    reason = timeleftraw[1]
+    c.close()
+    conn.close()
     if playercount(inst) == 0:
             log.info(f'server {inst} is empty and restarting now for a {reason}')
             writechat(inst,'ALERT',f'!!! Empty server restarting now for a {reason.capitalize()}',wcstamp())
             message = f'server is restarting now for a {reason}'
             confupdtimer = 0
-            restartinstnow(inst, reason)
+            subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            restartinstnow(inst)
     else:
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT restartcountdown from instances WHERE name = ?', (inst,))
-            timeleftraw = c.fetchone()
-            timeleft = int(timeleftraw[0])
-            c.close()
-            conn.close()
             if timeleft == 30:
                 log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
                 writechat(inst,'ALERT',f'!!! Server will restart in 30 minutes for a {reason.capitalize()}',wcstamp())
@@ -255,8 +254,9 @@ def restartloop(inst, reason):
                 message = f'server is restarting now for a {reason}'
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 writechat(inst,'ALERT',f'!!! Server restarting now for {reason.capitalize()}',wcstamp())
+                subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 time.sleep(30)
-                restartinstnow(inst, reason)
+                restartinstnow(inst)
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
                 subprocess.run("""arkmanager rconcmd "broadcast '\n\n\n             The server restart for %s has been cancelled'" @%s""" % (reason,inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -275,7 +275,13 @@ def instancerestart(inst, reason):
                 if os.path.isfile('/var/run/reboot-required'):
                     log.warning(f'{inst} physical server needs a hardware reboot after package updates')
     if (inmaint and reason == "configuration update") or (inmaint and reason == "maintenance restart") or (reason != "configuration update" and reason != "maintenance restart"):
-        log.error('REBOOTING!!!')
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('UPDATE instances SET restartreason = ? WHERE name = ?', (reason,inst))
+        conn.commit()
+        c.close()
+        conn.close()
+        log.error(f'REBOOTING!!!  {inst}   {reason}')
         #instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=restartloop, args=(inst,reason))
         #instance[each]['restartthread'].start()
         pass
@@ -349,8 +355,18 @@ def checkbackup():
             log.info(f'performing a world data backup on {sinst}')
             subprocess.run('arkmanager backup @%s' % (sinst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             
-def checkifalreadyrestarting():
-    pass
+def checkifalreadyrestarting(inst):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT needsrestart FROM instances WHERE name = ?', [inst])
+    lastwipe = c.fetchone()
+    c.close()
+    conn.close()
+    ded  = lastwipe[0]
+    if ded == "True":
+        if not isrebooting(inst):
+            log.info(f'restart flag set for instance {inst}, starting restart loop')
+            restartloop(inst)        
 
 def checkupdates():
     global ugennotify
@@ -405,31 +421,15 @@ def checkupdates():
         else:
             log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
 
-def checkpending(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT needsrestart FROM instances WHERE name = ?', [inst])
-    lastwipe = c.fetchone()
-    c.close()
-    conn.close()
-    ded  = lastwipe[0]
-    if ded == "True":
-        if not isrebooting(inst):
-            log.info(f'detected admin forced instance restart for instance {inst}')
-            for each in range(numinstances):
-                if instance[each]['name'] == inst:
-                    instancerestart(inst,"admin restart")
-
 def arkupd(): 
     log.debug('arkupdater thread started')
     log.info(f'found {numinstances} ark server instances: {instr}')
-    checkifalreadyrestarting()
     while True:
         try:
-            checkbackup()
             for each in range(numinstances):
+                checkifalreadyrestarting(instance[each]['name'])
                 checkwipe(instance[each]['name'])
-                checkpending(instance[each]['name'])
+            checkbackup()
             checkupdates()
             checkconfig()
             time.sleep(300)

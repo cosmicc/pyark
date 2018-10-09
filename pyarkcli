@@ -285,7 +285,7 @@ def showservers():
 
 def restartserver(server):
     if not args.cancel:
-        c.execute('UPDATE instances SET needsrestart = "True" WHERE name = ?', (server,))
+        c.execute('UPDATE instances SET needsrestart = "True", restartreason = "admin restart" WHERE name = ?', (server,))
         print(f'{BYEL}server {BMGT}{server}{BYEL} has been set to {BRED}RESTART{RST}')
     else:
         c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', (server,))

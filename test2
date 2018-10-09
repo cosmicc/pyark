@@ -1,9 +1,0 @@
-#!/usr/bin/python3
-
-import os
-
-if os.path.isfile('/var/run/reboot-required'):
-	print('YES')
-else:
-	print('NO')
-
