@@ -352,7 +352,8 @@ def checkbackup():
             log.info(f'performing a world data backup on {sinst}')
             subprocess.run('arkmanager backup @%s' % (sinst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             
-#def checkifalreadyrestarting()
+def checkifalreadyrestarting():
+    pass
 
 def checkupdates():
     global ugennotify
@@ -433,6 +434,7 @@ def checkpending(inst):
 def arkupd(): 
     log.debug('arkupdater thread started')
     log.info(f'found {numinstances} ark server instances: {instr}')
+    checkifalreadyrestarting()
     while True:
         try:
             checkbackup()

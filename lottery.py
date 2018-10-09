@@ -83,12 +83,9 @@ def determinewinner(linfo):
             conn4.commit()
             c4.close()
             conn4.close()
-        msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!'
-        writediscord(msg,time.time())
-        writeglobal('ALERT','ALERT',msg)
-        time.sleep(3.1)
+        msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!\n'
         if linfo[1] == 'points': 
-            msg = f'{lwinner[1].capitalize()} has won {linfo[2]} ARc Reward Points'
+            msg = msg+f'{lwinner[1].capitalize()} has won {linfo[2]} ARc Reward Points'
             writediscord(msg,time.time())
             writeglobal('ALERT','ALERT',msg)
             conn4 = sqlite3.connect(sqldb)
@@ -101,7 +98,7 @@ def determinewinner(linfo):
             conn4.close()
 
         else:
-            msg = f'{lwinner[1].capitalize()} has won a {linfo[2]}'
+            msg = msg+f'{lwinner[1].capitalize()} has won a {linfo[2]}'
             writediscord(msg,time.time())
             writeglobal('ALERT','ALERT',msg)
             conn4 = sqlite3.connect(sqldb)
