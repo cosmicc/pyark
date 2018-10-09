@@ -352,6 +352,8 @@ def checkbackup():
             log.info(f'performing a world data backup on {sinst}')
             subprocess.run('arkmanager backup @%s' % (sinst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             
+#def checkifalreadyrestarting()
+
 def checkupdates():
     global ugennotify
     pendingupdates = False

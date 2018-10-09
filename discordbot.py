@@ -450,7 +450,34 @@ def discordbot():
 
         elif message.content.startswith('!servers'):
             whofor = str(message.author).lower()
-            msg = f'Galaxy Clsuter Ultimate Extinction Core Servers:\nRagnarok: steam://connect/173.15.226.42:47016\nTheVolcano: steam://connect/173.15.226.42:47018\nTheIsland: steam://connect/173.15.226.42:47020'
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM instances')
+            dbsvr = c.fetchall()
+            c.close()
+            conn.close()
+            msg = 'Galaxy Cluster Ultimate Extinction Core Servers:\n'
+            for instt in dbsvr:
+                if int(instt[9]) == 0:
+                    onl = 'OFFLINE'
+                    pcnt = 0
+                elif int(instt[9]) == 1:
+                    onl = 'ONLINE'
+                    conn = sqlite3.connect(sqldb)
+                    c = conn.cursor()
+                    c.execute('SELECT * FROM players WHERE server = ?', (instt[0],))
+                    flast = c.fetchall()
+                    c.close()
+                    conn.close()
+                    pcnt = 0
+                    for row in flast:
+                        chktme = time.time()-float(row[2])
+                        if chktme < 40:
+                            pcnt += 1
+                nmsg = f'Server {instt[0].capitalize()} is {onl} Players ({pcnt}/50) - {instt[15]}\n'
+                msg = msg+nmsg
+
+
             await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!ark-servers'):
