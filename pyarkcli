@@ -754,7 +754,7 @@ def startlottery():
     else:
         litm = str(lbuyin*2)
     now = time.time()
-    lottostart = datetime.fromtimestamp(now+(86400*int(ldays))).strftime('%a, %b %d %I:%M%p')
+    lottostart = datetime.fromtimestamp(now+(3600*int(ldays))).strftime('%a, %b %d %I:%M%p')
     print(f'{BYEL}Lottery ends on {BMGT}{lottostart}{RST}')
     print(f'{BYEL}Lottery Type: {BMGT}{ltype.capitalize()}{RST}')
     print(f'{BYEL}Lottery Prize: {BMGT}{litm}{RST}')

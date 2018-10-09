@@ -85,7 +85,6 @@ def serverisinrestart(steamid,inst,oplayer):
     c1.close()
     conn1.close()
     if rbt[3] == "True":
-        log.warning(f'{rbt[6]},{rbt[7]}')
         log.info(f'notifying player {oplayer[1]} that server {inst} will be restarting in {rbt[7]} min')
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
@@ -121,7 +120,6 @@ def checklottodeposits(steamid,inst):
     c1.close()
     conn1.close()
     if lottocheck and inst == elpinfo[15]:
-        log.warning(lottocheck)
         for weach in lottocheck:
             if weach[4] == 1:
                 log.info(f'{weach[3]} points added to {elpinfo[1]} for a lottery win')
