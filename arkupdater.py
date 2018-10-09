@@ -275,8 +275,10 @@ def instancerestart(inst, reason):
                 if os.path.isfile('/var/run/reboot-required'):
                     log.warning(f'{inst} physical server needs a hardware reboot after package updates')
     if (inmaint and reason == "configuration update") or (inmaint and reason == "maintenance restart") or (reason != "configuration update" and reason != "maintenance restart"):
+        log.error('REBOOTING!!!')
         #instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=restartloop, args=(inst,reason))
         #instance[each]['restartthread'].start()
+        pass
     else:
         log.debug(f'instance restart posponed becuase not in maintenance window')
 

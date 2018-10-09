@@ -119,6 +119,7 @@ def checklottodeposits(steamid,inst):
     elpinfo = c1.fetchone()
     c1.close()
     conn1.close()
+    log.warning(lottocheck)
     if lottocheck and inst == elpinfo[15]:
         for weach in lottocheck:
             if weach[4] == 1:
@@ -131,12 +132,12 @@ def checklottodeposits(steamid,inst):
                 msg = f'{weach[3]} ARc points have been withdrawn from your account for a lottery entry'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s %s" @%s' % (steamid,str(int(elpinfo[5])-int(weach[3])),inst), shell=True)
-            conn1 = sqlite3.connect(sqldb)
-            c1 = conn1.cursor()
-            c1.execute('DELETE FROM lotterydeposits WHERE timestamp = ?', (weach[2],))
-            conn1.commit()
-            c1.close()
-            conn1.close()
+        conn1 = sqlite3.connect(sqldb)
+        c1 = conn1.cursor()
+        c1.execute('DELETE FROM lotterydeposits WHERE steamid = ?', (steamid,))
+        conn1.commit()
+        c1.close()
+        conn1.close()
 
 def onlineplayer(steamid,inst):
     gogo = 0
