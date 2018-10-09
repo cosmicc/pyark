@@ -197,7 +197,7 @@ def stillneedsrestart(inst):
     else:
         return False
 
-def restartinstnow(inst, reason):
+def restartinstnow(inst):
     subprocess.run('arkmanager stop --saveworld @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.info(f'server {inst} instance has stopped')
     subprocess.run('arkmanager backup @%s' % (inst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
