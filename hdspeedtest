@@ -1,0 +1,3 @@
+hdparm -Tt /dev/sda
+dd if=/dev/zero of=/tmp/output bs=8k count=10k; rm -f /tmp/output
+dd if=/dev/zero of=/tmp/output bs=8k count=50k; rm -f /tmp/output
