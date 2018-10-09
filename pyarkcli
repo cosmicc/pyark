@@ -8,7 +8,7 @@ from configreader import *
 from urllib.request  import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 'startlottery', 
+parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 'startlottery', 'lottery', 
     'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'logwatch', 'lotterytables', 'log',
     'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist', 'unbanplayer', 'tribewipe', 'backupdb'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
@@ -38,6 +38,7 @@ action_group.add_argument('tribewipe', action='store_true', help='Wipe a tribe a
 action_group.add_argument('backupdb', action='store_true', help='Run a manual pyark database backup')
 action_group.add_argument('lotterytables', action='store_true', help='Show Lottery tables')
 action_group.add_argument('startlottery', action='store_true', help='Start a lottery')
+action_group.add_argument('lottery', action='store_true', help='Show Lottery Info')
 action_group.add_argument('log', action='store_true', help='Show the log (requires log length)')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
@@ -60,7 +61,8 @@ YEL = Fore.YELLOW+Style.NORMAL
 BYEL = Fore.YELLOW+Style.BRIGHT
 CYN = Fore.CYAN+Style.NORMAL
 BCYN = Fore.CYAN+Style.BRIGHT
-WHT = Fore.WHITE+Style.NORMAL
+WHT = Fore.RESET+Style.NORMAL
+#WHT = Fore.WHITE+Style.NORMAL
 BWHT = Fore.WHITE+Style.BRIGHT
 MGT = Fore.MAGENTA+Style.NORMAL
 BMGT = Fore.MAGENTA+Style.BRIGHT
@@ -776,14 +778,61 @@ def startlottery():
 def lottery():
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
+    c.execute('SELECT * FROM lotteryinfo ORDER BY id DESC LIMIT 1')
+    lastlottery = c.fetchone()
     c.execute('SELECT * FROM lotteryinfo')
     lotteryinfo = c.fetchall()
-    c.execute('SELECT * FROM ')
-    lotteryinfo = c.fetchall()
-
+    c.execute('SELECT * FROM lotteryplayers')
+    lotteryplayers = c.fetchall()
+    c.execute('SELECT * FROM lotterydeposits')
+    lotterydeposits = c.fetchall()
+    c.execute('SELECT * FROM players ORDER BY lottowins DESC LIMIT 5')
+    lotterywins = c.fetchall()
     c.close()
     conn.close()
+    plist = ''
+    for row in lotteryplayers:
+        if plist == '':
+            plist = '%s' % (row[1])
+        else:
+            plist=plist + ', %s' % (row[1])
 
+    now = time.time()
+    lli = float(lastlottery[3])+(3600*int(lastlottery[5]))
+    lottostart = estshift(datetime.fromtimestamp(lli)).strftime('%a, %b %d %I:%M%p')
+    print('   ')
+    print(f'{BCYN}TOP 5 WINNERS:')
+    for peach in lotterywins:
+        printplayer(peach)
+    print(f'{BCYN}LOTTERY DEPOSITS/WITHDRAWS PENDING:{RST}')
+    for leach in lotterydeposits:
+        if int(leach[4]) == 0:
+            ltype = f'{BRED}WITHDRAW{RST}'
+        elif int(leach[4]) == 1:
+            ltype = f'{BGRN}DEPOSIT{RST}'
+        print(f'{BYEL}Player: {BMGT}{leach[1]} {BYEL}Type: {ltype} {BYEL}Amount: {BWHT}{leach[3]} {BYEL}Waiting: {BCYN}{elapsedTime(now,leach[2])}{RST}')
+    print('   ')
+    if lastlottery[7] == 'Incomplete':
+        print(f'{BGRN}CURRENT LOTTERY UNDERWAY:{RST}')
+        print(f'{BYEL}Lottery ends on {BMGT}{lottostart} {BCYN}({elapsedTime(lli, now)}){RST}')
+        print(f'{BYEL}Lottery Type: {BMGT}{lastlottery[1].capitalize()}{RST}')
+        print(f'{BYEL}Lottery Prize: {BMGT}{lastlottery[2]}{RST}')
+        print(f'{BYEL}Buyin Points: {BMGT}{lastlottery[4]}{RST}')
+        print(f'{BYEL}Lottery Length: {BMGT}{lastlottery[5]} Hours{RST}')
+        print(f'{BYEL}Current Active Lottery Players: {BMGT}{lastlottery[6]}{RST}')
+        print(f'{BYEL}Players: {BMGT}{plist}{RST}')
+    else:
+        print(f'{BRED}NO CURRENT LOTTERYS. LAST LOTTERY:{RST}')
+        print(f'{BYEL}Winner was: {BGRN}{lastlottery[7].capitalize()}{RST}')
+        print(f'{BYEL}Lottery ended on {BMGT}{lottostart} {BCYN}({elapsedTime(now, lli)} ago){RST}')
+        print(f'{BYEL}Lottery Type: {BMGT}{lastlottery[1].capitalize()}{RST}')
+        print(f'{BYEL}Lottery Prize: {BMGT}{lastlottery[2]}{RST}')
+        print(f'{BYEL}Buyin Points: {BMGT}{lastlottery[4]}{RST}')
+        print(f'{BYEL}Lottery Length: {BMGT}{lastlottery[5]} Hours{RST}')
+        print(f'{BYEL}Participated Lottery Players: {BMGT}{lastlottery[6]}{RST}')
+        print(f'{BYEL}Players: {BMGT}{plist}{RST}')
+
+    print('   ')
 
 try:
     if args.action_to_perform == 'servers':
