@@ -313,8 +313,10 @@ def listtable(mtable):
 
 def showtable(mtable,aplay):
     sc = 0
+    cnt = 0
     if aplay:
         for each in aplay:
+            cnt += 1
             if sc == 0:
                 sclr = f'{clr1}'
             else:
@@ -324,6 +326,8 @@ def showtable(mtable,aplay):
                 sc = 0
             else:
                 sc = 1
+        print('   ')
+        print(f'{BWHT}Table: {BGRN}{mtable}{BWHT} Total rows: {BMGT}{cnt}{RST}')
     else:
         print(f'{BYEL}{mtable} table is empty.{RST}')
 
@@ -768,7 +772,18 @@ def startlottery():
     conn.commit()
     c.close()
     conn.close()
-     
+    
+def lottery():
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM lotteryinfo')
+    lotteryinfo = c.fetchall()
+    c.execute('SELECT * FROM ')
+    lotteryinfo = c.fetchall()
+
+    c.close()
+    conn.close()
+
 
 try:
     if args.action_to_perform == 'servers':
@@ -839,6 +854,8 @@ try:
             alogsearcher(args.searcharg)
     elif args.action_to_perform == 'banlist':
         banlist()
+    elif args.action_to_perform == 'lottery':
+        lottery()
     elif args.action_to_perform == 'banplayer':
         banplayer()
     elif args.action_to_perform == 'unbanplayer':
