@@ -1,3 +1,9 @@
-logpid() { while sleep 1; do  ps -p $1 -o pcpu= -o pmem= ; done; }
+#!/usr/bin/python3
 
-logpid 28838
+import os
+
+if os.path.isfile('/var/run/reboot-required'):
+	print('YES')
+else:
+	print('NO')
+
