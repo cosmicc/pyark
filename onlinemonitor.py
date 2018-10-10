@@ -10,6 +10,7 @@ hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 welcomthreads = []
+greetthreads = []
 
 numinstances = int(config.get('general', 'instances'))
 global instance
@@ -76,6 +77,13 @@ def iswelcoming(steamid):
             else:
                 return False
 
+def isgreeting(steamid):
+    for each in greetthreads:
+        if each['steamid'] == steamid:
+            if each['gthread'].is_alive():
+                return True
+            else:
+                return False
 
 def serverisinrestart(steamid,inst,oplayer):
     conn1 = sqlite3.connect(sqldb)
@@ -139,7 +147,8 @@ def checklottodeposits(steamid,inst):
         c1.close()
         conn1.close()
 
-def onlineplayer(steamid,inst):
+def playergreet(steamid,inst):
+    global greetthreads
     gogo = 0
     xferpoints = 0
     global welcomthreads
@@ -273,6 +282,7 @@ def onlineplayer(steamid,inst):
                 subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                 writechat(inst,'ALERT',f'<<< {oplayer[1].capitalize()} has joined the server',wcstamp())
                 serverisinrestart(steamid,inst,oplayer)
+    greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 def onlineupdate(inst):
     log.debug(f'starting online player watcher on {inst}')
@@ -289,9 +299,14 @@ def onlineupdate(inst):
                     else:
                         rawline = line.split(',')
                         if len(rawline) > 1:
-                            nsteamid = rawline[1]
-                            mumu = threading.Thread(name = '%s-greeting' % inst, target=onlineplayer, args=(nsteamid.strip(),inst))
-                            mumu.start()
+                            nsteamid = rawline[1].strip()
+                            if f'greet-{nsteamid}' in greetthreads:
+                                if not greetthreads[f'greet-{nsteamid}'].is_alive(): 
+                                    gthread = threading.Thread(name = 'greet-%s' % nsteamid, target=playergreet, args=(nsteamid,inst))
+                                    greetthreads.append({'steamid':nsteamid,'gthread':gthread})
+                                    gthread.start()
+                                else:
+                                    log.warning(f'online player greeting aleady running for {nsteamid}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
             time.sleep(10)
