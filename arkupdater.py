@@ -284,6 +284,8 @@ def instancerestart(inst, reason):
         if not isrebooting(inst):
             instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=restartloop, args=(inst,reason))
             instance[each]['restartthread'].start()
+        else:
+            log.warning(f'instance {inst} is already running the restart thread')
     else:
         log.debug(f'instance restart posponed becuase not in maintenance window')
 
