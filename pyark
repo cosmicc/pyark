@@ -55,7 +55,7 @@ def gitupdatecheck():
     origin = repo.remotes.origin
     origin.fetch()
     if repo.head.commit != origin.refs[0].commit:
-        log.info(f'Not the latest version, newer version found. updating and restarting...')
+        log.warning(f'newer pyark version found. updating and restarting...')
         origin.pull()
         origin.push()
         subprocess.run('systemctl restart pyark', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
