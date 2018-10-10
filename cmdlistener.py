@@ -802,7 +802,7 @@ def checkcommands(minst):
                             tstamp = dto.strftime('%m-%d %I:%M%p')
                             writechat(inst,whoname,cmsg,tstamp)
                             clog = f'{tstamp} [{whoname.upper()}]{cmsg}\n'
-                            with open(f"/home/ark/shared/logs/chatlogs/{minst}/chat.log", "at") as f:
+                            with open(f"/home/ark/shared/logs/{minst}/chatlog/chat.log", "at") as f:
                                 f.write(clog)
                             f.close()
                         except:
@@ -810,8 +810,10 @@ def checkcommands(minst):
         if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
             pass
         else:
-            with open(f"/home/ark/shared/logs/gamelogs/{minst}/game.log", "at") as f:
-                f.write(f'{line}\n')
+            with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
+                lobber = line.replace('"','').strip()
+                if lobber != '':
+                    f.write(f"""{line.replace('"','').strip()}\n""")
             f.close()
 
 

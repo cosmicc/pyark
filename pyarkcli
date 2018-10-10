@@ -758,7 +758,7 @@ def startlottery():
     if ltype.lower() == 'item':
         litm = getresponce('Enter the Item display name ')
     else:
-        litm = str(lbuyin*2)
+        litm = str(lbuyin*4)
     now = time.time()
     lottostart = datetime.fromtimestamp(now+(3600*int(ldays))).strftime('%a, %b %d %I:%M%p')
     print(f'{BYEL}Lottery ends on {BMGT}{lottostart}{RST}')
@@ -810,11 +810,11 @@ def lottery():
             ltype = f'{BRED}WITHDRAW{RST}'
         elif int(leach[4]) == 1:
             ltype = f'{BGRN}DEPOSIT{RST}'
-        print(f'{BYEL}Player: {BMGT}{leach[1]} {BYEL}Type: {ltype} {BYEL}Amount: {BWHT}{leach[3]} {BYEL}Waiting: {BCYN}{elapsedTime(now,leach[2])}{RST}')
+        print(f'{BYEL}Player: {BMGT}{leach[1]} {BYEL}Type: {ltype} {BYEL}Amount: {BCYN}{leach[3]} {BYEL}Waiting: {BCYN}{elapsedTime(now,leach[2])}{RST}')
     print('   ')
     if lastlottery[7] == 'Incomplete':
         print(f'{BGRN}CURRENT LOTTERY UNDERWAY:{RST}')
-        print(f'{BYEL}Lottery ends on {BMGT}{lottostart} {BCYN}({elapsedTime(lli, now)}){RST}')
+        print(f'{BYEL}Lottery ends on {BMGT}{lottostart} {BCYN}({elapsedTime(lli, now)} Left){RST}')
         print(f'{BYEL}Lottery Type: {BMGT}{lastlottery[1].capitalize()}{RST}')
         print(f'{BYEL}Lottery Prize: {BMGT}{lastlottery[2]}{RST}')
         print(f'{BYEL}Buyin Points: {BMGT}{lastlottery[4]}{RST}')
