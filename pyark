@@ -102,9 +102,10 @@ def main():
             log.debug(f'found server {instance[ins]["name"]} in server table')
     c.close()
     conn.close()
-
+    
     log.debug('database initilization complete')
     
+    checkgit = 0
     arkupdt = threading.Thread(name='arkupdater', target = arkupd)
     arkupdt.start()
 
@@ -134,6 +135,13 @@ def main():
         lotteryt.start()
 
     while True:
+        if checkgit == 0:
+            gitupdatecheck()
+            gitcheck += 1
+        elif checkgit == 61:
+            checkgit = 0
+        else:
+            checkgit += 1
         time.sleep(60)
         log.debug(threading.enumerate())
         if not arkupdt.is_alive():
