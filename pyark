@@ -49,6 +49,8 @@ processlock.lock()
 
 log.info(f'>>> pyark daemon is starting on {hstname}')
 
+checkgit = 0
+
 def gitupdatecheck():
     localdir = '/home/ark/pyark'
     repo = Repo(localdir)
@@ -61,13 +63,11 @@ def gitupdatecheck():
         subprocess.run('systemctl restart pyark', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 def main():
+    global checkgit
     numinstances = int(config.get('general', 'instances'))
-
     imthedbot = config.get('general','isdiscordbot')
-
     instance = [dict() for x in range(numinstances)]
     instr = ''
-
     for each in range(numinstances):
         a = config.get('instance%s' % (each), 'name')
         b = config.get('instance%s' % (each), 'logfile')
@@ -76,20 +76,14 @@ def main():
             instr = '%s' % (a)
         else:
             instr=instr + ', %s' % (a)
-
     sharedpath = config.get('general', 'shared')
-
     sqldb = f'{sharedpath}/db/pyark.db'
-
     log.debug(f'opening pyark sql database: {sqldb}')
-
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
-
     c.execute('CREATE TABLE IF NOT EXISTS general(cfgver TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart REAL, lastdinowipe REAL, needsrestart TEXT, lastvote REAL, restartreason TEXT, cfgver INTEGER, restartcountdown INTEGER)')
     c.execute('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, playedtime TEXT, rewardpoints INTEGER, firstseen TEXT, connects INTEGER)')
-
     for ins in range(numinstances):
         c.execute('SELECT * FROM instances WHERE name = ?', [(instance[ins]['name']),])
         chkinst = c.fetchall()
@@ -102,13 +96,10 @@ def main():
             log.debug(f'found server {instance[ins]["name"]} in server table')
     c.close()
     conn.close()
-    
     log.debug('database initilization complete')
-    
     checkgit = 0
     arkupdt = threading.Thread(name='arkupdater', target = arkupd)
     arkupdt.start()
-
     log.debug('deleting global chat buffer')
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -116,7 +107,6 @@ def main():
     conn.commit()
     c.close()
     conn.close()
-
     for each in range(numinstances):
         inst = instance[each]['name']
         instance[each]['kickthread'] = threading.Thread(name='%s-kicker' % inst, target = kicker, args=(inst,))
@@ -127,7 +117,6 @@ def main():
         instance[each]['gchatthread'].start()
         instance[each]['onlinethread'] = threading.Thread(name = '%s-onlinemon' % inst, target=onlineupdate, args=(inst,))
         instance[each]['onlinethread'].start()
-
     if imthedbot == "True":
         discordt = threading.Thread(name='discord-bot', target = discordbot)
         discordt.start()
@@ -173,4 +162,5 @@ def main():
 
 if __name__ == '__main__':
     gitupdatecheck()
+    gitcheck = 1
     main()
