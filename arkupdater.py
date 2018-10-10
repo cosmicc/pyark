@@ -281,9 +281,9 @@ def instancerestart(inst, reason):
         conn.commit()
         c.close()
         conn.close()
-        instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=restartloop, args=(inst,reason))
-        instance[each]['restartthread'].start()
-        pass
+        if not isrebooting(inst):
+            instance[each]['restartthread'] = threading.Thread(name = '%s-restart' % inst, target=restartloop, args=(inst,reason))
+            instance[each]['restartthread'].start()
     else:
         log.debug(f'instance restart posponed becuase not in maintenance window')
 
