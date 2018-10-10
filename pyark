@@ -126,7 +126,7 @@ def main():
     while True:
         if checkgit == 0:
             gitupdatecheck()
-            gitcheck += 1
+            checkgit += 1
         elif checkgit == 61:
             checkgit = 0
         else:

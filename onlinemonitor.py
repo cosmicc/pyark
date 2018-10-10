@@ -300,13 +300,15 @@ def onlineupdate(inst):
                         rawline = line.split(',')
                         if len(rawline) > 1:
                             nsteamid = rawline[1].strip()
-                            if f'greet-{nsteamid}' in greetthreads:
-                                if not greetthreads[f'greet-{nsteamid}'].is_alive(): 
+                            if not f'greet-{nsteamid}' in greetthreads:
+                                if not isgreeting(nsteamid): 
                                     gthread = threading.Thread(name = 'greet-%s' % nsteamid, target=playergreet, args=(nsteamid,inst))
                                     greetthreads.append({'steamid':nsteamid,'gthread':gthread})
                                     gthread.start()
                                 else:
                                     log.warning(f'online player greeting aleady running for {nsteamid}')
+                            else:
+                                log.warning(f'greeting already running for {nsteamid}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
             time.sleep(10)
