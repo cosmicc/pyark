@@ -456,7 +456,7 @@ def discordbot():
             dbsvr = c.fetchall()
             c.close()
             conn.close()
-            msg = 'Galaxy Cluster Ultimate Extinction Core Servers:\n'
+            #msg = 'Galaxy Cluster Ultimate Extinction Core Servers:\n'
             for instt in dbsvr:
                 if int(instt[9]) == 0:
                     onl = 'OFFLINE'
@@ -474,9 +474,9 @@ def discordbot():
                         chktme = time.time()-float(row[2])
                         if chktme < 40:
                             pcnt += 1
-                nmsg = f'Server {instt[0].capitalize()} is {onl} Players ({pcnt}/50) - {instt[15]}\nArk-Servers: {instt[16]} - BattleMetrics: {instt[17]}\n'
-                msg = msg+nmsg
+                msg = f'Server {instt[0].capitalize()} is {onl} Players ({pcnt}/50) - {instt[15]} - {instt[16]} - {instt[17]}\n'
                 await client.send_message(message.channel, msg)
+                time.sleep(2)
 
         elif message.content.startswith('!lastlotto') or message.content.startswith('!lastlottery'):
             whofor = str(message.author).lower()
