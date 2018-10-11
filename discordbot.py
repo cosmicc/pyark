@@ -476,7 +476,7 @@ def discordbot():
                             pcnt += 1
                 msg = f'Server {instt[0].capitalize()} is {onl} Players ({pcnt}/50) - {instt[15]} - {instt[16]} - {instt[17]}\n'
                 await client.send_message(message.channel, msg)
-                time.sleep(2)
+                time.sleep(.5)
 
         elif message.content.startswith('!lastlotto') or message.content.startswith('!lastlottery'):
             whofor = str(message.author).lower()
