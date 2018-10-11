@@ -304,7 +304,7 @@ def discordbot():
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !mods, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !lotto, !timeleft, !lastwipe, !lastrestart, !ark-servers, !lastseen <playername>, !primordial'
+            msg = f'Commands: !mods, !servers, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !lotto, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>, !primordial'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
@@ -474,15 +474,8 @@ def discordbot():
                         chktme = time.time()-float(row[2])
                         if chktme < 40:
                             pcnt += 1
-                nmsg = f'Server {instt[0].capitalize()} is {onl} Players ({pcnt}/50) - {instt[15]}\n'
+                nmsg = f'Server {instt[0].capitalize()} is {onl} Players ({pcnt}/50) - {instt[15]}\nArk-Servers: {instt[16]} - BattleMetrics: {instt[17]}\n'
                 msg = msg+nmsg
-
-
-            await client.send_message(message.channel, msg)
-
-        elif message.content.startswith('!ark-servers'):
-            whofor = str(message.author).lower()
-            msg = f'https://ark-servers.net/group/396/'
             await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!lastlotto') or message.content.startswith('!lastlottery'):

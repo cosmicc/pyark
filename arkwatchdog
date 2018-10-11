@@ -142,7 +142,7 @@ def main():
                 c.close()
                 conn.close()
 
-                if isrunningcnt == 2 or isonlinecnt == 10 or islistening == 5:
+                if isrunningcnt == 2 or isonlinecnt == 15 or islistening == 15:
                     isrunningcnt = 0
                     islisteningcnt = 0
                     isonlinecnt = 0

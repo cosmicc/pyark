@@ -455,6 +455,11 @@ def writechat(inst,whos,msg,tstamp):
         conn.commit()
         c.close()
         conn.close()
+        clog = f'{tstamp} [{whoname.upper()}]{msg}\n'
+        with open(f"/home/ark/shared/logs/{minst}/chatlog/chat.log", "at") as f:
+            f.write(clog)
+        f.close()
+
 
 def writeglobal(inst,whos,msg):
     conn = sqlite3.connect(sqldb)
@@ -801,10 +806,6 @@ def checkcommands(minst):
                                 dto = dto - tzfix
                             tstamp = dto.strftime('%m-%d %I:%M%p')
                             writechat(inst,whoname,cmsg,tstamp)
-                            clog = f'{tstamp} [{whoname.upper()}]{cmsg}\n'
-                            with open(f"/home/ark/shared/logs/{minst}/chatlog/chat.log", "at") as f:
-                                f.write(clog)
-                            f.close()
                         except:
                             log.warning('could not parse date from chat')
         if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
