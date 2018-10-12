@@ -47,7 +47,7 @@ def getsteamid(whoasked):
     sid = c.fetchone()
     c.close()
     conn.close()
-    return ''.join(sid[0])
+    return sid[0]
 
 def resptimeleft(inst,whoasked):
     conn = sqlite3.connect(sqldb)
