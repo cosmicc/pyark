@@ -9,7 +9,7 @@ from urllib.request  import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 'startlottery', 'lottery', 
-    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'logwatch', 'lotterytables', 'log',
+    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'logwatch', 'lotterytables', 'log', 'topplayers',
     'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist', 'unbanplayer', 'tribewipe', 'backupdb'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('servers', action='store_true', help='Server infomration')
@@ -39,6 +39,7 @@ action_group.add_argument('backupdb', action='store_true', help='Run a manual py
 action_group.add_argument('lotterytables', action='store_true', help='Show Lottery tables')
 action_group.add_argument('startlottery', action='store_true', help='Start a lottery')
 action_group.add_argument('lottery', action='store_true', help='Show Lottery Info')
+action_group.add_argument('topplayers', action='store_true', help='Show Top Players')
 action_group.add_argument('log', action='store_true', help='Show the log (requires log length)')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
@@ -509,6 +510,29 @@ def newest():
 
         printplayer(feach)
 
+def topplayers():
+    ppc = 0
+    lastones = []
+    print(f'{BCYN}TOP 10 PLAYTIME PLAYERS ALL TIME:{RST}')
+    print('   ')
+    c.execute('SELECT * from players')
+    llast = c.fetchall()
+    lastones = [list(elem) for elem in llast]
+    for f in range(len(lastones)):
+        lastones[f][4] = float(str(lastones[f][4]).replace(',',''))
+    lastones.sort(key=lambda x:x[4],reverse=True)
+    for feach in lastones:
+        ppc += 1
+        if ppc <= 10:
+            printplayer(feach)
+    #print(f'{BCYN}TOP 5 PLAYTIME PLAYERS LAST WEEK:{RST}')
+    #ppc = 1
+    #for feach in lastones:
+    #    if ppc <= 5 and time.time()-float(feach[2]) < 604800:
+    #        ppc += 1
+    #        printplayer(feach)
+
+
 def tribewipe():
     tribeid = getresponce(f'{BGRN}Enter Tribe ID of tribe to DESTROY{RST}')
     if ask_question(f'{BGRN}You will be DESTROYING {BMGT}{tribeid}{BGRN} from the cluster. continue?{RST}'):
@@ -903,6 +927,8 @@ try:
             alogsearcher(args.searcharg)
     elif args.action_to_perform == 'banlist':
         banlist()
+    elif args.action_to_perform == 'topplayers':
+        topplayers()
     elif args.action_to_perform == 'lottery':
         lottery()
     elif args.action_to_perform == 'banplayer':

@@ -665,7 +665,7 @@ def checkcommands(minst):
                                     writeglobal(minst,whoname,cmsg)
                                     writechat('Global',whoname,cmsg,tstamp)
                                 except:
-                                    log.warning('could not parse date from chat')
+                                    log.critical('could not parse date from chat', exc_info=True)
                         else:
                             subprocess.run("""arkmanager rconcmd "ServerChat Commands: You didn't supply a message to send to all servers" @%s""" % (minst), shell=True)
 
@@ -807,7 +807,7 @@ def checkcommands(minst):
                             tstamp = dto.strftime('%m-%d %I:%M%p')
                             writechat(inst,whoname,cmsg,tstamp)
                         except:
-                            log.warning('could not parse date from chat')
+                            log.critical('could not parse date from chat', exc_info=True)
         if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
             pass
         else:
