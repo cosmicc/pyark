@@ -264,6 +264,7 @@ def restartloop(inst):
 
 def instancerestart(inst, reason):
     log.debug(f'instance restart verification starting for {inst}')
+    global instance
     global confupdtimer
     t, s, e = datetime.now(), dt(11,0), dt(11,30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
     inmaint = is_time_between(t, s, e)
@@ -309,22 +310,24 @@ def checkconfig():
         
     for each in range(numinstances):
         inst = instance[each]['name']
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('SELECT lastrestart FROM instances WHERE name = ?', [inst])
-        lstsv = c.fetchone()
-        c.close()
-        conn.close()
-        t, s, e = datetime.now(), dt(11,0), dt(11,30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
-        inmaint = is_time_between(t, s, e)
-        if float(time.time())-float(lstsv[0]) > 432000 and inmaint:
-            maintrest = "maintenance restart"
-        else:
-            maintrest = "configuration update"
-        if (int(getcfgver('general')) > int(getcfgver(inst)) or maintrest == 'maintenance restart'):
-                instancerestart(inst,maintrest)
-        else:
-            log.debug(f'no config changes detected for instance {inst}')
+        if not isrebooting(inst):
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT lastrestart FROM instances WHERE name = ?', [inst])
+            lstsv = c.fetchone()
+            c.close()
+            conn.close()
+            t, s, e = datetime.now(), dt(11,0), dt(11,30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
+            inmaint = is_time_between(t, s, e)
+            if float(time.time())-float(lstsv[0]) > 432000 and inmaint:
+                maintrest = "maintenance restart"
+            else:
+                maintrest = "configuration update"
+            if (int(getcfgver('general')) > int(getcfgver(inst)) or maintrest == 'maintenance restart'):
+                if not isrebooting(inst):
+                    instancerestart(inst,maintrest)
+            else:
+                log.debug(f'no config changes detected for instance {inst}')
 
 def isnewarkver(inst):
     isarkupd = subprocess.run('arkmanager checkupdate @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
@@ -345,16 +348,17 @@ def isnewarkver(inst):
 def checkbackup():
     for seach in range(numinstances):
         sinst = instance[seach]['name']
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('SELECT lastrestart FROM instances WHERE name = ?', [sinst])
-        lastrestr = c.fetchall()
-        c.close()
-        conn.close()
-        lt = float(time.time())-float(lastrestr[0][0])
-        if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
-            log.info(f'performing a world data backup on {sinst}')
-            subprocess.run('arkmanager backup @%s' % (sinst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        if not isrebooting(sinst):
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT lastrestart FROM instances WHERE name = ?', [sinst])
+            lastrestr = c.fetchall()
+            c.close()
+            conn.close()
+            lt = float(time.time())-float(lastrestr[0][0])
+            if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
+                log.info(f'performing a world data backup on {sinst}')
+                subprocess.run('arkmanager backup @%s' % (sinst),stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             
 def checkifalreadyrestarting(inst):
     conn = sqlite3.connect(sqldb)
@@ -396,29 +400,30 @@ def checkupdates():
     except:
         log.error(f'error in determining ark version')
     for each in range(numinstances):
-        ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-        ismodupd = ismodupd.stdout.decode('utf-8')
-        modchk = 0
-        ismodupd = ismodupd.split('\n')
-        for teach in ismodupd:
-            if teach.find('has been updated') != -1 or teach.find('needs to be applied') != -1:
-                modchk += 1
-                al = teach.split(' ')
-                modid = al[1]
-                modname = al[2]    
-        inst = instance[each]['name']
-        if modchk != 0:
-            ugennotify = time.time()
-            log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
-            log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
-            subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
-            aname = f'{modname} mod update'
-            if instance[each]["name"] == 'volcano':
-                msg = f'Mod {modname} has been updated. Servers will start a reboot countdown now.\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
-                writediscord(msg,time.time())    
-            for neo in range(numinstances):
-                    instancerestart(instance[neo]['name'],aname)
+        if not isrebooting(instance[each]['name']):
+            ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+            ismodupd = ismodupd.stdout.decode('utf-8')
+            modchk = 0
+            ismodupd = ismodupd.split('\n')
+            for teach in ismodupd:
+                if teach.find('has been updated') != -1 or teach.find('needs to be applied') != -1:
+                    modchk += 1
+                    al = teach.split(' ')
+                    modid = al[1]
+                    modname = al[2]    
+            inst = instance[each]['name']
+            if modchk != 0:
+                ugennotify = time.time()
+                log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
+                log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
+                subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
+                aname = f'{modname} mod update'
+                if instance[each]["name"] == 'volcano':
+                    msg = f'Mod {modname} has been updated. Servers will start a reboot countdown now.\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
+                    writediscord(msg,time.time())    
+                for neo in range(numinstances):
+                        instancerestart(instance[neo]['name'],aname)
         else:
             log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
 
@@ -428,8 +433,9 @@ def arkupd():
     while True:
         try:
             for each in range(numinstances):
-                checkifalreadyrestarting(instance[each]['name'])
-                checkwipe(instance[each]['name'])
+                if not isrebooting(instance[each]['name']):
+                    checkifalreadyrestarting(instance[each]['name'])
+                    checkwipe(instance[each]['name'])
             checkbackup()
             checkupdates()
             checkconfig()
