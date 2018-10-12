@@ -455,7 +455,7 @@ def writechat(inst,whos,msg,tstamp):
         conn.commit()
         c.close()
         conn.close()
-        clog = f'{tstamp} [{whoname.upper()}]{msg}\n'
+        clog = f'{tstamp} [{whos.upper()}]{msg}\n'
         with open(f"/home/ark/shared/logs/{minst}/chatlog/chat.log", "at") as f:
             f.write(clog)
         f.close()
