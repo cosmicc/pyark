@@ -493,7 +493,7 @@ def discordbot():
                 msg = f'Last lottery was {linfo[2]} Arc reward points won by {linfo[7].capitalize()}. {elapsedTime(time.time(),linfo[3])} ago'
                 await client.send_message(message.channel, msg)
 
-        elif message.content.startswith('!lotto'):
+        elif message.content.startswith('!lotto') or message.content.startswith('!lottery'):
             whofor = str(message.author).lower()
             newname = message.content.split(' ')
             conn = sqlite3.connect(sqldb)
@@ -504,22 +504,64 @@ def discordbot():
             conn.close()
             if len(newname) > 1:
                 if newname[1] == 'enter' or newname[1] == 'join':
-                    msg = 'You must be in game to enter into a lottery'
-            if linfo:
-                if linfo[1] == 'points':
-                    msg = f'Current lottery is up to {linfo[2]} ARc reward points.'
+                    conn = sqlite3.connect(sqldb)
+                    c = conn.cursor()
+                    c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
+                    lpinfo = c.fetchone()
+                    c.close()
+                    conn.close()
+                    if not lpinfo:
+                        log.info(f'lottery join request from {whofor} denied, account not linked')
+                        msg = f'Your discord account must be linked to your player account to join a lottery from discord.\nType !linkme in game'
+                        await client.send_message(message.channel, msg)
+                    else:
+                        whofor = lpinfo[1]
+                        conn4 = sqlite3.connect(sqldb)
+                        c4 = conn4.cursor()
+                        c4.execute('SELECT * FROM lotteryplayers WHERE steamid = ?', (lpinfo[0],))
+                        lpcheck = c4.fetchone()
+                        c4.close()
+                        conn4.close()
+                        if linfo[1] == 'points':
+                            lfo = 'ARc Rewards Points'
+                        else:
+                            lfo = linfo[2]
+                        ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+                        if lpcheck == None:
+                            conn4 = sqlite3.connect(sqldb)
+                            c4 = conn4.cursor()
+                            c4.execute('')
+                            c4.execute('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES (?, ?, ?, ?)', (lpinfo[0],lpinfo[1],time.time(),0))
+                            if linfo[1] == 'points':
+                                c4.execute('UPDATE lotteryinfo SET payoutitem = ? WHERE winner = "Incomplete"', (str(int(linfo[2])+int(linfo[4])),))
+                            c4.execute('UPDATE lotteryinfo SET players = ? WHERE id = ?', (int(linfo[6])+1,linfo[0]))
+                            conn4.commit()
+                            c4.close()
+                            conn4.close()
+                            msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen on {ltime} in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}. Good Luck!'
+                            await client.send_message(message.channel, msg)
+                            log.info(f'player {whoasked} has joined the current active lottery.')
+                        else:
+                            msg = f'You are already participating in this lottery for {lfo}.\nLottery ends {ltime} in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
+                            await client.send_message(message.channel, msg)
+                        
                 else:
-                    msg = f'Current lottery is for a {linfo[2]}.'
-                await client.send_message(message.channel, msg)
-                msg = f'{linfo[6]} players have entered into this lottery so far.'
-                await client.send_message(message.channel, msg)
-                ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
-                msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
-                await client.send_message(message.channel, msg)
-     
-            else:
-                msg = 'There are no lotterys currently underway.'
-                await client.send_message(message.channel, msg)
+                    if linfo:
+                        if linfo[1] == 'points':
+                            msg = f'Current lottery is up to {linfo[2]} ARc reward points.'
+                        else:
+                            msg = f'Current lottery is for a {linfo[2]}.'
+                        await client.send_message(message.channel, msg)
+                        msg = f'{linfo[6]} players have entered into this lottery so far.'
+                        await client.send_message(message.channel, msg)
+                        ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+                        msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
+                        await client.send_message(message.channel, msg)
+                        msg = f'Type !lotto enter to join the lottery'
+                        await client.send_message(message.channel, msg)
+                    else:
+                        msg = 'There are no lotterys currently underway.'
+                        await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!primordial'):
             whofor = str(message.author).lower()
