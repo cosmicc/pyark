@@ -134,7 +134,7 @@ def lotteryloop(linfo):
         c4.close()
         conn4.close()
     inlottery = True
-    log.info('a lottery is pending, waiting for entries')
+    log.info('lottery loop has begun, waiting for lottery entries')
     while inlottery:
         time.sleep(60)
         try:
