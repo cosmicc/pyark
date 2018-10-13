@@ -307,17 +307,16 @@ def onlineupdate(inst):
             cmdpipe = subprocess.Popen('arkmanager rconcmd ListPlayers @%s' % inst, stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE, shell=True)
             b = cmdpipe.stdout.read().decode("utf-8")
-            log.debug(b.splitlines())
             for line in iter(b.splitlines()):
-                log.debug(line)
                 if line.startswith('Running command') or line.startswith('"') or line.startswith(' "') \
-                   or line.startswith(' "') or line.startswith('Error:'):
+                   or line.startswith('Error:'):
                     pass
                 else:
                     if line.startswith('"No Players'):
                         pass
                     else:
                         rawline = line.split(',')
+                        log.debug(rawline)
                         if len(rawline) > 1:
                             nsteamid = rawline[1].strip()
                             if f'greet-{nsteamid}' not in greetthreads:
