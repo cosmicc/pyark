@@ -47,6 +47,7 @@ def getsteamid(whoasked):
     sid = c.fetchone()
     c.close()
     conn.close()
+    log.warning(sid)
     return sid[0]
 
 def resptimeleft(inst,whoasked):

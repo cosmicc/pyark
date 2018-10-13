@@ -715,7 +715,7 @@ def watchlog(dlog):
                 ar = f'{BRED}'
             elif each.find('[WARNING]') != -1:
                 ar = f'{BYEL}'
-            elif each.find('[INFO]') != -1:
+            elif each.find('[INFO]') != -1 or each.find('[DEBUG]'):
                 if each.find('vote') != -1:
                     ar = f'{GRN}'
                 elif each.find('arkupdater') != -1:
