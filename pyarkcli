@@ -100,10 +100,10 @@ arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd 
 
 
 def printplayer(feach):
-    print(f'{BWHT}{feach[0]} {BMGT}{feach[1].capitalize()}{RST} {WHT}last on {tclr}{elapsedTime(now,float(feach[2]))} \
-{WHT}ago on {BMGT}{feach[3].capitalize()} {WHT}Home Server: {BCYN}{feach[15].capitalize()} {WHT}Discord: \
-{BWHT}{feach[8]}{RST}')
-    print(f'{WHT}Connections: {BGRN}{feach[7]} {WHT}Total Playtime: {BCYN}{playedTime(feach[4])} {WHT}joined \
+    print(f'{SKN}{feach[0]} {BMGT}{feach[1].capitalize()}{RST} {WHT}last on {tclr}{elapsedTime(now,float(feach[2]))} \
+{WHT}ago on {RMY}{feach[3].capitalize()} {WHT}Home Server: {SLT}{feach[15].capitalize()} {WHT}Discord: \
+{SKN}{feach[8]}{RST}')
+    print(f'{WHT}Connections: {BGRN}{feach[7]} {WHT}Total Playtime: {ORG}{playedTime(feach[4])} {WHT}joined \
 {trclr}{elapsedTime(now,float(feach[6]))}{WHT} ago{RST}')
     print(f'{WHT}Points: {BGRN}{feach[5]} {WHT}Transfer Points: {BGRN}{feach[16]} {WHT}Auctions: {BGRN}{feach[10]} \
 ({feach[11]}/{feach[12]}) {WHT}Primordial Warning: {BCYN}{feach[14]} {WHT}Lotto Wins: {BGRN}{feach[18]}{RST}\n')
@@ -221,7 +221,7 @@ def printserverinfo(each):
     lastuc = elapsedTime(time.time(), float(each[12]))
     print(f'{WHT}Server: {BMGT}{each[0].upper()}{WHT}  Players: {mm}{ply}/50{RST}')
     print(f'{WHT}Online: {iso}  {WHT}Listening: {isl}  {WHT}Running: {isr}  {WHT}Last Check: {boo}{lastuc}{RST}')
-    print(f'{WHT}Active Memory: {BYEL}{each[13]} Gig{WHT}  Total Memory: {BYEL}{each[14]} Gig{RST}')
+    print(f'{WHT}Active Memory: {MAU}{each[13]} Gig{WHT}  Total Memory: {MAU}{each[14]} Gig{RST}')
     print(f'{WHT}Configuration version: {BCYN}{each[6]}{RST} {vertxt}')
     print(f'{WHT}Server in restart: {inrest} {WHT}{tls}{RST}')
     print(f'{WHT}Last restart: {restclr}{restarted}{WHT}  Reason: {BCYN}{each[5]}{RST}')
@@ -745,6 +745,8 @@ def watchlog(dlog):
             elif each.find('[INFO]') != -1 or each.find('[DEBUG]'):
                 if each.find('vote') != -1:
                     ar = f'{ORG}'
+                elif each.find('MainThread') != -1:
+                    ar = f'{SKN}'
                 elif each.find('arkupdater') != -1:
                     ar = f'{BLU}'
                 elif each.find('lottery') != -1:

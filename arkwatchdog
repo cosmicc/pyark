@@ -98,7 +98,7 @@ def getrunning(inst):
 
 def restartserver(inst):
     log.warning(f'restarting instance {inst}')
-    subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL,
+    subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL, shell=True)
 
 
@@ -116,10 +116,10 @@ def main():
         log.info('server just booted, starting instances for the first time')
         for eat in instance:
             log.info(f'starting instance {eat["name"]}')
-            subprocess.run('arkmanager start --alwaysrestart @%s' % (eat['name']), stdout=subprocess.DEVNULL,
+            subprocess.run('arkmanager start @%s' % (eat['name']), stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL, shell=True)
         log.debug('sleeping 10 min while instances start')
-        log.sleep(600)
+        log.sleep(900)
     log.debug('starting watchdog loop')
     while True:
         actmem = 0
@@ -132,19 +132,22 @@ def main():
                     isrunningint = 0
                     log.warning(f'{eachinst["name"]} failed is instance running check {isrunningcnt}/2')
                 else:
+                    isrunningcnt = 0
                     isrunningint = 1
                     actmem, totmem = getinstmem(eachinst['name'])
                 if not islistening:
-                    log.warning(f'{eachinst["name"]} failed is instance listening check {islisteningcnt}/2')
+                    log.warning(f'{eachinst["name"]} failed is instance listening check {islisteningcnt}/10')
                     islisteningcnt += 1
                     islisteningint = 0
                 else:
+                    islisteningcnt = 0
                     islisteningint = 1
                 if not isonline:
-                    log.warning(f'{eachinst["name"]} failed is instance online check {isonlinecnt}/2')
+                    log.warning(f'{eachinst["name"]} failed is instance online check {isonlinecnt}/10')
                     isonlinecnt += 1
                     isonlineint = 0
                 else:
+                    isonlinecnt = 0
                     isonlineint = 1
                 log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
                 conn = sqlite3.connect(sqldb)
@@ -155,14 +158,14 @@ def main():
                 conn.commit()
                 c.close()
                 conn.close()
-                if isrunningcnt == 2 or isonlinecnt == 15 or islistening == 15:
+                if isrunningcnt == 2 or isonlinecnt == 10 or islistening == 10:
                     isrunningcnt = 0
                     islisteningcnt = 0
                     isonlinecnt = 0
                     restartserver(eachinst['name'])
         except:
             log.critical('Critical Error in Ark Watchdog!', exc_info=True)
-        log.debug('sleeping 3 min between checks')
+        log.debug('sleeping 2 min between checks')
         time.sleep(120)
 
 

@@ -125,41 +125,45 @@ def main():
         lotteryt.start()
 
     while True:
-        if checkgit == 0:
-            gitupdatecheck()
-            checkgit += 1
-        elif checkgit == 61:
-            checkgit = 0
-        else:
-            checkgit += 1
-        time.sleep(60)
-        log.debug(threading.enumerate())
-        if not arkupdt.is_alive():
-            t = 'ark updater'
-            log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-        if imthedbot == "True":
-            if not discordt.is_alive():
-                t = 'discord bot'
+        try:
+            if checkgit == 0:
+                gitupdatecheck()
+                checkgit += 1
+            elif checkgit == 61:
+                checkgit = 0
+            else:
+                checkgit += 1
+            time.sleep(60)
+            for each in range(numinstances):
+                log.debug(f'{instance[each]["name"]} {list(instance[each].keys())}')
+            if not arkupdt.is_alive():
+                t = 'ark updater'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-            if not lotteryt.is_alive():
-                t = 'lottery watch'
-                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-        for each in range(numinstances):
-            inst = instance[each]['name']
-            if not instance[each]['cmdthread'].is_alive():
-                t = f'{inst} command listener'
-                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-        for each in range(numinstances):
-            inst = instance[each]['name']
-            if not instance[each]['kickthread'].is_alive():
-                t = f'{inst} kicklist kicker'
-                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-            if not instance[each]['gchatthread'].is_alive():
-                t = f'{inst} global chat relay'
-                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-            if not instance[each]['onlinethread'].is_alive():
-                t = f'{inst} online monitor'
-                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if imthedbot == "True":
+                if not discordt.is_alive():
+                    t = 'discord bot'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+                if not lotteryt.is_alive():
+                    t = 'lottery watch'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            for each in range(numinstances):
+                inst = instance[each]['name']
+                if not instance[each]['cmdthread'].is_alive():
+                    t = f'{inst} command listener'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            for each in range(numinstances):
+                inst = instance[each]['name']
+                if not instance[each]['kickthread'].is_alive():
+                    t = f'{inst} kicklist kicker'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+                if not instance[each]['gchatthread'].is_alive():
+                    t = f'{inst} global chat relay'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+                if not instance[each]['onlinethread'].is_alive():
+                    t = f'{inst} online monitor'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+        except:
+            log.critical(f'exception in main loop', exc_info=True)
 
 
 if __name__ == '__main__':
