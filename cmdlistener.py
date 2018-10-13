@@ -47,8 +47,11 @@ def getsteamid(whoasked):
     sid = c.fetchone()
     c.close()
     conn.close()
-    log.warning(sid)
-    return sid[0]
+    if sid == None:
+        log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
+        return 0
+    else:
+        return sid[0]
 
 def resptimeleft(inst,whoasked):
     conn = sqlite3.connect(sqldb)
@@ -534,7 +537,7 @@ def homeserver(inst,whoasked,ext):
         tservers = ['ragnarok','island','volcano']
         if ext in tservers:
             if ext != pinfo[15]:
-                if inst == pinfo[15] and pinfo[1] == 'admin':
+                if inst == pinfo[15]:
 
                     log.info(f'{whoasked} has transferred home servers from {pinfo[15]} to {ext} with {pinfo[5]} points')
                     subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' % (steamid,inst), shell=True)
