@@ -545,23 +545,23 @@ def discordbot():
                             msg = f'You are already participating in this lottery for {lfo}.\nLottery ends {ltime} in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
                             await client.send_message(message.channel, msg)
                         
-                else:
-                    if linfo:
-                        if linfo[1] == 'points':
-                            msg = f'Current lottery is up to {linfo[2]} ARc reward points.'
-                        else:
-                            msg = f'Current lottery is for a {linfo[2]}.'
-                        await client.send_message(message.channel, msg)
-                        msg = f'{linfo[6]} players have entered into this lottery so far.'
-                        await client.send_message(message.channel, msg)
-                        ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
-                        msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
-                        await client.send_message(message.channel, msg)
-                        msg = f'Type !lotto enter to join the lottery'
-                        await client.send_message(message.channel, msg)
+            else:
+                if linfo:
+                    if linfo[1] == 'points':
+                        msg = f'Current lottery is up to {linfo[2]} ARc reward points.'
                     else:
-                        msg = 'There are no lotterys currently underway.'
-                        await client.send_message(message.channel, msg)
+                        msg = f'Current lottery is for a {linfo[2]}.'
+                    await client.send_message(message.channel, msg)
+                    msg = f'{linfo[6]} players have entered into this lottery so far.'
+                    await client.send_message(message.channel, msg)
+                    ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+                    msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
+                    await client.send_message(message.channel, msg)
+                    msg = f'Type !lotto enter to join the lottery'
+                    await client.send_message(message.channel, msg)
+                else:
+                    msg = 'There are no lotterys currently underway.'
+                    await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!primordial'):
             whofor = str(message.author).lower()

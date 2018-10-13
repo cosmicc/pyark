@@ -30,20 +30,28 @@ parser.add_argument('--version', action='version', version='%(prog)s {}'.format(
 parser.add_argument('-q', '--quiet', action='store_true', help='supress logging output to console. default: error logging')
 parser.add_argument('--debug', action='store_true', help='verbose output (debug)')
 args = parser.parse_args()
-if args.debug == True:  # changed to false to force debugging
-    log.setLevel(logging.DEBUG)
-else:
-    log.setLevel(logging.INFO)
+#if args.debug == True:  # changed to false to force debugging
+log.setLevel(logging.DEBUG)
+#else:
+#    log.setLevel(logging.INFO)
 console_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(name)s:%(threadName)s:%(message)s')
 log_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(name)s:%(threadName)s:%(message)s')
 
 if args.quiet is False:
     log_console = logging.StreamHandler()
+    log_console.setLevel(logging.DEBUG)
     log.addHandler(log_console)
     log_console.setFormatter(console_format)
 log_fileh = logging.FileHandler(logfile)
-log.addHandler(log_fileh)
+log_fileh.setLevel(logging.INFO)
 log_fileh.setFormatter(log_format)
+
+log_filej = logging.FileHandler('/home/ark/shared/logs/pyark/pyarkdebug.log')
+log_filej.setFormatter(log_format)
+log_filej.setLevel(logging.DEBUG)
+
+log.addHandler(log_fileh)
+log.addHandler(log_filej)
 
 processlock.lock()
 

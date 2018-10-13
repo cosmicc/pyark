@@ -591,6 +591,7 @@ def lotteryquery(whoasked, lchoice, inst):
     linfo = c4.fetchone()
     c4.execute('SELECT * FROM players WHERE playername = ?', (whoasked,))
     lpinfo = c4.fetchone()
+
     c4.close()
     conn4.close()
     if linfo:
