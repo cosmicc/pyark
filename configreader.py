@@ -33,8 +33,6 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr = instr + ', %s' % (a)
-        instr = instr + ', %s' % (a)
-
 
 isupdater = config.get('general', 'isupdater')
 imthedbot = config.get('general', 'isdiscordbot')
