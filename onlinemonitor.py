@@ -310,7 +310,7 @@ def onlineupdate(inst):
             log.debug(b.splitlines())
             for line in iter(b.splitlines()):
                 log.debug(line)
-                if line.startswith('Running command') or line.startswith('"') \
+                if line.startswith('Running command') or line.startswith('"') or line.startswith(' "') \
                    or line.startswith(' "') or line.startswith('Error:'):
                     pass
                 else:
