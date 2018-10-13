@@ -1,19 +1,21 @@
 #!/usr/bin/python3
 
-import time, logging, threading, sqlite3, subprocess, socket
+import time, logging, sqlite3, socket
 import discord
 import asyncio
-from timehelper import *
-from auctionhelper import *
-from configreader import *
+from datetime import datetime
+from timehelper import elapsedTime, playedTime, estshift, wcstamp
+from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
+from configreader import config, sqldb
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 client = discord.Client()
 
-channel = discord.Object(id=config.get('general','discordchatchan'))
-channel2 = discord.Object(id=config.get('general','discordgenchan'))
+channel = discord.Object(id=config.get('general', 'discordchatchan'))
+channel2 = discord.Object(id=config.get('general', 'discordgenchan'))
+
 
 def getlastwipe(inst):
     conn = sqlite3.connect(sqldb)
@@ -24,6 +26,7 @@ def getlastwipe(inst):
     conn.close()
     return ''.join(lastwipe[0])
 
+
 def getlastrestart(inst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -33,7 +36,8 @@ def getlastrestart(inst):
     conn.close()
     return ''.join(lastwipe[0])
 
-def writechat(inst,whos,msg,tstamp):
+
+def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
         conn = sqlite3.connect(sqldb)
@@ -45,18 +49,22 @@ def writechat(inst,whos,msg,tstamp):
     elif whos == "ALERT" or isindb:
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
-        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
+        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
+                  (inst, whos, msg, tstamp))
         conn.commit()
         c.close()
         conn.close()
 
-def writeglobal(inst,whos,msg):
+
+def writeglobal(inst, whos, msg):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
-    c.execute('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,time.time()))
+    c.execute('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
+              (inst, whos, msg, time.time()))
     conn.commit()
     c.close()
     conn.close()
+
 
 def islinkeduser(duser):
     conn3 = sqlite3.connect(sqldb)
@@ -70,13 +78,15 @@ def islinkeduser(duser):
     else:
         return False
 
-def setprimordialbit(steamid,pbit):
+
+def setprimordialbit(steamid, pbit):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
-    c.execute('UPDATE players SET primordialbit = ? WHERE steamid = ?', (pbit,steamid))
+    c.execute('UPDATE players SET primordialbit = ? WHERE steamid = ?', (pbit, steamid))
     conn.commit()
     c.close()
     conn.close()
+
 
 def discordbot():
     async def chatbuffer():
@@ -111,27 +121,17 @@ def discordbot():
                 conn3 = sqlite3.connect(sqldb)
                 c3 = conn3.cursor()
                 now = float(time.time())
-                c3.execute('SELECT * FROM players WHERE lastseen < ? AND lastseen > ?',(now-40,now-45))
+                c3.execute('SELECT * FROM players WHERE lastseen < ? AND lastseen > ?', (now - 40, now - 45))
                 cbuffr = c3.fetchall()
                 c3.close()
                 conn3.close()
                 for reach in cbuffr:
                     log.info(f'{reach[1]} has left the server {reach[3]}')
                     mt = f'{reach[1].capitalize()} has left the server'
-                    writeglobal(reach[3],'ALERT',mt)
-                    writechat(reach[3],'ALERT',f'>>> {reach[1].capitalize()} has left the server',wcstamp())
+                    writeglobal(reach[3], 'ALERT', mt)
+                    writechat(reach[3], 'ALERT', f'>>> {reach[1].capitalize()} has left the server', wcstamp())
             except:
                 log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
-                try:
-                    if c in vars():
-                        c.close()
-                except:
-                    pass
-                try:
-                    if conn in vars():
-                        conn.close()
-                except:
-                    pass
                 try:
                     if c3 in vars():
                         c3.close()
@@ -158,11 +158,13 @@ def discordbot():
             conn.commit()
             c.close()
             conn.close()
-    
+
     @client.event
     async def on_member_join(member):
         server = member.server
-        fmt = 'Welcome to the Galaxy Cluster Ultimate Extinction Core Server Discord.\nIf you are already a player on the servers, you can !linkme in game to link your discord account to your ark player.\n!servers for links to the servers, !mods for a link to the mod collection, !help for everything else\nIf you need any help ask in #general-chat'
+        fmt = 'Welcome to the Galaxy Cluster Ultimate Extinction Core Server Discord.\nIf you are already a player \
+on the servers, you can !linkme in game to link your discord account to your ark player.\n!servers for links to the \
+servers, !mods for a link to the mod collection, !help for everything else\nIf you need any help ask in #general-chat'
         await client.send_message(server, fmt.format(member, server))
 
     @client.event
@@ -172,7 +174,8 @@ def discordbot():
     @client.event
     async def on_message(message):
         savediscordtodb(message.author)
-        if message.content.startswith('!who') or message.content.startswith('!whoson') or message.content.startswith('!whosonline'):
+        if message.content.startswith('!who') or message.content.startswith('!whoson') \
+                or message.content.startswith('!whosonline'):
             log.info('responding to whos online request from discord')
             potime = 40
             conn = sqlite3.connect(sqldb)
@@ -191,13 +194,13 @@ def discordbot():
                 pcnt = 0
                 plist = ''
                 for row in flast:
-                    chktme = time.time()-float(row[2])
+                    chktme = time.time() - float(row[2])
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
                             plist = '%s' % (row[1].capitalize())
                         else:
-                            plist=plist + ', %s' % (row[1].capitalize())
+                            plist = plist + ', %s' % (row[1].capitalize())
                 if pcnt != 0:
                     msg = f'{each[0].capitalize()} has {pcnt} players online: {plist}'
                     await client.send_message(message.channel, msg)
@@ -205,8 +208,9 @@ def discordbot():
                     msg = f'{each[0].capitalize()} has no players online.'
                     await client.send_message(message.channel, msg)
 
-        elif message.content.startswith('!recent') or message.content.startswith('!whorecent') or message.content.startswith('!lasthour'):
-            #await asyncio.sleep(5)
+        elif message.content.startswith('!recent') or message.content.startswith('!whorecent') \
+                or message.content.startswith('!lasthour'):
+            # await asyncio.sleep(5)
             log.info('responding to recent players request from discord')
             potime = 3600
             conn = sqlite3.connect(sqldb)
@@ -225,21 +229,19 @@ def discordbot():
                 pcnt = 0
                 plist = ''
                 for row in flast:
-                    chktme = time.time()-float(row[2])
+                    chktme = time.time() - float(row[2])
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
                             plist = '%s' % (row[1].capitalize())
                         else:
-                            plist=plist + ', %s' % (row[1].capitalize())
+                            plist = plist + ', %s' % (row[1].capitalize())
                 if pcnt != 0:
                     msg = f'{each[0].capitalize()} has had {pcnt} players in last hour: {plist}'
                     await client.send_message(message.channel, msg)
                 else:
                     msg = f'{each[0].capitalize()} has had no players in last hour.'
                     await client.send_message(message.channel, msg)
-
-
         elif message.content.startswith('!lastseen'):
             newname = message.content.split(' ')
             if len(newname) > 1:
@@ -255,7 +257,7 @@ def discordbot():
                     msg = f'No player was found with name {seenname}'
                     await client.send_message(message.channel, msg)
                 else:
-                    plasttime = elapsedTime(time.time(),float(flast[2]))
+                    plasttime = elapsedTime(time.time(), float(flast[2]))
                     if plasttime != 'now':
                         msg = f'{seenname.capitalize()} was last seen {plasttime} ago on {flast[3]}'
                         await client.send_message(message.channel, msg)
@@ -270,7 +272,7 @@ def discordbot():
             lwt = message.content.split(' ')
             if len(lwt) > 1:
                 instr = lwt[1]
-                lastwipet = elapsedTime(time.time(),float(getlastwipe(instr)))
+                lastwipet = elapsedTime(time.time(), float(getlastwipe(instr)))
                 msg = f'Last wild dino wipe for {instr.capitalize()} was {lastwipet} ago'
                 await client.send_message(message.channel, msg)
             else:
@@ -281,14 +283,14 @@ def discordbot():
                 c.close()
                 conn.close()
                 for each in srvrs:
-                    lastwipet = elapsedTime(time.time(),float(getlastwipe(each[0])))
+                    lastwipet = elapsedTime(time.time(), float(getlastwipe(each[0])))
                     msg = f'Last wild dino wipe for {each[0].capitalize()} was {lastwipet} ago'
                     await client.send_message(message.channel, msg)
         elif message.content.startswith('!lastrestart'):
             lwt = message.content.split(' ')
             if len(lwt) > 1:
                 instr = lwt[1]
-                lastrestartt = elapsedTime(time.time(),float(getlastrestart(instr)))
+                lastrestartt = elapsedTime(time.time(), float(getlastrestart(instr)))
                 msg = f'Last server restart for {instr.capitalize()} was {lastrestartt} ago'
                 await client.send_message(message.channel, msg)
             else:
@@ -299,20 +301,20 @@ def discordbot():
                 c.close()
                 conn.close()
                 for each in srvrs:
-                    lastwipet = elapsedTime(time.time(),float(getlastrestart(each[0])))
+                    lastwipet = elapsedTime(time.time(), float(getlastrestart(each[0])))
                     msg = f'Last server restart for {each[0].capitalize()} was {lastwipet} ago'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !mods, !servers, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, !lotto, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>, !primordial'
+            msg = f'Commands: !mods, !servers, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, \
+!lotto, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>, !primordial'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
             await client.send_message(message.channel, msg)
-
-
-        elif message.content.startswith('!whotoday') or message.content.startswith('!today') or message.content.startswith('!lastday'):
-            #await asyncio.sleep(5)
+        elif message.content.startswith('!whotoday') or message.content.startswith('!today') \
+                or message.content.startswith('!lastday'):
+            # await asyncio.sleep(5)
             log.info('responding to recent players request from discord')
             potime = 86400
             conn = sqlite3.connect(sqldb)
@@ -331,13 +333,13 @@ def discordbot():
                 pcnt = 0
                 plist = ''
                 for row in flast:
-                    chktme = time.time()-float(row[2])
+                    chktme = time.time() - float(row[2])
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
                             plist = '%s' % (row[1].capitalize())
                         else:
-                            plist=plist + ', %s' % (row[1].capitalize())
+                            plist = plist + ', %s' % (row[1].capitalize())
                 if pcnt != 0:
                     msg = f'{each[0].capitalize()} has had {pcnt} players today: {plist}'
                     await client.send_message(message.channel, msg)
@@ -360,7 +362,7 @@ def discordbot():
                     msg = f'Your discord account is not connected to a player yet.'
                     await client.send_message(message.channel, msg)
                 else:
-                    if time.time()-float(kuser[2]) > 300:
+                    if time.time() - float(kuser[2]) > 300:
                         log.info(f'kickme request from {whofor} denied, not connected to a server')
                         msg = f'You are not connected to any servers'
                         await client.send_message(message.channel, msg)
@@ -370,7 +372,7 @@ def discordbot():
                         await client.send_message(message.channel, msg)
                         conn = sqlite3.connect(sqldb)
                         c = conn.cursor()
-                        c.execute('INSERT INTO kicklist (instance,steamid) VALUES (?,?)', (kuser[3],kuser[0]))
+                        c.execute('INSERT INTO kicklist (instance,steamid) VALUES (?,?)', (kuser[3], kuser[0]))
                         conn.commit()
                         c.close()
                         conn.close()
@@ -386,7 +388,8 @@ def discordbot():
             if kuser:
                 if len(newsrv) > 1:
                     log.info(f'home server change request for {kuser[1]}')
-                    msg = f'You have to type !myhome on your current home server {kuser[15].capitalize()} to change home servers'
+                    msg = f'You have to type !myhome on your current home server {kuser[15].capitalize()} \
+to change home servers'
                     await client.send_message(message.channel, msg)
                 else:
                     log.info(f'home server request granted for {kuser[1]}')
@@ -415,9 +418,9 @@ def discordbot():
                     log.info(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
                     pauctions = fetchauctiondata(kuser[0])
                     au1, au2, au3 = getauctionstats(pauctions)
-                    writeauctionstats(kuser[0],au1,au2,au3)
-                    ptime = playedTime(float(kuser[4].replace(',','')))
-                    ptr = elapsedTime(float(time.time()),float(kuser[2]))
+                    writeauctionstats(kuser[0], au1, au2, au3)
+                    ptime = playedTime(float(kuser[4].replace(',', '')))
+                    ptr = elapsedTime(float(time.time()), float(kuser[2]))
                     msg = f'Your current ARc reward points: {kuser[5]}.'
                     await client.send_message(message.channel, msg)
                     msg = f'Last played on {kuser[3].capitalize()} {ptr} ago.'
@@ -428,7 +431,6 @@ def discordbot():
                     await client.send_message(message.channel, msg)
                     msg = f'You have {au1} current auctions: {au2} Items - {au3} Dinos'
                     await client.send_message(message.channel, msg)
-
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
@@ -439,15 +441,13 @@ def discordbot():
             c.close()
             conn.close()
             log.info(f'responding to lastnew request on discord')
-            lspago = elapsedTime(time.time(),float(lsplayer[6]))
+            lspago = elapsedTime(time.time(), float(lsplayer[6]))
             msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
             await client.send_message(message.channel, msg)
-
         elif message.content.startswith('!mods'):
             whofor = str(message.author).lower()
             msg = f'https://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
             await client.send_message(message.channel, msg)
-
         elif message.content.startswith('!servers'):
             whofor = str(message.author).lower()
             conn = sqlite3.connect(sqldb)
@@ -456,7 +456,7 @@ def discordbot():
             dbsvr = c.fetchall()
             c.close()
             conn.close()
-            #msg = 'Galaxy Cluster Ultimate Extinction Core Servers:\n'
+            # msg = 'Galaxy Cluster Ultimate Extinction Core Servers:\n'
             for instt in dbsvr:
                 if int(instt[9]) == 0:
                     onl = 'OFFLINE'
@@ -471,10 +471,11 @@ def discordbot():
                     conn.close()
                     pcnt = 0
                     for row in flast:
-                        chktme = time.time()-float(row[2])
+                        chktme = time.time() - float(row[2])
                         if chktme < 40:
                             pcnt += 1
-                msg = f'Server {instt[0].capitalize()} is {onl} Players ({pcnt}/50) - {instt[15]} - {instt[16]} - {instt[17]}\n'
+                msg = f'Server {instt[0].capitalize()} is {onl} Players ({pcnt}/50) - {instt[15]} \
+- {instt[16]} - {instt[17]}\n'
                 await client.send_message(message.channel, msg)
                 time.sleep(.5)
 
@@ -487,12 +488,13 @@ def discordbot():
             c.close()
             conn.close()
             if linfo[1] == 'item':
-                msg = f'Last lottery was {linfo[2]} won by {linfo[7].capitalize()}. {elapsedTime(time.time(),linfo[3])} ago'
+                msg = f'Last lottery was {linfo[2]} won by {linfo[7].capitalize()}. \
+{elapsedTime(time.time(),linfo[3])} ago'
                 await client.send_message(message.channel, msg)
             elif linfo[1] == 'points':
-                msg = f'Last lottery was {linfo[2]} Arc reward points won by {linfo[7].capitalize()}. {elapsedTime(time.time(),linfo[3])} ago'
+                msg = f'Last lottery was {linfo[2]} Arc reward points won by {linfo[7].capitalize()}. \
+{elapsedTime(time.time(),linfo[3])} ago'
                 await client.send_message(message.channel, msg)
-
         elif message.content.startswith('!lotto') or message.content.startswith('!lottery'):
             whofor = str(message.author).lower()
             newname = message.content.split(' ')
@@ -512,7 +514,8 @@ def discordbot():
                     conn.close()
                     if not lpinfo:
                         log.info(f'lottery join request from {whofor} denied, account not linked')
-                        msg = f'Your discord account must be linked to your player account to join a lottery from discord.\nType !linkme in game'
+                        msg = f'Your discord account must be linked to your player account to join a lottery from \
+discord.\nType !linkme in game'
                         await client.send_message(message.channel, msg)
                     else:
                         whofor = lpinfo[1]
@@ -526,25 +529,29 @@ def discordbot():
                             lfo = 'ARc Rewards Points'
                         else:
                             lfo = linfo[2]
-                        ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
-                        if lpcheck == None:
+                        ltime = estshift(datetime.fromtimestamp(float(linfo[3]) +
+                                                                (3600 * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+                        if lpcheck is None:
                             conn4 = sqlite3.connect(sqldb)
                             c4 = conn4.cursor()
                             c4.execute('')
-                            c4.execute('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES (?, ?, ?, ?)', (lpinfo[0],lpinfo[1],time.time(),0))
+                            c4.execute('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES \
+                                       (?, ?, ?, ?)', (lpinfo[0], lpinfo[1], time.time(), 0))
                             if linfo[1] == 'points':
-                                c4.execute('UPDATE lotteryinfo SET payoutitem = ? WHERE winner = "Incomplete"', (str(int(linfo[2])+int(linfo[4])),))
-                            c4.execute('UPDATE lotteryinfo SET players = ? WHERE id = ?', (int(linfo[6])+1,linfo[0]))
+                                c4.execute('UPDATE lotteryinfo SET payoutitem = ? WHERE winner = "Incomplete"',
+                                           (str(int(linfo[2]) + int(linfo[4])), ))
+                            c4.execute('UPDATE lotteryinfo SET players = ? WHERE id = ?', (int(linfo[6]) + 1, linfo[0]))
                             conn4.commit()
                             c4.close()
                             conn4.close()
-                            msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen on {ltime} in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}. Good Luck!'
+                            msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen on {ltime} \
+in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}. Good Luck!'
                             await client.send_message(message.channel, msg)
-                            log.info(f'player {whoasked} has joined the current active lottery.')
+                            log.info(f'player {whofor} has joined the current active lottery.')
                         else:
-                            msg = f'You are already participating in this lottery for {lfo}.\nLottery ends {ltime} in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
+                            msg = f'You are already participating in this lottery for {lfo}.\nLottery ends {ltime} \
+in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
                             await client.send_message(message.channel, msg)
-                        
             else:
                 if linfo:
                     if linfo[1] == 'points':
@@ -554,7 +561,8 @@ def discordbot():
                     await client.send_message(message.channel, msg)
                     msg = f'{linfo[6]} players have entered into this lottery so far.'
                     await client.send_message(message.channel, msg)
-                    ltime = estshift(datetime.fromtimestamp(float(linfo[3])+(3600*int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+                    ltime = estshift(datetime.fromtimestamp(float(linfo[3]) +
+                                                            (3600 * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
                     msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
                     await client.send_message(message.channel, msg)
                     msg = f'Type !lotto enter to join the lottery'
@@ -576,11 +584,11 @@ def discordbot():
                 await client.send_message(message.channel, msg)
             else:
                 if int(pplayer[14]) == 1:
-                    setprimordialbit(pplayer[0],0)
+                    setprimordialbit(pplayer[0], 0)
                     msg = f'Your primordial server restart warning is now OFF'
                     await client.send_message(message.channel, msg)
                 else:
-                    setprimordialbit(pplayer[0],1)
+                    setprimordialbit(pplayer[0], 1)
                     msg = f'Your primordial server restart warning is now ON'
                     await client.send_message(message.channel, msg)
 
@@ -609,10 +617,11 @@ def discordbot():
                     c.close()
                     conn.close()
                     if reqs:
-                        log.info(f'link account request on discord from {whofor} accepted. {reqs[1]} {whofor} {reqs[0]}')
+                        log.info(f'link account request on discord from {whofor} accepted. \
+{reqs[1]} {whofor} {reqs[0]}')
                         conn = sqlite3.connect(sqldb)
                         c = conn.cursor()
-                        c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (whofor,reqs[0]))
+                        c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (whofor, reqs[0]))
                         c.execute('DELETE FROM linkrequests WHERE reqcode = ?', (rcode,))
                         conn.commit()
                         c.close()
@@ -620,14 +629,16 @@ def discordbot():
                         msg = f'Your discord account [{whofor}] is now linked to your player {reqs[1]}'
                         await client.send_message(message.channel, msg)
                         role = discord.utils.get(user.server.roles, name="Linked Player")
-                        await client.add_roles(user, role)    
+                        await client.add_roles(user, role)
                     else:
                         log.info(f'link account request on discord from {whofor} denied, code not found')
-                        msg = f'That link request code was not found. You must start a link request in-game to get your code'
+                        msg = f'That link request code was not found. You must start a link request \
+in-game to get your code'
                         await client.send_message(message.channel, msg)
                 else:
                     log.info(f'link account request on discord from {whofor} denied, no code specified')
-                    msg = f'You must start a link request in-game first to get a code, then specify that code here, to link your account'
+                    msg = f'You must start a link request in-game first to get a code, then specify that code here, \
+to link your account'
                     await client.send_message(message.channel, msg)
         elif str(message.channel) == 'server-chat':
             conn = sqlite3.connect(sqldb)
@@ -637,34 +648,10 @@ def discordbot():
             c.close()
             conn.close()
             if whos:
-                writeglobal('discord',whos[0],str(message.content))
-
-
+                writeglobal('discord', whos[0], str(message.content))
     client.loop.create_task(chatbuffer())
     try:
         while True:
-            client.run(config.get('general','discordtoken'))
+            client.run(config.get('general', 'discordtoken'))
     except:
         log.critical('Critical Error in Discord Bot Routine!', exc_info=True)
-        try:
-            if c in vars():
-                c.close()
-        except:
-            pass
-        try:
-            if conn in vars():
-                conn.close()
-        except:
-            pass
-        try:
-            if c3 in vars():
-                c3.close()
-        except:
-            pass
-        try:
-            if conn3 in vars():
-                conn3.close()
-        except:
-            pass
-
-

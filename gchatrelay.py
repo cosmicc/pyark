@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
 import time, logging, sqlite3, subprocess, socket
-from configreader import *
+from configreader import sqldb
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
+
 
 def gchatrelay(inst):
     while True:
@@ -17,13 +18,14 @@ def gchatrelay(inst):
             conn3.close()
             if cbuff:
                 for each in cbuff:
-                    if each[1] == 'ALERT' and each[2] == 'ALERT' and float(each[4]) > time.time()-3:
-                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each[3],inst), shell=True)
-                    elif each[1] == inst and each[2] == 'ALERT' and float(each[4]) > time.time()-3:
-                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each[3],inst), shell=True)
-                    elif each[1] != inst and each[2] != 'ALERT' and float(each[4]) > time.time()-3:
-                        subprocess.run('arkmanager rconcmd "ServerChat %s@%s: %s" @%s' % (each[2].capitalize(),each[1].capitalize(),each[3],inst), shell=True)
-                    if float(each[4]) < time.time()-10:
+                    if each[1] == 'ALERT' and each[2] == 'ALERT' and float(each[4]) > time.time() - 3:
+                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each[3], inst), shell=True)
+                    elif each[1] == inst and each[2] == 'ALERT' and float(each[4]) > time.time() - 3:
+                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each[3], inst), shell=True)
+                    elif each[1] != inst and each[2] != 'ALERT' and float(each[4]) > time.time() - 3:
+                        subprocess.run('arkmanager rconcmd "ServerChat %s@%s: %s" @%s'
+                                       % (each[2].capitalize(), each[1].capitalize(), each[3], inst), shell=True)
+                    if float(each[4]) < time.time() - 10:
                         conn3 = sqlite3.connect(sqldb)
                         c3 = conn3.cursor()
                         c3.execute('DELETE FROM globalbuffer WHERE id = ?', (each[0],))
@@ -34,13 +36,12 @@ def gchatrelay(inst):
         except:
             log.critical('Critical Error in Global Chat Relayer!', exc_info=True)
             try:
-                if c in vars():
-                    c.close()
+                if c3 in vars():
+                    c3.close()
             except:
                 pass
             try:
-                if conn in vars():
-                    conn.close()
+                if conn3 in vars():
+                    conn3.close()
             except:
                 pass
-

@@ -1,16 +1,20 @@
 #!/usr/bin/python3
 
-import subprocess, time, re, logging, argparse, sqlite3, json
+import subprocess, time, logging, argparse, sqlite3, json
 from datetime import datetime
 from colorizer import *
-from timehelper import *
-from configreader import *
-from urllib.request  import urlopen, Request
+from timehelper import elapsedTime, estshift, playedTime, wcstamp
+from configreader import config, sqldb
+from urllib.request import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('action_to_perform', action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer', 'linkplayer', 'startlottery', 'lottery', 
-    'restartserver', 'chatbuffer', 'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe', 'playersraw', 'logwatch', 'lotterytables', 'log', 'topplayers', 'debugwatch',
-    'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist', 'unbanplayer', 'tribewipe', 'backupdb'], help='Action to perform')
+parser.add_argument('action_to_perform',
+                    action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer',
+                                             'linkplayer', 'startlottery', 'lottery', 'restartserver', 'chatbuffer',
+                                             'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe',
+                                             'playersraw', 'logwatch', 'lotterytables', 'log', 'topplayers',
+                                             'debugwatch', 'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist',
+                                             'unbanplayer', 'tribewipe', 'backupdb'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('servers', action='store_true', help='Server infomration')
 action_group.add_argument('playertable', action='store_true', help='Show players table')
@@ -35,7 +39,7 @@ action_group.add_argument('logsearch', action='store_true', help='Seach log by s
 action_group.add_argument('banplayer', action='store_true', help='Ban a player from the cluster')
 action_group.add_argument('unban', action='store_true', help='UN-Ban a player from the cluster')
 action_group.add_argument('banlist', action='store_true', help='Show the list of banned players')
-action_group.add_argument('tribewipe', action='store_true', help='Wipe a tribe and all its dinos and belongings from a server')
+action_group.add_argument('tribewipe', action='store_true', help='Wipe a tribe, its dinos and belongings from a server')
 action_group.add_argument('backupdb', action='store_true', help='Run a manual pyark database backup')
 action_group.add_argument('lotterytables', action='store_true', help='Show Lottery tables')
 action_group.add_argument('startlottery', action='store_true', help='Start a lottery')
@@ -62,8 +66,8 @@ configfile = '/home/ark/pyark.cfg'
 clr1 = f'{BYEL}'
 clr2 = f'{BCYN}'
 
-tclr=''
-trclr=''
+tclr = ''
+trclr = ''
 
 print('    ')
 
@@ -75,6 +79,7 @@ now = time.time()
 c.execute('DELETE from players WHERE playedtime = 0')
 conn.commit()
 
+
 def fetcharkserverdata(key):
     url = f'https://ark-servers.net/api/?object=servers&element=detail&key={key}'
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -82,18 +87,27 @@ def fetcharkserverdata(key):
     adata = json.loads(html)
     return adata
 
+
 def sendtoserver(tribeid):
-    sshuser = config.get('general','sshuser').rstrip()
-    sshhost = config.get('general','otherserverip').rstrip()
-    sshpass = config.get('general','sshpass').rstrip()
-    commands = f"""arkmanager rconcmd "saveworld" @all && arkmanager backup @all && arkmanager rconcmd "DestroyTribeIdDinos {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdStructures {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd "DestroyTribeId {tribeid}" @all"""
+    sshuser = config.get('general', 'sshuser').rstrip()
+    sshhost = config.get('general', 'otherserverip').rstrip()
+    sshpass = config.get('general', 'sshpass').rstrip()
+    commands = f"""arkmanager rconcmd "saveworld" @all && arkmanager backup @all && arkmanager rconcmd \
+"DestroyTribeIdDinos {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdStructures {tribeid}" @all && \
+arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd "DestroyTribeId {tribeid}" @all"""
     command = f"""sshpass -p {sshpass} ssh {sshuser}@{sshhost} '{commands}'"""
     subprocess.run(command, shell=True)
 
+
 def printplayer(feach):
-    print(f'{BWHT}{feach[0]} {BMGT}{feach[1].capitalize()}{RST} {WHT}last on {tclr}{elapsedTime(now,float(feach[2]))} {WHT}ago on {BMGT}{feach[3].capitalize()} {WHT}Home Server: {BCYN}{feach[15].capitalize()} {WHT}Discord: {BWHT}{feach[8]}{RST}')
-    print(f'{WHT}Connections: {BGRN}{feach[7]} {WHT}Total Playtime: {BCYN}{playedTime(feach[4])} {WHT}joined {trclr}{elapsedTime(now,float(feach[6]))}{WHT} ago{RST}')
-    print(f'{WHT}Points: {BGRN}{feach[5]} {WHT}Transfer Points: {BGRN}{feach[16]} {WHT}Auctions: {BGRN}{feach[10]} ({feach[11]}/{feach[12]}) {WHT}Primordial Warning: {BCYN}{feach[14]} {WHT}Lotto Wins: {BGRN}{feach[18]}{RST}\n')
+    print(f'{BWHT}{feach[0]} {BMGT}{feach[1].capitalize()}{RST} {WHT}last on {tclr}{elapsedTime(now,float(feach[2]))} \
+{WHT}ago on {BMGT}{feach[3].capitalize()} {WHT}Home Server: {BCYN}{feach[15].capitalize()} {WHT}Discord: \
+{BWHT}{feach[8]}{RST}')
+    print(f'{WHT}Connections: {BGRN}{feach[7]} {WHT}Total Playtime: {BCYN}{playedTime(feach[4])} {WHT}joined \
+{trclr}{elapsedTime(now,float(feach[6]))}{WHT} ago{RST}')
+    print(f'{WHT}Points: {BGRN}{feach[5]} {WHT}Transfer Points: {BGRN}{feach[16]} {WHT}Auctions: {BGRN}{feach[10]} \
+({feach[11]}/{feach[12]}) {WHT}Primordial Warning: {BCYN}{feach[14]} {WHT}Lotto Wins: {BGRN}{feach[18]}{RST}\n')
+
 
 def alogsearcher(searchparm):
     log_file_path = '/home/ark/shared/logs/pyark/pyark.log'
@@ -102,10 +116,11 @@ def alogsearcher(searchparm):
     with open(log_file_path, "r") as in_file:
         for line in in_file:
             if (line.find(searchparm)) != -1:
-                #if jk = 0: ################
+                # if jk = 0: ################
                 print(f'{nc}{line}{RST}', end='', flush=True)
     print('   ')
     print(f'{BGRN}Complete.{RST}')
+
 
 def printarkserverdata(sdata):
     if int(sdata['is_online']) == 1:
@@ -114,24 +129,28 @@ def printarkserverdata(sdata):
         fug = f'{BRED}False{RST}'
     print(f'{BYEL}Hostname: {BMGT}{sdata["hostname"]}{RST}')
     print(f'{BYEL}Ark Server Name: {BCYN}{sdata["name"]}{RST}')
-    print(f'{BYEL}Address: {BMGT}{sdata["address"]}{RST}  {BYEL}Port: {BMGT}{sdata["port"]}{BYEL}  Query Port: {BMGT}{sdata["query_port"]}{BYEL}  Map: {BMGT}{sdata["map"]}{RST}')
+    print(f'{BYEL}Address: {BMGT}{sdata["address"]}{RST}  {BYEL}Port: {BMGT}{sdata["port"]}{BYEL}  Query Port: \
+{BMGT}{sdata["query_port"]}{BYEL}  Map: {BMGT}{sdata["map"]}{RST}')
     print(f'{BYEL}Server Version: {BMGT}{sdata["version"]}{BYEL}  Online: {fug}{BYEL}  Uptime: {BMGT}{sdata["uptime"]}{BYEL}')
-    print(f'{BYEL}Rank: {BCYN}{sdata["rank"]}{BYEL}  Score: {BCYN}{sdata["score"]}{BYEL}  Votes: {BCYN}{sdata["votes"]}{BYEL}  Favorited: {BCYN}{sdata["favorited"]}{BYEL}  Comments: {BCYN}{sdata["comments"]}{RST}')
+    print(f'{BYEL}Rank: {BCYN}{sdata["rank"]}{BYEL}  Score: {BCYN}{sdata["score"]}{BYEL}  Votes: \
+{BCYN}{sdata["votes"]}{BYEL}  Favorited: {BCYN}{sdata["favorited"]}{BYEL}  Comments: {BCYN}{sdata["comments"]}{RST}')
     print(f'{BYEL}Ark-Servers URL: {BMGT}{sdata["url"]}{RST}')
     print(f'{BYEL}Last Update: {BCYN}{sdata["last_check"]}{RST}')
     print(f'{BYEL}Last Online: {BCYN}{sdata["last_online"]}{RST}')
     print('  ')
+
 
 def printserverinfo(each):
     c.execute('SELECT * from players')
     allplayers = c.fetchall()
     c.execute('SELECT cfgver from general')
     gencfgver = c.fetchone()
+
     def howmanyon(inst):
         pcnt = 0
         for row in allplayers:
-            #print(row)
-            diff_time = float(now) -  float(row[2])
+            # print(row)
+            diff_time = float(now) - float(row[2])
             total_min = diff_time / 60
             minutes = int(total_min % 60)
             hours = int(total_min / 60)
@@ -139,30 +158,30 @@ def printserverinfo(each):
             if minutes <= 1 and hours < 1 and days < 1 and row[3] == inst:
                 pcnt += 1
         return pcnt
-    restarted = elapsedTime(float(now),float(each[1]))
-    if float(now)-float(each[1]) > 259200:
+    restarted = elapsedTime(float(now), float(each[1]))
+    if float(now) - float(each[1]) > 259200:
         restclr = f"{BRED}"
-    elif float(now)-float(each[1]) > 172800:
+    elif float(now) - float(each[1]) > 172800:
         restclr = f"{BYEL}"
     else:
         restclr = f"{BGRN}"
-    lwipe = elapsedTime(float(now),float(each[2]))
-    if float(now)-float(each[2]) > 86400:
+    lwipe = elapsedTime(float(now), float(each[2]))
+    if float(now) - float(each[2]) > 86400:
         wipeclr = f"{BRED}"
-    elif float(now)-float(each[2]) > 43200:
+    elif float(now) - float(each[2]) > 43200:
         wipeclr = f"{BYEL}"
     else:
         wipeclr = f"{BGRN}"
-    lvote = elapsedTime(float(now),float(each[4]))
-    if float(now)-float(each[4]) > 259200:
+    lvote = elapsedTime(float(now), float(each[4]))
+    if float(now) - float(each[4]) > 259200:
         voteclr = f"{BRED}"
-    elif float(now)-float(each[4]) > 86400:
+    elif float(now) - float(each[4]) > 86400:
         voteclr = f"{BYEL}"
     else:
         voteclr = f"{BGRN}"
     ply = howmanyon(each[0])
     if gencfgver[0] != each[6]:
-        vertxt = f'{BRED}({int(gencfgver[0])-int(each[6])} versions behind){RST}'
+        vertxt = f'{BRED}({int(gencfgver[0]) - int(each[6])} versions behind){RST}'
     else:
         vertxt = f'{GRN}(Current){RST}'
     if each[3] == "False":
@@ -195,11 +214,11 @@ def printserverinfo(each):
         isr = f'{BRED}NO{RST}'
     elif int(each[11]) == 1:
         isr = f'{BGRN}Yes{RST}'
-    if time.time()-float(each[12]) > 600:
+    if time.time() - float(each[12]) > 600:
         boo = f'{BRED}'
     else:
         boo = f'{BGRN}'
-    lastuc = elapsedTime(time.time(),float(each[12]))
+    lastuc = elapsedTime(time.time(), float(each[12]))
     print(f'{WHT}Server: {BMGT}{each[0].upper()}{WHT}  Players: {mm}{ply}/50{RST}')
     print(f'{WHT}Online: {iso}  {WHT}Listening: {isl}  {WHT}Running: {isr}  {WHT}Last Check: {boo}{lastuc}{RST}')
     print(f'{WHT}Active Memory: {BYEL}{each[13]} Gig{WHT}  Total Memory: {BYEL}{each[14]} Gig{RST}')
@@ -210,13 +229,14 @@ def printserverinfo(each):
     print(f'{WHT}Last wipe vote: {voteclr}{lvote}{RST}')
     print('  ')
 
+
 def playersraw():
     c.execute('SELECT * from players')
     allplayers = c.fetchall()
     for row in allplayers:
-        pltime = playedTime(float(row[4].replace(',','')))
-        laston = elapsedTime(float(now),float(row[2]))
-        diff_time = float(now) -  float(row[2])
+        pltime = playedTime(float(row[4].replace(',', '')))
+        laston = elapsedTime(float(now), float(row[2]))
+        diff_time = float(now) - float(row[2])
         total_min = diff_time / 60
         minutes = int(total_min % 60)
         hours = int(total_min / 60)
@@ -229,10 +249,11 @@ def playersraw():
             active = BRED
         else:
             active = BCYN
-        firston = datetime.fromtimestamp(float(row[6])-14400).strftime('%a, %b %d %I:%M%p')
+        firston = datetime.fromtimestamp(float(row[6]) - 14400).strftime('%a, %b %d %I:%M%p')
         print(f'{active}{row[0]} \"{row[1]}\" - Connections: {row[7]} - Reward Points: {row[5]}')
         print(f' FirstON: {firston} | PlayedTime: {pltime} | LastON: {laston} on {row[3]}{RST}')
         print('  ')
+
 
 def showservers():
     global tclr
@@ -245,8 +266,8 @@ def showservers():
     allservers = c.fetchall()
     for each in allservers:
         printserverinfo(each)
-    lst = time.time()-41
-    c.execute('SELECT * from players WHERE lastseen > ?', (lst,))
+    lst = time.time() - 41
+    c.execute('SELECT * from players WHERE lastseen > ?', (lst, ))
     lastones = c.fetchall()
     jo = len(lastones)
     if jo == 0:
@@ -256,8 +277,8 @@ def showservers():
     print(f'{BYEL}CLUSTER PLAYERS ONLINE: {moo}{jo}{RST}')
     print('   ')
     for feach in lastones:
-        tt = now-float(feach[2])
-        tr = now-float(feach[6])
+        tt = now - float(feach[2])
+        tr = now - float(feach[6])
         if tt < 86400:
             tclr = f'{BGRN}'
         elif tt < 604800:
@@ -272,14 +293,16 @@ def showservers():
             trclr = f'{RED}'
         printplayer(feach)
 
+
 def restartserver(server):
     if not args.cancel:
-        c.execute('UPDATE instances SET needsrestart = "True", restartreason = "admin restart" WHERE name = ?', (server,))
+        c.execute('UPDATE instances SET needsrestart = "True", restartreason = "admin restart" WHERE name = ?', (server, ))
         print(f'{BYEL}server {BMGT}{server}{BYEL} has been set to {BRED}RESTART{RST}')
     else:
-        c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', (server,))
+        c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', (server, ))
         print(f'{BYEL}server {BMGT}{server}{BYEL} has been set to {BGRN}NOT RESTART{RST}')
     conn.commit()
+
 
 def printcolmns(mtable):
     c.execute('PRAGMA table_info({})'.format(mtable))
@@ -291,16 +314,18 @@ def printcolmns(mtable):
     print('  ')
 
 
-def listtablewhere(mtable,colmn,val):
-    #print(mtable,colmn,val)
-    c.execute('SELECT * from {} WHERE {} = ""'.format(mtable,colmn))
-    showtable(mtable,c.fetchall())
+def listtablewhere(mtable, colmn, val):
+    # print(mtable,colmn,val)
+    c.execute('SELECT * from {} WHERE {} = ""'.format(mtable, colmn))
+    showtable(mtable, c.fetchall())
+
 
 def listtable(mtable):
     c.execute('SELECT * from {}'.format(mtable))
-    showtable(mtable,c.fetchall())
+    showtable(mtable, c.fetchall())
 
-def showtable(mtable,aplay):
+
+def showtable(mtable, aplay):
     sc = 0
     cnt = 0
     if aplay:
@@ -319,6 +344,7 @@ def showtable(mtable,aplay):
         print(f'{BWHT}Table: {BGRN}{mtable}{BWHT} Total rows: {BMGT}{cnt}{RST}')
     else:
         print(f'{BYEL}{mtable} table is empty.{RST}')
+
 
 def getresponce(question):
     print('    ')
@@ -346,6 +372,7 @@ def ask_question(question):
         print(error)
         return ask_user()
 
+
 def linkplayer():
     printcolmns('players')
     listtable('players')
@@ -355,7 +382,7 @@ def linkplayer():
     listtable('discordnames')
     sdid = getresponce(f'{BGRN}Enter Discord Name to add to player {nsteamid}{RST}')
     if ask_question(f'{BGRN}Add Discord Name: {BMGT}{sdid}{BGRN} to Steam ID {BMGT}{nsteamid}{BYEL}?{RST}'):
-        c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (sdid,nsteamid))
+        c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (sdid, nsteamid))
         print('    ')
         print(f'{BYEL}Discord Name: {BMGT}{sdid}{BYEL} has been added to {BMGT}{nsteamid}{RST}')
         print('    ')
@@ -365,7 +392,8 @@ def linkplayer():
         print('    ')
     conn.commit()
     printcolmns('players')
-    listtable('players')    
+    listtable('players')
+
 
 def delplayer():
     printcolmns('players')
@@ -375,7 +403,8 @@ def delplayer():
     oplayers = c.fetchall()
     for each in oplayers:
         if each[0] == nsteamid:
-            if ask_question(f'{BGRN}You will be DELETING {BMGT}{each[1]}{BGRN} with steamid {BMGT}{each[0]}{BGRN} from the database. continue?{RST}'):
+            if ask_question(f'{BGRN}You will be DELETING {BMGT}{each[1]}{BGRN} with steamid {BMGT}{each[0]}{BGRN} \
+from the database. continue?{RST}'):
                 c.execute('DELETE from players WHERE steamid = ?', (nsteamid,))
                 print('    ')
                 print(f'{BYEL}Player {BMGT}{each[1]}{BYEL} with steamid {BMGT}{each[0]}{BYEL} has been deleted.{RST}')
@@ -390,8 +419,8 @@ def delplayer():
     for row in alldata:
         print(row)
 
+
 def banplayer():
-    popper = []
     printcolmns('players')
     listtable('players')
     nsteamid = getresponce(f'{BGRN}Enter Steam ID of player to BAN{RST}')
@@ -401,17 +430,19 @@ def banplayer():
     for each in oplayers:
         if each[0] == nsteamid:
             juu = each[1]
-    if ask_question(f'{BGRN}You will be BANNING {BMGT}{juu}{BGRN} with steamid {BMGT}{nsteamid}{BGRN} from the cluster. continue?{RST}'):
+    if ask_question(f'{BGRN}You will be BANNING {BMGT}{juu}{BGRN} with steamid {BMGT}{nsteamid}{BGRN} from the \
+cluster. continue?{RST}'):
         if juu != 'noname':
-            c.execute('UPDATE players SET banned = ? WHERE steamid = ?', (time.time(),nsteamid))
+            c.execute('UPDATE players SET banned = ? WHERE steamid = ?', (time.time(), nsteamid))
             conn.commit()
-        c.execute('SELECT * from banlist WHERE steamid = ?', (nsteamid,))
+        c.execute('SELECT * from banlist WHERE steamid = ?', (nsteamid, ))
         blid = c.fetchall()
         if not blid:
-            c.execute('INSERT INTO banlist (steamid) VALUES (?)', (nsteamid,))
+            c.execute('INSERT INTO banlist (steamid) VALUES (?)', (nsteamid, ))
             conn.commit()
         print('    ')
-        print(f'{BYEL}Player {BMGT}{each[1]}{BYEL} with steamid {BMGT}{each[0]}{BYEL} has been BANNED from all servers in the cluster!{RST}')
+        print(f'{BYEL}Player {BMGT}{each[1]}{BYEL} with steamid {BMGT}{each[0]}{BYEL} has been BANNED from all servers \
+in the cluster!{RST}')
         print('    ')
     else:
         print('    ')
@@ -422,8 +453,8 @@ def banplayer():
     for row in alldata:
         print(row)
 
+
 def unbanplayer():
-    popper = []
     printcolmns('players')
     listtable('players')
     nsteamid = getresponce(f'{BGRN}Enter Steam ID of player to UN-BAN{RST}')
@@ -433,7 +464,8 @@ def unbanplayer():
     for each in oplayers:
         if each[0] == nsteamid:
             juu = each[1]
-    if ask_question(f'{BGRN}You will be UN-BANNING {BMGT}{juu}{BGRN} with steamid {BMGT}{nsteamid}{BGRN} from the cluster. continue?{RST}'):
+    if ask_question(f'{BGRN}You will be UN-BANNING {BMGT}{juu}{BGRN} with steamid {BMGT}{nsteamid}{BGRN} \
+from the cluster. continue?{RST}'):
         if juu != 'noname':
             c.execute('UPDATE players SET banned = "" WHERE steamid = ?', (nsteamid,))
             conn.commit()
@@ -443,7 +475,8 @@ def unbanplayer():
             c.execute('DELETE FROM banlist WHERE steamid = ?', (nsteamid,))
             conn.commit()
         print('    ')
-        print(f'{BYEL}Player {BMGT}{each[1]}{BYEL} with steamid {BMGT}{each[0]}{BYEL} has been UN-BANNED from all servers in the cluster!{RST}')
+        print(f'{BYEL}Player {BMGT}{each[1]}{BYEL} with steamid {BMGT}{each[0]}{BYEL} has been UN-BANNED from \
+all servers in the cluster!{RST}')
         print('    ')
     else:
         print('    ')
@@ -453,6 +486,7 @@ def unbanplayer():
     alldata = c.fetchall()
     for row in alldata:
         print(row)
+
 
 def banlist():
     c.execute('SELECT * from players WHERE banned != ""')
@@ -479,8 +513,8 @@ def newest():
     c.execute('SELECT * from players ORDER BY firstseen DESC LIMIT 10')
     lastones = c.fetchall()
     for feach in lastones:
-        tt = now-float(feach[2])
-        tr = now-float(feach[6])
+        tt = now - float(feach[2])
+        tr = now - float(feach[6])
         if tt < 86400:
             tclr = f'{BGRN}'
         elif tt < 604800:
@@ -493,8 +527,8 @@ def newest():
             trclr = f'{YEL}'
         else:
             trclr = f'{RED}'
-
         printplayer(feach)
+
 
 def topplayers():
     ppc = 0
@@ -505,15 +539,15 @@ def topplayers():
     llast = c.fetchall()
     lastones = [list(elem) for elem in llast]
     for f in range(len(lastones)):
-        lastones[f][4] = float(str(lastones[f][4]).replace(',',''))
-    lastones.sort(key=lambda x:x[4],reverse=True)
+        lastones[f][4] = float(str(lastones[f][4]).replace(',', ''))
+    lastones.sort(key=lambda x: x[4], reverse=True)
     for feach in lastones:
         ppc += 1
         if ppc <= 10:
             printplayer(feach)
-    #print(f'{BCYN}TOP 5 PLAYTIME PLAYERS LAST WEEK:{RST}')
-    #ppc = 1
-    #for feach in lastones:
+    # print(f'{BCYN}TOP 5 PLAYTIME PLAYERS LAST WEEK:{RST}')
+    # ppc = 1
+    # for feach in lastones:
     #    if ppc <= 5 and time.time()-float(feach[2]) < 604800:
     #        ppc += 1
     #        printplayer(feach)
@@ -524,16 +558,19 @@ def tribewipe():
     if ask_question(f'{BGRN}You will be DESTROYING {BMGT}{tribeid}{BGRN} from the cluster. continue?{RST}'):
         subrun = f"""arkmanager rconcmd 'DestroyTribeIdStructures {tribeid}' @ragnarok"""
         subprocess.run(subrun, shell=True)
-        #subrun = f"""arkmanager rconcmd 'DestroyTribeIdDinos {tribeid}' @all && arkmanager rconcmd 'DestroyTribeIdStructures {tribeid}' @all && arkmanager rconcmd 'DestroyTribeIdPlayers {tribeid}' @all && arkmanager rconcmd 'DestroyTribeId {tribeid}' @all"""
+        # subrun = f"""arkmanager rconcmd 'DestroyTribeIdDinos {tribeid}' @all && arkmanager rconcmd \
+        # 'DestroyTribeIdStructures {tribeid}' @all && arkmanager rconcmd 'DestroyTribeIdPlayers \
+        # {tribeid}' @all && arkmanager rconcmd 'DestroyTribeId {tribeid}' @all"""
         print('    ')
         print(f'{BYEL}Removing tribeid {BMGT}{tribeid}{BYEL} from local server{RST}')
         print('   ')
-        #subprocess.run('arkmanager rconcmd "saveworld" @all && arkmanager backup @all', shell=True)
+        # subprocess.run('arkmanager rconcmd "saveworld" @all && arkmanager backup @all', shell=True)
         subprocess.run(subrun, shell=True)
         print(f'{BYEL}Removing tribeid {BMGT}{tribeid}{BYEL} from remote server{RST}')
-        #sendtoserver(tribeid)
-        #print('   ')
-        #print(f'{BGRN}TribeID {BMGT}{tribeid}{BGRN} has been DESTROYED from all servers!{RST}')
+        # sendtoserver(tribeid)
+        # print('   ')
+        # print(f'{BGRN}TribeID {BMGT}{tribeid}{BGRN} has been DESTROYED from all servers!{RST}')
+
 
 def oldest():
     global tclr
@@ -543,8 +580,8 @@ def oldest():
     c.execute('SELECT * from players ORDER BY lastseen ASC LIMIT 10')
     lastones = c.fetchall()
     for feach in lastones:
-        tt = now-float(feach[2])
-        tr = now-float(feach[6])
+        tt = now - float(feach[2])
+        tr = now - float(feach[6])
         if tt < 86400:
             tclr = f'{BGRN}'
         elif tt < 604800:
@@ -558,6 +595,7 @@ def oldest():
         else:
             trclr = f'{RED}'
         printplayer(feach)
+
 
 def serverinfo(svr):
     global tclr
@@ -608,7 +646,7 @@ def serverinfo(svr):
         c.execute('SELECT * from players WHERE server = ? ORDER BY lastseen DESC LIMIT 10', (svr,))
         lastones = c.fetchall()
         for feach in lastones:
-            tt = now-float(feach[2])
+            tt = now - float(feach[2])
             if tt < 300:
                 tclr = f'{BGRN}'
             elif tt < 86400:
@@ -622,7 +660,7 @@ def serverinfo(svr):
         c.execute('SELECT * from players WHERE server = ? ORDER BY firstseen DESC LIMIT 5', (svr,))
         lastones = c.fetchall()
         for feach in lastones:
-            tt = now-float(feach[2])
+            tt = now - float(feach[2])
             if tt < 300:
                 tclr = f'{BGRN}'
             elif tt < 86400:
@@ -632,14 +670,15 @@ def serverinfo(svr):
             printplayer(feach)
         print('   ')
 
+
 def playerage():
     print(f'{BCYN}PLAYERS BY LAST TIME SEEN:{RST}')
     print('    ')
     c.execute('SELECT * from players ORDER BY lastseen DESC')
     lastones = c.fetchall()
     for feach in lastones:
-        tt = now-float(feach[2])
-        tr = now-float(feach[6])
+        tt = now - float(feach[2])
+        tr = now - float(feach[6])
         if tt < 86400:
             tclr = f'{BGRN}'
         elif tt < 604800:
@@ -655,12 +694,13 @@ def playerage():
         printplayer(feach)
     print('   ')
 
+
 def follow(stream):
     line = ''
     try:
-        for block in iter(lambda:stream.read(1024), None):
+        for block in iter(lambda: stream.read(1024), None):
             if '\n' in block:
-                for line in (line+block).splitlines(True)+['']:
+                for line in (line + block).splitlines(True) + ['']:
                     if line.endswith('\n'):
                         yield line.strip()
             elif not block:
@@ -669,9 +709,10 @@ def follow(stream):
     except KeyboardInterrupt:
         print('Exited.')
 
+
 def pyarklogs():
-    a = 0
-    arklog = subprocess.run('tail -%s /home/ark/shared/logs/pyark/pyark.log' % (args.loglines,),stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    arklog = subprocess.run('tail -%s /home/ark/shared/logs/pyark/pyark.log' % (args.loglines,),
+                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
     for each in arklog.stdout.decode('utf-8').split('\n'):
         if each.find('[CRITICAL]') != -1:
             ar = f'{BRED}'
@@ -686,10 +727,11 @@ def pyarklogs():
                 ar = f'{BWHT}'
         print(f'{ar}{each}{RST}')
 
+
 def watchlog(dlog):
-    if dlog == False:
+    if dlog is False:
         logpath = f'/home/ark/shared/logs/pyark/pyark.log'
-    elif dlog == True:
+    elif dlog is True:
         logpath = f'/home/ark/shared/logs/pyark/pyarkdebug.log'
     with open(logpath, 'rt') as following:
         following.seek(0, 0)
@@ -717,7 +759,7 @@ def watchlog(dlog):
                     ar = f'{PUR}'
                 elif each.find('link') != -1:
                     ar = f'{SLT}'
-                elif each.find('has joined') != -1:
+                elif each.find('has joined') != -1 or each.find('transferred') != -1:
                     ar = f'{BGN}'
                 elif each.find('svr1') != -1:
                     ar = f'{WHT}'
@@ -726,7 +768,7 @@ def watchlog(dlog):
             print(f'{ar}{each}{RST}')
 
 
-def writechat(inst,whos,msg,tstamp):
+def writechat(inst, whos, msg, tstamp):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('SELECT * from players WHERE playername = ?', (whos,))
@@ -736,36 +778,43 @@ def writechat(inst,whos,msg,tstamp):
     if isindb:
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
-        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', (inst,whos,msg,tstamp))
+        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
+                  (inst, whos, msg, tstamp))
         conn.commit()
         c.close()
         conn.close()
+
 
 def resetlastwipe(sinst):
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     newtime = time.time()
-    c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', [newtime,sinst])
+    c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', (newtime, sinst))
     conn.commit()
     c.close()
     conn.close()
 
+
 def initdinowipe(sinst):
     print(f'{BYEL}Initiating a Wild Dino Wipe on server {BMGT}{sinst.capitalize()}{RST}')
     resetlastwipe(sinst)
-    subprocess.run('arkmanager rconcmd "ServerChat admin initated a wild dino wipe, wiping in 10 seconds" @%s' % (sinst), shell=True)
-    writechat(sinst,'ALERT',f'### A wild dino wipe as been initiated by admin. Wiping wild dinos now.',wcstamp())
+    subprocess.run('arkmanager rconcmd "ServerChat admin initated a wild dino wipe, wiping in 10 seconds" @%s' %
+                   (sinst), shell=True)
+    writechat(sinst, 'ALERT', f'### A wild dino wipe as been initiated by admin. Wiping wild dinos now.', wcstamp())
     time.sleep(10)
-    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (sinst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (sinst), stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL, shell=True)
     time.sleep(2)
+
 
 def backupdb():
     try:
-        subprocess.run("""rm /home/ark/shared/db/pyark.db.old""",shell=True)
+        subprocess.run("""rm /home/ark/shared/db/pyark.db.old""", shell=True)
     except:
         pass
-    subprocess.run("""/usr/bin/sqlite3 /home/ark/shared/db/pyark.db '.backup "/home/ark/shared/db/pyark.db.old"'""",shell=True)
+    subprocess.run("""/usr/bin/sqlite3 /home/ark/shared/db/pyark.db '.backup "/home/ark/shared/db/pyark.db.old"'""", shell=True)
     print(f'{BYEL}Database backed up to {sharedpath}/db/pyark.db.old{RST}')
+
 
 def startlottery():
     listtable('lotteryinfo')
@@ -779,9 +828,9 @@ def startlottery():
     if ltype.lower() == 'item':
         litm = getresponce('Enter the Item display name ')
     else:
-        litm = str(lbuyin*4)
+        litm = str(lbuyin * 4)
     now = time.time()
-    lottostart = datetime.fromtimestamp(now+(3600*int(ldays))).strftime('%a, %b %d %I:%M%p')
+    lottostart = datetime.fromtimestamp(now + (3600 * int(ldays))).strftime('%a, %b %d %I:%M%p')
     print(f'{BYEL}Lottery ends on {BMGT}{lottostart}{RST}')
     print(f'{BYEL}Lottery Type: {BMGT}{ltype.capitalize()}{RST}')
     print(f'{BYEL}Lottery Prize: {BMGT}{litm}{RST}')
@@ -791,11 +840,13 @@ def startlottery():
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     newtime = time.time()
-    c.execute('INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner) VALUES (?,?,?,?,?,0,"Incomplete")', (ltype,litm,now,lbuyin,ldays))
+    c.execute('INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner) VALUES \
+              (?,?,?,?,?,0,"Incomplete")', (ltype,litm,now,lbuyin,ldays))
     conn.commit()
     c.close()
     conn.close()
-    
+
+
 def lottery():
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
@@ -816,10 +867,9 @@ def lottery():
         if plist == '':
             plist = '%s' % (row[1])
         else:
-            plist=plist + ', %s' % (row[1])
-
+            plist = plist + ', %s' % (row[1])
     now = time.time()
-    lli = float(lastlottery[3])+(3600*int(lastlottery[5]))
+    lli = float(lastlottery[3]) + (3600 * int(lastlottery[5]))
     lottostart = estshift(datetime.fromtimestamp(lli)).strftime('%a, %b %d %I:%M%p')
     print('   ')
     print(f'{BCYN}TOP 5 WINNERS:')
@@ -831,7 +881,8 @@ def lottery():
             ltype = f'{BRED}WITHDRAW{RST}'
         elif int(leach[4]) == 1:
             ltype = f'{BGRN}DEPOSIT{RST}'
-        print(f'{BYEL}Player: {BMGT}{leach[1]} {BYEL}Type: {ltype} {BYEL}Amount: {BCYN}{leach[3]} {BYEL}Waiting: {BCYN}{elapsedTime(now,leach[2])}{RST}')
+        print(f'{BYEL}Player: {BMGT}{leach[1]} {BYEL}Type: {ltype} {BYEL}Amount: {BCYN}{leach[3]} {BYEL}Waiting: \
+{BCYN}{elapsedTime(now,leach[2])}{RST}')
     print('   ')
     if lastlottery[7] == 'Incomplete':
         print(f'{BGRN}CURRENT LOTTERY UNDERWAY:{RST}')
@@ -852,8 +903,8 @@ def lottery():
         print(f'{BYEL}Lottery Length: {BMGT}{lastlottery[5]} Hours{RST}')
         print(f'{BYEL}Participated Lottery Players: {BMGT}{lastlottery[6]}{RST}')
         print(f'{BYEL}Players: {BMGT}{plist}{RST}')
-
     print('   ')
+
 
 try:
     if args.action_to_perform == 'servers':
@@ -878,7 +929,7 @@ try:
         listtable('lotterydeposits')
     elif args.action_to_perform == 'notlinked':
         listtable('players')
-        listtablewhere('players','discordid','') 
+        listtablewhere('players', 'discordid', '')
     elif args.action_to_perform == 'discordnames':
         printcolmns('discordnames')
         listtable('discordnames')
@@ -899,7 +950,7 @@ try:
     elif args.action_to_perform == 'newest':
         newest()
     elif args.action_to_perform == 'server':
-        if args.servername == None:
+        if args.servername is None:
             print('You must specify a server name with -s option.')
         else:
             serverinfo(args.servername)
@@ -920,7 +971,7 @@ try:
     elif args.action_to_perform == 'debugwatch':
         watchlog(True)
     elif args.action_to_perform == 'logsearch':
-        if args.searcharg == None:
+        if args.searcharg is None:
             print('You must specify a search value with the -l option.')
         else:
             alogsearcher(args.searcharg)
@@ -941,7 +992,7 @@ try:
     elif args.action_to_perform == 'startlottery':
         startlottery()
     elif args.action_to_perform == 'log':
-        if args.loglines == None:
+        if args.loglines is None:
             print('You must specify number of log lines to show with -j option.')
         else:
             pyarklogs()

@@ -2,6 +2,7 @@ from configparser import ConfigParser
 
 configfile = '/home/ark/pyark.cfg'
 
+
 class ExtConfigParser(ConfigParser):
     def getlist(self, section, option):
         value = self.get(section, option)
@@ -10,12 +11,22 @@ class ExtConfigParser(ConfigParser):
     def getlistint(self, section, option):
         return [int(x) for x in self.getlist(section, option)]
 
+
 config = ExtConfigParser()
 config.read(configfile)
 
 sharedpath = config.get('general', 'shared')
 arkroot = config.get('general', 'arkroot')
-logfile = config.get('general','log')
+logfile = config.get('general', 'log')
 
 sqldb = f'{sharedpath}/db/pyark.db'
 
+numinstances = int(config.get('general', 'instances'))
+instance = [dict() for x in range(numinstances)]
+
+for each in range(numinstances):
+    a = config.get('instance%s' % (each), 'name')
+    instance[each] = {'name': a, }
+
+isupdater = config.get('general', 'isupdater')
+imthedbot = config.get('general', 'isdiscordbot')

@@ -7,15 +7,17 @@ intervals = (
     ('days', 86400),    # 60 * 60 * 24
     ('hours', 3600),    # 60 * 60
     ('minutes', 60),
-    ('seconds', 1),
-    )
+    ('seconds', 1),)
+
 
 def estshift(otime):
-    return otime-tzfix
+    return otime - tzfix
+
 
 def wcstamp():
-    a = datetime.now()-tzfix
+    a = datetime.now() - tzfix
     return a.strftime('%m-%d %I:%M%p')
+
 
 def elapsedTime(start_time, stop_time):
     result = []
@@ -36,6 +38,7 @@ def elapsedTime(start_time, stop_time):
     else:
         return 'now'
 
+
 def playedTime(seconds):
     result = []
     if type(seconds) != float:
@@ -44,7 +47,6 @@ def playedTime(seconds):
         granularity = 1
     else:
         granularity = 2
-    
     for name, count in intervals:
         value = seconds // count
         if value:
@@ -53,5 +55,3 @@ def playedTime(seconds):
                 name = name.rstrip('s')
             result.append("{} {}".format(int(value), name))
     return ', '.join(result[:granularity])
-
-

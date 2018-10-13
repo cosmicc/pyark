@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-import time, logging, argparse, subprocess, socket, re, sqlite3 
-from configreader import *
+import time, logging, argparse, subprocess, socket, re, sqlite3
+from configreader import config, sqldb
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -20,10 +20,11 @@ logfile2 = '/home/ark/shared/logs/arkwatchdog/arkwatchdog.log'
 
 parser = argparse.ArgumentParser(prog=__progname__)
 parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
-parser.add_argument('-q', '--quiet', action='store_true', help='supress logging output to console. default: error logging')
+parser.add_argument('-q', '--quiet', action='store_true',
+                    help='supress logging output to console. default: error logging')
 parser.add_argument('--debug', action='store_true', help='verbose output (debug)')
 args = parser.parse_args()
-if args.debug == True:  # changed to false to force debugging
+if args.debug:  # changed to false to force debugging
     log.setLevel(logging.DEBUG)
 else:
     log.setLevel(logging.INFO)
@@ -38,13 +39,17 @@ log_fileh = logging.FileHandler(logfile2)
 log.addHandler(log_fileh)
 log_fileh.setFormatter(log_format)
 
+
 def stripansi(stripstr):
     ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     return(ansi_escape.sub('', stripstr))
 
+
 def getinstpid(inst):
-    rawpid = subprocess.run('arkmanager getpid @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    rawpid = subprocess.run('arkmanager getpid @%s' % (inst), stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL, shell=True)
     return rawpid.stdout.decode('utf-8').split('\n')[1]
+
 
 def didserverjustboot():
     rawuptime = subprocess.run('tail /proc/uptime', stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
@@ -54,16 +59,20 @@ def didserverjustboot():
     else:
         return False
 
+
 def getinstmem(inst):
     instpid = getinstpid(inst)
-    rawsts = subprocess.run('ps -p %s -o rss,vsz' % (instpid), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    rawsts = subprocess.run('ps -p %s -o rss,vsz' % (instpid), stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL, shell=True)
     instrss, instvsz = rawsts.stdout.decode('utf-8').split('\n')[1].split(' ')
-    instrss = int(instrss)/1000000 // 0.01 / 100
-    instvsz = int(instvsz)/1000000 // 0.01 / 100
-    return instrss,instvsz
+    instrss = int(instrss) / 1000000 // 0.01 / 100
+    instvsz = int(instvsz) / 1000000 // 0.01 / 100
+    return instrss, instvsz
+
 
 def getrunning(inst):
-    rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL, shell=True)
     rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
     for ea in rawrun2:
         sttitle = stripansi(ea.split(':')[0]).strip()
@@ -86,9 +95,12 @@ def getrunning(inst):
                 sonline = False
     return (srunning, slistening, sonline)
 
+
 def restartserver(inst):
     log.warning(f'restarting instance {inst}')
-    subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    subprocess.run('arkmanager start --alwaysrestart @%s' % (inst), stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL, shell=True)
+
 
 def main():
     isrunningcnt = 0
@@ -97,15 +109,15 @@ def main():
     log.info(f'>>> ark instance watchdog daemon is starting on {hstname}')
     numinstances = int(config.get('general', 'instances'))
     instance = [dict() for x in range(numinstances)]
-    instr = ''
     for each in range(numinstances):
         a = config.get('instance%s' % (each), 'name')
-        instance[each] = {'name':a,}
-    if didserverjustboot(): 
+        instance[each] = {'name': a, }
+    if didserverjustboot():
         log.info('server just booted, starting instances for the first time')
         for eat in instance:
             log.info(f'starting instance {eat["name"]}')
-            subprocess.run('arkmanager start --alwaysrestart @%s' % (eat['name']), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('arkmanager start --alwaysrestart @%s' % (eat['name']), stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, shell=True)
         log.debug('sleeping 10 min while instances start')
         log.sleep(600)
     log.debug('starting watchdog loop')
@@ -115,33 +127,34 @@ def main():
         try:
             for eachinst in instance:
                 isrunning, islistening, isonline = getrunning(eachinst['name'])
-                if isrunning == False:
+                if not isrunning:
                     isrunningcnt += 1
                     isrunningint = 0
                     log.warning(f'{eachinst["name"]} failed is instance running check {isrunningcnt}/2')
                 else:
                     isrunningint = 1
                     actmem, totmem = getinstmem(eachinst['name'])
-                if islistening == False:
+                if not islistening:
                     log.warning(f'{eachinst["name"]} failed is instance listening check {islisteningcnt}/2')
                     islisteningcnt += 1
                     islisteningint = 0
                 else:
                     islisteningint = 1
-                if isonline == False:
+                if not isonline:
                     log.warning(f'{eachinst["name"]} failed is instance online check {isonlinecnt}/2')
                     isonlinecnt += 1
                     isonlineint = 0
                 else:
                     isonlineint = 1
-                log.debug(isonlineint,islisteningint,isrunningint,time.time(),actmem,totmem,eachinst['name'])
+                log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
-                c.execute('UPDATE instances SET isup = %s, islistening = %s, isrunning = %s, uptimestamp = %s, actmem = %s, totmem = %s WHERE name = "%s"' % (isonlineint,islisteningint,isrunningint,time.time(),actmem,totmem,eachinst['name']))
+                c.execute('UPDATE instances SET isup = %s, islistening = %s, isrunning = %s, uptimestamp = %s, \
+                          actmem = %s, totmem = %s WHERE name = "%s"' % (isonlineint, islisteningint, isrunningint,
+                                                                         time.time(), actmem, totmem, eachinst['name']))
                 conn.commit()
                 c.close()
                 conn.close()
-
                 if isrunningcnt == 2 or isonlinecnt == 15 or islistening == 15:
                     isrunningcnt = 0
                     islisteningcnt = 0
@@ -151,6 +164,7 @@ def main():
             log.critical('Critical Error in Ark Watchdog!', exc_info=True)
         log.debug('sleeping 3 min between checks')
         time.sleep(120)
+
 
 if __name__ == '__main__':
     main()

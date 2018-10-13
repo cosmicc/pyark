@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import fcntl
 import logging
 import atexit
@@ -8,6 +7,7 @@ import socket
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
+
 
 def cleanName(filename):
     filename = os.path.basename(filename)
@@ -47,6 +47,7 @@ def unlock():
     lock_handle.close()
     if os.path.isfile(lockfile):
         os.remove(lockfile)
+
 
 if os.access('/tmp', os.W_OK) and os.path.isdir('/tmp'):
     lpath = '/tmp'

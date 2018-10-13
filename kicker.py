@@ -1,25 +1,11 @@
 #!/usr/bin/python3
 
-import time, socket, logging, sqlite3, threading, subprocess
-from datetime import datetime, timedelta
-from configreader import *
+import time, socket, logging, sqlite3, subprocess
+from configreader import sqldb
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
-numinstances = int(config.get('general', 'instances'))
-global instance
-instance = [dict() for x in range(numinstances)]
-
-instr = ''
-for each in range(numinstances):
-    a = config.get('instance%s' % (each), 'name')
-    b = config.get('instance%s' % (each), 'logfile')
-    instance[each] = {'name':a,'logfile':b}
-    if instr == '':
-        instr = '%s' % (a)
-    else:
-        instr=instr + ', %s' % (a)
 
 def kicker(inst):
     log.debug(f'starting kicklist kicker thread for {inst}')
@@ -36,7 +22,7 @@ def kicker(inst):
                 subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (kicked[1], inst), shell=True)
                 conn2 = sqlite3.connect(sqldb)
                 c2 = conn2.cursor()
-                c2.execute('DELETE FROM kicklist WHERE steamid = ?', [kicked[1]])    
+                c2.execute('DELETE FROM kicklist WHERE steamid = ?', [kicked[1]])
                 conn2.commit()
                 c2.close()
                 conn2.close()
