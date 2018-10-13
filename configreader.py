@@ -24,9 +24,17 @@ sqldb = f'{sharedpath}/db/pyark.db'
 numinstances = int(config.get('general', 'instances'))
 instance = [dict() for x in range(numinstances)]
 
+instr = ''
+
 for each in range(numinstances):
     a = config.get('instance%s' % (each), 'name')
     instance[each] = {'name': a, }
+    if instr == '':
+        instr = '%s' % (a)
+    else:
+        instr = instr + ', %s' % (a)
+        instr = instr + ', %s' % (a)
+
 
 isupdater = config.get('general', 'isupdater')
 imthedbot = config.get('general', 'isdiscordbot')

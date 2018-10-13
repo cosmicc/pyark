@@ -1,6 +1,6 @@
 import logging, subprocess, sqlite3, time, threading, random, socket
 from datetime import datetime
-from timehelper import elapsedTime, playedTime, wcstamp
+from timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift
 from configreader import instance, sqldb, numinstances
 
 hstname = socket.gethostname()
@@ -527,9 +527,9 @@ def processtcdata(inst, tcdata):
 new player to cluster.')
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
-            c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints,
-                      firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit,
-                      primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES
+            c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
+                      firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
+                      primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
                       (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid, playername, timestamp,
                                                                                    inst, playtime, rewardpoints,
                                                                                    timestamp, 1, '', '', 0, 0, 0, 0,
@@ -875,8 +875,8 @@ to send to all servers" @%s""" % (minst), shell=True)
                             writechatlog(inst, whoname, cmsg, tstamp)
                         except:
                             log.critical('could not parse date from chat', exc_info=True)
-        if line.startswith('Running command') or line.startswith('Command processed')
-        or line.startswith('Error:') or isserver(line):
+        if line.startswith('Running command') or line.startswith('Command processed') \
+                or line.startswith('Error:') or isserver(line):
             pass
         else:
             with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
@@ -894,23 +894,3 @@ def clisten(minst):
             time.sleep(2)
         except:
             log.critical('Critical Error in Command Listener!', exc_info=True)
-            try:
-                if c in vars():
-                    c.close()
-            except:
-                pass
-            try:
-                if conn in vars():
-                    conn.close()
-            except:
-                pass
-            try:
-                if c1 in vars():
-                    c1.close()
-            except:
-                pass
-            try:
-                if conn1 in vars():
-                    conn1.close()
-            except:
-                pass
