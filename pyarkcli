@@ -2,7 +2,7 @@
 
 import subprocess, time, re, logging, argparse, sqlite3, json
 from datetime import datetime
-from colorama import Fore, Back, Style
+from colorizer import *
 from timehelper import *
 from configreader import *
 from urllib.request  import urlopen, Request
@@ -58,21 +58,6 @@ log.addHandler(log_console)
 log_console.setFormatter(console_format)
 
 configfile = '/home/ark/pyark.cfg'
-
-YEL = Fore.YELLOW+Style.NORMAL
-BYEL = Fore.YELLOW+Style.BRIGHT
-CYN = Fore.CYAN+Style.NORMAL
-BCYN = Fore.CYAN+Style.BRIGHT
-WHT = Fore.RESET+Style.NORMAL
-#WHT = Fore.WHITE+Style.NORMAL
-BWHT = Fore.WHITE+Style.BRIGHT
-MGT = Fore.MAGENTA+Style.NORMAL
-BMGT = Fore.MAGENTA+Style.BRIGHT
-GRN = Fore.GREEN+Style.NORMAL
-BGRN = Fore.GREEN+Style.BRIGHT
-RED = Fore.RED+Style.NORMAL
-BRED = Fore.RED+Style.BRIGHT
-RST = Fore.RESET+Style.NORMAL
 
 clr1 = f'{BYEL}'
 clr2 = f'{BCYN}'
@@ -710,22 +695,30 @@ def watchlog(dlog):
         following.seek(0, 0)
         for each in follow(following):
             if each.find('[CRITICAL]') != -1:
-                ar = f'{BRED}'
+                ar = f'{RED}{LREV}'
             elif each.find('[ERROR]') != -1:
                 ar = f'{BRED}'
             elif each.find('[WARNING]') != -1:
                 ar = f'{BYEL}'
             elif each.find('[INFO]') != -1 or each.find('[DEBUG]'):
                 if each.find('vote') != -1:
-                    ar = f'{GRN}'
+                    ar = f'{ORG}'
                 elif each.find('arkupdater') != -1:
-                    ar = f'{CYN}'
+                    ar = f'{BLU}'
                 elif each.find('lottery') != -1:
                     ar = f'{BGRN}'
                 elif each.find('points') != -1:
-                    ar = f'{BCYN}'
+                    ar = f'{MAU}'
                 elif each.find('-restart') != -1:
                     ar = f'{MGT}'
+                elif each.find('query') != -1:
+                    ar = f'{SKN}'
+                elif each.find('left the server') != -1:
+                    ar = f'{PUR}'
+                elif each.find('link') != -1:
+                    ar = f'{SLT}'
+                elif each.find('has joined') != -1:
+                    ar = f'{BGN}'
                 elif each.find('svr1') != -1:
                     ar = f'{WHT}'
                 else:

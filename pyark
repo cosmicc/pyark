@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys, os, logging, argparse, sqlite3, time, threading, socket, subprocess
+import logging, argparse, sqlite3, time, threading, socket, subprocess
 from git import Repo
 import processlock
 from arkupdater import arkupd
@@ -73,7 +73,7 @@ def gitupdatecheck():
 def main():
     global checkgit
     numinstances = int(config.get('general', 'instances'))
-    imthedbot = config.get('general','isdiscordbot')
+    imthedbot = config.get('general', 'isdiscordbot')
     instance = [dict() for x in range(numinstances)]
     instr = ''
     for each in range(numinstances):
@@ -167,6 +167,7 @@ def main():
             if not instance[each]['onlinethread'].is_alive():
                 t = f'{inst} online monitor'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+
 
 if __name__ == '__main__':
     gitupdatecheck()

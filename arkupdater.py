@@ -20,13 +20,14 @@ instr = ''
 for each in range(numinstances):
     a = config.get('instance%s' % (each), 'name')
     b = config.get('instance%s' % (each), 'logfile')
-    instance[each] = {'name':a,'logfile':b}
+    instance[each] = {'name': a, 'logfile': b}
     if instr == '':
         instr = '%s' % (a)
     else:
-        instr=instr + ', %s' % (a)
+        instr = instr + ', %s' % (a)
 
-def writediscord(msg,tstamp):
+
+def writediscord(msg, tstamp):
     conn4 = sqlite3.connect(sqldb)
     c4 = conn4.cursor()
     c4.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)', ('generalchat','ALERT',msg,tstamp))
