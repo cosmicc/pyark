@@ -2,6 +2,7 @@
 
 import time, logging, argparse, subprocess, socket, re, sqlite3
 from configreader import config, sqldb
+from pushover import pushover
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -162,6 +163,7 @@ def main():
                     isrunningcnt = 0
                     islisteningcnt = 0
                     isonlinecnt = 0
+                    pushover('Watchdog', f'Instance {eachinst["name"]} failed running checks!\nisrunning count: {isrunningcnt|/2\nislistening count: {islisteningcnt}/10\nisonline count: {isonlinecnt}/10\nRestarting Instance')
                     restartserver(eachinst['name'])
         except:
             log.critical('Critical Error in Ark Watchdog!', exc_info=True)

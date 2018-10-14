@@ -36,3 +36,5 @@ for each in range(numinstances):
 
 isupdater = config.get('general', 'isupdater')
 imthedbot = config.get('general', 'isdiscordbot')
+po_userkey = config.get('general', 'pushover_userkey')
+po_appkey = config.get('general', 'pushover_appkey')

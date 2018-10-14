@@ -4,6 +4,7 @@ from datetime import time as dt
 from timebetween import is_time_between
 from timehelper import wcstamp
 from configreader import sqldb, sharedpath, arkroot, numinstances, instance, instr, isupdater
+from pushover import pushover
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -236,6 +237,7 @@ def restartloop(inst):
             message = f'server is restarting now for a {reason}'
             subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL, shell=True)
+            pushover('Instance Restart', message)
             restartinstnow(inst)
     else:
             if timeleft == 30:
@@ -268,7 +270,8 @@ def restartloop(inst):
                 writechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
                 subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL, shell=True)
-                time.sleep(30)
+                pushover('Instance Restart', message)
+                time.sleep(10)
                 restartinstnow(inst)
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
@@ -419,6 +422,7 @@ def checkupdates():
                     msg = f'Ark update has been released. Servers will start a reboot countdown now.\n\
 https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-283112-server-283112/'
                     writediscord(msg, time.time())
+                    pushover('Ark Update', msg)
             else:
                 time.sleep(60)
             for each in range(numinstances):
@@ -452,6 +456,7 @@ https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-2
                     msg = f'Mod {modname} has been updated. Servers will start a reboot countdown now.\n\
 https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
                     writediscord(msg, time.time())
+                    pushover('Mod Update', msg)
                 for neo in range(numinstances):
                         instancerestart(instance[neo]['name'], aname)
         else:
