@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import logging, argparse, sqlite3, time, threading, socket, subprocess
+from sys import exit
 from git import Repo
 import processlock
 from arkupdater import arkupd
@@ -162,6 +163,9 @@ def main():
                 if not instance[each]['onlinethread'].is_alive():
                     t = f'{inst} online monitor'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+        except KeyboardInterrupt:
+            log.critical(f'Keyboard Interrupt Exiting.')
+            exit()
         except:
             log.critical(f'exception in main loop', exc_info=True)
 
