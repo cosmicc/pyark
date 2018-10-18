@@ -163,7 +163,8 @@ def main():
                     isrunningcnt = 0
                     islisteningcnt = 0
                     isonlinecnt = 0
-                    pushover('Watchdog', f'Instance {eachinst["name"]} failed running checks!\nisrunning count: {isrunningcnt|/2\nislistening count: {islisteningcnt}/10\nisonline count: {isonlinecnt}/10\nRestarting Instance')
+                    pmsg = f'Instance {eachinst["name"]} failed running checks!\nisrunning count: {isrunningcnt}/2\nislistening count: {islisteningcnt}/10\nisonline count: {isonlinecnt}/10\nRestarting Instance'
+                    pushover('Watchdog', pmsg)
                     restartserver(eachinst['name'])
         except:
             log.critical('Critical Error in Ark Watchdog!', exc_info=True)
