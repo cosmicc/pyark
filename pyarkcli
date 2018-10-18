@@ -848,7 +848,7 @@ def startlottery():
     if ltype.lower() == 'item':
         litm = getresponce('Enter the Item display name ')
     else:
-        litm = str(lbuyin * 4)
+        litm = str(lbuyin * 10)
     now = time.time()
     lottostart = datetime.fromtimestamp(now + (3600 * int(ldays))).strftime('%a, %b %d %I:%M%p')
     print(f'{BYEL}Lottery ends on {BMGT}{lottostart}{RST}')
