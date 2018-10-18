@@ -418,10 +418,10 @@ def checkupdates():
                 subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']),
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug('ark update downloaded to staging area')
-                    msg = f'Ark update has been released. Servers will start a reboot countdown now.\n\
+                msg = f'Ark update has been released. Servers will start a reboot countdown now.\n\
 https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-283112-server-283112/'
-                    writediscord(msg, time.time())
-                    pushover('Ark Update', msg)
+                writediscord(msg, time.time())
+                pushover('Ark Update', msg)
             else:
                 time.sleep(60)
             for each in range(numinstances):
