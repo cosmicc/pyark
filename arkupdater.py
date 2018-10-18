@@ -307,7 +307,7 @@ def instancerestart(inst, reason):
             for each in range(numinstances):
                 if instance[each]['name'] == inst:
                     instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop,
-                                                                       args=(inst, reason))
+                                                                       args=(inst))
                     instance[each]['restartthread'].start()
         else:
             log.warning(f'instance {inst} is already running the restart thread')
