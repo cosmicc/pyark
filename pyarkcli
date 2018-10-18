@@ -14,7 +14,7 @@ parser.add_argument('action_to_perform',
                                              'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe',
                                              'playersraw', 'logwatch', 'lotterytables', 'log', 'topplayers',
                                              'debugwatch', 'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist',
-                                             'unbanplayer', 'tribewipe', 'backupdb'], help='Action to perform')
+                                             'unbanplayer', 'tribewipe', 'backupdb', 'shortest'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('servers', action='store_true', help='Server infomration')
 action_group.add_argument('playertable', action='store_true', help='Show players table')
@@ -25,8 +25,9 @@ action_group.add_argument('restartserver', action='store_true', help='Set a serv
 action_group.add_argument('delplayer', action='store_true', help='Remove a player from the table')
 action_group.add_argument('linkplayer', action='store_true', help='Link a player to a discord user')
 action_group.add_argument('notlinked', action='store_true', help='Show players not linked to discord')
-action_group.add_argument('newest', action='store_true', help='Show last 10 newest players joined')
-action_group.add_argument('oldest', action='store_true', help='Show last 10 oldest players lastseen')
+action_group.add_argument('newest', action='store_true', help='Show 10 newest players joined')
+action_group.add_argument('oldest', action='store_true', help='Show 10 oldest players lastseen')
+action_group.add_argument('shortest', action='store_true', help='Show 10 shortest players play times')
 action_group.add_argument('server', action='store_true', help='Server information')
 action_group.add_argument('players', action='store_true', help='Show players by last time seen')
 action_group.add_argument('chatbuffer', action='store_true', help='Show the chat buffer table')
@@ -530,6 +531,23 @@ def newest():
         printplayer(feach)
 
 
+def shortest():
+    ppc = 0
+    lastones = []
+    print(f'{BCYN}TOP 10 SHORTEST PLAY TIME PLAYERS:{RST}')
+    print('   ')
+    c.execute('SELECT * from players')
+    llast = c.fetchall()
+    lastones = [list(elem) for elem in llast]
+    for f in range(len(lastones)):
+        lastones[f][4] = float(str(lastones[f][4]).replace(',', ''))
+    lastones.sort(key=lambda x: x[4], reverse=False)
+    for feach in lastones:
+        ppc += 1
+        if ppc <= 10:
+            printplayer(feach)
+
+
 def topplayers():
     ppc = 0
     lastones = []
@@ -951,6 +969,8 @@ try:
         delplayer()
     elif args.action_to_perform == 'newest':
         newest()
+    elif args.action_to_perform == 'shortest':
+        shortest()
     elif args.action_to_perform == 'server':
         if args.servername is None:
             print('You must specify a server name with -s option.')

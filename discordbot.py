@@ -483,7 +483,7 @@ to change home servers'
             whofor = str(message.author).lower()
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
-            c.execute('SELECT * FROM lotteryinfo ORDER BY id DESC')
+            c.execute('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" ORDER BY id DESC')
             linfo = c.fetchone()
             c.close()
             conn.close()
@@ -492,7 +492,11 @@ to change home servers'
 {elapsedTime(time.time(),linfo[3])} ago'
                 await client.send_message(message.channel, msg)
             elif linfo[1] == 'points':
-                msg = f'Last lottery was {linfo[2]} Arc reward points won by {linfo[7].capitalize()}. \
+                if linfo[7] == 'None':
+                    msg = f'Last lottery was {linfo[2]} Arc reward points not won because lack of players. \
+{elapsedTime(time.time(),linfo[3])} ago'
+                else:
+                    msg = f'Last lottery was {linfo[2]} Arc reward points won by {linfo[7].capitalize()}. \
 {elapsedTime(time.time(),linfo[3])} ago'
                 await client.send_message(message.channel, msg)
         elif message.content.startswith('!lotto') or message.content.startswith('!lottery'):

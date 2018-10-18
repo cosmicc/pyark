@@ -34,7 +34,7 @@ c = conn.cursor()
 ##delete the admin account from db
 #c.execute('DELETE from players WHERE steamid = 76561198408657294')
 
-c.execute('DELETE from lotteryplayers WHERE playername = "rykker"')
+c.execute('DELETE from players WHERE playername = "newplayer"')
 #c.execute('UPDATE instances SET arkserverslink = "https://ark-servers.net/server/147631" WHERE name = "ragnarok"')
 #c.execute('CREATE TABLE IF NOT EXISTS auctions (steamid TEXT, date TEXT, Type TEXT, name TEXT, sellingclass TEXT, quantity TEXT, askingclass TEXT, askingamount TEXT, tamedname TEXT, baselevel INTEGER, extrlevel INTEGER, level INTEGER, gender TEXT, quality INTEGER, rating REAL, armor REAL, durability REAL, damage REAL, blueprint TEXT)')
 #c.execute('ALTER TABLE instances ADD COLUMN battlemetricslink TEXT')
@@ -47,7 +47,7 @@ c.execute('DELETE from lotteryplayers WHERE playername = "rykker"')
 #c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
 conn.commit()
-c.execute('SELECT * from instances')
+c.execute('SELECT * from players')
 alldata = c.fetchall()
 ap = []
 for row in alldata:

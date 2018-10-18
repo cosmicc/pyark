@@ -326,9 +326,9 @@ def onlineupdate(inst):
                                     greetthreads.append({'steamid': nsteamid, 'gthread': gthread})
                                     gthread.start()
                                 else:
-                                    log.warning(f'online player greeting aleady running for {nsteamid}')
+                                    log.debug(f'online player greeting aleady running for {nsteamid}')
                             else:
-                                log.warning(f'greeting already running for {nsteamid}')
+                                log.debug(f'greeting already running for {nsteamid}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
             time.sleep(10)

@@ -410,7 +410,7 @@ def checkupdates():
     global ugennotify
     try:
         ustate, curver, avlver = isnewarkver(instance[0]['name'])
-        if not ustate:
+        if not ustate and time.time() - updgennotify > 2100:
             log.debug('ark update check found no ark updates available')
         else:
             log.info(f'ark update found ({curver}>{avlver}) downloading update.')
@@ -418,7 +418,6 @@ def checkupdates():
                 subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']),
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug('ark update downloaded to staging area')
-                if time.time() - updgennotify > 2100:
                     msg = f'Ark update has been released. Servers will start a reboot countdown now.\n\
 https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-283112-server-283112/'
                     writediscord(msg, time.time())
@@ -430,6 +429,7 @@ https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-2
                 instancerestart(inst, 'ark game update')
     except:
         log.error(f'error in determining ark version')
+
     for each in range(numinstances):
         if not isrebooting(instance[each]['name']):
             ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']),
