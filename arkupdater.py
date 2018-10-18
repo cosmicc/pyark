@@ -304,7 +304,7 @@ def instancerestart(inst, reason):
         c.close()
         conn.close()
         if not isrebooting(inst):
-            for each in range(len(numinstances)):
+            for each in range(numinstances):
                 if instance[each]['name'] == inst:
                     instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop,
                                                                        args=(inst, reason))
