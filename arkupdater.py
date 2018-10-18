@@ -11,7 +11,7 @@ log = logging.getLogger(name=hstname)
 
 confupdtimer = 0
 dwtimer = 0
-updgennotify = time.time() - 2100
+updgennotify = time.time() - 3600
 
 
 def writediscord(msg, tstamp):
@@ -410,11 +410,11 @@ def checkupdates():
     global ugennotify
     try:
         ustate, curver, avlver = isnewarkver(instance[0]['name'])
-        if not ustate and time.time() - updgennotify > 2100:
+        if not ustate and time.time() - updgennotify > 3600:
             log.debug('ark update check found no ark updates available')
         else:
-            log.info(f'ark update found ({curver}>{avlver}) downloading update.')
             if isupdater:
+                log.info(f'ark update found ({curver}>{avlver}) downloading update.')
                 subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']),
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug('ark update downloaded to staging area')
@@ -422,11 +422,8 @@ def checkupdates():
 https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-283112-server-283112/'
                 writediscord(msg, time.time())
                 pushover('Ark Update', msg)
-            else:
-                time.sleep(60)
             for each in range(numinstances):
-                inst = instance[each]['name']
-                instancerestart(inst, 'ark game update')
+                instancerestart(instance[each]['name'], 'ark game update')
     except:
         log.error(f'error in determining ark version')
 
