@@ -43,7 +43,7 @@ def determinewinner(linfo):
     linfo = c4.fetchone()
     c4.close()
     conn4.close()
-    if len(lottoers) >= 4:
+    if len(lottoers) >= 3:
         for eachn in lottoers:
             winners.append(eachn[0])
         seed(randint(100))
