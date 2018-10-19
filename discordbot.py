@@ -306,7 +306,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !mods, !servers, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, \
+            msg = f'Commands: !mods, !ec, !rewards, !servers, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, \
 !lotto, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>, !primordial'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
@@ -447,6 +447,14 @@ to change home servers'
         elif message.content.startswith('!mods'):
             whofor = str(message.author).lower()
             msg = f'Galaxy Cluster Ultimate Extinction Core Mod Collection:\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
+            await client.send_message(message.channel, msg)
+        elif message.content.startswith('!rewards') or message.content.startswith('!currency'):
+            whofor = str(message.author).lower()
+            msg = f'Galaxy Cluster Ultimate Extinction Core Rewards Vault, ARc Points, & Currency:\nhttps://docs.google.com/document/d/154QjLnw4hjxe_DtiTqfSwINsKdUp9Iz3M_umcI5zkRk/edit?usp=sharing'
+            await client.send_message(message.channel, msg)
+        elif message.content.startswith('!ec'):
+            whofor = str(message.author).lower()
+            msg = f'Extinction Core Info:\nhttps://steamcommunity.com/workshop/filedetails/discussion/817096835/1479857071254169967\nhttp://extinctioncoreark.wikia.com/wiki/Extinction_Core_Wiki\nhttps://docs.google.com/spreadsheets/d/1GtqBvFK0R0VI7dj7CdkXEuQydqw3xjITZmc0qD95Kug/edit?usp=sharing'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!servers'):
             whofor = str(message.author).lower()
