@@ -446,7 +446,7 @@ to change home servers'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!mods'):
             whofor = str(message.author).lower()
-            msg = f'https://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
+            msg = f'Galaxy Cluster Ultimate Extinction Core Mod Collection:\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!servers'):
             whofor = str(message.author).lower()

@@ -194,7 +194,7 @@ kicking and banning.')
                 welcomthreads.append({'steamid': steamid, 'sthread': welcom})
                 welcom.start()
             else:
-                log.warning(f'welcome message thread already running for new player {steamid}')
+                log.debug(f'welcome message thread already running for new player {steamid}')
             writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
         elif len(oplayer) > 2:
             if oplayer[16] != 0 and oplayer[15] == inst:

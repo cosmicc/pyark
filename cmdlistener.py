@@ -548,7 +548,7 @@ new player to cluster.')
             c.close()
             conn.close()
         else:
-            # log.info(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
+            log.debug(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
             if int(pexist[16]) != int(rewardpoints):
                 if int(rewardpoints) != 0:
                     if time.time() - float(pexist[17]) > 60:
