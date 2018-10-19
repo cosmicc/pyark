@@ -130,13 +130,13 @@ def checklottodeposits(steamid, inst):
                 log.info(f'{weach[3]} points added to {elpinfo[1]} for a lottery win')
                 msg = f'{weach[3]} ARc points have been deposited into your account for a lottery win!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
-                subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR AddARcTotal %s %s" @%s' %
+                subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, weach[3], inst), shell=True)
             elif weach[4] == 0:
                 log.info(f'{weach[3]} points removed from {elpinfo[1]} for a lottery entry')
                 msg = f'{weach[3]} ARc points have been withdrawn from your account for a lottery entry'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
-                subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s %s" @%s' %
+                subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s %s" @%s' %
                                (steamid, str(int(elpinfo[5]) - int(weach[3])), inst), shell=True)
         conn1 = sqlite3.connect(sqldb)
         c1 = conn1.cursor()
@@ -207,7 +207,7 @@ kicking and banning.')
                     conn1.commit()
                     c1.close()
                     conn1.close()
-                    subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR AddARcTotal %s %s" @%s' %
+                    subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                    (steamid, xferpoints, inst), shell=True)
             if float(oplayer[2]) + 300 > float(time.time()):
                 if oplayer[3] != inst:
