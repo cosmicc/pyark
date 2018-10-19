@@ -561,7 +561,7 @@ new player to cluster.')
                         conn.commit()
                         c.close()
                         conn.close()
-                        subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' %
+                        subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
                                        (steamid, inst), shell=True)
                     else:
                         log.debug(f'reward points not past threshold for wait (to avoid duplicates) for \
@@ -587,7 +587,7 @@ def homeserver(inst, whoasked, ext):
                 if inst == pinfo[15]:
                     log.info(f'{whoasked} has transferred home servers from {pinfo[15]} to {ext} \
 with {pinfo[5]} points')
-                    subprocess.run('arkmanager rconcmd "ScriptCommand TCsAR SetARcTotal %s 0" @%s' %
+                    subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
                                    (steamid, inst), shell=True)
                     conn1 = sqlite3.connect(sqldb)
                     c1 = conn1.cursor()
