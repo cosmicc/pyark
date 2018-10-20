@@ -21,7 +21,16 @@ def writechat(inst, whos, msg, tstamp):
         isindb = c.fetchone()
         c.close()
         conn.close()
-    elif whos == "ALERT" or isindb:
+        if isindb:
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
+                      (inst, whos, msg, tstamp))
+            conn.commit()
+            c.close()
+            conn.close()
+
+    elif whos == "ALERT":
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
         c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
