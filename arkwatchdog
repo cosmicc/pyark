@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 import time, logging, argparse, subprocess, socket, re, sqlite3
-from configreader import config, sqldb
+from sys import exit
+from configreader import sqldb, instance
 from pushover import pushover
 
 __author__ = "Ian Perry"
@@ -97,22 +98,26 @@ def getrunning(inst):
     return (srunning, slistening, sonline)
 
 
-def restartserver(inst):
+def restartserver(inst, reason):
     log.warning(f'restarting instance {inst}')
+    pmsg = f'Instance {inst} failed {reason} checks!\nRestarting Instance'
+    pushover('Watchdog', pmsg)
     subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL, shell=True)
 
 
 def main():
-    isrunningcnt = 0
-    islisteningcnt = 0
-    isonlinecnt = 0
+    isrunning = {}
+    islistening = {}
+    isonline = {}
+    for seat in instance:
+        isrunning[seat['name']] = {}
+        isrunning[seat['name']].update({'isit': 0, 'count': 0})
+        islistening[seat['name']] = {}
+        islistening[seat['name']].update({'isit': 0, 'count': 0})
+        isonline[seat['name']] = {}
+        isonline[seat['name']].update({'isit': 0, 'count': 0})
     log.info(f'>>> ark instance watchdog daemon is starting on {hstname}')
-    numinstances = int(config.get('general', 'instances'))
-    instance = [dict() for x in range(numinstances)]
-    for each in range(numinstances):
-        a = config.get('instance%s' % (each), 'name')
-        instance[each] = {'name': a, }
     if didserverjustboot():
         log.info('server just booted, starting instances for the first time')
         for eat in instance:
@@ -127,49 +132,89 @@ def main():
         totmem = 0
         try:
             for eachinst in instance:
-                isrunning, islistening, isonline = getrunning(eachinst['name'])
-                if not isrunning:
-                    isrunningcnt += 1
-                    isrunningint = 0
-                    log.warning(f'{eachinst["name"]} failed is instance running check {isrunningcnt}/2')
+                isitrunning, isitlistening, isitonline = getrunning(eachinst['name'])
+                if not isitrunning:
+                    for neach in isrunning:
+                        if neach == eachinst['name']:
+                            isrunning.update({'isit': 0, 'count': isrunning[neach]['count'] + 1})
+                            isrunningint = 0
+                            log.warning(f'{eachinst["name"]} failed instance running check {neach["count"] + 1}/2')
                 else:
-                    isrunningcnt = 0
-                    isrunningint = 1
+                    for neach in isrunning:
+                        if neach == eachinst['name']:
+                            isrunning[neach].update({'isit': 1, 'count': 0})
+                            isrunningint = 1
+                            log.debug(f'{eachinst["name"]} passed instance running check')
                     actmem, totmem = getinstmem(eachinst['name'])
-                if not islistening:
-                    log.warning(f'{eachinst["name"]} failed is instance listening check {islisteningcnt}/10')
-                    islisteningcnt += 1
-                    islisteningint = 0
+
+                if not isitlistening:
+                    for neach in islistening:
+                        if neach == eachinst['name']:
+                            islistening[neach].update({'isit': 0, 'count': islistening[neach]['count'] + 1})
+                            islisteningint = 0
+                            log.warning(f'{eachinst["name"]} failed instance listening check {neach["count"] + 1}/5')
                 else:
-                    islisteningcnt = 0
-                    islisteningint = 1
-                if not isonline:
-                    log.warning(f'{eachinst["name"]} failed is instance online check {isonlinecnt}/10')
-                    isonlinecnt += 1
-                    isonlineint = 0
+                    for neach in islistening:
+                        if neach == eachinst['name']:
+                            islistening[neach].update({'isit': 1, 'count': 0})
+                            islisteningint = 1
+                            log.debug(f'{eachinst["name"]} passed instance listening check')
+
+                if not isitonline:
+                    for neach in isonline:
+                        if neach == eachinst['name']:
+                            isonline[neach].update({'isit': 0, 'count': isonline[neach]['count'] + 1})
+                            isonlineint = 0
+                            log.warning(f'{eachinst["name"]} failed the instance online check {neach["count"] + 1}/5')
                 else:
-                    isonlinecnt = 0
-                    isonlineint = 1
-                log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
+                    for neach in isonline:
+                        if neach == eachinst['name']:
+                            isonline[neach].update({'isit': 1, 'count': 0})
+                            isonlineint = 1
+                            log.debug(f'{eachinst["name"]} passed instance online check')
+
+                # log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
                 conn = sqlite3.connect(sqldb)
                 c = conn.cursor()
                 c.execute('UPDATE instances SET isup = %s, islistening = %s, isrunning = %s, uptimestamp = %s, \
-                          actmem = %s, totmem = %s WHERE name = "%s"' % (isonlineint, islisteningint, isrunningint,
-                                                                         time.time(), actmem, totmem, eachinst['name']))
+                                  actmem = %s, totmem = %s WHERE name = "%s"' % (isonlineint, islisteningint, isrunningint,
+                                                                           time.time(), actmem, totmem, eachinst['name']))
                 conn.commit()
                 c.close()
                 conn.close()
-                if isrunningcnt == 2 or isonlinecnt == 10 or islistening == 10:
-                    isrunningcnt = 0
-                    islisteningcnt = 0
-                    isonlinecnt = 0
-                    pmsg = f'Instance {eachinst["name"]} failed running checks!\nisrunning count: {isrunningcnt}/2\nislistening count: {islisteningcnt}/10\nisonline count: {isonlinecnt}/10\nRestarting Instance'
-                    pushover('Watchdog', pmsg)
-                    restartserver(eachinst['name'])
+                for feach in isrunning:
+                    if feach == eachinst['name']:
+                        if isrunning[feach]['count'] == 2:
+                            isrunning[feach].update({'isit': 0, 'count': 0})
+                            islistening[feach].update({'isit': 0, 'count': 0})
+                            isonline[feach].update({'isit': 0, 'count': 0})
+                            restartserver(eachinst['name'], 'running')
+                for feach in islistening:
+                    if feach == eachinst['name']:
+                        if islistening[feach]['count'] == 10:
+                            isrunning[feach].update({'isit': 0, 'count': 0})
+                            islistening[feach].update({'isit': 0, 'count': 0})
+                            isonline[feach].update({'isit': 0, 'count': 0})
+                            restartserver(eachinst['name'], 'listening')
+                for feach in isonline:
+                    if feach == eachinst['name']:
+                        if isonline[feach]['count'] == 10:
+                            isrunning[feach].update({'isit': 0, 'count': 0})
+                            islistening[feach].update({'isit': 0, 'count': 0})
+                            isonline[feach].update({'isit': 0, 'count': 0})
+                            restartserver(eachinst['name'], 'online')
+
+        except KeyboardInterrupt:
+            log.critical('Keyboard Interrupt Detected, Exiting.')
+            exit()
         except:
             log.critical('Critical Error in Ark Watchdog!', exc_info=True)
         log.debug('sleeping 2 min between checks')
-        time.sleep(120)
+        try:
+            time.sleep(120)
+        except KeyboardInterrupt:
+            log.critical('Keyboard Interrupt Detected, Exiting.')
+            exit()
 
 
 if __name__ == '__main__':

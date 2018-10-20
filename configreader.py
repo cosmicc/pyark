@@ -19,7 +19,8 @@ sharedpath = config.get('general', 'shared')
 arkroot = config.get('general', 'arkroot')
 logfile = config.get('general', 'log')
 
-sqldb = f'{sharedpath}/db/pyark.db'
+sqldb = config.get('general', 'pyarkdb')
+statsdb = config.get('general', 'statsdb')
 
 numinstances = int(config.get('general', 'instances'))
 instance = [dict() for x in range(numinstances)]

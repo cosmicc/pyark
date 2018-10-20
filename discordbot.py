@@ -450,7 +450,7 @@ to change home servers'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!rewards') or message.content.startswith('!currency'):
             whofor = str(message.author).lower()
-            msg = f'Galaxy Cluster Ultimate Extinction Core Rewards Vault, ARc Points, & Currency:\nhttps://docs.google.com/document/d/154QjLnw4hjxe_DtiTqfSwINsKdUp9Iz3M_umcI5zkRk/edit?usp=sharing'
+            msg = f'Galaxy Cluster Ultimate Extinction Core Rewards Vault, ARc Points, Home Server, Lotterys, & Currency:\nhttps://docs.google.com/document/d/154QjLnw4hjxe_DtiTqfSwINsKdUp9Iz3M_umcI5zkRk/edit?usp=sharing'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!ec'):
             whofor = str(message.author).lower()
