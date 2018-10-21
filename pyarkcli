@@ -1,22 +1,23 @@
 #!/usr/bin/python3
 
 import subprocess, time, logging, argparse, sqlite3, json
+from numpy import mean
 from datetime import datetime
 from colorizer import *
 from timehelper import elapsedTime, estshift, playedTime, wcstamp
-from configreader import config, sqldb
+from configreader import config, sqldb, statsdb
 from urllib.request import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform',
-                    action='store', choices=['servers', 'players', 'kicklist', 'linkrequests', 'delplayer',
+                    action='store', choices=['cluster', 'players', 'kicklist', 'linkrequests', 'delplayer',
                                              'linkplayer', 'startlottery', 'lottery', 'restartserver', 'chatbuffer',
                                              'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe',
-                                             'playersraw', 'logwatch', 'lotterytables', 'log', 'topplayers',
+                                             'playersraw', 'logwatch', 'lotterytables', 'log', 'topplayers', 'test',
                                              'debugwatch', 'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist',
                                              'unbanplayer', 'tribewipe', 'backupdb', 'shortest'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
-action_group.add_argument('servers', action='store_true', help='Server infomration')
+action_group.add_argument('cluster', action='store_true', help='Cluster information')
 action_group.add_argument('playertable', action='store_true', help='Show players table')
 action_group.add_argument('kicklist', action='store_true', help='Show kick list table')
 action_group.add_argument('linkrequests', action='store_true', help='Show link requests table')
@@ -47,6 +48,7 @@ action_group.add_argument('startlottery', action='store_true', help='Start a lot
 action_group.add_argument('lottery', action='store_true', help='Show Lottery Info')
 action_group.add_argument('topplayers', action='store_true', help='Show Top Players')
 action_group.add_argument('log', action='store_true', help='Show the log (requires log length)')
+action_group.add_argument('test', action='store_true', help='TESTING AVG')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
 parser.add_argument('-c', '--cancel', action='store_true', help='Cancel a instance restart')
@@ -64,6 +66,8 @@ log_console.setFormatter(console_format)
 
 configfile = '/home/ark/pyark.cfg'
 
+statinst = ['ragnarok', 'island', 'volcano']
+
 clr1 = f'{BYEL}'
 clr2 = f'{BCYN}'
 
@@ -79,6 +83,127 @@ now = time.time()
 
 c.execute('DELETE from players WHERE playedtime = 0')
 conn.commit()
+
+
+def f2dec(num):
+    try:
+        tnum = num // 0.01 / 100
+    except:
+        log.exception('Error truncating float to 2 decimals: {}'.format(num))
+        return False
+    else:
+        return tnum
+
+
+def getallavg(length):
+    if length == 'daily':
+        ilength = 86400
+    elif length == 'weekly':
+        ilength = 604800
+    elif length == 'monthly':
+        ilength = 2592000
+    elif length == 'hourly':
+        ilength = 3600
+    elif length == 'eighthour':
+        ilength = 28800
+    avglist = []
+    ntime = int(time.time())
+    for each in statinst:
+        slist = []
+        navglist = []
+        conn8 = sqlite3.connect(statsdb)
+        c8 = conn8.cursor()
+        c8.execute('SELECT value FROM %s WHERE date > %s' % (each, ntime - ilength))
+        nlist = c8.fetchall()
+        c8.close()
+        conn8.close()
+        for y in nlist:
+            slist.append(y[0])
+        if avglist == []:
+            avglist = slist
+        else:
+            navglist = [sum(pair) for pair in zip(slist, avglist)]
+            avglist = navglist
+    return mean(avglist)
+
+
+def getallhighest(length):
+    if length == 'daily':
+        ilength = 86400
+    elif length == 'weekly':
+        ilength = 604800
+    elif length == 'monthly':
+        ilength = 2592000
+    elif length == 'hourly':
+        ilength = 3600
+    elif length == 'eighthour':
+        ilength = 28800
+    avglist = []
+    ntime = int(time.time())
+    for each in statinst:
+        slist = []
+        navglist = []
+        conn8 = sqlite3.connect(statsdb)
+        c8 = conn8.cursor()
+        c8.execute('SELECT value FROM %s WHERE date > %s' % (each, ntime - ilength))
+        nlist = c8.fetchall()
+        c8.close()
+        conn8.close()
+        for y in nlist:
+            slist.append(y[0])
+        if avglist == []:
+            avglist = slist
+        else:
+            navglist = [sum(pair) for pair in zip(slist, avglist)]
+            avglist = navglist
+    return max(avglist)
+
+
+def getaverage(inst, length):
+    if length == 'daily':
+        ilength = 86400
+    elif length == 'weekly':
+        ilength = 604800
+    elif length == 'monthly':
+        ilength = 2592000
+    elif length == 'hourly':
+        ilength = 3600
+    elif length == 'eighthour':
+        ilength = 28800
+    avglist = []
+    ntime = int(time.time())
+    conn8 = sqlite3.connect(statsdb)
+    c8 = conn8.cursor()
+    c8.execute('SELECT value FROM %s WHERE date > %s' % (inst, ntime - ilength))
+    slist = c8.fetchall()
+    c8.close()
+    conn8.close()
+    for te in slist:
+        avglist.append(te[0])
+    return f2dec(mean(avglist))
+
+
+def gethighest(inst, length):
+    if length == 'daily':
+        ilength = 86400
+    elif length == 'weekly':
+        ilength = 604800
+    elif length == 'monthly':
+        ilength = 2592000
+    elif length == 'hourly':
+        ilength = 3600
+    elif length == 'eighthour':
+        ilength = 28800
+
+    ntime = int(time.time())
+    conn8 = sqlite3.connect(statsdb)
+    c8 = conn8.cursor()
+    c8.execute('SELECT date, MAX(value) FROM %s WHERE date > %s ORDER BY date ASC' % (inst, ntime - ilength))
+    slist = c8.fetchone()
+    c8.close()
+    conn8.close()
+    htime = datetime.fromtimestamp(slist[0])
+    return slist[1], estshift(htime).strftime('%a %b %-d %-I:%M %p')
 
 
 def fetcharkserverdata(key):
@@ -220,14 +345,35 @@ def printserverinfo(each):
     else:
         boo = f'{BGRN}'
     lastuc = elapsedTime(time.time(), float(each[12]))
-    print(f'{WHT}Server: {BMGT}{each[0].upper()}{WHT}  Players: {mm}{ply}/50{RST}')
+    thv, thd = gethighest(each[0], 'daily')
+    whv, whd = gethighest(each[0], 'weekly')
+    mhv, mhd = gethighest(each[0], 'monthly')
+    hhv, hhd = gethighest(each[0], 'hourly')
+    ehv, ehd = gethighest(each[0], 'eighthour')
+
+    c.execute('SELECT * from instances WHERE name = ?', (each[0],))
+    svrifo = c.fetchone()
+    sdata = fetcharkserverdata(svrifo[8])
+    if int(sdata['is_online']) == 1:
+        fug = f'{BGRN}True{RST}'
+    else:
+        fug = f'{BRED}False{RST}'
+    print(f'{BLU}--------------[{BWHT}{each[0].upper()}{BLU}]--------------[{BWHT}{each[0].upper()}{BLU}]---------------[{BWHT}{each[0].upper()}{BLU}]---------------{RST}')
+    print(f'{WHT}Hostname: {SKN}{sdata["hostname"]}{RST}')
+    print(f'{WHT}Server: {BMGT}{each[0].upper()}{WHT}  Players: {mm}{ply}/50 {WHT} Online: {fug}  {WHT}Uptime: {BGRN}{sdata["uptime"]}%  {WHT}Rank: {BCYN}{sdata["rank"]}{RST}')
     print(f'{WHT}Online: {iso}  {WHT}Listening: {isl}  {WHT}Running: {isr}  {WHT}Last Check: {boo}{lastuc}{RST}')
-    print(f'{WHT}Active Memory: {MAU}{each[13]} Gig{WHT}  Total Memory: {MAU}{each[14]} Gig{RST}')
+    print(f'{WHT}Active Memory: {SKN}{each[13]} Gig{WHT}  Total Memory: {SKN}{each[14]} Gig{RST}')
     print(f'{WHT}Configuration version: {BCYN}{each[6]}{RST} {vertxt}')
     print(f'{WHT}Server in restart: {inrest} {WHT}{tls}{RST}')
     print(f'{WHT}Last restart: {restclr}{restarted}{WHT}  Reason: {BCYN}{each[5]}{RST}')
     print(f'{WHT}Last wilddino wipe: {wipeclr}{lwipe}{RST}')
     print(f'{WHT}Last wipe vote: {voteclr}{lvote}{RST}')
+    print(f"{WHT}Last Hour Player Average: {BCYN}{getaverage(each[0], 'hourly')} {WHT}Highest: {BCYN}{hhv} {WHT}Players at {BYEL}{hhd}{RST}")
+    print(f"{WHT}Last 8 Hours Player Average: {BCYN}{getaverage(each[0], 'eighthour')} {WHT}Highest: {BCYN}{ehv} {WHT}Players at {BYEL}{ehd}{RST}")
+    print(f"{WHT}Last 24 Hours Player Average: {BCYN}{getaverage(each[0], 'daily')} {WHT}Highest: {BCYN}{thv} {WHT}Players at {BYEL}{thd}{RST}")
+    print(f"{WHT}This Week's Player Average: {BCYN}{getaverage(each[0], 'weekly')} {WHT}Highest: {BCYN}{whv} {WHT}Players at {BYEL}{whd}{RST}")
+    print(f"{WHT}This Month's Player Online Average: {BCYN}{getaverage(each[0], 'monthly')} {WHT}Highest: {BCYN}{mhv} {WHT}Players at {BYEL}{mhd}{RST}")
+    print(f'{BLU}-------------------------------------------------------------------------------------{RST}')
     print('  ')
 
 
@@ -275,8 +421,64 @@ def showservers():
         moo = f'{BRED}'
     else:
         moo = f'{BGRN}'
-    print(f'{BYEL}CLUSTER PLAYERS ONLINE: {moo}{jo}{RST}')
+    print(f'{BLU}-------------------------------------[{BWHT}NEW PLAYERS{BLU}]-------------------------------------{RST}')
+    c.execute('SELECT * from players WHERE firstseen > %s ORDER BY firstseen DESC' % (time.time() - 86400,))
+    newbs = c.fetchall()
+    newbcnt = 0
+    for peach in newbs:
+        newbcnt += 1
+    print(f'{WHT}NEW CLUSTER PLAYERS TODAY: {BYEL}{newbcnt}{RST}')
+    c.execute('SELECT * from players WHERE firstseen > %s ORDER BY firstseen DESC' % (time.time() - 604800,))
+    newbs = c.fetchall()
+    newbcnt = 0
+    for peach in newbs:
+        newbcnt += 1
+    print(f'{WHT}NEW CLUSTER PLAYERS LAST WEEK: {BYEL}{newbcnt}{RST}')
+    c.execute('SELECT * from players WHERE firstseen > %s ORDER BY firstseen DESC' % (time.time() - 2592000,))
+    newbs = c.fetchall()
+    newbcnt = 0
+    for peach in newbs:
+        newbcnt += 1
+    print(f'{WHT}NEW CLUSTER PLAYERS LAST MONTH: {BYEL}{newbcnt}{RST}')
+    print(f'{BLU}--------------------------------------------------------------------------------------{RST}')
     print('   ')
+    print(f'{BLU}-----------------------------------[{BWHT}CLUSTER PLAYERS{BLU}]-----------------------------------{RST}')
+    print(f'{WHT}CLUSTER PLAYERS ONLINE NOW: {moo}{jo}{RST}')
+    print('    ')
+    print(f'{WHT}LAST HOUR CLUSTER AVERAGE: {BCYN}{f2dec(getallavg("hourly"))}  {WHT}HIGHEST: {BMGT}{getallhighest("hourly")}{RST}')
+    print(f'{WHT}LAST 8 HOUR CLUSTER AVERAGE: {BCYN}{f2dec(getallavg("eighthour"))}  {WHT}HIGHEST: {BMGT}{getallhighest("eighthour")}{RST}')
+    print(f"""{WHT}LAST 24 HOUR CLUSTER AVERAGE: {BCYN}{f2dec(getallavg('daily'))}  {WHT}HIGHEST: {BMGT}{getallhighest("daily")}{RST}""")
+    print(f"""{WHT}LAST WEEK'S CLUSTER AVERAGE: {BCYN}{f2dec(getallavg('weekly'))}  {WHT}HIGHEST: {BMGT}{getallhighest("weekly")}{RST}""")
+    print(f"""{WHT}LAST MONTH'S CLUSTER AVERAGE: {BCYN}{f2dec(getallavg('monthly'))}  {WHT}HIGHEST: {BMGT}{getallhighest("monthly")}{RST}""")
+    print(f'{BLU}--------------------------------------------------------------------------------------{RST}')
+    print('   ')
+    print(f'{BLU}-----------------------------------[{BWHT}CLUSTER LOTTERY{BLU}]-----------------------------------{RST}')
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * FROM lotteryinfo ORDER BY id DESC LIMIT 1')
+    lastlottery = c.fetchone()
+    if lastlottery[7] == 'Incomplete':
+        print(f'{BGRN}CURRENT LOTTERY UNDERWAY:{RST}')
+        print(f'{WHT}Lottery ends on {BMGT}{lottostart} {BCYN}({elapsedTime(lli, now)} Left){RST}')
+        print(f'{WHT}Lottery Type: {BMGT}{lastlottery[1].capitalize()}{RST}')
+        print(f'{WHT}Lottery Prize: {BMGT}{lastlottery[2]}{RST}')
+        print(f'{WHT}Buyin Points: {BMGT}{lastlottery[4]}{RST}')
+        print(f'{WHT}Lottery Length: {BMGT}{lastlottery[5]} Hours{RST}')
+        print(f'{WHT}Current Active Lottery Players: {BMGT}{lastlottery[6]}{RST}')
+        print(f'{WHT}Players: {BMGT}{plist}{RST}')
+    else:
+        print(f'{BRED}NO CURRENT LOTTERYS. LAST LOTTERY:{RST}')
+        print(f'{WHT}Winner was: {BGRN}{lastlottery[7].capitalize()}{RST}')
+        print(f'{WHT}Lottery ended on {BMGT}{lottostart} {BCYN}({elapsedTime(now, lli)} ago){RST}')
+        print(f'{WHT}Lottery Type: {BMGT}{lastlottery[1].capitalize()}{RST}')
+        print(f'{WHT}Lottery Prize: {BMGT}{lastlottery[2]}{RST}')
+        print(f'{WHT}Buyin Points: {BMGT}{lastlottery[4]}{RST}')
+        print(f'{WHT}Lottery Length: {BMGT}{lastlottery[5]} Hours{RST}')
+        print(f'{WHT}Participated Lottery Players: {BMGT}{lastlottery[6]}{RST}')
+        print(f'{WHT}Players: {BMGT}{plist}{RST}')
+    print(f'{BLU}--------------------------------------------------------------------------------------{RST}')
+    print('   ')
+    print(f'{BLU}------------------------------------[{BWHT}PLAYERS ON NOW{BLU}]------------------------------------{RST}')
     for feach in lastones:
         tt = now - float(feach[2])
         tr = now - float(feach[6])
@@ -293,7 +495,6 @@ def showservers():
         else:
             trclr = f'{RED}'
         printplayer(feach)
-
 
 def restartserver(server):
     if not args.cancel:
@@ -927,7 +1128,7 @@ def lottery():
 
 
 try:
-    if args.action_to_perform == 'servers':
+    if args.action_to_perform == 'cluster':
         showservers()
     elif args.action_to_perform == 'playertable':
         printcolmns('players')
@@ -1013,6 +1214,8 @@ try:
         backupdb()
     elif args.action_to_perform == 'startlottery':
         startlottery()
+    elif args.action_to_perform == 'test':
+        print(getallavg('monthly'))
     elif args.action_to_perform == 'log':
         if args.loglines is None:
             print('You must specify number of log lines to show with -j option.')

@@ -8,6 +8,7 @@ from arkupdater import arkupd
 from cmdlistener import clisten
 from onlinemonitor import onlineupdate
 from discordbot import discordbot
+from statcollector import oscollect
 from kicker import kicker
 from configreader import logfile, sqldb, instance, numinstances, imthedbot
 from gchatrelay import gchatrelay
@@ -124,6 +125,8 @@ def main():
         discordt.start()
         lotteryt = threading.Thread(name='lottery-watcher', target=lottery.lotterywatcher)
         lotteryt.start()
+        ostat = threading.Thread(name='stat-collector', target=oscollect)
+        ostat.start()
 
     while True:
         try:
@@ -146,6 +149,9 @@ def main():
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
                 if not lotteryt.is_alive():
                     t = 'lottery watch'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+                if not ostat.is_alive():
+                    t = 'stat collector'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
             for each in range(numinstances):
                 inst = instance[each]['name']

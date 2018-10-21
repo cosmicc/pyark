@@ -26,15 +26,15 @@ sharedpath = config.get('general', 'shared')
 now = time.time()
 
 sqldb = f'{sharedpath}/db/pyark.db'
+statdb = f'{sharedpath}/db/stats.db'
 
-
-conn = sqlite3.connect(sqldb)
+conn = sqlite3.connect(statdb)
 c = conn.cursor()
 
 ##delete the admin account from db
 #c.execute('DELETE from players WHERE steamid = 76561198408657294')
 
-c.execute('DELETE from players WHERE playername = "newplayer"')
+#c.execute('DELETE from players WHERE playername = "newplayer"')
 #c.execute('UPDATE instances SET arkserverslink = "https://ark-servers.net/server/147631" WHERE name = "ragnarok"')
 #c.execute('CREATE TABLE IF NOT EXISTS auctions (steamid TEXT, date TEXT, Type TEXT, name TEXT, sellingclass TEXT, quantity TEXT, askingclass TEXT, askingamount TEXT, tamedname TEXT, baselevel INTEGER, extrlevel INTEGER, level INTEGER, gender TEXT, quality INTEGER, rating REAL, armor REAL, durability REAL, damage REAL, blueprint TEXT)')
 #c.execute('ALTER TABLE instances ADD COLUMN battlemetricslink TEXT')
@@ -47,7 +47,7 @@ c.execute('DELETE from players WHERE playername = "newplayer"')
 #c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
 conn.commit()
-c.execute('SELECT * from players')
+c.execute('SELECT * from ragnarok')
 alldata = c.fetchall()
 ap = []
 for row in alldata:

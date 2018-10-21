@@ -124,7 +124,6 @@ def checklottodeposits(steamid, inst):
     c1.close()
     conn1.close()
     if lottocheck and inst == elpinfo[15]:
-        log.warning(lottocheck)
         for weach in lottocheck:
             if weach[4] == 1:
                 log.info(f'{weach[3]} points added to {elpinfo[1]} for a lottery win')
