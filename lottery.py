@@ -117,7 +117,7 @@ def determinewinner(linfo):
         conn4.commit()
         c4.close()
         conn4.close()
-        msg = f'Lottery has ended. Not enough players have participated.  Requires at least 4.'
+        msg = f'Lottery has ended. Not enough players have participated.  Requires at least 3 players.'
         writediscord(msg, time.time())
         writeglobal('ALERT', 'ALERT', msg)
         time.sleep(3)
