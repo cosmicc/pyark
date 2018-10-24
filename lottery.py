@@ -95,7 +95,8 @@ def determinewinner(linfo):
             c4 = conn4.cursor()
             c4.execute('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
                        (?, ?, ?, ?, ?)', (lwinner[0], lwinner[1], time.time(), linfo[2], 1))
-            c4.execute('UPDATE players SET lottowins = ? WHERE steamid = ?', (int(lwinner[18]) + 1, lwinner[0]))
+            nlw = int(lwinner[19]) + int(linfo[2])
+            c4.execute('UPDATE players SET lottowins = ?, lotterywinnings = ? WHERE steamid = ?', (int(lwinner[18]) + 1, nlw, lwinner[0]))
             conn4.commit()
             c4.close()
             conn4.close()

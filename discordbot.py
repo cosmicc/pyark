@@ -48,7 +48,7 @@ def getlottowinnings(pname):
     twins = 0
     for weach in pwins:
         if weach[0] == 'points':
-            totpoints = totpoints + weach[1]
+            totpoints = totpoints + int(weach[1])
         twins += 1
     return twins, totpoints
 
@@ -322,8 +322,8 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !mods, !ec, !rewards, !servers, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !myinfo, \
-!lotto, !timeleft, !lastwipe, !lastrestart, !lastseen <playername>, !primordial'
+            msg = f'Commands: !mods, !ec, !rewards, !servers, !decay, !myinfo, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, \
+!lotto, !lastlotto, !winners, !timeleft, !lastwipe, !lastrestart, !lastseen, !primordial\n\nCommand descriptions pinned in #game-help channel\nCommands can be privately messaged directly to the bot or publicly in any channel'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
@@ -464,6 +464,33 @@ to change home servers'
                 msg = f"Your discord account is not connected to a player yet, so I don't know your home server."
                 await client.send_message(message.channel, msg)
 
+        elif message.content.startswith('!winners') or message.content.startswith('!lottowinners'):
+            whofor = str(message.author).lower()
+            log.info(f'lotto winners request from {whofor} on discord')
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" AND winner != "None" ORDER BY id DESC LIMIT 5')
+            last5 = c.fetchall()
+            c.execute('SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5')
+            top5 = c.fetchall()
+            c.close()
+            conn.close()
+            msg = 'Last 5 Lottery Winners:\n'
+            now = time.time()
+            try:
+                for peach in last5:
+                    msg = msg + f'{peach[7].capitalize()} won {peach[2]} Points  {elapsedTime(now, int(peach[5])*3600 + float(peach[3]))} ago\n'
+                msg = msg + '\nTop 5 All Time Lottery Winners:\n'
+                ccount = 0
+                newtop = top5.copy()
+                for heach in newtop:
+                    ccount += 1
+                    msg = msg + f'#{ccount} {heach[1].capitalize()} with {heach[18]} Lottery Wins.  {heach[19]} Points Total Won.\n'
+            except:
+                log.critical('Critical Error determining lottery winners!', exc_info=True)
+            await client.send_message(message.channel, msg)
+
+
         elif message.content.startswith('!myinfo') or message.content.startswith('!mypoints'):
             whofor = str(message.author).lower()
             log.info(f'myinfo request from {whofor} on discord')
@@ -487,9 +514,9 @@ to change home servers'
                     ptr = elapsedTime(float(time.time()), float(kuser[2]))
                     msg = f'Your current ARc reward points: {kuser[5]}\nLast played on {kuser[3].capitalize()} {ptr} ago.\n'
                     msg = msg + f'Your home server is: {kuser[15].capitalize()}\nYour total play time is {ptime}\n'
-                    msg = msg + f'You have {au1} current auctions: {au2} Items - {au3} Dinos\n'
+                    msg = msg + f'You have {au1} current auctions: {au2} Items, {au3} Dinos\n'
                     tpwins, twpoints = getlottowinnings(kuser[1])
-                    msg = msg + f'Total Lotterys Won: {tpwins}  Total Winnings: {twpoints} Points\n'
+                    msg = msg + f'Total Lotterys Won: {tpwins}  Total Lottery Points Won: {twpoints} Points\n'
                     woodtime = 1296000
                     stonetime = 1987200
                     metaldinotime = 2624400
