@@ -234,7 +234,7 @@ def restartloop(inst):
     if playercount(inst) == 0:
             log.info(f'server {inst} is empty and restarting now for a {reason}')
             writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
-            message = f'server is restarting now for a {reason}'
+            message = f'server {inst.capitalize()} is restarting now for a {reason}'
             subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL, shell=True)
             pushover('Instance Restart', message)
@@ -263,7 +263,7 @@ def restartloop(inst):
                     gotime = True
             if stillneedsrestart(inst):
                 log.info(f'server {inst} is restarting now for a {reason}')
-                message = f'server is restarting now for a {reason}'
+                message = f'server {inst.capitalize()} is restarting now for a {reason}'
                 subprocess.run("""arkmanager rconcmd "broadcast
                                '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason, inst),
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -291,6 +291,7 @@ def instancerestart(inst, reason):
                 log.info(f'maintenance window reached, running server os maintenance')
                 subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 subprocess.run('apt full-upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                subprocess.run('apt autoremove -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 time.sleep(3)
                 if os.path.isfile('/var/run/reboot-required'):
                     log.warning(f'{inst} physical server needs a hardware reboot after package updates')
@@ -440,7 +441,6 @@ https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-2
                     al = teach.split(' ')
                     modid = al[1]
                     modname = al[2]
-            inst = instance[each]['name']
             if modchk != 0:
                 ugennotify = time.time()
                 log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')

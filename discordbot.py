@@ -37,6 +37,22 @@ def getlastrestart(inst):
     return ''.join(lastwipe[0])
 
 
+def getlottowinnings(pname):
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT type, payoutitem FROM lotteryinfo WHERE winner = ?', (pname,))
+    pwins = c.fetchall()
+    c.close()
+    conn.close()
+    totpoints = 0
+    twins = 0
+    for weach in pwins:
+        if weach[0] == 'points':
+            totpoints = totpoints + weach[1]
+        twins += 1
+    return twins, totpoints
+
+
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
@@ -347,7 +363,55 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     msg = f'{each[0].capitalize()} has had no players today.'
                     await client.send_message(message.channel, msg)
 
-        elif message.content.startswith('!kickme'):
+        elif message.content.startswith('!decay') or message.content.startswith('!expire'):
+            whofor = str(message.author).lower()
+            log.info(f'decay request from {whofor} on discord')
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
+            kuser = c.fetchone()
+            c.close()
+            conn.close()
+            msg = f'Galaxy Cluster structure & dino decay times:\nDinos: 30 Days, Tek: 38 Days, Metal: 30 Days, Stone: 23 Days, Wood: 15 Days, Thatch: 7.5 Days, Greenhouse: 9.5 Days (Use MetalGlass for 30 Day Greenhouse).\n'
+            if kuser:
+                if kuser[8] != whofor:
+                    log.info(f'decay request from {whofor} public only, no account linked')
+                    msg = msg + f'Your discord account is not linked, I cannot determine your decay time left.'
+                else:
+                    log.info(f'decay request from {whofor} accepted, showing detailed info')
+                    msg = msg + f'Assuming you were in render range and no other tribe members on, decay time left since last online for {kuser[1].capitalize()}:\n'
+                    woodtime = 1310400
+                    stonetime = 1969200
+                    metaldinotime = 2592000
+                    now = time.time()
+                    try:
+                        etime = now - float(kuser[2])
+                        wdate = estshift(datetime.fromtimestamp(float(kuser[2]) + woodtime)).strftime('%a, %b %d %I:%M %p')
+                        sdate = estshift(datetime.fromtimestamp(float(kuser[2]) + stonetime)).strftime('%a, %b %d %I:%M %p')
+                        mdate = estshift(datetime.fromtimestamp(float(kuser[2]) + metaldinotime)).strftime('%a, %b %d %I:%M %p')
+                        if woodtime > etime:
+                            woodt = f'Your Wood Expires: {wdate} EST - {elapsedTime(woodtime, etime)} Left'
+                        elif etime < 3600:
+                            woodt = f'Your Wood Expires: 15 Days'
+                        else:
+                            woodt = 'Your Wood Structures have passed Experation Time!'
+                        if stonetime > etime:
+                            stonet = f'Your Stone Expires: {sdate} EST - {elapsedTime(stonetime, etime)} Left'
+                        elif etime < 3600:
+                            stonet = f'Your Stone Expires: {sdate} EST - {elapsedTime(stonetime)} Left'
+                        else:
+                            stonet = 'Your Stone Structures have passwd Experation Time!'
+                        if metaldinotime > etime:
+                            metalt = f'Your Metal & Dinos Expire: {mdate} EST - {elapsedTime(metaldinotime, etime)} Left'
+                        elif etime < 3600:
+                            metalt = f'Your Metal & Dinos Expire: 30 Days'
+                        else:
+                            metalt = 'Your Metal Structures & Dinos have passed Experation Time!'
+                        msg = msg + f'{woodt}\n{stonet}\n{metalt}'
+                    except:
+                        log.critical('Critical Error in decay calculation!', exc_info=True)
+            await client.send_message(message.channel, msg)
+        elif message.content.startswith('!kickme') or message.content.startswith('!kick'):
             whofor = str(message.author).lower()
             log.info(f'kickme request from {whofor} on discord')
             conn = sqlite3.connect(sqldb)
@@ -421,15 +485,41 @@ to change home servers'
                     writeauctionstats(kuser[0], au1, au2, au3)
                     ptime = playedTime(float(kuser[4].replace(',', '')))
                     ptr = elapsedTime(float(time.time()), float(kuser[2]))
-                    msg = f'Your current ARc reward points: {kuser[5]}.'
-                    await client.send_message(message.channel, msg)
-                    msg = f'Last played on {kuser[3].capitalize()} {ptr} ago.'
-                    await client.send_message(message.channel, msg)
-                    msg = f'Your home server is: {kuser[15].capitalize()}.'
-                    await client.send_message(message.channel, msg)
-                    msg = f'Your total play time is {ptime}.'
-                    await client.send_message(message.channel, msg)
-                    msg = f'You have {au1} current auctions: {au2} Items - {au3} Dinos'
+                    msg = f'Your current ARc reward points: {kuser[5]}\nLast played on {kuser[3].capitalize()} {ptr} ago.\n'
+                    msg = msg + f'Your home server is: {kuser[15].capitalize()}\nYour total play time is {ptime}\n'
+                    msg = msg + f'You have {au1} current auctions: {au2} Items - {au3} Dinos\n'
+                    tpwins, twpoints = getlottowinnings(kuser[1])
+                    msg = msg + f'Total Lotterys Won: {tpwins}  Total Winnings: {twpoints} Points\n'
+                    woodtime = 1296000
+                    stonetime = 1987200
+                    metaldinotime = 2624400
+                    now = time.time()
+                    try:
+                        etime = now - float(kuser[2])
+                        wdate = estshift(datetime.fromtimestamp(float(kuser[2]) + woodtime)).strftime('%a, %b %d %I:%M %p')
+                        sdate = estshift(datetime.fromtimestamp(float(kuser[2]) + stonetime)).strftime('%a, %b %d %I:%M %p')
+                        mdate = estshift(datetime.fromtimestamp(float(kuser[2]) + metaldinotime)).strftime('%a, %b %d %I:%M %p')
+                        if woodtime > etime:
+                            woodt = f'Your Wood Structures Expire: {wdate} EST - {elapsedTime(woodtime, etime)} Left'
+                        elif etime < 3600:
+                            woodt = f'Your Wood Structures Expire: 15 Days Left'
+                        else:
+                            woodt = 'Your Wood Structures have passed Experation Time!'
+                        if stonetime > etime:
+                            stonet = f'Your Stone Structures Expire: {sdate} EST - {elapsedTime(stonetime, etime)} Left'
+                        elif etime < 3600:
+                            stonet = f'Your Stone Structures Expire: 23 Days Left'
+                        else:
+                            stonet = 'Your Stone Structures have passwd Experation Time!'
+                        if metaldinotime > etime:
+                            metalt = f'Your Metal & Dinos Expire: {mdate} EST - {elapsedTime(metaldinotime, etime)} Left'
+                        elif etime < 3600:
+                            metalt = f'Your Metal & Dinos Expire: 30 Days Left'
+                        else:
+                            metalt = 'Your Metal Structures & Dinos have passed Experation Time!'
+                        msg = msg + f'{woodt}\n{stonet}\n{metalt}'
+                    except:
+                        log.critical('Critical Error in decay calculation!', exc_info=True)
                     await client.send_message(message.channel, msg)
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
             conn = sqlite3.connect(sqldb)

@@ -28,7 +28,7 @@ now = time.time()
 sqldb = f'{sharedpath}/db/pyark.db'
 statdb = f'{sharedpath}/db/stats.db'
 
-conn = sqlite3.connect(statdb)
+conn = sqlite3.connect(sqldb)
 c = conn.cursor()
 
 ##delete the admin account from db
@@ -47,7 +47,8 @@ c = conn.cursor()
 #c.execute('PRAGMA table_info(players)')
 #c.execute('UPDATE players SET firstseen = ? WHERE steamid = ?', (now,'76561198028548947'))
 conn.commit()
-c.execute('SELECT * from ragnarok')
+pname = 'markimus'
+c.execute('SELECT type, payoutitem FROM lotteryinfo WHERE winner = ?', (pname,))
 alldata = c.fetchall()
 ap = []
 for row in alldata:
