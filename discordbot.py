@@ -779,8 +779,8 @@ to link your account'
             if whos:
                 writeglobal('discord', whos[0], str(message.content))
     client.loop.create_task(chatbuffer())
-    try:
-        while True:
+    while True:
+        try:
             client.run(config.get('general', 'discordtoken'))
-    except:
-        log.critical('Critical Error in Discord Bot Routine!', exc_info=True)
+        except:
+            log.critical('Critical Error in Discord Bot Routine!', exc_info=True)

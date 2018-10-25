@@ -83,7 +83,7 @@ def oscollect():
         try:
             for each in statinst:
                 checkiftableexists(each)
-                flushold(each)
+                #flushold(each)
                 addvalue(each, howmanyon(each))
         except:
             log.critical('Critical Error in Online Stat Collector!', exc_info=True)

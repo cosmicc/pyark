@@ -551,6 +551,7 @@ def showservers():
     print(f'{BLU}--------------------------------------------------------------------------------------{RST}')
     print('   ')
     print(f'{BLU}------------------------------------[{moo}{jo} {ORG}PLAYERS ON NOW{BLU}]------------------------------------{RST}')
+    print('   ')
     for feach in lastones:
         tt = now - float(feach[2])
         tr = now - float(feach[6])

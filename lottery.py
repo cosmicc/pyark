@@ -159,13 +159,12 @@ def startlottery(lottoinfo):
     else:
         lottotype = 'Item'
         litm = lottoinfo[2]
-    # lottostart = estshift(datetime.fromtimestamp(float(lottoinfo[3]) +
-    #                                             (3600 * int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
+    lottoend = estshift(datetime.fromtimestamp(float(lottoinfo[3]) + (3600 * int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
     if lottoinfo[8] == 0 or lottoinfo[8] is None:
         log.info(f'A lottery has started. Type: {lottotype} Payout: {lottoinfo[2]} Buyin: {lottoinfo[4]} \
-Days: {lottoinfo[5]}')
+Length: {lottoinfo[5]} Hours, Ends: {lottoends}')
         msg = f'A new {lottotype} lottery has started! {lottoinfo[4]} ARc Points to enter\nWinning prize: \
-{litm}, type !lotto for more info'
+{litm}, Lottery Ends: {lottoend} - Type !lotto for more info'
         writeglobal('ALERT', 'ALERT', msg)
         writediscord(msg, time.time())
         time.sleep(3.1)
