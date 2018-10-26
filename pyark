@@ -178,10 +178,10 @@ def main():
                 if not instance[each]['onlinethread'].is_alive():
                     t = f'{inst} online monitor'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-            if restapi_enabled == "True" or restapi_enabled == "true":
-                if not restapi.is_alive():
-                    t = f'{inst} rest api'
-                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            #if restapi_enabled == "True" or restapi_enabled == "true":
+            #    if not restapi.is_alive():
+            #        t = f'{inst} rest api'
+            #        log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         except KeyboardInterrupt:
             log.critical(f'Keyboard Interrupt Exiting.')
             exit()
