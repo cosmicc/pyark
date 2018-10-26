@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import time, logging, sqlite3, socket
+import time, logging, sqlite3, socket, datetime
 from numpy.random import seed, shuffle, randint
 from numpy import argmax
 from configreader import sqldb
