@@ -5,10 +5,10 @@ name = "pypi"
 
 [packages]
 numpy = "*"
-pygit = "*"
 flask = "*"
 flask-restplus = "*"
 pandas = "*"
+gitpython = "*"
 
 [dev-packages]
 
