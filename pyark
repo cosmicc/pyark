@@ -10,9 +10,9 @@ from onlinemonitor import onlineupdate
 from discordbot import discordbot
 from statcollector import oscollect
 from kicker import kicker
-from configreader import logfile, sqldb, instance, numinstances, imthedbot, restapi_enabled
+from configreader import logfile, sqldb, instance, numinstances, imthedbot, restapi_enabled, restapi_ip, restapi_port
 from gchatrelay import gchatrelay
-from restapi import startapi
+from restapi import app
 import lottery
 
 __author__ = "Ian Perry"
@@ -129,8 +129,13 @@ def main():
         ostat = threading.Thread(name='stat-collector', target=oscollect)
         ostat.start()
     if restapi_enabled == "True" or restapi_enabled == "true":
-        restapi = threading.Thread(name='restapi', target=startapi)
-        restapi.start()
+        log.info(f'Starting RestAPI Server on IP: {restapi_ip} PORT: {restapi_port}')
+        try:
+            pass
+            #restapi = threading.Thread(name='restapi', target=app.run, kwargs={'host': restapi_ip, 'port': restapi_port})
+            #restapi.start()
+        except:
+            log.critical(f'Flask RestAPI failed to start.', exc_info=True)
 
     while True:
         try:

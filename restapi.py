@@ -232,26 +232,27 @@ m_serverinfo = api.model('serverinfo', {
     'battlemetricslink': fields.String,
 })
 
-m_playerinfo = api.model('playerinfo', {
-    'name': fields.String(attribute='playername'),
-    'steamid': fields.String,
-    'discordid': fields.String,
-    'lastonline': elapsedtime(attribute='lastseen'),
-    'server': fields.String,
-    'homeserver': fields.String,
-    'joined': elapsedtime(attribute='firstseen'),
-    'connections': fields.Integer(attribute='connects'),
-    'playedtime': plytime(attribute='playedtime'),
-    'rewardpoints': fields.Integer,
-    'transferpoints': fields.Integer,
-    'lotteryswon': fields.Integer(attribute='lottowins'),
-    'lotterywinnings': fields.Integer,
-    'totalauctions': fields.Integer,
-    'itemauctions': fields.Integer,
-    'dinoauctions': fields.Integer,
-    'primordialwarning': int2bool(attribute='primordialbit'),
-    'onsincerestart': int2bool(attribute='restartbit'),
-})
+#m_playerinfo = api.model('playerinfo', {
+#    'steamid': fields.String,
+#    'playerdata': {
+#        'name': fields.String(attribute='playername'),
+#        'discordid': fields.String,
+#        'lastonline': elapsedtime(attribute='lastseen'),
+#        'server': fields.String,
+#        'homeserver': fields.String,
+#        'joined': elapsedtime(attribute='firstseen'),
+#        'connections': fields.Integer(attribute='connects'),
+#        'playedtime': plytime(attribute='playedtime'),
+#        'rewardpoints': fields.Integer,
+#        'transferpoints': fields.Integer,
+#        'lotteryswon': fields.Integer(attribute='lottowins'),
+#        'lotterywinnings': fields.Integer,
+#        'totalauctions': fields.Integer,
+#        'itemauctions': fields.Integer,
+#        'dinoauctions': fields.Integer,
+#        'primordialwarning': int2bool(attribute='primordialbit'),
+#        'onsincerestart': int2bool(attribute='restartbit'),
+#    }})
 
 
 def listcolums(mtable):
@@ -384,7 +385,7 @@ class PlayerInfo(Resource):
     # @api.doc(security='apikey')
     # @token_required
     @api.expect(playerquery)
-    @api.marshal_with(m_playerinfo)
+    #@api.marshal_with(m_playerinfo)
     def post(self):
         log.debug(f'API request for playerinfo')
         pname = api.payload['playername']
@@ -410,14 +411,36 @@ class PlayerInfo(Resource):
             return (nap), 201
 
 
-def startapi():
-    log.info(f'Starting RestAPI Server on IP: {restapi_ip} PORT: {restapi_port}')
-    try:
-        app.run(host=restapi_ip, port=restapi_port, debug=False)
-    except:
-        log.critical(f'Flask failed to start.', exc_info=True)
+@api.route('/newplayers')
+class NewPlayers(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    # @api.marshal_with(m_playerinfo)
+    def get(self):
+        log.info(f'API request for newplayers')
+        nap = {}
+        newnap = {}
+        try:
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players ORDER BY firstseen')
+            q_player = c.fetchall()
+            c.close()
+            conn.close()
+        except:
+            log.critical(f'error in newplayers api request db', exc_info=True)
+        try:
+            for each in q_player:
+                nap.update(zip(listcolums('players'), each))
+                newnap.update({'steamid': each[0], 'playerdata': nap})
+            log.info(newnap)
+        except:
+            log.critical(f'error in newplayers api request nap', exc_info=True)
+        try:
+            return (newnap), 201
+        except:
+            log.critical(f'error in newplayers api request return', exc_info=True)
 
 
 if __name__ == '__main__':
-    print('No. Exiting.')
-    exit()
+    app.run(host=restapi_ip, port=restapi_port)

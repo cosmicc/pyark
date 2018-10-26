@@ -4,6 +4,7 @@ import time, logging, sqlite3, socket
 from numpy.random import seed, shuffle, randint
 from numpy import argmax
 from configreader import sqldb
+from timehelper import estshift
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
