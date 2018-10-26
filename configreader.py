@@ -40,6 +40,7 @@ imthedbot = config.get('general', 'isdiscordbot')
 po_userkey = config.get('general', 'pushover_userkey')
 po_appkey = config.get('general', 'pushover_appkey')
 
+restapi_enabled = config.get('restapi', 'enabled')
 restapi_token = config.get('restapi', 'token')
 restapi_ip = config.get('restapi', 'ip')
 restapi_port = config.get('restapi', 'port')

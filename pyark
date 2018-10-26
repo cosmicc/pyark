@@ -10,8 +10,9 @@ from onlinemonitor import onlineupdate
 from discordbot import discordbot
 from statcollector import oscollect
 from kicker import kicker
-from configreader import logfile, sqldb, instance, numinstances, imthedbot
+from configreader import logfile, sqldb, instance, numinstances, imthedbot, restapi_enabled
 from gchatrelay import gchatrelay
+from restapi import startapi
 import lottery
 
 __author__ = "Ian Perry"
@@ -127,6 +128,9 @@ def main():
         lotteryt.start()
         ostat = threading.Thread(name='stat-collector', target=oscollect)
         ostat.start()
+    if restapi_enabled == "True" or restapi_enabled == "true":
+        restapi = threading.Thread(name='restapi', target=startapi)
+        restapi.start()
 
     while True:
         try:
@@ -168,6 +172,10 @@ def main():
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
                 if not instance[each]['onlinethread'].is_alive():
                     t = f'{inst} online monitor'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if restapi_enabled == "True" or restapi_enabled == "true":
+                if not restapi.is_alive():
+                    t = f'{inst} rest api'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         except KeyboardInterrupt:
             log.critical(f'Keyboard Interrupt Exiting.')

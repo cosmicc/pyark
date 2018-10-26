@@ -38,7 +38,7 @@ def lock():
         atexit.register(unlock)
         return True
     else:
-        log.error(f'Script is trying to start, but already running on pid {ppid}')
+        log.error(f'Trying to start, but already running on pid {ppid}')
         exit(1)
 
 

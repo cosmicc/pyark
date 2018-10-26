@@ -1,4 +1,5 @@
-import sqlite3, time
+import time, logging, sqlite3, socket
+from sys import exit
 from datetime import datetime
 from numpy import mean
 from flask import Flask, request
@@ -7,8 +8,10 @@ from functools import wraps
 from timehelper import estshift, elapsedTime, playedTime
 from configreader import sqldb, statsdb, restapi_token, restapi_ip, restapi_port
 
-app = Flask(__name__)
+hstname = socket.gethostname()
+log = logging.getLogger(name=hstname)
 
+app = Flask(__name__)
 
 authorizations = {
     'apikey': {
@@ -17,7 +20,6 @@ authorizations = {
         'name': 'X-API-KEY'
     }
 }
-
 
 api = Api(app, authorizations=authorizations)
 
@@ -273,12 +275,13 @@ def token_required(f):
             token = request.headers['X-API-KEY']
 
         if not token:
+            log.warning(f'API request without a token')
             return {'message': 'Token is missing'}, 401
 
         if token != restapi_token:
+            log.warning(f'API request invalid token: {token}')
             return {'message': 'Invalid Token'}, 401
-
-        print('TOKEN: {}'.format(token))
+        log.debug(f'API request granted with token: {token}')
         return f(*args, **kwargs)
     return decorated
 
@@ -290,6 +293,7 @@ class ServerInfo(Resource):
     @api.expect(serverquery)
     @api.marshal_with(m_serverinfo)
     def post(self):
+        log.debug(f'API request for serverinfo')
         sname = api.payload['servername']
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
@@ -313,6 +317,7 @@ class ClusterInfo(Resource):
     # @token_required
     # @api.marshal_with(m_clusterinfo)
     def get(self):
+        log.debug(f'API request for clusterinfo')
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
         c.execute('SELECT name from instances')
@@ -381,6 +386,7 @@ class PlayerInfo(Resource):
     @api.expect(playerquery)
     @api.marshal_with(m_playerinfo)
     def post(self):
+        log.debug(f'API request for playerinfo')
         pname = api.payload['playername']
         steamid = api.payload['steamid']
         conn = sqlite3.connect(sqldb)
@@ -404,5 +410,14 @@ class PlayerInfo(Resource):
             return (nap), 201
 
 
+def startapi():
+    log.info(f'Starting RestAPI Server on IP: {restapi_ip} PORT: {restapi_port}')
+    try:
+        app.run(host=restapi_ip, port=restapi_port, debug=False)
+    except:
+        log.critical(f'Flask failed to start.', exc_info=True)
+
+
 if __name__ == '__main__':
-    app.run(host=restapi_ip, port=restapi_port, debug=True)
+    print('No. Exiting.')
+    exit()
