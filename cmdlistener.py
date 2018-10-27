@@ -522,7 +522,7 @@ def processtcdata(inst, tcdata):
     timestamp = time.time()
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
-    playtime = tcdata['TotalPlayed']
+    playtime = tcdata['TotalPlayed'].replace(',', '')
     rewardpoints = tcdata['Points'].replace(',', '')
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
