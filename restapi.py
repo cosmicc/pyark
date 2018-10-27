@@ -2,16 +2,29 @@ import time, logging, sqlite3, socket
 from sys import exit
 from datetime import datetime
 from numpy import mean
-from flask import Flask, request
-from flask_restplus import Api, Resource, fields
+from flask import Flask, request, Blueprint
+from flask_restplus import Api, Resource, fields, marshal
 from functools import wraps
 from timehelper import estshift, elapsedTime, playedTime
-from configreader import sqldb, statsdb, restapi_token, restapi_ip, restapi_port
+from configreader import sqldb, statsdb, restapi_token, restapi_ip, restapi_port, apilogfile
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 app = Flask(__name__)
+
+log_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(name)s:%(message)s')
+log_file = logging.FileHandler(apilogfile)
+log_file.setLevel(logging.INFO)
+log_file.setFormatter(log_format)
+app.logger.addHandler(log_file)
+
+blueprint = Blueprint('api', __name__, url_prefix='/api')
+api = Api(blueprint, title='Galaxy Cluster RestAPI', version='1.0', doc='/docs')  # doc=False
+
+app.register_blueprint(blueprint)
+
+app.config['SWAGGER_UI_JSONEDITOR'] = True
 
 authorizations = {
     'apikey': {
@@ -20,8 +33,6 @@ authorizations = {
         'name': 'X-API-KEY'
     }
 }
-
-api = Api(app, authorizations=authorizations)
 
 playerquery = api.model('PlayerQuery', {'playername': fields.String('Player Name'), 'steamid': fields.Integer('Steam ID')})
 serverquery = api.model('ServerQuery', {'servername': fields.String('Server Name')})
@@ -81,7 +92,7 @@ def howmanyonline():
     allplayers = c.fetchall()
     c.close()
     conn.close()
-    oplayers = ''
+    oplayers = []
     for row in allplayers:
         diff_time = float(time.time()) - float(row[2])
         total_min = diff_time / 60
@@ -90,11 +101,7 @@ def howmanyonline():
         days = int(hours / 24)
         if minutes <= 1 and hours < 1 and days < 1:
             pcnt += 1
-            if oplayers == '':
-                oplayers = row[1]
-            else:
-                oplayers = oplayers + f', {row[1]}'
-
+            oplayers.append(row[1])
     return pcnt, oplayers
 
 
@@ -204,6 +211,63 @@ class int2bool(fields.Raw):
             return 'False'
         else:
             return 'Error'
+
+
+class lotteryends(fields.Raw):
+    def format(self, value):
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT timestamp, lengthdays from lotteryinfo WHERE id = ?', (value,))
+        linfo = c.fetchone()
+        c.close()
+        conn.close()
+        endtime = float(linfo[0]) + (3600 * linfo[1])
+        if endtime > time.time():
+            return f'in {elapsedTime(endtime, time.time())}'
+        else:
+            return f'{elapsedTime(time.time(), endtime)} ago'
+
+
+def isinlottery():
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('SELECT * from lotteryinfo WHERE winner = "Incomplete"')
+    linfo = c.fetchone()
+    c.close()
+    conn.close()
+    if linfo:
+        return True
+    else:
+        return False
+
+
+class lotteryendtime(fields.Raw):
+    def format(self, value):
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT timestamp, lengthdays from lotteryinfo WHERE id = ?', (value,))
+        linfo = c.fetchone()
+        c.close()
+        conn.close()
+        endtime = float(linfo[0]) + (3600 * linfo[1])
+        endtime = datetime.fromtimestamp(endtime)
+        return estshift(endtime).strftime('%a %b %-d %-I:%M %p')
+
+
+class lotteryplayers(fields.Raw):
+    def format(self, value):
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT playername from lotteryplayers')
+        linfo = c.fetchall()
+        c.close()
+        conn.close()
+        nlinfo = []
+        for each in linfo:
+            nlinfo.append(each[0])
+        return nlinfo
+
+
 # estshift(datetime.fromtimestamp(float(value))).strftime('%a, %b %d %I:%M %p')
 
 #def getallplaytime(when, statsinst):
@@ -215,10 +279,10 @@ m_serverinfo = api.model('serverinfo', {
     'name': fields.String,
     'playersonline': playerson(attribute='name'),
     'lastrestart': elapsedtime(attribute='lastrestart'),
+    'restartreason': fields.String,
     'lastdinowipe': elapsedtime(attribute='lastdinowipe'),
     'isrestarting': fields.String(attribute='needsrestart'),
     'lastvote': elapsedtime(attribute='lastvote'),
-    'restartreason': fields.String,
     'config_ver': fields.Integer(attribute='cfgver'),
     'restartcountdown': fields.Integer,
     'isonline': int2bool(attribute='isup'),
@@ -232,28 +296,55 @@ m_serverinfo = api.model('serverinfo', {
     'battlemetricslink': fields.String,
 })
 
-#m_playerinfo = api.model('playerinfo', {
-#    'steamid': fields.String,
-#    'playerdata': {
-#        'name': fields.String(attribute='playername'),
-#        'discordid': fields.String,
-#        'lastonline': elapsedtime(attribute='lastseen'),
-#        'server': fields.String,
-#        'homeserver': fields.String,
-#        'joined': elapsedtime(attribute='firstseen'),
-#        'connections': fields.Integer(attribute='connects'),
-#        'playedtime': plytime(attribute='playedtime'),
-#        'rewardpoints': fields.Integer,
-#        'transferpoints': fields.Integer,
-#        'lotteryswon': fields.Integer(attribute='lottowins'),
-#        'lotterywinnings': fields.Integer,
-#        'totalauctions': fields.Integer,
-#        'itemauctions': fields.Integer,
-#        'dinoauctions': fields.Integer,
-#        'primordialwarning': int2bool(attribute='primordialbit'),
-#        'onsincerestart': int2bool(attribute='restartbit'),
-#    }})
 
+
+m_minplayerinfo = api.model('minplayerinfo', {
+    'steamid': fields.String,
+    'name': fields.String(attribute='playername'),
+    'discordid': fields.String,
+    'lastonline': elapsedtime(attribute='lastseen'),
+    'homeserver': fields.String,
+    'joined': elapsedtime(attribute='firstseen'),
+    'playedtime': plytime(attribute='playedtime'),
+})
+
+
+m_fullplayerinfo = api.clone('playerinfo', m_minplayerinfo, {
+    'server': fields.String,
+    'connections': fields.Integer(attribute='connects'),
+    'rewardpoints': fields.Integer,
+    'transferpoints': fields.Integer,
+    'lotteryswon': fields.Integer(attribute='lottowins'),
+    'lotterywinnings': fields.Integer,
+    'totalauctions': fields.Integer,
+    'itemauctions': fields.Integer,
+    'dinoauctions': fields.Integer,
+    'primordialwarning': int2bool(attribute='primordialbit'),
+    'onsincerestart': int2bool(attribute='restartbit'),
+})
+
+m_lotteryplayers = api.clone('lotteryplayerinfo', m_minplayerinfo, {
+    'lotteryswon': fields.Integer(attribute='lottowins'),
+    'lotterywinnings': fields.Integer,
+})
+
+m_lottery = api.model('lottery', {
+    'id': fields.Integer,
+    'type': fields.String,
+    'start': elapsedtime(attribute='timestamp'),
+    'end': lotteryends(attribute='id'),
+    'endtime': lotteryendtime(attribute='id'),
+    'lengthhours': fields.Integer(attribute='lengthdays'),
+    'payout': fields.String(attribute='payoutitem'),
+    'buyinpoints': fields.Integer,
+    'numberplayers': fields.Integer(attribute='players'),
+    'winner': fields.String,
+    # 'announced': int2bool(attribute='announced')
+})
+
+m_clottery = api.clone('currentlottery', m_lottery, {
+    'players': lotteryplayers(attribute='id'),
+})
 
 def listcolums(mtable):
     conn = sqlite3.connect(sqldb)
@@ -287,7 +378,7 @@ def token_required(f):
     return decorated
 
 
-@api.route('/serverinfo')
+@api.route('/server/query')
 class ServerInfo(Resource):
     # @api.doc(security='apikey')
     # @token_required
@@ -312,39 +403,56 @@ class ServerInfo(Resource):
             return (nap), 201
 
 
-@api.route('/clusterinfo')
+@api.route('/cluster/info')
 class ClusterInfo(Resource):
     # @api.doc(security='apikey')
     # @token_required
     # @api.marshal_with(m_clusterinfo)
     def get(self):
-        log.debug(f'API request for clusterinfo')
+        app.logger.debug(f'API Request from: [{request.remote_addr}] - ')
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
         c.execute('SELECT name from instances')
         instr = c.fetchall()
-
         c.close()
         conn.close()
-        ap = ''
         cluster = {}
         statsinst = []
         for each in instr:
             statsinst.append(each[0])
-            if ap == '':
-                ap = f'{each[0]}'
-            else:
-                ap = ap + f', {each[0]}'
+        cluster['instances'] = statsinst
+        np, oplayers = howmanyonline()
+        cluster['numberonline'] = np
+        cluster['playersonline'] = oplayers
+        cluster['newplayers'] = {'lastday': newplayers('daily'), 'lastweek': newplayers('weekly'), 'lastmonth': newplayers('monthly')}
+        cluster['inlottery'] = isinlottery()
+        return (cluster), 201
+
+
+@api.route('/cluster/stats')
+class ClusterStats(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    # @api.marshal_with(m_clusterinfo)
+    def get(self):
+        app.log.info(f'API request for cluster stats')
+        conn = sqlite3.connect(sqldb)
+        c = conn.cursor()
+        c.execute('SELECT name from instances')
+        instr = c.fetchall()
+        c.close()
+        conn.close()
+        cluster = {}
+        statsinst = []
+        for each in instr:
+            statsinst.append(each[0])
+        cluster['instances'] = statsinst
+        np, oplayers = howmanyonline()
         ahv, ahd = getallhighest('hourly', statsinst)
         aev, aed = getallhighest('eighthour', statsinst)
         adv, add = getallhighest('daily', statsinst)
         awv, awd = getallhighest('weekly', statsinst)
         amv, amd = getallhighest('monthly', statsinst)
-        cluster['instances'] = ap
-        np, oplayers = howmanyonline()
-        cluster['playersonline'] = np
-        cluster['players'] = oplayers
-        cluster['newplayers'] = {'lastday': newplayers('daily'), 'lastweek': newplayers('weekly'), 'lastmonth': newplayers('monthly')}
         cluster['stats'] = {
             'lasthour': {
                 'average': getallavg('hourly', statsinst),
@@ -380,12 +488,42 @@ class ClusterInfo(Resource):
         return (cluster), 201
 
 
-@api.route('/playerinfo')
+@api.route('/cluster/banned')
+class BannedPlayers(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    def get(self):
+        log.info(f'API request for banned players')
+        newnap = []
+        supernap = {}
+        try:
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players WHERE banned != NULL')
+            q_player = c.fetchall()
+            c.execute('SELECT * FROM banlist')
+            banlist = c.fetchall()
+            c.close()
+            conn.close()
+        except:
+            log.critical(f'error in retreiving info from db for api request', exc_info=True)
+        if q_player:
+            for each in q_player:
+                nap = {}
+                nap.update(zip(listcolums('players'), each))
+                newnap.append(nap)
+            supernap = {'steamids': banlist, 'players': newnap}
+        else:
+            supernap = {'steamids': banlist, 'players': []}
+        return supernap
+
+
+@api.route('/players/query')
 class PlayerInfo(Resource):
     # @api.doc(security='apikey')
     # @token_required
     @api.expect(playerquery)
-    #@api.marshal_with(m_playerinfo)
+    @api.marshal_with(m_fullplayerinfo)
     def post(self):
         log.debug(f'API request for playerinfo')
         pname = api.payload['playername']
@@ -411,36 +549,172 @@ class PlayerInfo(Resource):
             return (nap), 201
 
 
-@api.route('/newplayers')
+@api.route('/players/newest')
 class NewPlayers(Resource):
     # @api.doc(security='apikey')
     # @token_required
-    # @api.marshal_with(m_playerinfo)
+    @api.marshal_with(m_fullplayerinfo)
     def get(self):
         log.info(f'API request for newplayers')
-        nap = {}
-        newnap = {}
+        newnap = []
         try:
             conn = sqlite3.connect(sqldb)
             c = conn.cursor()
-            c.execute('SELECT * FROM players ORDER BY firstseen')
+            c.execute('SELECT * FROM players ORDER BY firstseen DESC LIMIT 10')
             q_player = c.fetchall()
             c.close()
             conn.close()
         except:
-            log.critical(f'error in newplayers api request db', exc_info=True)
+            log.critical(f'error in retreiving info from db for api request', exc_info=True)
         try:
             for each in q_player:
+                nap = {}
                 nap.update(zip(listcolums('players'), each))
-                newnap.update({'steamid': each[0], 'playerdata': nap})
-            log.info(newnap)
+                newnap.append(nap)
         except:
-            log.critical(f'error in newplayers api request nap', exc_info=True)
+            log.critical(f'error in calculating api request', exc_info=True)
+        return newnap
+
+
+@api.route('/players/topplayed')
+class TopPlayers(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    @api.marshal_with(m_minplayerinfo)
+    def get(self):
+        app.logger.info(f'API request for top players')
+        newnap = []
         try:
-            return (newnap), 201
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players ORDER BY firstseen DESC LIMIT 10')
+            q_player = c.fetchall()
+            c.close()
+            conn.close()
         except:
-            log.critical(f'error in newplayers api request return', exc_info=True)
+            log.critical(f'error in retreiving info from db for api request', exc_info=True)
+        try:
+            for each in q_player:
+                nap = {}
+                nap.update(zip(listcolums('players'), each))
+                newnap.append(nap)
+        except:
+            log.critical(f'error in calculating api request', exc_info=True)
+        return newnap
+
+
+
+@api.route('/cluster/lottery/current')
+class ClusterLottery(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    @api.marshal_with(m_clottery)
+    def get(self):
+        log.info(f'API request for current cluster lottery')
+        try:
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM lotteryinfo WHERE winner == "Incomplete"')
+            current_lotto = c.fetchone()
+            c.close()
+            conn.close()
+        except:
+            log.critical(f'error in retreiving info from db for api request', exc_info=True)
+        try:
+            if current_lotto:
+                nap = {}
+                nap.update(zip(listcolums('lotteryinfo'), current_lotto))
+            else:
+                nap = {}
+        except:
+            log.critical(f'error in calculating api request', exc_info=True)
+        return nap
+
+
+@api.route('/cluster/lottery/topwinners')
+class LotteryWinners(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    @api.marshal_with(m_lotteryplayers)
+    def get(self):
+        log.info(f'API request for lottery winners')
+        try:
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 10')
+            lottowinners = c.fetchall()
+            c.close()
+            conn.close()
+        except:
+            log.critical(f'error in retreiving info from db for api request', exc_info=True)
+        newnap = []
+        try:
+            for each in lottowinners:
+                nap = {}
+                nap.update(zip(listcolums('players'), each))
+                newnap.append(nap)
+        except:
+            log.critical(f'error in calculating api request', exc_info=True)
+        return newnap
+
+
+@api.route('/cluster/lottery/history')
+class LotteryHistory(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    @api.marshal_with(m_lottery)
+    def get(self):
+        log.info(f'API request for lottery history')
+        try:
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" ORDER BY id DESC')
+            lhist = c.fetchall()
+            c.close()
+            conn.close()
+        except:
+            log.critical(f'error in retreiving info from db for api request', exc_info=True)
+        newnap = []
+        try:
+            for each in lhist:
+                nap = {}
+                nap.update(zip(listcolums('lotteryinfo'), each))
+                newnap.append(nap)
+        except:
+            log.critical(f'error in calculating api request', exc_info=True)
+        return newnap
+
+
+
+
+@api.route('/players/expired')
+class ExpiredPlayers(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    @api.marshal_with(m_fullplayerinfo)
+    def get(self):
+        log.info(f'API request for expiredplayers')
+        newnap = []
+        try:
+            conn = sqlite3.connect(sqldb)
+            c = conn.cursor()
+            c.execute('SELECT * FROM players WHERE lastseen < ? ORDER BY lastseen ASC', (time.time() - 2592000,))
+            q_player = c.fetchall()
+            c.close()
+            conn.close()
+        except:
+            log.critical(f'error in retreiving info from db for api request', exc_info=True)
+        try:
+            for each in q_player:
+                nap = {}
+                nap.update(zip(listcolums('players'), each))
+                newnap.append(nap)
+        except:
+            log.critical(f'error in calculating api request', exc_info=True)
+        return newnap
+
+
 
 
 if __name__ == '__main__':
-    app.run(host=restapi_ip, port=restapi_port)
+    app.run(host=restapi_ip, port=restapi_port, debug=True)

@@ -132,8 +132,8 @@ def main():
         log.info(f'Starting RestAPI Server on IP: {restapi_ip} PORT: {restapi_port}')
         try:
             pass
-            #restapi = threading.Thread(name='restapi', target=app.run, kwargs={'host': restapi_ip, 'port': restapi_port})
-            #restapi.start()
+            restapi = threading.Thread(name='restapi', target=app.run, kwargs={'host': restapi_ip, 'port': restapi_port})
+            restapi.start()
         except:
             log.critical(f'Flask RestAPI failed to start.', exc_info=True)
 
@@ -178,10 +178,10 @@ def main():
                 if not instance[each]['onlinethread'].is_alive():
                     t = f'{inst} online monitor'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-            #if restapi_enabled == "True" or restapi_enabled == "true":
-            #    if not restapi.is_alive():
-            #        t = f'{inst} rest api'
-            #        log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if restapi_enabled == "True" or restapi_enabled == "true":
+                if not restapi.is_alive():
+                    t = f'{inst} rest api'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         except KeyboardInterrupt:
             log.critical(f'Keyboard Interrupt Exiting.')
             exit()

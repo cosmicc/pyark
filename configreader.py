@@ -17,7 +17,8 @@ config.read(configfile)
 
 sharedpath = config.get('general', 'shared')
 arkroot = config.get('general', 'arkroot')
-logfile = config.get('general', 'log')
+logfile = config.get('general', 'logfile')
+apilogfile = config.get('restapi', 'logfile')
 
 sqldb = config.get('general', 'pyarkdb')
 statsdb = config.get('general', 'statsdb')
