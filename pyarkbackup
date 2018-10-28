@@ -1,3 +1,4 @@
+echo '.dump' | /usr/bin/sqlite3 /home/ark/shared/db/pyark.db > /usr/bin/sqlite3 /home/ark/shared/db/daily.dump
 rsync -arq /home/ark/shared/ark-backups /mnt/backup/ark_backup/
 rsync -arq /home/ark/ARK/ShooterGame/Saved/clusters /mnt/backup/ark_backup/
 rsync -arq /home/ark/shared/config /mnt/backup/ark_backup/

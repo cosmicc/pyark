@@ -12,18 +12,16 @@ from urllib.request import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform',
-                    action='store', choices=['cluster', 'players', 'kicklist', 'linkrequests', 'delplayer',
-                                             'linkplayer', 'startlottery', 'lottery', 'restartserver', 'chatbuffer',
-                                             'servertable', 'discordnames', 'notlinked', 'newest', 'server', 'dinowipe',
-                                             'playersraw', 'logwatch', 'lotterytables', 'log', 'topplayers', 'test',
-                                             'debugwatch', 'playertable', 'oldest', 'logsearch', 'banplayer', 'banlist',
+                    action='store', choices=['cluster', 'players', 'delplayer',
+                                             'linkplayer', 'startlottery', 'lottery', 'restartserver',
+                                             'listtables', 'notlinked', 'newest', 'server', 'dinowipe',
+                                             'logwatch', 'lotterytables', 'log', 'topplayers', 'test',
+                                             'debugwatch', 'showtable', 'oldest', 'logsearch', 'banplayer', 'banlist',
                                              'unbanplayer', 'tribewipe', 'backupdb', 'shortest'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('cluster', action='store_true', help='Cluster information')
-action_group.add_argument('playertable', action='store_true', help='Show players table')
-action_group.add_argument('kicklist', action='store_true', help='Show kick list table')
-action_group.add_argument('linkrequests', action='store_true', help='Show link requests table')
-action_group.add_argument('discordnames', action='store_true', help='Show discord users table')
+action_group.add_argument('showtable', action='store_true', help='Show players table')
+action_group.add_argument('listtables', action='store_true', help='List tables in database')
 action_group.add_argument('restartserver', action='store_true', help='Set a server for admin restart')
 action_group.add_argument('delplayer', action='store_true', help='Remove a player from the table')
 action_group.add_argument('linkplayer', action='store_true', help='Link a player to a discord user')
@@ -33,10 +31,7 @@ action_group.add_argument('oldest', action='store_true', help='Show 10 oldest pl
 action_group.add_argument('shortest', action='store_true', help='Show 10 shortest players play times')
 action_group.add_argument('server', action='store_true', help='Server information')
 action_group.add_argument('players', action='store_true', help='Show players by last time seen')
-action_group.add_argument('chatbuffer', action='store_true', help='Show the chat buffer table')
-action_group.add_argument('servertable', action='store_true', help='Show the servers table table')
 action_group.add_argument('dinowipe', action='store_true', help='Initiate a wild dino wipe on a server')
-action_group.add_argument('playersraw', action='store_true', help='Show raw player list')
 action_group.add_argument('logwatch', action='store_true', help='Log Watcher')
 action_group.add_argument('debugwatch', action='store_true', help='Debug Log Watcher')
 action_group.add_argument('logsearch', action='store_true', help='Seach log by string (with -l)')
@@ -53,6 +48,8 @@ action_group.add_argument('log', action='store_true', help='Show the log (requir
 action_group.add_argument('test', action='store_true', help='TESTING AVG')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
+parser.add_argument('-t', '--tablename', action='store', help='Database Table name')
+parser.add_argument('-d', '--dbname', action='store', help='Database name')
 parser.add_argument('-c', '--cancel', action='store_true', help='Cancel a instance restart')
 parser.add_argument('-l', '--searcharg', action='store', help='Search string for log file searching')
 parser.add_argument('-j', '--loglines', action='store', help='Number of log lines to show')
@@ -1077,6 +1074,34 @@ def resetlastwipe(sinst):
     conn.close()
 
 
+def listtables(dbn):
+    if dbn == 'sqldb':
+        dbna = sqldb
+    elif dbn == 'statsdb':
+        dbna = statsdb
+    conn = sqlite3.connect(dbna)
+    c = conn.cursor()
+    c.execute('SELECT name FROM sqlite_master WHERE type="table" ORDER BY name')
+    aplay = c.fetchall()
+    c.close()
+    conn.close()
+    sc = 0
+    cnt = 0
+    if aplay:
+        for each in aplay:
+            cnt += 1
+            if sc == 0:
+                sclr = f'{clr1}'
+            else:
+                sclr = f'{clr2}'
+            print(f'{sclr}{each[0]}{RST}')
+            if sc == 1:
+                sc = 0
+            else:
+                sc = 1
+        print(f'\n{BWHT}Total Tables: {BMGT}{cnt}{RST}\n')
+
+
 def initdinowipe(sinst):
     print(f'{BYEL}Initiating a Wild Dino Wipe on server {BMGT}{sinst.capitalize()}{RST}')
     resetlastwipe(sinst)
@@ -1190,9 +1215,17 @@ def lottery():
 try:
     if args.action_to_perform == 'cluster':
         showservers()
-    elif args.action_to_perform == 'playertable':
-        printcolmns('players')
-        listtable('players')
+    elif args.action_to_perform == 'showtable':
+        if args.tablename == '':
+            print('You must specify a table name with -t option.')
+        else:
+            printcolmns(args.tablename)
+            listtable(args.tablename)
+    elif args.action_to_perform == 'listtables':
+        if args.dbname == '':
+            print('You must specify a database name with -d option.')
+        else:
+            listtables(args.dbname)
     elif args.action_to_perform == 'kicklist':
         printcolmns('kicklist')
         listtable('kicklist')

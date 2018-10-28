@@ -13,6 +13,7 @@ from kicker import kicker
 from configreader import logfile, sqldb, instance, numinstances, imthedbot, restapi_enabled, restapi_ip, restapi_port
 from gchatrelay import gchatrelay
 from restapi import app
+from arkserversnet import arkserversnet
 import lottery
 
 __author__ = "Ian Perry"
@@ -122,6 +123,8 @@ def main():
         instance[each]['onlinethread'] = threading.Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst,))
         instance[each]['onlinethread'].start()
     if imthedbot == "True":
+        arkserversnt = threading.Thread(name='arksvrnet-datapuller', target=arkserversnet)
+        arkserversnt.start()
         discordt = threading.Thread(name='discord-bot', target=discordbot)
         discordt.start()
         lotteryt = threading.Thread(name='lottery-watcher', target=lottery.lotterywatcher)
@@ -153,6 +156,9 @@ def main():
                 t = 'ark updater'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
             if imthedbot == "True":
+                if not arkserversnt.is_alive():
+                    t = 'arkserversnet datapuller'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
                 if not discordt.is_alive():
                     t = 'discord bot'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')

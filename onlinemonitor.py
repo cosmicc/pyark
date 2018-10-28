@@ -2,6 +2,7 @@ import time, socket, logging, sqlite3, threading, subprocess
 from timehelper import elapsedTime, playedTime, wcstamp
 from configreader import sqldb
 from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
+from clusterevents import iseventtime, getcurrenteventinfo
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -234,15 +235,20 @@ updating info.")
                 c1.close()
                 conn1.close()
                 laston = elapsedTime(float(time.time()), float(oplayer[2]))
-                totplay = playedTime(float(oplayer[4].replace(',', '')))
-                log.debug(f'fetching steamid {steamid} auctions from auction api website')
-                pauctions = fetchauctiondata(steamid)
-                totauctions, iauctions, dauctions = getauctionstats(pauctions)
-                writeauctionstats(steamid, totauctions, iauctions, dauctions)
+                totplay = playedTime(float(oplayer[4]))
+                try:
+                    log.debug(f'fetching steamid {steamid} auctions from auction api website')
+                    pauctions = fetchauctiondata(steamid)
+                    totauctions, iauctions, dauctions = getauctionstats(pauctions)
+                    writeauctionstats(steamid, totauctions, iauctions, dauctions)
+                    strauctions = f', {totauctions} Auctions'
+                except:
+                    strauctions = ', 0 Auctions'
+                    log.error(f'error in parsing auction data')
                 time.sleep(3)
-                newpoints = int(str(oplayer[5]).replace(',', '')) + xferpoints
+                newpoints = int(oplayer[5]) + xferpoints
                 mtxt = f'Welcome back {oplayer[1]}, you have {newpoints} ARc reward points on \
-{oplayer[15].capitalize()}, {totauctions} auctions, last online {laston} ago, total time played {totplay}'
+{oplayer[15].capitalize()}{strauctions}, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 time.sleep(1)
                 conn = sqlite3.connect(sqldb)
@@ -295,6 +301,25 @@ updating info.")
                 subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                 writechat(inst, 'ALERT', f'<<< {oplayer[1].capitalize()} has joined the server', wcstamp())
                 serverisinrestart(steamid, inst, oplayer)
+                if iseventtime():
+                    eventinfo = getcurrenteventinfo()
+                    log.warning(eventinfo)
+                    time.sleep(2)
+                    mtxt = f'{eventinfo[4]} event is currently active!'
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
+                                   (steamid, mtxt, inst), shell=True)
+                conn = sqlite3.connect(sqldb)
+                c = conn.cursor()
+                c.execute('SELECT announce FROM general')
+                annc = c.fetchone()
+                c.close()
+                conn.close()
+                if annc and annc[0] is not None:
+                    time.sleep(2)
+                    mtxt = annc[0]
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
+                                   (steamid, mtxt, inst), shell=True)
+
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
