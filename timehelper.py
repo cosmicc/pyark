@@ -10,8 +10,16 @@ intervals = (
     ('seconds', 1),)
 
 
+def dt2epoch(dt):
+    return float(dt.timestamp()) 
+
+
 def estshift(otime):
     return otime - tzfix
+
+
+def gmtshift(otime):
+    return otime + tzfix
 
 
 def wcstamp():

@@ -14,6 +14,7 @@ from configreader import logfile, sqldb, instance, numinstances, imthedbot, rest
 from gchatrelay import gchatrelay
 from restapi import app
 from arkserversnet import arkserversnet
+from clusterevents import eventwatcher
 import lottery
 
 __author__ = "Ian Perry"
@@ -122,6 +123,8 @@ def main():
         instance[each]['gchatthread'].start()
         instance[each]['onlinethread'] = threading.Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst,))
         instance[each]['onlinethread'].start()
+        instance[each]['eventthread'] = threading.Thread(name='%s-events' % inst, target=eventwatcher, args=(inst,))
+        instance[each]['eventthread'].start()
     if imthedbot == "True":
         arkserversnt = threading.Thread(name='arksvrnet-datapuller', target=arkserversnet)
         arkserversnt.start()
@@ -183,6 +186,9 @@ def main():
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
                 if not instance[each]['onlinethread'].is_alive():
                     t = f'{inst} online monitor'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+                if not instance[each]['eventthread'].is_alive():
+                    t = f'{inst} event monitor'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
             if restapi_enabled == "True" or restapi_enabled == "true":
                 if not restapi.is_alive():

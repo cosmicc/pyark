@@ -303,7 +303,6 @@ updating info.")
                 serverisinrestart(steamid, inst, oplayer)
                 if iseventtime():
                     eventinfo = getcurrenteventinfo()
-                    log.warning(eventinfo)
                     time.sleep(2)
                     mtxt = f'{eventinfo[4]} event is currently active!'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %

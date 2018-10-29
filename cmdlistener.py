@@ -112,7 +112,7 @@ def respmyinfo(inst, whoasked):
     pinfo = c.fetchone()
     c.close()
     conn.close()
-    ptime = playedTime(float(pinfo[4].replace(',', '')))
+    ptime = playedTime(float(pinfo[4]))
     mtxt = f"your current reward points: {pinfo[5]}. your total play time is {ptime}, \
             your home server is {pinfo[15].capitalize()}"
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
@@ -128,7 +128,7 @@ def gettimeplayed(seenname):
     if not flast:
         return 'No player found'
     else:
-        plasttime = playedTime(float(flast[4].replace(',', '')))
+        plasttime = playedTime(float(flast[4]))
         return f'{seenname} total playtime is {plasttime} on {flast[3]}'
 
 

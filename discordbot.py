@@ -510,7 +510,7 @@ to change home servers'
                     pauctions = fetchauctiondata(kuser[0])
                     au1, au2, au3 = getauctionstats(pauctions)
                     writeauctionstats(kuser[0], au1, au2, au3)
-                    ptime = playedTime(float(kuser[4].replace(',', '')))
+                    ptime = playedTime(float(kuser[4]))
                     ptr = elapsedTime(float(time.time()), float(kuser[2]))
                     msg = f'Your current ARc reward points: {kuser[5]}\nLast played on {kuser[3].capitalize()} {ptr} ago.\n'
                     msg = msg + f'Your home server is: {kuser[15].capitalize()}\nYour total play time is {ptime}\n'

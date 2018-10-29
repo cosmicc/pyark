@@ -6,13 +6,13 @@ from sys import exit
 from datetime import datetime
 from colorizer import RST, WHT, BWHT, BYEL, BRED, BGRN, BLU, ORG, BCYN, SKN, BMGT, RMY, SLT, YEL, GRN, RED, \
     MAU, MGT, PUR, LREV, BGN
-from timehelper import elapsedTime, estshift, playedTime, wcstamp
+from timehelper import elapsedTime, estshift, gmtshift, playedTime, wcstamp, dt2epoch
 from configreader import config, sqldb, statsdb, sharedpath
 from urllib.request import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform',
-                    action='store', choices=['cluster', 'players', 'delplayer',
+                    action='store', choices=['cluster', 'players', 'delplayer', 'startevent',
                                              'linkplayer', 'startlottery', 'lottery', 'restartserver',
                                              'listtables', 'notlinked', 'newest', 'server', 'dinowipe',
                                              'logwatch', 'lotterytables', 'log', 'topplayers', 'test',
@@ -42,6 +42,7 @@ action_group.add_argument('tribewipe', action='store_true', help='Wipe a tribe, 
 action_group.add_argument('backupdb', action='store_true', help='Run a manual pyark database backup')
 action_group.add_argument('lotterytables', action='store_true', help='Show Lottery tables')
 action_group.add_argument('startlottery', action='store_true', help='Start a lottery')
+action_group.add_argument('startevent', action='store_true', help='Start an Event')
 action_group.add_argument('lottery', action='store_true', help='Show Lottery Info')
 action_group.add_argument('topplayers', action='store_true', help='Show Top Players')
 action_group.add_argument('log', action='store_true', help='Show the log (requires log length)')
@@ -1123,6 +1124,53 @@ def backupdb():
     print(f'{BYEL}Database backed up to {sharedpath}/db/pyark.db.old{RST}')
 
 
+def startevent():
+    etitle = getresponce('(ex. "Halloween Weekend")\nEnter Title of the Event')
+    etitle = etitle.title()
+    edesc = getresponce('(ex. "2x XP, 2x Reward Points")\nEnter Description of the Event')
+    edesc = edesc.title()
+    esuffix = getresponce('(ex. "halloween")\nEnter Config File Suffix ')
+    estart = getresponce('(ex. "10-31-18 08:00PM")\nEnter Evemt Start Time in EST')
+    try:
+        estartdt = gmtshift(datetime.strptime(estart, '%m-%d-%y %I:%M%p'))
+    except:
+        print(f'\nCould not determine date from input. Exiting\n')
+        exit()
+    estop = getresponce('(ex. "10-31-18 08:00PM")\nEnter Evemt Stop Time in EST')
+    try:
+        estopdt = gmtshift(datetime.strptime(estop, '%m-%d-%y %I:%M%p'))
+    except:
+        print(f'\nCould not determine date from input. Exiting\n')
+        exit()
+    if dt2epoch(estopdt) < time.time():
+        print(f'\nEnd Time cannot be before current time. Exiting\n')
+        exit()
+    print(f'{BGRN}New Event:{RST}')
+    print('    ')
+    print(f'{BYEL}Event Title: {BCYN}{etitle}{RST}')
+    print(f'{BYEL}Event Description: {BCYN}{edesc}{RST}')
+    print(f'{BYEL}Config Suffix: {BCYN}{esuffix}  {BMGT}(ex. Game-{esuffix}.ini){RST}')
+    print('    ')
+    if dt2epoch(estartdt) < time.time():
+        print(f'{BYEL}Event Started: {BCYN}{estshift(estartdt)}  {BMGT}{elapsedTime(time.time(),dt2epoch(estartdt))} ago{RST}')
+    else:
+        print(f'{BYEL}Event Starts: {BCYN}{estshift(estartdt)}  {BMGT}in {elapsedTime(dt2epoch(estartdt),time.time())}{RST}')
+    print(f'{BYEL}Event Ends: {BCYN}{estshift(estopdt)}  {BMGT}in {elapsedTime(dt2epoch(estopdt),time.time())}{RST}')
+    print(f'{BYEL}Event Length: {BCYN}{elapsedTime(dt2epoch(estopdt), dt2epoch(estartdt))}{RST}')
+    ags = getresponce('Start this event now? (y/n)')
+    print(ags)
+    if ags != 'y':
+        print('Event NOT started')
+        exit()
+    conn = sqlite3.connect(sqldb)
+    c = conn.cursor()
+    c.execute('INSERT INTO events (completed,starttime,endtime,title,description,cfgfilesuffix) VALUES \
+              (?,?,?,?,?,?)', (0, dt2epoch(estartdt), dt2epoch(estopdt), etitle, edesc, esuffix))
+    conn.commit()
+    c.close()
+    conn.close()
+
+
 def startlottery():
     listtable('lotteryinfo')
     print('    ')
@@ -1307,6 +1355,8 @@ try:
         backupdb()
     elif args.action_to_perform == 'startlottery':
         startlottery()
+    elif args.action_to_perform == 'startevent':
+        startevent()
     elif args.action_to_perform == 'test':
         print(getallavg('monthly'))
     elif args.action_to_perform == 'log':
