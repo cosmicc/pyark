@@ -44,18 +44,18 @@ def writechat(inst, whos, msg, tstamp):
 def welcomenewplayer(steamid, inst):
         global welcomthreads
         log.info(f'welcome message thread started for new player {steamid} on {inst}')
-        time.sleep(180)
+        time.sleep(5)
         mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(10)
+        time.sleep(3)
         mtxt = 'ARc rewards points earned as you play. Public teleporters, crafting area, and auction house. Build \
 or find a rewards vault, free starter items.'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(10)
+        time.sleep(3)
         mtxt = 'You get all your items back when you die automatically, The engram menu is laggy, sorry. Admins and \
 help in discord. Press F1 at anytime for help. Have Fun!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(15)
+        time.sleep(3)
         mtxt = 'Everyone welcome a new player to the cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
         log.debug(f'welcome message thread complete for new player {steamid} on {inst}')

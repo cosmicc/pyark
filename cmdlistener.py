@@ -62,10 +62,10 @@ def resptimeleft(inst, whoasked):
     c.close()
     conn.close()
     if dbtl[1] == 'True':
-        subprocess.run('arkmanager rconcmd "ServerChat server is restarting in %s minutes" @%s' %
+        subprocess.run('arkmanager rconcmd "ServerChat Server is restarting in %s minutes" @%s' %
                        (dbtl[0], inst), shell=True)
     else:
-        subprocess.run('arkmanager rconcmd "ServerChat server is not pending a restart" @%s' % (inst), shell=True)
+        subprocess.run('arkmanager rconcmd "ServerChat Server is not pending a restart" @%s' % (inst), shell=True)
 
 
 def getlastrestart(inst):
@@ -100,9 +100,9 @@ def getlastseen(seenname):
     else:
         plasttime = elapsedTime(time.time(), float(flast[2]))
         if plasttime != 'now':
-            return f'{seenname} was last seen {plasttime} ago on {flast[3]}'
+            return f'{seenname.capitalize()} was last seen {plasttime} ago on {flast[3]}'
         else:
-            return f'{seenname} is online now on {flast[3]}'
+            return f'{seenname.capitalize()} is online now on {flast[3]}'
 
 
 def respmyinfo(inst, whoasked):
@@ -113,8 +113,7 @@ def respmyinfo(inst, whoasked):
     c.close()
     conn.close()
     ptime = playedTime(float(pinfo[4]))
-    mtxt = f"your current reward points: {pinfo[5]}. your total play time is {ptime}, \
-            your home server is {pinfo[15].capitalize()}"
+    mtxt = f"Your current reward points: {pinfo[5]}.\nYour total play time is {ptime}\nYour home server is {pinfo[15].capitalize()}"
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 
@@ -129,7 +128,7 @@ def gettimeplayed(seenname):
         return 'No player found'
     else:
         plasttime = playedTime(float(flast[4]))
-        return f'{seenname} total playtime is {plasttime} on {flast[3]}'
+        return f'{seenname.capitalize()} total playtime is {plasttime} on {flast[3]}'
 
 
 def getserverlist():
@@ -177,25 +176,25 @@ def whoisonline(inst, oinst, whoasked, filt, crnt):
                 # print(row[1],chktme)
                 pcnt += 1
                 if plist == '':
-                    plist = '%s' % (row[1])
+                    plist = '%s' % (row[1].capitalize())
                 else:
-                    plist = plist + ', %s' % (row[1])
+                    plist = plist + ', %s' % (row[1].capitalize())
         if pcnt != 0:
             if crnt == 1:
                 subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' %
-                               (inst, pcnt, plist, oinst), shell=True)
+                               (inst.capitalize(), pcnt, plist, oinst), shell=True)
             elif crnt == 2:
                 subprocess.run('arkmanager rconcmd "ServerChat %s has had %s players in last hour: %s" @%s' %
-                               (inst, pcnt, plist, oinst), shell=True)
+                               (inst.capitalize(), pcnt, plist, oinst), shell=True)
             elif crnt == 3:
                 subprocess.run('arkmanager rconcmd "ServerChat %s had had %s players in last day: %s" @%s' %
-                               (inst, pcnt, plist, oinst), shell=True)
+                               (inst.capitalize(), pcnt, plist, oinst), shell=True)
 
         if pcnt == 0 and not filt:
-            subprocess.run('arkmanager rconcmd "ServerChat %s has no players online." @%s' % (inst, oinst), shell=True)
+            subprocess.run('arkmanager rconcmd "ServerChat %s has no players online." @%s' % (inst.capitalize(), oinst), shell=True)
     except:
         log.exception()
-        subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst, inst), shell=True)
+        subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst.capitalize(), inst), shell=True)
 
 
 def getlastvote(inst):
@@ -255,7 +254,7 @@ def getvote(whoasked):
 def castedvote(inst, whoasked, myvote):
     global arewevoting
     if not isvoting(inst):
-        subprocess.run('arkmanager rconcmd "ServerChat no vote is taking place now" @%s' % (inst), shell=True)
+        subprocess.run('arkmanager rconcmd "ServerChat No vote is taking place now" @%s' % (inst), shell=True)
     else:
         conn = sqlite3.connect(sqldb)
         c = conn.cursor()
@@ -264,35 +263,35 @@ def castedvote(inst, whoasked, myvote):
         c.close()
         conn.close()
         if getvote(whoasked) == 99:
-            mtxt = 'sorry, you are not eligible to vote in this round'
+            mtxt = 'Sorry, you are not eligible to vote in this round'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                            (getsteamid(whoasked), mtxt, inst), shell=True)
         elif not pdata:
-            mtxt = 'sorry, you are not eligible to vote. Tell an admin they need to update your name!'
+            mtxt = 'Sorry, you are not eligible to vote. Tell an admin they need to update your name!'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                            (getsteamid(whoasked), mtxt, inst), shell=True)
         elif getvote(whoasked) == 2:
-            mtxt = "you started the vote. you're assumed a YES vote."
+            mtxt = "You started the vote. you're assumed a YES vote."
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                            (getsteamid(whoasked), mtxt, inst), shell=True)
         elif getvote(whoasked) == 1:
-            mtxt = 'you have already voted YES. you can only vote once.'
+            mtxt = 'You have already voted YES. you can only vote once.'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                            (getsteamid(whoasked), mtxt, inst), shell=True)
         else:
             if myvote:
                 setvote(whoasked, 1)
-                mtxt = 'your YES vote has been cast'
+                mtxt = 'Your YES vote has been cast'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                (getsteamid(whoasked), mtxt, inst), shell=True)
             else:
                 setvote(whoasked, 0)
-                mtxt = 'your NO vote has been cast'
+                mtxt = 'Your NO vote has been cast'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                (getsteamid(whoasked), mtxt, inst), shell=True)
-                log.info(f'voting NO has won, NO wild dino wipe will be performed for {inst}')
+                log.info(f'Voting NO has won, NO wild dino wipe will be performed for {inst}')
                 time.sleep(1)
-                subprocess.run('arkmanager rconcmd "ServerChat voting has finished. NO has won." @%s' %
+                subprocess.run('arkmanager rconcmd "ServerChat Voting has finished. NO has won." @%s' %
                                (inst), shell=True)
                 time.sleep(1)
                 subprocess.run('arkmanager rconcmd "ServerChat NO wild dino wipe will be performed" @%s' %
@@ -361,12 +360,12 @@ def howmanyvotes():
 def wipeit(inst):
     yesvoters, totvoters = howmanyvotes()
     log.info(f'voting yes has won ({yesvoters}/{totvoters}), wild dino wipe incoming for {inst}')
-    subprocess.run('arkmanager rconcmd "ServerChat voting has finished. YES has won (%s of %s)" @%s' %
+    subprocess.run('arkmanager rconcmd "ServerChat Voting has finished. YES has won (%s of %s)" @%s' %
                    (yesvoters, totvoters, inst), shell=True)
     writechat(inst, 'ALERT', f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). \
 Wiping wild dinos now.', wcstamp())
     time.sleep(3)
-    subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe commencing in 10 seconds" @%s' % (inst), shell=True)
+    subprocess.run('arkmanager rconcmd "ServerChat Wild dino wipe commencing in 10 seconds" @%s' % (inst), shell=True)
     time.sleep(10)
     subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' %
                    (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -383,7 +382,7 @@ def voting(inst, whoasked):
     arewevoting = True
     pon = populatevoters(inst)
     setvote(whoasked, 2)
-    subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe voting has started with %s players. vote !yes or \
+    subprocess.run('arkmanager rconcmd "ServerChat Wild dino wipe voting has started with %s players. vote !yes or \
 !no in global chat now" @%s' % (pon, inst), shell=True)
     votestarttime = time.time()
     sltimer = 0
@@ -399,7 +398,7 @@ def voting(inst, whoasked):
                 arewevoting = False
             else:
                 yesvoters, totvoters = howmanyvotes()
-                subprocess.run('arkmanager rconcmd "ServerChat not enough votes (%s of %s). voting has ended." @%s' %
+                subprocess.run('arkmanager rconcmd "ServerChat Not enough votes (%s of %s). voting has ended." @%s' %
                                (yesvoters, totvoters, inst), shell=True)
                 log.info(f'not enough votes ({yesvoters}/{totvoters}), voting has ended on {inst}')
                 writechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of \
@@ -408,7 +407,7 @@ def voting(inst, whoasked):
         else:
             if sltimer == 120 or sltimer == 240:
                 log.debug(f'sending voting waiting message to vote on {inst}')
-                subprocess.run('arkmanager rconcmd "ServerChat wild dino wipe vote is waiting. make sure you have \
+                subprocess.run('arkmanager rconcmd "ServerChat Wild dino wipe vote is waiting. make sure you have \
 cast your vote !yes or !no in global chat" @%s' % (inst), shell=True)
         sltimer += 5
     # log.info(f'final votertable for vote on {inst}')
@@ -422,18 +421,18 @@ cast your vote !yes or !no in global chat" @%s' % (inst), shell=True)
 def startvoter(inst, whoasked):
     global instance
     if isvoting(inst):
-        subprocess.run('arkmanager rconcmd "ServerChat voting has already started. cast your vote" @%s' %
+        subprocess.run('arkmanager rconcmd "ServerChat Voting has already started. cast your vote" @%s' %
                        (inst), shell=True)
     elif time.time() - float(getlastvote(inst)) < 14400:          # 4 hours between wipes
         rawtimeleft = 14400 - (time.time() - float(getlastvote(inst)))
         timeleft = playedTime(rawtimeleft)
-        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' %
+        subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
         log.info(f'vote start denied for {whoasked} on {inst} because 4 hour timer')
     elif time.time() - float(lastvoter) < 600:      # 10 min between attempts
         rawtimeleft = 600 - (time.time() - lastvoter)
         timeleft = playedTime(rawtimeleft)
-        subprocess.run('arkmanager rconcmd "ServerChat you must wait %s until next vote can start" @%s' %
+        subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
         log.info(f'vote start denied for {whoasked} on {inst} because 10 min timer')
     else:
@@ -483,11 +482,11 @@ def linker(minst, whoasked):
             conn.commit()
             c.close()
             conn.close()
-            msg = f'your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
+            msg = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0], msg, minst), shell=True)
         else:
             log.info(f'link request for {dplayer[1]} denied, already linked')
-            msg = f'you already have a discord account linked to this account'
+            msg = f'You already have a discord account linked to this account'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0], msg, minst), shell=True)
     else:
         pass
@@ -613,11 +612,11 @@ with {pinfo[5]} points')
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (pinfo[0], msg, inst), shell=True)
             else:
-                msg = f'{ext} is already your home server'
+                msg = f'{ext.capitalize()} is already your home server'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                (pinfo[0], msg, inst), shell=True)
         else:
-            msg = f'{ext} is not a server in the cluster.'
+            msg = f'{ext.capitalize()} is not a server in the cluster.'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0], msg, inst), shell=True)
     else:
         msg = f'Your current home server is: {pinfo[15].capitalize()}'
@@ -750,13 +749,13 @@ to send to all servers" @%s""" % (minst), shell=True)
         elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
             whoasked = getnamefromchat(line)
             lastwipe = elapsedTime(time.time(), float(getlastwipe(minst)))
-            subprocess.run('arkmanager rconcmd "ServerChat last wild dino wipe was %s ago" @%s' %
+            subprocess.run('arkmanager rconcmd "ServerChat Last wild dino wipe was %s ago" @%s' %
                            (lastwipe, minst), shell=True)
             log.info(f'responded to a lastdinowipe query on {minst} from {whoasked}')
         elif line.find('!lastrestart') != -1:
             whoasked = getnamefromchat(line)
             lastrestart = elapsedTime(time.time(), float(getlastrestart(minst)))
-            subprocess.run('arkmanager rconcmd "ServerChat last server restart was %s ago" @%s' %
+            subprocess.run('arkmanager rconcmd "ServerChat Last server restart was %s ago" @%s' %
                            (lastrestart, minst), shell=True)
             log.info(f'responded to a lastrestart query on {minst} from {whoasked}')
         elif line.find('!lastseen') != -1:
@@ -769,7 +768,7 @@ to send to all servers" @%s""" % (minst), shell=True)
                 lsn = getlastseen(seenname)
                 subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, minst), shell=True)
             else:
-                subprocess.run('arkmanager rconcmd "ServerChat you must specify a player name to search" @%s' %
+                subprocess.run('arkmanager rconcmd "ServerChat You must specify a player name to search" @%s' %
                                (minst), shell=True)
             log.info(f'responding to a lastseen request for {seenname} from {orgname}')
         elif line.find('!playedtime') != -1:

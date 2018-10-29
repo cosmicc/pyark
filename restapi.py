@@ -8,6 +8,7 @@ from functools import wraps
 from timehelper import estshift, elapsedTime, playedTime
 from configreader import sqldb, statsdb, restapi_ip, restapi_port, apilogfile
 from secrets import token_urlsafe
+from clusterevents import getcurrenteventinfo, iseventtime
 
 hstname = socket.gethostname()
 
@@ -319,6 +320,14 @@ class whenlastplayer(fields.Raw):
         return elapsedTime(time.time(), int(linfo[0]))
 
 
+class svrinevent(fields.Raw):
+    def format(self, value):
+        if value == 0:
+            return 'False'
+        else:
+            return 'True'
+
+
 def whenlastplayersvr(inst):
     conn = sqlite3.connect(statsdb)
     c = conn.cursor()
@@ -365,6 +374,8 @@ m_serverinfo = api.model('serverinfo', {
     'restartreason': fields.String,
     'lastdinowipe': elapsedtime(attribute='lastdinowipe'),
     'isrestarting': fields.String(attribute='needsrestart'),
+    'inevent': svrinevent(attribute='inevent'),
+    'eventid': fields.Integer(attribute='inevent'),
     'lastvote': elapsedtime(attribute='lastvote'),
     'arkversion': fields.String,
     'config_ver': fields.Integer(attribute='cfgver'),
@@ -448,6 +459,7 @@ def listcolums(mtable):
 
 
 def token_required(f):
+    pass
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
@@ -517,8 +529,8 @@ class Players(Resource):
 
 @api.route('/servers')
 class Servers(Resource):
-    @api.doc(security='apikey')
-    @token_required
+    #@api.doc(security='apikey')
+    #@token_required
     def get(self):
         nap = []
         conn = sqlite3.connect(sqldb)
@@ -536,8 +548,8 @@ class Servers(Resource):
 
 @api.route('/servers/info')
 class ServerInfo(Resource):
-    @api.doc(security='apikey')
-    @token_required
+    #@api.doc(security='apikey')
+    #@token_required
     @api.expect(serverquery)
     @api.marshal_with(m_serverinfo)
     def post(self):
@@ -560,8 +572,8 @@ class ServerInfo(Resource):
 
 @api.route('/cluster/info')
 class ClusterInfo(Resource):
-    @api.doc(security='apikey')
-    @token_required
+    #@api.doc(security='apikey')
+    #@token_required
     # @api.marshal_with(m_clusterinfo)
     def get(self):
         global apilog
@@ -584,6 +596,12 @@ class ClusterInfo(Resource):
             nt, ny = howmanyonlinesvr(each[0])
             nap = {'name': each[0], 'status': serverstatus(each[0]), 'numberonline': nt, 'lastplayeronline' : whenlastplayersvr(each[0]), 'playersonline': ny}
             statsinst.append(nap)
+        if not iseventtime():
+            cluster['inevent'] = 'false'
+        else:
+            eventinfo = getcurrenteventinfo()
+            cluster['inevent'] = 'true'
+            cluster['eventtitle'] = eventinfo[4]
         cluster['instances'] = statsinst
 
         return (cluster), 201
@@ -591,8 +609,8 @@ class ClusterInfo(Resource):
 
 @api.route('/cluster/stats')
 class ClusterStats(Resource):
-    @api.doc(security='apikey')
-    @token_required
+    #@api.doc(security='apikey')
+    #@token_required
     # @api.marshal_with(m_clusterinfo)
     def get(self):
         conn = sqlite3.connect(sqldb)
