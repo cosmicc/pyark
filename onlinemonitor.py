@@ -87,7 +87,7 @@ def isinlottery(steamid):
 
 def checklottodeposits(steamid, inst):
     lottocheck = dbquery('SELECT * FROM lotterydeposits WHERE steamid = "%s"' % (steamid,))
-    elpinfo = dbquery('SELECT * FROM players WHERE steamid = %s', (steamid,), fetch='one')
+    elpinfo = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (steamid,), fetch='one')
     if lottocheck and inst == elpinfo[15]:
         for weach in lottocheck:
             if weach[4] == 1:
