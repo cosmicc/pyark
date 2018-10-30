@@ -14,7 +14,7 @@ def dbquery(query, sdb='sqldb', fetch='all'):
         c = conn.cursor()
         c.execute(query)
     except:
-        log.error(f'Error in database init {sdb}')
+        log.error(f'Error in database init: {sdb} - {query} - {fetch}')
         c.close()
         conn.close()
     else:
@@ -41,7 +41,7 @@ def dbupdate(query, sdb='sqldb'):
             conn = sqlite3.connect(statsdb)
         c = conn.cursor()
     except:
-        log.error(f'Error in database init {sdb}')
+        log.error(f'Error in database init: {sdb} - {query}')
         c.close()
         conn.close()
     else:

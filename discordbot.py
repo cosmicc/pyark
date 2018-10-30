@@ -87,12 +87,13 @@ def discordbot():
                             await asyncio.sleep(2)
                     dbupdate('DELETE FROM chatbuffer')
                 now = float(time.time())
-                cbuffr = dbquery('SELECT * FROM players WHERE lastseen < "%s"" AND lastseen > "%s"' % (now - 40, now - 45))
-                for reach in cbuffr:
-                    log.info(f'{reach[1]} has left the server {reach[3]}')
-                    mt = f'{reach[1].capitalize()} has left the server'
-                    writeglobal(reach[3], 'ALERT', mt)
-                    writechat(reach[3], 'ALERT', f'>>> {reach[1].capitalize()} has left the server', wcstamp())
+                cbuffr = dbquery('SELECT * FROM players WHERE lastseen < "%s" AND lastseen > "%s"' % (now - 40, now - 45))
+                if cbuffr:
+                    for reach in cbuffr:
+                        log.info(f'{reach[1]} has left the server {reach[3]}')
+                        mt = f'{reach[1].capitalize()} has left the server'
+                        writeglobal(reach[3], 'ALERT', mt)
+                        writechat(reach[3], 'ALERT', f'>>> {reach[1].capitalize()} has left the server', wcstamp())
             except:
                 log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
             await asyncio.sleep(5)
