@@ -20,7 +20,7 @@ def fetcharkserverdata():
             log.error(f'Error fetching ArkServers data from web')
         else:
             if adata is not None:
-                dbupdate('UPDATE instances SET hostname = "%s", rank = %s, score = %s, uptime = %s, votes = %s, arkversion = "%s" WHERE name = "%s"' % (adata['hostname'], adata['rank'], adata['score'], adata['uptime'], adata['votes'], adata['version'], each[0]))
+                dbupdate('UPDATE instances SET hostname = "%s", rank = "%s", score = "%s", uptime = "%s", votes = "%s", arkversion = "%s" WHERE name = "%s"' % (adata['hostname'], adata['rank'], adata['score'], adata['uptime'], adata['votes'], adata['version'], each[0]))
 
 
 def arkserversnet():

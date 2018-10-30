@@ -93,7 +93,7 @@ def main():
             now = time.time()
             log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
             dbupdate('INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote) VALUES \
-                      (?, ?, ?, ?, ?)', (instance[ins]["name"], now, now, 'False', now))
+                      ("%s", "%s", "%s", "%s", "%s")' % (instance[ins]["name"], now, now, 'False', now))
         else:
             log.debug(f'found server {instance[ins]["name"]} in server table')
     log.debug('database initilization complete')

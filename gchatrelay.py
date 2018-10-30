@@ -21,7 +21,7 @@ def gchatrelay(inst):
                         subprocess.run('arkmanager rconcmd "ServerChat %s@%s: %s" @%s'
                                        % (each[2].capitalize(), each[1].capitalize(), each[3], inst), shell=True)
                     if float(each[4]) < time.time() - 10:
-                        dbupdate('DELETE FROM globalbuffer WHERE id = %s' % (each[0],))
+                        dbupdate('DELETE FROM globalbuffer WHERE id = "%s"' % (each[0],))
             time.sleep(3)
         except:
             log.critical('Critical Error in Global Chat Relayer!', exc_info=True)

@@ -16,7 +16,7 @@ updgennotify = time.time() - 3600
 
 
 def writediscord(msg, tstamp):
-    dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' % ('generalchat', 'ALERT', msg, tstamp))
+    dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' % ('generalchat', 'ALERT', msg, tstamp))
 
 
 def writechat(inst, whos, msg, tstamp):
@@ -24,7 +24,7 @@ def writechat(inst, whos, msg, tstamp):
     if whos != 'ALERT':
         isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,))
     elif whos == "ALERT" or isindb:
-        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' % (inst, whos, msg, tstamp))
+        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' % (inst, whos, msg, tstamp))
 
 
 def playercount(inst):
@@ -44,14 +44,14 @@ def playercount(inst):
 
 
 def updatetimer(inst, ctime):
-    dbupdate('UPDATE instances SET restartcountdown = %s WHERE name = "%s"' % (ctime, inst))
+    dbupdate('UPDATE instances SET restartcountdown = "%s" WHERE name = "%s"' % (ctime, inst))
 
 
 def setcfgver(inst, cver):
     if inst == 'general':
-        dbupdate('UPDATE general SET cfgver = %s' % (cver,))
+        dbupdate('UPDATE general SET cfgver = "%s"' % (cver,))
     else:
-        dbupdate('UPDATE instances SET cfgver = %s WHERE name = "%s"' % (cver, inst))
+        dbupdate('UPDATE instances SET cfgver = "%s" WHERE name = "%s"' % (cver, inst))
 
 
 def getcfgver(inst):
@@ -69,14 +69,14 @@ def getlastwipe(inst):
 
 def resetlastwipe(inst):
     newtime = time.time()
-    dbupdate('UPDATE instances SET lastdinowipe = %s WHERE name = "%s"' % (newtime, inst))
+    dbupdate('UPDATE instances SET lastdinowipe = "%s" WHERE name = "%s"' % (newtime, inst))
 
 
 def resetlastrestart(inst):
     newtime = time.time()
-    dbupdate('UPDATE instances SET lastrestart = %s WHERE name = "%s"' % (newtime, inst))
+    dbupdate('UPDATE instances SET lastrestart = "%s" WHERE name = "%s"' % (newtime, inst))
     dbupdate('UPDATE instances SET needsrestart = "False" WHERE name = "%s"' % (inst, ))
-    dbupdate('UPDATE instances SET cfgver = %s WHERE name = "%s"' % (getcfgver('general'), inst))
+    dbupdate('UPDATE instances SET cfgver = "%s" WHERE name = "%s"' % (getcfgver('general'), inst))
     dbupdate('UPDATE instances SET restartcountdown = 30')
 
 
@@ -227,7 +227,7 @@ def instancerestart(inst, reason):
     if (inmaint and reason == "configuration update") \
        or (inmaint and reason == "maintenance restart") \
        or (reason != "configuration update" and reason != "maintenance restart"):
-        dbupdate('UPDATE instances SET restartreason = %s WHERE name = "%s"' % (reason, inst))
+        dbupdate('UPDATE instances SET restartreason = "%s" WHERE name = "%s"' % (reason, inst))
         if not isrebooting(inst):
             for each in range(numinstances):
                 if instance[each]['name'] == inst:

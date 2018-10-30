@@ -16,7 +16,7 @@ def kicker(inst):
             if kicked:
                 log.info(f'kicking user {kicked[1]} from server {inst} on kicklist')
                 subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (kicked[1], inst), shell=True)
-                dbupdate('DELETE FROM kicklist WHERE steamid = %s' % (kicked[1],))
+                dbupdate('DELETE FROM kicklist WHERE steamid = "%s"' % (kicked[1],))
                 sleep(1)
         except:
             log.critical('Critical Error in kick watcher!', exc_info=True)

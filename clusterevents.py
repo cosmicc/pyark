@@ -13,7 +13,7 @@ def setmotd(inst, motd=None, cancel=False):
 
 
 def iseventtime():
-    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < %s' % (time.time(),))
+    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < "%s"' % (time.time(),))
     if inevent:
         return True
     else:
@@ -21,12 +21,12 @@ def iseventtime():
 
 
 def getcurrenteventid():
-    inevent = dbquery('SELECT id FROM events WHERE completed == 0 AND starttime < %s' % (time.time(),), fetch='one')
+    inevent = dbquery('SELECT id FROM events WHERE completed == 0 AND starttime < "%s"' % (time.time(),), fetch='one')
     return inevent[0]
 
 
 def getcurrenteventinfo():
-    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < %s' % (time.time(),), fetch='one')
+    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < "%s"' % (time.time(),), fetch='one')
     return inevent
 
 
@@ -36,7 +36,7 @@ def getlasteventinfo():
 
 
 def getnexteventinfo():
-    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime > %s' % (time.time(),), fetch='one')
+    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime > "%s"' % (time.time(),), fetch='one')
     return inevent
 
 
@@ -46,7 +46,7 @@ def currentserverevent(inst):
 
 
 def startserverevent(inst):
-    dbupdate('UPDATE instances SET inevent = %s WHERE name = "%s"' % (getcurrenteventid(), inst))
+    dbupdate('UPDATE instances SET inevent = "%s" WHERE name = "%s"' % (getcurrenteventid(), inst))
     eventinfo = getcurrenteventinfo()
     log.info(f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
     msg = f"\n\n                      {eventinfo[4]} Event is Active!\n\n                   {eventinfo[5]}"
@@ -64,7 +64,7 @@ def checkifeventover():
     if curevent or curevent is not None:
         if curevent[3] < time.time():
             log.info(f'Event {curevent[5]} has passed end time. Ending Event')
-            dbupdate('UPDATE events SET completed = 1 WHERE id = %s' % (curevent[0],))
+            dbupdate('UPDATE events SET completed = 1 WHERE id = "%s"' % (curevent[0],))
 
 
 def eventwatcher(inst):
