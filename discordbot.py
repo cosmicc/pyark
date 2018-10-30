@@ -45,12 +45,12 @@ def writechat(inst, whos, msg, tstamp):
     if whos != 'ALERT':
         isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,), fetch='one')
     elif whos == "ALERT" or isindb:
-        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' %
+        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
                  (inst, whos, msg, tstamp))
 
 
 def writeglobal(inst, whos, msg):
-    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' %
+    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
              (inst, whos, msg, time.time()))
 
 
@@ -63,7 +63,7 @@ def islinkeduser(duser):
 
 
 def setprimordialbit(steamid, pbit):
-    dbupdate('UPDATE players SET primordialbit = %s WHERE steamid = %s' % (pbit, steamid))
+    dbupdate('UPDATE players SET primordialbit = "%s" WHERE steamid = "%s"' % (pbit, steamid))
 
 
 def discordbot():
@@ -87,7 +87,7 @@ def discordbot():
                             await asyncio.sleep(2)
                     dbupdate('DELETE FROM chatbuffer')
                 now = float(time.time())
-                cbuffr = dbquery('SELECT * FROM players WHERE lastseen < %s AND lastseen > %s' % (now - 40, now - 45))
+                cbuffr = dbquery('SELECT * FROM players WHERE lastseen < "%s"" AND lastseen > "%s"' % (now - 40, now - 45))
                 for reach in cbuffr:
                     log.info(f'{reach[1]} has left the server {reach[3]}')
                     mt = f'{reach[1].capitalize()} has left the server'
@@ -100,7 +100,7 @@ def discordbot():
     def savediscordtodb(author):
         didexists = dbquery('SELECT * FROM discordnames WHERE discordname = "%s"' % (str(author),), fetch='one')
         if not didexists:
-            dbupdate('INSERT INTO discordnames (discordname) VALUES (%s)' % (str(author),))
+            dbupdate('INSERT INTO discordnames (discordname) VALUES ("%s")' % (str(author),))
 
     @client.event
     async def on_member_join(member):
@@ -419,7 +419,7 @@ to change home servers'
                     await client.send_message(message.channel, msg)
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
             lastseens = dbquery('SELECT firstseen FROM players')
-            lsplayer = dbquery('SELECT * from players WHERE firstseen = %s' % (max(lastseens,)))
+            lsplayer = dbquery('SELECT * from players WHERE firstseen = "%s"' % (max(lastseens,)))
             log.info(f'responding to lastnew request on discord')
             lspago = elapsedTime(time.time(), float(lsplayer[6]))
             msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
@@ -486,7 +486,7 @@ discord.\nType !linkme in game'
                         await client.send_message(message.channel, msg)
                     else:
                         whofor = lpinfo[1]
-                        lpcheck = dbquery('SELECT * FROM lotteryplayers WHERE steamid = %s' % (lpinfo[0],), fetch='one')
+                        lpcheck = dbquery('SELECT * FROM lotteryplayers WHERE steamid = "%s"' % (lpinfo[0],), fetch='one')
                         if linfo[1] == 'points':
                             lfo = 'ARc Rewards Points'
                         else:
@@ -499,7 +499,7 @@ discord.\nType !linkme in game'
                             if linfo[1] == 'points':
                                 dbupdate('UPDATE lotteryinfo SET payoutitem = "%s" WHERE winner = "Incomplete"' %
                                          (str(int(linfo[2]) + int(linfo[4])), ))
-                            dbupdate('UPDATE lotteryinfo SET players = %s WHERE id = %s' % (int(linfo[6]) + 1, linfo[0]))
+                            dbupdate('UPDATE lotteryinfo SET players = "%s" WHERE id = "%s"' % (int(linfo[6]) + 1, linfo[0]))
                             msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen on {ltime} \
 in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}. Good Luck!'
                             await client.send_message(message.channel, msg)
