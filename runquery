@@ -10,7 +10,7 @@ import time
 
 now = time.time()
 
-conn = sqlite3.connect(sqldb)
+conn = sqlite3.connect(statsdb)
 c = conn.cursor()
 
 ##delete the admin account from db
@@ -24,17 +24,19 @@ c = conn.cursor()
 #c.execute('DROP TABLE events')
 #c.execute('CREATE TABLE events (id INTEGER PRIMARY KEY AUTOINCREMENT, completed INTEGER, starttime REAL, endtime REAL, title TEXT, description TEXT, cfgfilesuffix TEXT)')
 #c.execute('DELETE FROM lotteryinfo WHERE id = 37')
-c.execute('UPDATE instances SET inevent = 0')
+#c.execute('UPDATE instances SET inevent = 0')
 #c.execute('CREATE TABLE general (cfgver TEXT, announce TEXT)')
 #c.execute('INSERT INTO events (completed, starttime, length, title, description) VALUES (0, 1540705038.8689234, 4, "Halloween Weekend", "2x XP, 2x Reward Points, Trasmitter Coords")')
 #c.execute('INSERT INTO lotterydeposits (steamid,playername,timestamp,points,givetake) VALUES ("76561198408657294","admin","12500000","5","0")')
 #c.execute('PRAGMA table_info(ragnarok)')
 #c.execute('UPDATE players SET apikey = "uKG1Wy9ipm0eZI4f7SdhBIScJ1OaWdJ4" WHERE playername = "rykker"')
 #c.execute('UPDATE players SET lotterywinnings = 0')
-conn.commit()
+#conn.commit()
 #c.execute('SELECT name FROM sqlite_master WHERE type="table" ORDER BY name')
-#allplayers = c.fetchall()
-#print(allplayers)
+c.execute('SELECT * FROM ragnarok ORDER BY date DESC LIMIT 5')
+allplayers = c.fetchall()
+for each in allplayers:
+    print(each)
 #for eplayer in allplayers:
 #    c.execute('UPDATE players SET playedtime = ? WHERE steamid = ?', (eplayer[4].replace(',', ''),eplayer[0]))
 #    conn.commit()

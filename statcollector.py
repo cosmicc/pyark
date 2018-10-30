@@ -1,6 +1,6 @@
-import sqlite3, socket, logging
+import socket, logging
 from time import time, sleep
-from configreader import statsdb, sqldb
+from dbhelper import dbquery, dbupdate
 
 statinst = ['ragnarok', 'island', 'volcano']
 
@@ -9,61 +9,39 @@ log = logging.getLogger(name=hstname)
 
 
 def checkiftableexists(inst):
-    conn = sqlite3.connect(statsdb)
-    c = conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS %s (date INTEGER, value INTEGER)' % (inst,))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('CREATE TABLE IF NOT EXISTS %s (date INTEGER, value INTEGER)' % (inst,), sdb='statsdb')
 
 
-def checkifinstexistsOLD(inst):
-    conn = sqlite3.connect(statsdb)
-    c = conn.cursor()
-    c.execute('PRAGMA table_info({})'.format('online'))
-    alldata = c.fetchall()
-    c.close()
-    conn.close()
-    tot = 0
-    for f in alldata:
-        if f[1] == inst:
-            tot += 1
-    if tot == 0:
-        conn = sqlite3.connect(statsdb)
-        c = conn.cursor()
-        c.execute('ALTER TABLE online ADD COLUMN %s TEXT' % (inst,))
-        conn.commit()
-        c.close()
-        conn.close()
+# def checkifinstexistsOLD(inst):
+#    c.execute('PRAGMA table_info({})'.format('online'))
+#    alldata = c.fetchall()
+#    c.close()
+#    conn.close()
+#    tot = 0
+#    for f in alldata:
+#        if f[1] == inst:
+#            tot += 1
+#    if tot == 0:
+#        conn = sqlite3.connect(statsdb)
+#        c = conn.cursor()
+#        c.execute('ALTER TABLE online ADD COLUMN %s TEXT' % (inst,))
+#        conn.commit()
+#        c.close()
+#        conn.close()
 
 
 def addvalue(inst, value):
     ldate = int(time())
-    conn = sqlite3.connect(statsdb)
-    c = conn.cursor()
-    c.execute('INSERT INTO %s (date, value) VALUES (%s, %s)' % (inst, ldate, value))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('INSERT INTO %s (date, value) VALUES (%s, %s)' % (inst, ldate, value), sdb='statsdb')
 
 
 def flushold(tinst):
     aweek = int(time()) - 2592000
-    conn = sqlite3.connect(statsdb)
-    c = conn.cursor()
-    c.execute('DELETE FROM %s WHERE date < %s' % (tinst, aweek))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('DELETE FROM %s WHERE date < %s' % (tinst, aweek), sdb='statsdb')
 
 
 def howmanyon(inst):
-    conn1 = sqlite3.connect(sqldb)
-    c1 = conn1.cursor()
-    c1.execute('SELECT * from players')
-    allplayers = c1.fetchall()
-    c1.close()
-    conn1.close()
+    allplayers = dbquery('SELECT * from players')
     pcnt = 0
     now = time()
     for row in allplayers:
@@ -79,11 +57,11 @@ def howmanyon(inst):
 
 def oscollect():
     log.debug(f'starting online stats collector for instances {statinst}')
+    for each in statinst:
+        checkiftableexists(each)
     while True:
         try:
             for each in statinst:
-                checkiftableexists(each)
-                #flushold(each)
                 addvalue(each, howmanyon(each))
         except:
             log.critical('Critical Error in Online Stat Collector!', exc_info=True)

@@ -261,7 +261,7 @@ arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd 
 
 
 def printplayer(feach):
-    print(f'{SKN}{feach[0]} {BMGT}{feach[1].capitalize()}{RST} {WHT}last on {tclr}{elapsedTime(now,float(feach[2]))} \
+    print(f'{SKN}{feach[0]} {BMGT}{feach[1].title()}{RST} {WHT}last on {tclr}{elapsedTime(now,float(feach[2]))} \
 {WHT}ago on {RMY}{feach[3].capitalize()} {WHT}Home Server: {SLT}{feach[15].capitalize()} {WHT}Discord: \
 {SKN}{feach[8]}{RST}')
     print(f'{WHT}Connections: {BGRN}{feach[7]} {WHT}Total Playtime: {BCYN}{playedTime(feach[4])} {WHT}joined \

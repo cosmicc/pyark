@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
-import time, logging, argparse, subprocess, socket, re, sqlite3
+import time, logging, argparse, subprocess, socket, re
 from sys import exit
-from configreader import sqldb, instance
+from configreader import instance
 from pushover import pushover
+from dbhelper import dbupdate
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -174,14 +175,7 @@ def main():
                             log.debug(f'{eachinst["name"]} passed instance online check')
 
                 # log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('UPDATE instances SET isup = %s, islistening = %s, isrunning = %s, uptimestamp = %s, \
-                                  actmem = %s, totmem = %s WHERE name = "%s"' % (isonlineint, islisteningint, isrunningint,
-                                                                                 time.time(), actmem, totmem, eachinst['name']))
-                conn.commit()
-                c.close()
-                conn.close()
+                dbupdate('UPDATE instances SET isup = %s, islistening = %s, isrunning = %s, uptimestamp = %s, actmem = %s, totmem = %s WHERE name = "%s"' % (isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name']))
                 for feach in isrunning:
                     if feach == eachinst['name']:
                         if isrunning[feach]['count'] == 2:

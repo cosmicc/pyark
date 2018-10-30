@@ -1,5 +1,5 @@
-import time, logging, subprocess, socket, sqlite3
-from configreader import sqldb
+import time, logging, subprocess, socket
+from dbhelper import dbquery, dbupdate
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -13,12 +13,7 @@ def setmotd(inst, motd=None, cancel=False):
 
 
 def iseventtime():
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT * FROM events WHERE completed == 0 AND starttime < ?', (time.time(),))
-    inevent = c4.fetchone()
-    c4.close()
-    conn4.close()
+    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < %s' % (time.time(),))
     if inevent:
         return True
     else:
@@ -26,75 +21,40 @@ def iseventtime():
 
 
 def getcurrenteventid():
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT id FROM events WHERE completed == 0 AND starttime < ?', (time.time(),))
-    inevent = c4.fetchone()
-    c4.close()
-    conn4.close()
+    inevent = dbquery('SELECT id FROM events WHERE completed == 0 AND starttime < %s' % (time.time(),), fetch='one')
     return inevent[0]
 
 
 def getcurrenteventinfo():
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT * FROM events WHERE completed == 0 AND starttime < ?', (time.time(),))
-    inevent = c4.fetchone()
-    c4.close()
-    conn4.close()
+    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < %s' % (time.time(),), fetch='one')
     return inevent
 
 
 def getlasteventinfo():
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT * FROM events WHERE completed == 1 ORDER BY id DESC LIMIT 1')
-    inevent = c4.fetchone()
-    c4.close()
-    conn4.close()
+    inevent = dbquery('SELECT * FROM events WHERE completed == 1 ORDER BY id DESC LIMIT 1', fetch='one')
     return inevent
 
 
 def getnexteventinfo():
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT * FROM events WHERE completed == 0 AND starttime > ?', (time.time(),))
-    inevent = c4.fetchone()
-    c4.close()
-    conn4.close()
+    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime > %s' % (time.time(),), fetch='one')
     return inevent
 
 
 def currentserverevent(inst):
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT inevent FROM instances WHERE name == ?', (inst,))
-    inevent = c4.fetchone()
-    c4.close()
-    conn4.close()
+    inevent = dbquery('SELECT inevent FROM instances WHERE name == "%s"' % (inst,), fetch='one')
     return inevent[0]
 
 
 def startserverevent(inst):
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('UPDATE instances SET inevent = ? WHERE name = ?', (getcurrenteventid(), inst))
-    conn4.commit()
-    c4.close()
-    conn4.close()
+    dbupdate('UPDATE instances SET inevent = %s WHERE name = "%s"' % (getcurrenteventid(), inst))
     eventinfo = getcurrenteventinfo()
     log.info(f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
-    msg = f"\n\n\n                      {eventinfo[4]} Event is Active!\n\n                   {eventinfo[5]}"
+    msg = f"\n\n                      {eventinfo[4]} Event is Active!\n\n                   {eventinfo[5]}"
     setmotd(inst, motd=msg)
 
 
 def stopserverevent(inst):
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('UPDATE instances SET inevent = 0 WHERE name = ?', (inst,))
-    conn4.commit()
-    c4.close()
-    conn4.close()
+    dbupdate('UPDATE instances SET inevent = 0 WHERE name = "%s"' % (inst,))
     log.info(f'Ending event on instance {inst.capitalize()}')
     setmotd(inst, cancel=True)
 
@@ -104,12 +64,7 @@ def checkifeventover():
     if curevent or curevent is not None:
         if curevent[3] < time.time():
             log.info(f'Event {curevent[5]} has passed end time. Ending Event')
-            conn4 = sqlite3.connect(sqldb)
-            c4 = conn4.cursor()
-            c4.execute('UPDATE events SET completed = 1 WHERE id = ?', (curevent[0],))
-            conn4.commit()
-            c4.close()
-            conn4.close()
+            dbupdate('UPDATE events SET completed = 1 WHERE id = %s' % (curevent[0],))
 
 
 def eventwatcher(inst):

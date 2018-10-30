@@ -1,6 +1,6 @@
-import json, socket, sqlite3, logging
+import json, socket, logging
 from time import sleep
-from configreader import sqldb
+from dbhelper import dbquery, dbupdate
 from urllib.request import urlopen, Request
 
 hstname = socket.gethostname()
@@ -8,34 +8,19 @@ log = logging.getLogger(name=hstname)
 
 
 def fetcharkserverdata():
-    conn8 = sqlite3.connect(sqldb)
-    c8 = conn8.cursor()
-    c8.execute('SELECT name from instances')
-    hinst = c8.fetchall()
-    c8.close()
-    conn8.close()
+    hinst = dbquery('SELECT name from instances')
     for each in hinst:
-        conn8 = sqlite3.connect(sqldb)
-        c8 = conn8.cursor()
-        c8.execute('SELECT * from instances WHERE name = ?', (each[0],))
-        svrifo = c8.fetchone()
-        c8.close()
-        conn8.close()
+        svrifo = dbquery('SELECT * from instances WHERE name = "%s"' % (each[0],), fetch='one')
         try:
             url = f'https://ark-servers.net/api/?object=servers&element=detail&key={svrifo[8]}'
             req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             html = urlopen(req).read()
             adata = json.loads(html)
         except:
-            pass
+            log.error(f'Error fetching ArkServers data from web')
         else:
             if adata is not None:
-                conn8 = sqlite3.connect(sqldb)
-                c8 = conn8.cursor()
-                c8.execute('UPDATE instances SET hostname = ?, rank = ?, score = ?, uptime = ?, votes = ?, arkversion = ? WHERE name = ?', (adata['hostname'], adata['rank'], adata['score'], adata['uptime'], adata['votes'], adata['version'], each[0]))
-                conn8.commit()
-                c8.close()
-                conn8.close()
+                dbupdate('UPDATE instances SET hostname = "%s", rank = %s, score = %s, uptime = %s, votes = %s, arkversion = "%s" WHERE name = "%s"' % (adata['hostname'], adata['rank'], adata['score'], adata['uptime'], adata['votes'], adata['version'], each[0]))
 
 
 def arkserversnet():

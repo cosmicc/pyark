@@ -1,9 +1,10 @@
-import os, logging, subprocess, sqlite3, time, filecmp, threading, socket
+import os, logging, subprocess, time, filecmp, threading, socket
 from datetime import datetime
 from datetime import time as dt
 from timebetween import is_time_between
 from timehelper import wcstamp
-from configreader import sqldb, sharedpath, arkroot, numinstances, instance, instr, isupdater
+from configreader import sharedpath, arkroot, numinstances, instance, instr, isupdater
+from dbhelper import dbquery, dbupdate
 from pushover import pushover
 
 hstname = socket.gethostname()
@@ -15,32 +16,15 @@ updgennotify = time.time() - 3600
 
 
 def writediscord(msg, tstamp):
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-               ('generalchat', 'ALERT', msg, tstamp))
-    conn4.commit()
-    c4.close()
-    conn4.close()
+    dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' % ('generalchat', 'ALERT', msg, tstamp))
 
 
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('SELECT * from players WHERE playername = ?', (whos,))
-        isindb = c.fetchone()
-        c.close()
-        conn.close()
+        isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,))
     elif whos == "ALERT" or isindb:
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-                  (inst, whos, msg, tstamp))
-        conn.commit()
-        c.close()
-        conn.close()
+        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' % (inst, whos, msg, tstamp))
 
 
 def playercount(inst):
@@ -60,97 +44,52 @@ def playercount(inst):
 
 
 def updatetimer(inst, ctime):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('UPDATE instances SET restartcountdown = ? WHERE name = ?', (ctime, inst))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE instances SET restartcountdown = %s WHERE name = "%s"' % (ctime, inst))
 
 
 def setcfgver(inst, cver):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
     if inst == 'general':
-        c.execute('UPDATE general SET cfgver = ?', [cver])
+        dbupdate('UPDATE general SET cfgver = %s' % (cver,))
     else:
-        c.execute('UPDATE instances SET cfgver = ? WHERE name = ?', (cver, inst))
-    conn.commit()
-    c.close()
-    conn.close()
+        dbupdate('UPDATE instances SET cfgver = %s WHERE name = "%s"' % (cver, inst))
 
 
 def getcfgver(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
     if inst == 'general':
-        c.execute('SELECT cfgver FROM general')
+        lastwipe = dbquery('SELECT cfgver FROM general', fetch='one')
     else:
-        c.execute('SELECT cfgver FROM instances WHERE name = ?', (inst, ))
-    lastwipe = c.fetchone()
-    c.close()
-    conn.close()
+        lastwipe = dbquery('SELECT cfgver FROM instances WHERE name = "%s"' % (inst,), fetch='one')
     return ''.join(lastwipe[0])
 
 
 def getlastwipe(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT lastdinowipe FROM instances WHERE name = ?', (inst, ))
-    lastwipe = c.fetchall()
-    c.close()
-    conn.close()
+    lastwipe = dbquery('SELECT lastdinowipe FROM instances WHERE name = "%s"' % (inst, ))
     return ''.join(lastwipe[0])
 
 
 def resetlastwipe(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
     newtime = time.time()
-    c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', (newtime, inst))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE instances SET lastdinowipe = %s WHERE name = "%s"' % (newtime, inst))
 
 
 def resetlastrestart(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
     newtime = time.time()
-    c.execute('UPDATE instances SET lastrestart = ? WHERE name = ?', (newtime, inst))
-    c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', (inst, ))
-    c.execute('UPDATE instances SET cfgver = ? WHERE name = ?', (getcfgver('general'), inst))
-    c.execute('UPDATE instances SET restartcountdown = 30')
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE instances SET lastrestart = %s WHERE name = "%s"' % (newtime, inst))
+    dbupdate('UPDATE instances SET needsrestart = "False" WHERE name = "%s"' % (inst, ))
+    dbupdate('UPDATE instances SET cfgver = %s WHERE name = "%s"' % (getcfgver('general'), inst))
+    dbupdate('UPDATE instances SET restartcountdown = 30')
 
 
 def setrestartbit(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('UPDATE instances SET needsrestart = "True" WHERE name = ?', (inst, ))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE instances SET needsrestart = "True" WHERE name = "%s"' % (inst, ))
 
 
 def unsetstartbit(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('UPDATE instances SET needsrestart = "False" WHERE name = ?', (inst, ))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE instances SET needsrestart = "False" WHERE name = "%s"' % (inst, ))
 
 
 def restartbit(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('UPDATE players SET restartbit = 1 WHERE server = ?', (inst, ))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE players SET restartbit = 1 WHERE server = "%s"' % (inst, ))
 
 
 def checkwipe(inst):
@@ -187,12 +126,7 @@ def isrebooting(inst):
 
 
 def stillneedsrestart(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT needsrestart FROM instances WHERE name = ?', [inst])
-    lastwipe = c.fetchall()
-    c.close()
-    conn.close()
+    lastwipe = dbquery('SELECT needsrestart FROM instances WHERE name = "%s"' % (inst,))
     ded = ''.join(lastwipe[0])
     if ded == "True":
         return True
@@ -223,14 +157,9 @@ def restartinstnow(inst):
 def restartloop(inst):
     log.debug(f'{inst} restart loop has started')
     setrestartbit(inst)
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT restartcountdown, restartreason from instances WHERE name = ?', (inst,))
-    timeleftraw = c.fetchone()
+    timeleftraw = dbquery('SELECT restartcountdown, restartreason from instances WHERE name = "%s"' % (inst,), fetch='one')
     timeleft = int(timeleftraw[0])
     reason = timeleftraw[1]
-    c.close()
-    conn.close()
     if playercount(inst) == 0:
             log.info(f'server {inst} is empty and restarting now for a {reason}')
             writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
@@ -298,12 +227,7 @@ def instancerestart(inst, reason):
     if (inmaint and reason == "configuration update") \
        or (inmaint and reason == "maintenance restart") \
        or (reason != "configuration update" and reason != "maintenance restart"):
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('UPDATE instances SET restartreason = ? WHERE name = ?', (reason, inst))
-        conn.commit()
-        c.close()
-        conn.close()
+        dbupdate('UPDATE instances SET restartreason = %s WHERE name = "%s"' % (reason, inst))
         if not isrebooting(inst):
             for each in range(numinstances):
                 if instance[each]['name'] == inst:
@@ -339,12 +263,7 @@ def checkconfig():
     for each in range(numinstances):
         inst = instance[each]['name']
         if not isrebooting(inst):
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT lastrestart FROM instances WHERE name = ?', [inst])
-            lstsv = c.fetchone()
-            c.close()
-            conn.close()
+            lstsv = dbquery('SELECT lastrestart FROM instances WHERE name = "%s"' % (inst,), fetch='one')
             t, s, e = datetime.now(), dt(11, 0), dt(11, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
             inmaint = is_time_between(t, s, e)
             if float(time.time()) - float(lstsv[0]) > 432000 and inmaint:
@@ -380,12 +299,7 @@ def checkbackup():
     for seach in range(numinstances):
         sinst = instance[seach]['name']
         if not isrebooting(sinst):
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT lastrestart FROM instances WHERE name = ?', (sinst, ))
-            lastrestr = c.fetchall()
-            c.close()
-            conn.close()
+            lastrestr = dbquery('SELECT lastrestart FROM instances WHERE name = "%s"' % (sinst, ))
             lt = float(time.time()) - float(lastrestr[0][0])
             if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
                 log.info(f'performing a world data backup on {sinst}')
@@ -394,12 +308,7 @@ def checkbackup():
 
 
 def checkifalreadyrestarting(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT needsrestart FROM instances WHERE name = ?', (inst, ))
-    lastwipe = c.fetchone()
-    c.close()
-    conn.close()
+    lastwipe = dbquery('SELECT needsrestart FROM instances WHERE name = "%s"' % (inst, ), fetch='one')
     ded = lastwipe[0]
     if ded == "True":
         if not isrebooting(inst):

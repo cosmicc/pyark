@@ -11,7 +11,7 @@ intervals = (
 
 
 def dt2epoch(dt):
-    return float(dt.timestamp()) 
+    return float(dt.timestamp())
 
 
 def estshift(otime):
@@ -20,6 +20,10 @@ def estshift(otime):
 
 def gmtshift(otime):
     return otime + tzfix
+
+
+def epoch2string(epoch):
+    return estshift(datetime.fromtimestamp(float(epoch))).strftime('%a, %b %d %I:%M %p')
 
 
 def wcstamp():

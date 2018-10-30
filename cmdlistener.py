@@ -1,7 +1,8 @@
-import logging, subprocess, sqlite3, time, threading, random, socket
+import logging, subprocess, time, threading, random, socket
 from datetime import datetime
 from timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift
-from configreader import instance, sqldb, numinstances
+from configreader import instance, numinstances
+from dbhelper import dbquery, dbupdate
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -15,38 +16,16 @@ arewevoting = False
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('SELECT * from players WHERE playername = ?', (whos,))
-        isindb = c.fetchone()
-        c.close()
-        conn.close()
+        isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,), fetch='one')
         if isindb:
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-                      (inst, whos, msg, tstamp))
-            conn.commit()
-            c.close()
-            conn.close()
+            dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' % (inst, whos, msg, tstamp))
 
     elif whos == "ALERT":
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-                  (inst, whos, msg, tstamp))
-        conn.commit()
-        c.close()
-        conn.close()
+        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' % (inst, whos, msg, tstamp))
 
 
 def getsteamid(whoasked):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT steamid FROM players WHERE playername = ?', (whoasked,))
-    sid = c.fetchone()
-    c.close()
-    conn.close()
+    sid = dbquery('SELECT steamid FROM players WHERE playername = "%s"' % (whoasked,), fetch='one')
     if sid is None:
         log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
         return 0
@@ -55,12 +34,7 @@ def getsteamid(whoasked):
 
 
 def resptimeleft(inst, whoasked):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT restartcountdown, needsrestart FROM instances WHERE name = ?', (inst, ))
-    dbtl = c.fetchone()
-    c.close()
-    conn.close()
+    dbtl = dbquery('SELECT restartcountdown, needsrestart FROM instances WHERE name = "%s"' % (inst, ), fetch='one')
     if dbtl[1] == 'True':
         subprocess.run('arkmanager rconcmd "ServerChat Server is restarting in %s minutes" @%s' %
                        (dbtl[0], inst), shell=True)
@@ -69,32 +43,17 @@ def resptimeleft(inst, whoasked):
 
 
 def getlastrestart(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT lastrestart FROM instances WHERE name = ?', (inst, ))
-    lastwipe = c.fetchall()
-    c.close()
-    conn.close()
+    lastwipe = dbquery('SELECT lastrestart FROM instances WHERE name = "%s"' % (inst, ))
     return ''.join(lastwipe[0])
 
 
 def getlastwipe(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT lastdinowipe FROM instances WHERE name = ?', (inst, ))
-    lastwipe = c.fetchall()
-    c.close()
-    conn.close()
+    lastwipe = dbquery('SELECT lastdinowipe FROM instances WHERE name = "%s"' % (inst, ))
     return ''.join(lastwipe[0])
 
 
 def getlastseen(seenname):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM players WHERE playername = ?', (seenname, ))
-    flast = c.fetchone()
-    c.close()
-    conn.close()
+    flast = dbquery('SELECT * FROM players WHERE playername = "$s"' % (seenname, ), fetch='one')
     if not flast:
         return 'no player found with that name'
     else:
@@ -106,24 +65,14 @@ def getlastseen(seenname):
 
 
 def respmyinfo(inst, whoasked):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM players WHERE playername = ?', [whoasked])
-    pinfo = c.fetchone()
-    c.close()
-    conn.close()
+    pinfo = dbquery('SELECT * FROM players WHERE playername = "%s"' % (whoasked,))
     ptime = playedTime(float(pinfo[4]))
     mtxt = f"Your current reward points: {pinfo[5]}.\nYour total play time is {ptime}\nYour home server is {pinfo[15].capitalize()}"
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 
 def gettimeplayed(seenname):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM players WHERE playername = ?', [seenname])
-    flast = c.fetchone()
-    c.close()
-    conn.close()
+    flast = dbquery('SELECT * FROM players WHERE playername = "%s"' % (seenname,), fetch='one')
     if not flast:
         return 'No player found'
     else:
@@ -132,13 +81,8 @@ def gettimeplayed(seenname):
 
 
 def getserverlist():
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
     newlist = []
-    c.execute('SELECT name FROM instances')
-    flast = c.fetchall()
-    c.close()
-    conn.close()
+    flast = dbquery('SELECT name FROM instances')
     for each in flast:
         newlist.append(each[0])
     return newlist
@@ -162,12 +106,7 @@ def whoisonline(inst, oinst, whoasked, filt, crnt):
             potime = 3600
         elif crnt == 3:
             potime = 86400
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('SELECT * FROM players WHERE server = ?', [inst])
-        flast = c.fetchall()
-        c.close()
-        conn.close()
+        flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (inst,))
         pcnt = 0
         plist = ''
         for row in flast:
@@ -176,9 +115,9 @@ def whoisonline(inst, oinst, whoasked, filt, crnt):
                 # print(row[1],chktme)
                 pcnt += 1
                 if plist == '':
-                    plist = '%s' % (row[1].capitalize())
+                    plist = '%s' % (row[1].title())
                 else:
-                    plist = plist + ', %s' % (row[1].capitalize())
+                    plist = plist + ', %s' % (row[1].title())
         if pcnt != 0:
             if crnt == 1:
                 subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' %
@@ -198,12 +137,7 @@ def whoisonline(inst, oinst, whoasked, filt, crnt):
 
 
 def getlastvote(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT lastdinowipe FROM instances WHERE name = ?', [inst])
-    flast = c.fetchone()
-    c.close()
-    conn.close()
+    flast = dbquery('SELECT lastdinowipe FROM instances WHERE name = "%s"' % (inst,), fetch='one')
     return ''.join(flast[0])
 
 
@@ -221,12 +155,7 @@ def populatevoters(inst):
     global votertable
     votertable = []
     pcnt = 0
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM players WHERE server = ?', [inst])
-    pdata = c.fetchall()
-    c.close()
-    conn.close()
+    pdata = dbquery('SELECT * FROM players WHERE server = "%s"' % (inst,))
     for row in pdata:
         chktme = time.time() - float(row[2])
         if chktme < 90:
@@ -256,12 +185,7 @@ def castedvote(inst, whoasked, myvote):
     if not isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat No vote is taking place now" @%s' % (inst), shell=True)
     else:
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('SELECT * FROM players WHERE playername = ?', [whoasked])
-        pdata = c.fetchall()
-        c.close()
-        conn.close()
+        pdata = dbquery('SELECT * FROM players WHERE playername = "%s"' % (whoasked,))
         if getvote(whoasked) == 99:
             mtxt = 'Sorry, you are not eligible to vote in this round'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
@@ -328,23 +252,13 @@ def enoughvotes():
 
 
 def resetlastvote(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
     newtime = time.time()
-    c.execute('UPDATE instances SET lastvote = ? WHERE name = ?', (newtime, inst))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE instances SET lastvote = %s WHERE name = "%s"' % (newtime, inst))
 
 
 def resetlastwipe(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
     newtime = time.time()
-    c.execute('UPDATE instances SET lastdinowipe = ? WHERE name = ?', (newtime, inst))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE instances SET lastdinowipe = %s WHERE name = "%s"' % (newtime, inst))
 
 
 def howmanyvotes():
@@ -463,25 +377,13 @@ def isserver(line):
 
 
 def linker(minst, whoasked):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM players WHERE playername == ?', (whoasked,))
-    dplayer = c.fetchone()
-    c.close()
-    conn.close()
+    dplayer = dbquery('SELECT * FROM players WHERE playername == "%s"' % (whoasked,), fetch='one')
     if dplayer:
         if dplayer[8] is None or dplayer[8] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
             log.info(f'generated code {rcode} for link request from {dplayer[1]} on {minst}')
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('DELETE from linkrequests WHERE steamid = ?', (dplayer[0],))
-            conn.commit()
-            c.execute('INSERT INTO linkrequests (steamid, name, reqcode) VALUES (?, ?, ?)',
-                      (dplayer[0], dplayer[1], str(rcode)))
-            conn.commit()
-            c.close()
-            conn.close()
+            dbupdate('DELETE from linkrequests WHERE steamid = %s' % (dplayer[0],))
+            dbupdate('INSERT INTO linkrequests (steamid, name, reqcode) VALUES (%s, %s, %s)' % (dplayer[0], dplayer[1], str(rcode)))
             msg = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0], msg, minst), shell=True)
         else:
@@ -491,15 +393,11 @@ def linker(minst, whoasked):
     else:
         pass
         # user not found in db (wierd)
+        log.error('wiredness...')
 
 
 def writechatlog(inst, whos, msg, tstamp):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * from players WHERE playername = ?', (whos, ))
-    isindb = c.fetchone()
-    c.close()
-    conn.close()
+    isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos, ), fetch='one')
     if isindb:
         clog = f'{tstamp} [{whos.upper()}]{msg}\n'
         with open(f"/home/ark/shared/logs/{inst}/chatlog/chat.log", "at") as f:
@@ -508,13 +406,7 @@ def writechatlog(inst, whos, msg, tstamp):
 
 
 def writeglobal(inst, whos, msg):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-              (inst, whos, msg, time.time()))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' % (inst, whos, msg, time.time()))
 
 
 def processtcdata(inst, tcdata):
@@ -523,38 +415,22 @@ def processtcdata(inst, tcdata):
     playername = tcdata['PlayerName'].lower()
     playtime = tcdata['TotalPlayed'].replace(',', '')
     rewardpoints = tcdata['Points'].replace(',', '')
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
-    pexist = c.fetchone()
-    c.close()
-    conn.close()
+    pexist = dbquery('SELECT * FROM players WHERE steamid = %s' % (steamid, ), fetch='one')
     if not pexist:
         if steamid != '':
             log.info(f'player {playername} with steamid {steamid} was not found on {inst}. adding \
 new player to cluster.')
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
+            dbupdate('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                       firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
-                      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (steamid, playername, timestamp,
-                                                                                   inst, playtime, rewardpoints,
-                                                                                   timestamp, 1, '', '', 0, 0, 0, 0,
-                                                                                   0, inst, 0, timestamp, 0))
-            conn.commit()
-            c.close()
-            conn.close()
+                      (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)' %
+                     (steamid, playername, timestamp, inst, playtime, rewardpoints, timestamp, 1, '', '', 0, 0, 0, 0,
+                      0, inst, 0, timestamp, 0))
     elif steamid != '':
         if inst == pexist[15]:
             log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating.')
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('UPDATE players SET playername = ?, playedtime = ?, rewardpoints = ? WHERE steamid = ?',
-                      (playername, playtime, rewardpoints, steamid))
-            conn.commit()
-            c.close()
-            conn.close()
+            dbupdate('UPDATE players SET playername = "%s", playedtime = %s, rewardpoints = %s WHERE steamid = %s' %
+                     (playername, playtime, rewardpoints, steamid))
         else:
             log.debug(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
             if int(pexist[16]) != int(rewardpoints):
@@ -562,13 +438,8 @@ new player to cluster.')
                     if time.time() - float(pexist[17]) > 60:
                         log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for \
 {playername} on {inst}')
-                        conn = sqlite3.connect(sqldb)
-                        c = conn.cursor()
-                        c.execute('UPDATE players SET transferpoints = ?, lastpointtimestamp = ? WHERE steamid = ?',
-                                  (int(rewardpoints) + int(pexist[16]), str(time.time()), str(steamid)))
-                        conn.commit()
-                        c.close()
-                        conn.close()
+                        dbupdate('UPDATE players SET transferpoints = %s, lastpointtimestamp = %s WHERE steamid = %s' %
+                                 (int(rewardpoints) + int(pexist[16]), str(time.time()), str(steamid)))
                         subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
                                        (steamid, inst), shell=True)
                     else:
@@ -582,12 +453,7 @@ new player to cluster.')
 
 def homeserver(inst, whoasked, ext):
     steamid = getsteamid(whoasked)
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
-    pinfo = c.fetchone()
-    c.close()
-    conn.close()
+    pinfo = dbquery('SELECT * FROM players WHERE steamid = %s' % (steamid,), fetch='one')
     if ext != '':
         tservers = ['ragnarok', 'island', 'volcano']
         if ext in tservers:
@@ -597,13 +463,8 @@ def homeserver(inst, whoasked, ext):
 with {pinfo[5]} points')
                     subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
                                    (steamid, inst), shell=True)
-                    conn1 = sqlite3.connect(sqldb)
-                    c1 = conn1.cursor()
-                    c1.execute('UPDATE players SET transferpoints = ?, homeserver = ? WHERE steamid = ?',
-                               (pinfo[5], ext, steamid))
-                    conn1.commit()
-                    c1.close()
-                    conn1.close()
+                    dbupdate('UPDATE players SET transferpoints = %s, homeserver = "%s" WHERE steamid = %s' %
+                             (pinfo[5], ext, steamid))
                     msg = f'Your {pinfo[5]} points have been transferred to your new home server: {ext.capitalize()}'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (pinfo[0], msg, inst), shell=True)
@@ -636,12 +497,7 @@ def sendlotteryinfo(linfo, lpinfo, inst):
     ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (3600 * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
     msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT * FROM lotteryplayers WHERE steamid = ?', (lpinfo[0],))
-    amiin = c4.fetchone()
-    c4.close()
-    conn4.close()
+    amiin = dbquery('SELECT * FROM lotteryplayers WHERE steamid = %s' % (lpinfo[0],), fetch='one')
     if amiin:
         msg = f'You are enterted into this lottery. Good Luck!'
     else:
@@ -650,23 +506,11 @@ def sendlotteryinfo(linfo, lpinfo, inst):
 
 
 def lotteryquery(whoasked, lchoice, inst):
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"')
-    linfo = c4.fetchone()
-    c4.execute('SELECT * FROM players WHERE playername = ?', (whoasked,))
-    lpinfo = c4.fetchone()
-
-    c4.close()
-    conn4.close()
+    linfo = dbquery('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"', fetch='one')
+    lpinfo = dbquery('SELECT * FROM players WHERE playername = "%s"' % (whoasked,), fetch='one')
     if linfo:
         if lchoice == 'join' or lchoice == 'enter':
-            conn4 = sqlite3.connect(sqldb)
-            c4 = conn4.cursor()
-            c4.execute('SELECT * FROM lotteryplayers WHERE steamid = ?', (lpinfo[0],))
-            lpcheck = c4.fetchone()
-            c4.close()
-            conn4.close()
+            lpcheck = dbquery('SELECT * FROM lotteryplayers WHERE steamid = %s' % (lpinfo[0],), fetch='one')
             if linfo[1] == 'points':
                 lfo = 'ARc Rewards Points'
             else:
@@ -674,18 +518,12 @@ def lotteryquery(whoasked, lchoice, inst):
             ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (3600 *
                                                                        int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
             if lpcheck is None:
-                conn4 = sqlite3.connect(sqldb)
-                c4 = conn4.cursor()
-                c4.execute('')
-                c4.execute('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES (?, ?, ?, ?)',
-                           (lpinfo[0], lpinfo[1], time.time(), 0))
+                dbupdate('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES (%s, %s, %s, %s)' %
+                         (lpinfo[0], lpinfo[1], time.time(), 0))
                 if linfo[1] == 'points':
-                    c4.execute('UPDATE lotteryinfo SET payoutitem = ? WHERE winner = "Incomplete"',
-                               (str(int(linfo[2]) + int(linfo[4])), ))
-                c4.execute('UPDATE lotteryinfo SET players = ? WHERE id = ?', (int(linfo[6]) + 1, linfo[0]))
-                conn4.commit()
-                c4.close()
-                conn4.close()
+                    dbupdate('UPDATE lotteryinfo SET payoutitem = "%s" WHERE winner = "Incomplete"' %
+                             (str(int(linfo[2]) + int(linfo[4])), ))
+                dbupdate('UPDATE lotteryinfo SET players = %s WHERE id = %s' % (int(linfo[6]) + 1, linfo[0]))
                 msg = f'You have been added to the {lfo} lottery! A winner will be choosen on {ltime} in \
 {elapsedTime(float(linfo[3])+(86400*int(linfo[5])),time.time())}. Good Luck!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)

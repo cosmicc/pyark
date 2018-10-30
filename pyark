@@ -1,21 +1,22 @@
 #!/usr/bin/python3
 
-import logging, argparse, sqlite3, time, threading, socket, subprocess
+import logging, argparse, time, threading, socket
 from sys import exit
 # from git import Repo
-import processlock
 from arkupdater import arkupd
 from cmdlistener import clisten
 from onlinemonitor import onlineupdate
 from discordbot import discordbot
 from statcollector import oscollect
 from kicker import kicker
-from configreader import logfile, sqldb, instance, numinstances, imthedbot, restapi_enabled, restapi_ip, restapi_port
+from configreader import logfile, instance, numinstances, imthedbot, restapi_enabled, restapi_ip, restapi_port
 from gchatrelay import gchatrelay
 from restapi import app
 from arkserversnet import arkserversnet
 from clusterevents import eventwatcher
+from dbhelper import dbquery, dbupdate
 import lottery
+import processlock
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -81,38 +82,26 @@ checkgit = 0
 def main():
     global checkgit
     global instance
-    log.debug(f'opening pyark sql database: {sqldb}')
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS general(cfgver TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart REAL, lastdinowipe REAL, \
+    dbupdate('CREATE TABLE IF NOT EXISTS general(cfgver TEXT)')
+    dbupdate('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart REAL, lastdinowipe REAL, \
               needsrestart TEXT, lastvote REAL, restartreason TEXT, cfgver INTEGER, restartcountdown INTEGER)')
-    c.execute('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, \
+    dbupdate('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, \
               playedtime TEXT, rewardpoints INTEGER, firstseen TEXT, connects INTEGER)')
     for ins in range(numinstances):
-        c.execute('SELECT * FROM instances WHERE name = ?', ((instance[ins]['name']), ))
-        chkinst = c.fetchall()
+        chkinst = dbquery('SELECT * FROM instances WHERE name = "%s"' % (instance[ins]['name'],))
         if not chkinst:
             now = time.time()
             log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
-            c.execute('INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote) VALUES \
+            dbupdate('INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote) VALUES \
                       (?, ?, ?, ?, ?)', (instance[ins]["name"], now, now, 'False', now))
-            conn.commit()
         else:
             log.debug(f'found server {instance[ins]["name"]} in server table')
-    c.close()
-    conn.close()
     log.debug('database initilization complete')
     checkgit = 0
     arkupdt = threading.Thread(name='arkupdater', target=arkupd)
     arkupdt.start()
     log.debug('deleting global chat buffer')
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('DELETE FROM globalbuffer')
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('DELETE FROM globalbuffer')
     for each in range(numinstances):
         inst = instance[each]['name']
         instance[each]['kickthread'] = threading.Thread(name='%s-kicker' % inst, target=kicker, args=(inst,))
@@ -146,7 +135,7 @@ def main():
     while True:
         try:
             if checkgit == 0:
-                #gitupdatecheck()
+                # gitupdatecheck()
                 checkgit += 1
             elif checkgit == 61:
                 checkgit = 0
@@ -202,6 +191,6 @@ def main():
 
 
 if __name__ == '__main__':
-    #gitupdatecheck()
+    # gitupdatecheck()
     gitcheck = 1
     main()

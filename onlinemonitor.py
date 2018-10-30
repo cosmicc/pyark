@@ -1,8 +1,8 @@
-import time, socket, logging, sqlite3, threading, subprocess
+import time, socket, logging, threading, subprocess
 from timehelper import elapsedTime, playedTime, wcstamp
-from configreader import sqldb
 from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import iseventtime, getcurrenteventinfo
+from dbhelper import dbquery, dbupdate
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -14,31 +14,16 @@ global instance
 
 
 def resetplayerbit(steamid):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('UPDATE players SET restartbit = 0 WHERE steamid = ?', (steamid,))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE players SET restartbit = 0 WHERE steamid = %s' % (steamid,))
 
 
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('SELECT * from players WHERE playername = ?', (whos,))
-        isindb = c.fetchone()
-        c.close()
-        conn.close()
+        isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,), fetch='one')
     elif whos == "ALERT" or isindb:
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-                  (inst, whos, msg, tstamp))
-        conn.commit()
-        c.close()
-        conn.close()
+        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' %
+                 (inst, whos, msg, tstamp))
 
 
 def welcomenewplayer(steamid, inst):
@@ -81,12 +66,7 @@ def isgreeting(steamid):
 
 
 def serverisinrestart(steamid, inst, oplayer):
-    conn1 = sqlite3.connect(sqldb)
-    c1 = conn1.cursor()
-    c1.execute('SELECT * FROM instances WHERE name = ?', [inst])
-    rbt = c1.fetchone()
-    c1.close()
-    conn1.close()
+    rbt = dbquery('SELECT * FROM instances WHERE name = "%s"' % (inst,), fetch='one')
     if rbt[3] == "True":
         log.info(f'notifying player {oplayer[1]} that server {inst} will be restarting in {rbt[7]} min')
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
@@ -94,19 +74,9 @@ def serverisinrestart(steamid, inst, oplayer):
 
 
 def isinlottery(steamid):
-    conn1 = sqlite3.connect(sqldb)
-    c1 = conn1.cursor()
-    c1.execute('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"')
-    isinlotto = c1.fetchone()
-    c1.close()
-    conn1.close()
+    isinlotto = dbquery('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"', fetch='one')
     if isinlotto:
-        conn1 = sqlite3.connect(sqldb)
-        c1 = conn1.cursor()
-        c1.execute('SELECT * FROM lotteryplayers WHERE steamid = ?', (steamid,))
-        isinlotto2 = c1.fetchone()
-        c1.close()
-        conn1.close()
+        isinlotto2 = dbquery('SELECT * FROM lotteryplayers WHERE steamid = %s' % (steamid,), fetch='one')
         if isinlotto2:
             return True
         else:
@@ -116,14 +86,8 @@ def isinlottery(steamid):
 
 
 def checklottodeposits(steamid, inst):
-    conn1 = sqlite3.connect(sqldb)
-    c1 = conn1.cursor()
-    c1.execute('SELECT * FROM lotterydeposits WHERE steamid = ?', (steamid,))
-    lottocheck = c1.fetchall()
-    c1.execute('SELECT * FROM players WHERE steamid = ?', (steamid,))
-    elpinfo = c1.fetchone()
-    c1.close()
-    conn1.close()
+    lottocheck = dbquery('SELECT * FROM lotterydeposits WHERE steamid = %s' % (steamid,))
+    elpinfo = dbquery('SELECT * FROM players WHERE steamid = %s', (steamid,), fetch='one')
     if lottocheck and inst == elpinfo[15]:
         for weach in lottocheck:
             if weach[4] == 1:
@@ -138,12 +102,7 @@ def checklottodeposits(steamid, inst):
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s %s" @%s' %
                                (steamid, str(int(elpinfo[5]) - int(weach[3])), inst), shell=True)
-        conn1 = sqlite3.connect(sqldb)
-        c1 = conn1.cursor()
-        c1.execute('DELETE FROM lotterydeposits WHERE steamid = ?', (steamid,))
-        conn1.commit()
-        c1.close()
-        conn1.close()
+        dbupdate('DELETE FROM lotterydeposits WHERE steamid = %s' % (steamid,))
 
 
 def playergreet(steamid, inst):
@@ -151,17 +110,10 @@ def playergreet(steamid, inst):
     gogo = 0
     xferpoints = 0
     global welcomthreads
-    conn1 = sqlite3.connect(sqldb)
-    c1 = conn1.cursor()
-    c1.execute('SELECT * FROM players WHERE steamid = ?', [steamid])
-    oplayer = c1.fetchone()
+    oplayer = dbquery('SELECT * FROM players WHERE steamid = %s' % (steamid,), fetch='one')
     timestamp = time.time()
-    c1.execute('SELECT * FROM players WHERE steamid = ? AND banned != ""', [steamid])
-    poplayer = c1.fetchone()
-    c1.execute('SELECT * FROM banlist WHERE steamid = ?', [steamid])
-    bplayer = c1.fetchone()
-    c1.close()
-    conn1.close()
+    poplayer = dbquery('SELECT * FROM players WHERE steamid = %s AND banned != ""' % (steamid,), fetch='one')
+    bplayer = dbquery('SELECT * FROM banlist WHERE steamid = %s' % (steamid,), fetch='one')
     timestamp = time.time()
     if poplayer:
         if not bplayer:
@@ -178,17 +130,12 @@ kicking and banning.')
         log.debug(f'player {steamid} passed ban checks')
         if not oplayer:
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
-            conn1 = sqlite3.connect(sqldb)
-            c1 = conn1.cursor()
-            c1.execute('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
+            dbupdate('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                        firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                        primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
-                       (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                       (steamid, 'newplayer', timestamp, inst, '1', 50, timestamp, 1, '', '', 0, 0, 0,
-                        0, 0, inst, 0, timestamp, 0))
-            conn1.commit()
-            c1.close()
-            conn1.close()
+                       (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)' %
+                     (steamid, 'newplayer', timestamp, inst, '1', 50, timestamp, 1, '', '', 0, 0, 0,
+                      0, 0, inst, 0, timestamp, 0))
             if not iswelcoming(steamid):
                 welcom = threading.Thread(name='welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid, inst))
                 welcomthreads.append({'steamid': steamid, 'sthread': welcom})
@@ -201,12 +148,7 @@ kicking and banning.')
                     xferpoints = int(oplayer[16])
                     log.info(f'transferring {xferpoints} non home server points into account for \
 {oplayer[1]} on {inst}')
-                    conn1 = sqlite3.connect(sqldb)
-                    c1 = conn1.cursor()
-                    c1.execute('UPDATE players SET transferpoints = 0 WHERE steamid = ?', (steamid,))
-                    conn1.commit()
-                    c1.close()
-                    conn1.close()
+                    dbupdate('UPDATE players SET transferpoints = 0 WHERE steamid = %s' % (steamid,))
                     subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                    (steamid, xferpoints, inst), shell=True)
             if float(oplayer[2]) + 300 > float(time.time()):
@@ -218,22 +160,12 @@ kicking and banning.')
 {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
                     log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
                 log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
-                conn1 = sqlite3.connect(sqldb)
-                c1 = conn1.cursor()
-                c1.execute('UPDATE players SET lastseen = ?, server = ? WHERE steamid = ?', (timestamp, inst, steamid))
-                conn1.commit()
-                c1.close()
-                conn1.close()
+                dbupdate('UPDATE players SET lastseen = %s, server = "%s" WHERE steamid = %s' % (timestamp, inst, steamid))
             else:
                 log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. \
 updating info.")
-                conn1 = sqlite3.connect(sqldb)
-                c1 = conn1.cursor()
-                c1.execute('UPDATE players SET lastseen = ?, server = ?, connects = ? WHERE steamid = ?',
-                           (timestamp, inst, int(oplayer[7]) + 1, steamid))
-                conn1.commit()
-                c1.close()
-                conn1.close()
+                dbupdate('UPDATE players SET lastseen = %s, server = "%s", connects = %s WHERE steamid = %s' %
+                         (timestamp, inst, int(oplayer[7]) + 1, steamid))
                 laston = elapsedTime(float(time.time()), float(oplayer[2]))
                 totplay = playedTime(float(oplayer[4]))
                 try:
@@ -251,12 +183,7 @@ updating info.")
 {oplayer[15].capitalize()}{strauctions}, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 time.sleep(1)
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('SELECT * FROM players WHERE server = ? AND steamid != ?', (inst, steamid))
-                flast = c.fetchall()
-                c.close()
-                conn.close()
+                flast = dbquery('SELECT * FROM players WHERE server = "%s" AND steamid != %s' % (inst, steamid))
                 pcnt = 0
                 plist = ''
                 potime = 40
@@ -265,9 +192,9 @@ updating info.")
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
-                            plist = '%s' % (row[1].capitalize())
+                            plist = '%s' % (row[1].title())
                         else:
-                            plist = plist + ', %s' % (row[1].capitalize())
+                            plist = plist + ', %s' % (row[1].title())
                 if pcnt != 0:
                     msg = f'There are {pcnt} other players online: {plist}'
                 else:
@@ -307,12 +234,7 @@ updating info.")
                     mtxt = f'{eventinfo[4]} event is currently active!'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (steamid, mtxt, inst), shell=True)
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('SELECT announce FROM general')
-                annc = c.fetchone()
-                c.close()
-                conn.close()
+                annc = dbquery('SELECT announce FROM general', fetch='one')
                 if annc and annc[0] is not None:
                     time.sleep(2)
                     mtxt = annc[0]

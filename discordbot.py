@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 
-import time, logging, sqlite3, socket
+import time, logging, socket
 import discord
 import asyncio
 from datetime import datetime
-from timehelper import elapsedTime, playedTime, estshift, wcstamp
+from timehelper import elapsedTime, playedTime, estshift, wcstamp, epoch2string
 from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
-from configreader import config, sqldb
+from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
+from configreader import config
+from dbhelper import dbquery, dbupdate
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -18,32 +20,17 @@ channel2 = discord.Object(id=config.get('general', 'discordgenchan'))
 
 
 def getlastwipe(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT lastdinowipe FROM instances WHERE name = ?', [inst])
-    lastwipe = c.fetchall()
-    c.close()
-    conn.close()
+    lastwipe = dbquery('SELECT lastdinowipe FROM instances WHERE name = "%s"' % (inst,))
     return ''.join(lastwipe[0])
 
 
 def getlastrestart(inst):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT lastrestart FROM instances WHERE name = ?', [inst])
-    lastwipe = c.fetchall()
-    c.close()
-    conn.close()
+    lastwipe = dbquery('SELECT lastrestart FROM instances WHERE name = "%s"' % (inst,))
     return ''.join(lastwipe[0])
 
 
 def getlottowinnings(pname):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('SELECT type, payoutitem FROM lotteryinfo WHERE winner = ?', (pname,))
-    pwins = c.fetchall()
-    c.close()
-    conn.close()
+    pwins = dbquery('SELECT type, payoutitem FROM lotteryinfo WHERE winner = "%s"' % (pname,))
     totpoints = 0
     twins = 0
     for weach in pwins:
@@ -56,39 +43,19 @@ def getlottowinnings(pname):
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('SELECT * from players WHERE playername = ?', (whos,))
-        isindb = c.fetchone()
-        c.close()
-        conn.close()
+        isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,), fetch='one')
     elif whos == "ALERT" or isindb:
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-                  (inst, whos, msg, tstamp))
-        conn.commit()
-        c.close()
-        conn.close()
+        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' %
+                 (inst, whos, msg, tstamp))
 
 
 def writeglobal(inst, whos, msg):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-              (inst, whos, msg, time.time()))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (%s, %s, %s, %s)' %
+             (inst, whos, msg, time.time()))
 
 
 def islinkeduser(duser):
-    conn3 = sqlite3.connect(sqldb)
-    c3 = conn3.cursor()
-    c3.execute('SELECT * FROM players WHERE discordid = ?', (duser.lower(),))
-    islinked = c3.fetchall()
-    c3.close()
-    conn3.close()
+    islinked = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (duser.lower(),))
     if islinked:
         return True
     else:
@@ -96,12 +63,7 @@ def islinkeduser(duser):
 
 
 def setprimordialbit(steamid, pbit):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('UPDATE players SET primordialbit = ? WHERE steamid = ?', (pbit, steamid))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('UPDATE players SET primordialbit = %s WHERE steamid = %s' % (pbit, steamid))
 
 
 def discordbot():
@@ -109,12 +71,7 @@ def discordbot():
         await client.wait_until_ready()
         while not client.is_closed:
             try:
-                conn3 = sqlite3.connect(sqldb)
-                c3 = conn3.cursor()
-                c3.execute('SELECT * FROM chatbuffer')
-                cbuff = c3.fetchall()
-                c3.close()
-                conn3.close()
+                cbuff = dbquery('SELECT * FROM chatbuffer')
                 if cbuff:
                     for each in cbuff:
                         if each[0] == "generalchat":
@@ -128,19 +85,9 @@ def discordbot():
                                 msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
                             await client.send_message(channel, msg)
                             await asyncio.sleep(2)
-                    conn3 = sqlite3.connect(sqldb)
-                    c3 = conn3.cursor()
-                    c3.execute('DELETE FROM chatbuffer')
-                    conn3.commit()
-                    c3.close()
-                    conn3.close()
-                conn3 = sqlite3.connect(sqldb)
-                c3 = conn3.cursor()
+                    dbupdate('DELETE FROM chatbuffer')
                 now = float(time.time())
-                c3.execute('SELECT * FROM players WHERE lastseen < ? AND lastseen > ?', (now - 40, now - 45))
-                cbuffr = c3.fetchall()
-                c3.close()
-                conn3.close()
+                cbuffr = dbquery('SELECT * FROM players WHERE lastseen < %s AND lastseen > %s' % (now - 40, now - 45))
                 for reach in cbuffr:
                     log.info(f'{reach[1]} has left the server {reach[3]}')
                     mt = f'{reach[1].capitalize()} has left the server'
@@ -148,32 +95,12 @@ def discordbot():
                     writechat(reach[3], 'ALERT', f'>>> {reach[1].capitalize()} has left the server', wcstamp())
             except:
                 log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
-                try:
-                    if c3 in vars():
-                        c3.close()
-                except:
-                    pass
-                try:
-                    if conn3 in vars():
-                        conn3.close()
-                except:
-                    pass
             await asyncio.sleep(5)
 
     def savediscordtodb(author):
-        conn = sqlite3.connect(sqldb)
-        c = conn.cursor()
-        c.execute('SELECT * FROM discordnames WHERE discordname = ?', (str(author),))
-        didexists = c.fetchone()
-        c.close()
-        conn.close()
+        didexists = dbquery('SELECT * FROM discordnames WHERE discordname = "%s"' % (str(author),), fetch='one')
         if not didexists:
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('INSERT INTO discordnames (discordname) VALUES (?)', (str(author),))
-            conn.commit()
-            c.close()
-            conn.close()
+            dbupdate('INSERT INTO discordnames (discordname) VALUES (%s)' % (str(author),))
 
     @client.event
     async def on_member_join(member):
@@ -194,19 +121,9 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 or message.content.startswith('!whosonline'):
             log.info('responding to whos online request from discord')
             potime = 40
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM instances')
-            srvrs = c.fetchall()
-            c.close()
-            conn.close()
+            srvrs = dbquery('SELECT * FROM instances')
             for each in srvrs:
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('SELECT * FROM players WHERE server = ?', [each[0]])
-                flast = c.fetchall()
-                c.close()
-                conn.close()
+                flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (each[0],))
                 pcnt = 0
                 plist = ''
                 for row in flast:
@@ -214,9 +131,9 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
-                            plist = '%s' % (row[1].capitalize())
+                            plist = '%s' % (row[1].title())
                         else:
-                            plist = plist + ', %s' % (row[1].capitalize())
+                            plist = plist + ', %s' % (row[1].title())
                 if pcnt != 0:
                     msg = f'{each[0].capitalize()} has {pcnt} players online: {plist}'
                     await client.send_message(message.channel, msg)
@@ -229,19 +146,9 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             # await asyncio.sleep(5)
             log.info('responding to recent players request from discord')
             potime = 3600
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM instances')
-            srvrs = c.fetchall()
-            c.close()
-            conn.close()
+            srvrs = dbquery('SELECT * FROM instances')
             for each in srvrs:
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('SELECT * FROM players WHERE server = ?', [each[0]])
-                flast = c.fetchall()
-                c.close()
-                conn.close()
+                flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (each[0],))
                 pcnt = 0
                 plist = ''
                 for row in flast:
@@ -249,9 +156,9 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
-                            plist = '%s' % (row[1].capitalize())
+                            plist = '%s' % (row[1].title())
                         else:
-                            plist = plist + ', %s' % (row[1].capitalize())
+                            plist = plist + ', %s' % (row[1].title())
                 if pcnt != 0:
                     msg = f'{each[0].capitalize()} has had {pcnt} players in last hour: {plist}'
                     await client.send_message(message.channel, msg)
@@ -263,12 +170,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             if len(newname) > 1:
                 log.info(f'responding to lastseen request for {newname[1]} from discord')
                 seenname = newname[1]
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('SELECT * FROM players WHERE playername = ?', [seenname])
-                flast = c.fetchone()
-                c.close()
-                conn.close()
+                flast = dbquery('SELECT * FROM players WHERE playername = "%s"' % (seenname,), fetch='one')
                 if not flast:
                     msg = f'No player was found with name {seenname}'
                     await client.send_message(message.channel, msg)
@@ -292,12 +194,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 msg = f'Last wild dino wipe for {instr.capitalize()} was {lastwipet} ago'
                 await client.send_message(message.channel, msg)
             else:
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('SELECT * FROM instances')
-                srvrs = c.fetchall()
-                c.close()
-                conn.close()
+                srvrs = dbquery('SELECT * FROM instances')
                 for each in srvrs:
                     lastwipet = elapsedTime(time.time(), float(getlastwipe(each[0])))
                     msg = f'Last wild dino wipe for {each[0].capitalize()} was {lastwipet} ago'
@@ -310,20 +207,14 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 msg = f'Last server restart for {instr.capitalize()} was {lastrestartt} ago'
                 await client.send_message(message.channel, msg)
             else:
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('SELECT * FROM instances')
-                srvrs = c.fetchall()
-                c.close()
-                conn.close()
+                srvrs = dbquery('SELECT * FROM instances')
                 for each in srvrs:
                     lastwipet = elapsedTime(time.time(), float(getlastrestart(each[0])))
                     msg = f'Last server restart for {each[0].capitalize()} was {lastwipet} ago'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!help'):
-            msg = f'Commands: !mods, !ec, !rewards, !servers, !decay, !myinfo, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, \
-!lotto, !lastlotto, !winners, !timeleft, !lastwipe, !lastrestart, !lastseen, !primordial\n\nCommand descriptions pinned in #game-help channel\nCommands can be privately messaged directly to the bot or publicly in any channel'
+            msg = f'Commands: !mods, !ec, !rewards, !servers, !event, !decay, !myinfo, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !lotto, !lastlotto, !winners, !timeleft, !lastwipe, !lastrestart, !lastseen, !primordial\n\nCommand descriptions pinned in #game-help channel\nCommands can be privately messaged directly to the bot or publicly in any channel'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
@@ -333,19 +224,9 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             # await asyncio.sleep(5)
             log.info('responding to recent players request from discord')
             potime = 86400
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM instances')
-            srvrs = c.fetchall()
-            c.close()
-            conn.close()
+            srvrs = dbquery('SELECT * FROM instances')
             for each in srvrs:
-                conn = sqlite3.connect(sqldb)
-                c = conn.cursor()
-                c.execute('SELECT * FROM players WHERE server = ?', [each[0]])
-                flast = c.fetchall()
-                c.close()
-                conn.close()
+                flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (each[0],))
                 pcnt = 0
                 plist = ''
                 for row in flast:
@@ -363,15 +244,29 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     msg = f'{each[0].capitalize()} has had no players today.'
                     await client.send_message(message.channel, msg)
 
+        elif message.content.startswith('!event') or message.content.startswith('!events'):
+            whofor = str(message.author).lower()
+            log.info(f'event request from {whofor} on discord')
+            lastevent = getlasteventinfo()
+            currentevent = getcurrenteventinfo()
+            nextevent = getnexteventinfo()
+            msg = ''
+            if lastevent and lastevent is not None:
+                msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(lastevent[3], time.time())} ago\n'
+            if currentevent and currentevent is not None:
+                msg = msg + f'Current Event is: {currentevent[4]} - {currentevent[5]}\nCurrent Event ends {epoch2string(currentevent[3])} EST in {elapsedTime(currentevent[3], time.time())}\n'
+            else:
+                msg = msg + f'There is no Event currently running\n'
+            if nextevent and nextevent is not None:
+                msg = msg + f'Next Event is: {nextevent[4]} and starts {epoch2string(nextevent[2])} EST in {elapsedTime(nextevent[2], time.time())}\n'
+            else:
+                msg = msg + f'Next Event is not scheduled yet.\n'
+            await client.send_message(message.channel, msg)
+
         elif message.content.startswith('!decay') or message.content.startswith('!expire'):
             whofor = str(message.author).lower()
             log.info(f'decay request from {whofor} on discord')
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
-            kuser = c.fetchone()
-            c.close()
-            conn.close()
+            kuser = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
             msg = f'Galaxy Cluster structure & dino decay times:\nDinos: 30 Days, Tek: 38 Days, Metal: 30 Days, Stone: 23 Days, Wood: 15 Days, Thatch: 7.5 Days, Greenhouse: 9.5 Days (Use MetalGlass for 30 Day Greenhouse).\n'
             if kuser:
                 if kuser[8] != whofor:
@@ -414,12 +309,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
         elif message.content.startswith('!kickme') or message.content.startswith('!kick'):
             whofor = str(message.author).lower()
             log.info(f'kickme request from {whofor} on discord')
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
-            kuser = c.fetchone()
-            c.close()
-            conn.close()
+            kuser = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
             if kuser:
                 if kuser[8] != whofor:
                     log.info(f'kickme request from {whofor} denied, no account linked')
@@ -434,21 +324,11 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                         log.info(f'kickme request from {whofor} passed, kicking player on {kuser[3]}')
                         msg = f'Kicking {kuser[1].capitalize()} from the {kuser[3].capitalize()} server'
                         await client.send_message(message.channel, msg)
-                        conn = sqlite3.connect(sqldb)
-                        c = conn.cursor()
-                        c.execute('INSERT INTO kicklist (instance,steamid) VALUES (?,?)', (kuser[3], kuser[0]))
-                        conn.commit()
-                        c.close()
-                        conn.close()
+                        dbupdate('INSERT INTO kicklist (instance,steamid) VALUES (%s,%s)' % (kuser[3], kuser[0]))
         elif message.content.startswith('!home') or message.content.startswith('!myhome'):
             newsrv = message.content.split(' ')
             whofor = str(message.author).lower()
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
-            kuser = c.fetchone()
-            c.close()
-            conn.close()
+            kuser = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
             if kuser:
                 if len(newsrv) > 1:
                     log.info(f'home server change request for {kuser[1]}')
@@ -467,14 +347,8 @@ to change home servers'
         elif message.content.startswith('!winners') or message.content.startswith('!lottowinners'):
             whofor = str(message.author).lower()
             log.info(f'lotto winners request from {whofor} on discord')
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" AND winner != "None" ORDER BY id DESC LIMIT 5')
-            last5 = c.fetchall()
-            c.execute('SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5')
-            top5 = c.fetchall()
-            c.close()
-            conn.close()
+            last5 = dbquery('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" AND winner != "None" ORDER BY id DESC LIMIT 5')
+            top5 = dbquery('SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5')
             msg = 'Last 5 Lottery Winners:\n'
             now = time.time()
             try:
@@ -494,12 +368,7 @@ to change home servers'
         elif message.content.startswith('!myinfo') or message.content.startswith('!mypoints'):
             whofor = str(message.author).lower()
             log.info(f'myinfo request from {whofor} on discord')
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
-            kuser = c.fetchone()
-            c.close()
-            conn.close()
+            kuser = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
             if kuser:
                 if kuser[8] != whofor:
                     log.info(f'myinfo request from {whofor} denied, no account linked')
@@ -549,14 +418,8 @@ to change home servers'
                         log.critical('Critical Error in decay calculation!', exc_info=True)
                     await client.send_message(message.channel, msg)
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT firstseen FROM players')
-            lastseens = c.fetchall()
-            c.execute('SELECT * from players WHERE firstseen = ?', (max(lastseens,)))
-            lsplayer = c.fetchone()
-            c.close()
-            conn.close()
+            lastseens = dbquery('SELECT firstseen FROM players')
+            lsplayer = dbquery('SELECT * from players WHERE firstseen = %s' % (max(lastseens,)))
             log.info(f'responding to lastnew request on discord')
             lspago = elapsedTime(time.time(), float(lsplayer[6]))
             msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
@@ -575,12 +438,7 @@ to change home servers'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!servers'):
             whofor = str(message.author).lower()
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM instances')
-            dbsvr = c.fetchall()
-            c.close()
-            conn.close()
+            dbsvr = dbquery('SELECT * FROM instances')
             # msg = 'Galaxy Cluster Ultimate Extinction Core Servers:\n'
             for instt in dbsvr:
                 if int(instt[9]) == 0:
@@ -588,12 +446,7 @@ to change home servers'
                     pcnt = 0
                 elif int(instt[9]) == 1:
                     onl = 'ONLINE'
-                    conn = sqlite3.connect(sqldb)
-                    c = conn.cursor()
-                    c.execute('SELECT * FROM players WHERE server = ?', (instt[0],))
-                    flast = c.fetchall()
-                    c.close()
-                    conn.close()
+                    flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (instt[0],))
                     pcnt = 0
                     for row in flast:
                         chktme = time.time() - float(row[2])
@@ -606,12 +459,7 @@ to change home servers'
 
         elif message.content.startswith('!lastlotto') or message.content.startswith('!lastlottery'):
             whofor = str(message.author).lower()
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" ORDER BY id DESC')
-            linfo = c.fetchone()
-            c.close()
-            conn.close()
+            linfo = dbquery('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" ORDER BY id DESC', fetch='one')
             if linfo[1] == 'item':
                 msg = f'Last lottery was {linfo[2]} won by {linfo[7].capitalize()}. \
 {elapsedTime(time.time(),linfo[3])} ago'
@@ -627,20 +475,10 @@ to change home servers'
         elif message.content.startswith('!lotto') or message.content.startswith('!lottery'):
             whofor = str(message.author).lower()
             newname = message.content.split(' ')
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"')
-            linfo = c.fetchone()
-            c.close()
-            conn.close()
+            linfo = dbquery('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"', fetch='one')
             if len(newname) > 1:
                 if newname[1] == 'enter' or newname[1] == 'join':
-                    conn = sqlite3.connect(sqldb)
-                    c = conn.cursor()
-                    c.execute('SELECT * FROM players WHERE discordid = ?', (whofor,))
-                    lpinfo = c.fetchone()
-                    c.close()
-                    conn.close()
+                    lpinfo = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
                     if not lpinfo:
                         log.info(f'lottery join request from {whofor} denied, account not linked')
                         msg = f'Your discord account must be linked to your player account to join a lottery from \
@@ -648,12 +486,7 @@ discord.\nType !linkme in game'
                         await client.send_message(message.channel, msg)
                     else:
                         whofor = lpinfo[1]
-                        conn4 = sqlite3.connect(sqldb)
-                        c4 = conn4.cursor()
-                        c4.execute('SELECT * FROM lotteryplayers WHERE steamid = ?', (lpinfo[0],))
-                        lpcheck = c4.fetchone()
-                        c4.close()
-                        conn4.close()
+                        lpcheck = dbquery('SELECT * FROM lotteryplayers WHERE steamid = %s' % (lpinfo[0],), fetch='one')
                         if linfo[1] == 'points':
                             lfo = 'ARc Rewards Points'
                         else:
@@ -661,18 +494,12 @@ discord.\nType !linkme in game'
                         ltime = estshift(datetime.fromtimestamp(float(linfo[3]) +
                                                                 (3600 * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
                         if lpcheck is None:
-                            conn4 = sqlite3.connect(sqldb)
-                            c4 = conn4.cursor()
-                            c4.execute('')
-                            c4.execute('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES \
-                                       (?, ?, ?, ?)', (lpinfo[0], lpinfo[1], time.time(), 0))
+                            dbupdate('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES \
+                                     (%s, %s, %s, %s)' % (lpinfo[0], lpinfo[1], time.time(), 0))
                             if linfo[1] == 'points':
-                                c4.execute('UPDATE lotteryinfo SET payoutitem = ? WHERE winner = "Incomplete"',
-                                           (str(int(linfo[2]) + int(linfo[4])), ))
-                            c4.execute('UPDATE lotteryinfo SET players = ? WHERE id = ?', (int(linfo[6]) + 1, linfo[0]))
-                            conn4.commit()
-                            c4.close()
-                            conn4.close()
+                                dbupdate('UPDATE lotteryinfo SET payoutitem = "%s" WHERE winner = "Incomplete"' %
+                                         (str(int(linfo[2]) + int(linfo[4])), ))
+                            dbupdate('UPDATE lotteryinfo SET players = %s WHERE id = %s' % (int(linfo[6]) + 1, linfo[0]))
                             msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen on {ltime} \
 in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}. Good Luck!'
                             await client.send_message(message.channel, msg)
@@ -702,12 +529,7 @@ in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
 
         elif message.content.startswith('!primordial'):
             whofor = str(message.author).lower()
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * from players WHERE discordid = ?', (whofor,))
-            pplayer = c.fetchone()
-            c.close()
-            conn.close()
+            pplayer = dbquery('SELECT * from players WHERE discordid = "%s"' % (whofor,), fetch='one')
             if not pplayer:
                 msg = f'Your discord account needs to be linked to you game account first. !link in game'
                 await client.send_message(message.channel, msg)
@@ -726,12 +548,7 @@ in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
             user = message.author
             log.info(f'responding to link account request on discord from {whofor}')
             sw = message.content.split(' ')
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT * FROM players WHERE discordid == ?', (whofor,))
-            dplayer = c.fetchone()
-            c.close()
-            conn.close()
+            dplayer = dbquery('SELECT * FROM players WHERE discordid == "%s"' % (whofor,), fetch='one')
             if dplayer:
                 log.info(f'link account request on discord from {whofor} denied, already linked')
                 msg = f'Your discord account is already linked to your game account'
@@ -739,22 +556,12 @@ in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
             else:
                 if len(sw) > 1:
                     rcode = sw[1]
-                    conn = sqlite3.connect(sqldb)
-                    c = conn.cursor()
-                    c.execute('SELECT * FROM linkrequests WHERE reqcode == ?', (rcode,))
-                    reqs = c.fetchone()
-                    c.close()
-                    conn.close()
+                    reqs = dbquery('SELECT * FROM linkrequests WHERE reqcode == "%s"' % (rcode,), fetch='one')
                     if reqs:
                         log.info(f'link account request on discord from {whofor} accepted. \
 {reqs[1]} {whofor} {reqs[0]}')
-                        conn = sqlite3.connect(sqldb)
-                        c = conn.cursor()
-                        c.execute('UPDATE players SET discordid = ? WHERE steamid = ?', (whofor, reqs[0]))
-                        c.execute('DELETE FROM linkrequests WHERE reqcode = ?', (rcode,))
-                        conn.commit()
-                        c.close()
-                        conn.close()
+                        dbupdate('UPDATE players SET discordid = "%s" WHERE steamid = %s' % (whofor, reqs[0]))
+                        dbupdate('DELETE FROM linkrequests WHERE reqcode = "%s"' % (rcode,))
                         msg = f'Your discord account [{whofor}] is now linked to your player {reqs[1]}'
                         await client.send_message(message.channel, msg)
                         role = discord.utils.get(user.server.roles, name="Linked Player")
@@ -770,12 +577,7 @@ in-game to get your code'
 to link your account'
                     await client.send_message(message.channel, msg)
         elif str(message.channel) == 'server-chat':
-            conn = sqlite3.connect(sqldb)
-            c = conn.cursor()
-            c.execute('SELECT playername FROM players WHERE discordid = ?', (str(message.author).lower(),))
-            whos = c.fetchone()
-            c.close()
-            conn.close()
+            whos = dbquery('SELECT playername FROM players WHERE discordid = "%s"' % (str(message.author).lower(),), fetch='one')
             if whos:
                 writeglobal('discord', whos[0], str(message.content))
     client.loop.create_task(chatbuffer())

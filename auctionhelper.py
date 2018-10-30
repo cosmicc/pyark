@@ -1,12 +1,11 @@
-import sqlite3, json
+import json
 from urllib.request import urlopen
-from configreader import sqldb
+from dbhelper import dbupdate
 
 
 def fetchauctiondata(steamid):
     try:
-        data = urlopen(f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/\
-                       ?PlayerSteamID={steamid}").read()
+        data = urlopen(f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}").read()
         data = data.decode()[:-20].encode()
         adata = json.loads(data)
         auctions = adata['Auctions']
@@ -34,10 +33,4 @@ def getauctionstats(auctiondata):
 
 
 def writeauctionstats(steamid, numauctions, numitems, numdinos):
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('UPDATE players SET totalauctions = ?, itemauctions = ?, dinoauctions = ? WHERE steamid = ?',
-               (numauctions, numitems, numdinos, steamid))
-    conn4.commit()
-    c4.close()
-    conn4.close()
+    dbupdate('UPDATE players SET totalauctions = %s, itemauctions = %s, dinoauctions = %s WHERE steamid = %s' % (numauctions, numitems, numdinos, steamid))
