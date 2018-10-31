@@ -276,6 +276,6 @@ def onlineupdate(inst):
                                 log.debug(f'greeting already running for {nsteamid}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
-            time.sleep(20)
+            time.sleep(10)
         except:
             log.critical('Critical Error in Online Updater!', exc_info=True)
