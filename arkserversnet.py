@@ -2,6 +2,7 @@ import json, socket, logging
 from time import sleep
 from dbhelper import dbquery, dbupdate
 from urllib.request import urlopen, Request
+from timehelper import Secs
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -27,4 +28,4 @@ def arkserversnet():
     log.info(f'Starting ArkServersNet Data Puller')
     while True:
         fetcharkserverdata()
-        sleep(1800)
+        sleep(Secs['30min'])

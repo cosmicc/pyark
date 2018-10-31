@@ -114,7 +114,7 @@ def getplayersonline(inst, qtype='tuple'):
         dbdata = dbquery('SELECT playername FROM players WHERE lastseen > "%s"' % (time.time() - 40))
     else:
         dbdata = dbquery('SELECT playername FROM players WHERE lastseen > "%s" AND server == "%s"' % (time.time() - 40, inst))
-    return formatdbdata(dbdata, qtype)
+    return formatdbdata(dbdata, 'players', qtype)
 
 
 def getlastplayersonline(inst, qtype):
@@ -122,7 +122,11 @@ def getlastplayersonline(inst, qtype):
         dbdata = dbquery('SELECT playername FROM players ORDER BY lastseen LIMIT 5' % (time.time() - 40))
     else:
         dbdata = dbquery('SELECT playername FROM players ORDER BY lastseen AND server == "%s" LIMIT 5' % (time.time() - 40, inst))
-    return formatdbdata(dbdata, qtype)
+    return formatdbdata(dbdata, 'players', qtype)
+
+
+def getallinstancenames():
+    return dbquery('SELECT name FROM instances', fmt='list', single=True)
 
 
 def sendservermessage(inst, whos, msg):  # old writeglobal()
@@ -132,5 +136,6 @@ def sendservermessage(inst, whos, msg):  # old writeglobal()
 
 if __name__ == '__main__':
     # print(dbquery('SELECT playername FROM players WHERE lastseen > %s' % (time.time() - 40)))
-    print(dbquery("SELECT * FROM instances", fmt='list', single=False))
+    # print(dbquery("SELECT * FROM instances", fmt='list', single=False))
+    print(getallinstancenames())
 

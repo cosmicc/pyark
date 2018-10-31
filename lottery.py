@@ -1,34 +1,24 @@
 #!/usr/bin/python3
 
-import time, logging, sqlite3, socket
+import time, logging, socket
 from datetime import datetime
 from numpy.random import seed, shuffle, randint
 from numpy import argmax
-from configreader import sqldb
-from timehelper import estshift
+from dbhelper import dbquery, dbupdate
+from timehelper import estshift, Secs
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 
 def writediscord(msg, tstamp):
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-               ('generalchat', 'ALERT', msg, tstamp))
-    conn4.commit()
-    c4.close()
-    conn4.close()
+    dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
+             ('generalchat', 'ALERT', msg, tstamp))
 
 
 def writeglobal(inst, whos, msg):
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-              (inst, whos, msg, time.time()))
-    conn.commit()
-    c.close()
-    conn.close()
+    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
+             (inst, whos, msg, time.time()))
 
 
 def determinewinner(linfo):
@@ -37,14 +27,8 @@ def determinewinner(linfo):
     picks = []
     adjpicks = []
     wins = []
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT * FROM lotteryplayers')
-    lottoers = c4.fetchall()
-    c4.execute('SELECT * FROM lotteryinfo WHERE id = ?', (linfo[0],))
-    linfo = c4.fetchone()
-    c4.close()
-    conn4.close()
+    lottoers = dbquery('SELECT * FROM lotteryplayers')
+    linfo = dbquery('SELECT * FROM lotteryinfo WHERE id = "%s"' % (linfo[0],), fetch='one')
     if len(lottoers) >= 3:
         for eachn in lottoers:
             winners.append(eachn[0])
@@ -53,12 +37,7 @@ def determinewinner(linfo):
         seed(randint(100))
         for eachw in range(len(winners)):
             picks.append(randint(100))
-            conn4 = sqlite3.connect(sqldb)
-            c4 = conn4.cursor()
-            c4.execute('SELECT lottowins FROM players WHERE steamid = ?', (winners[eachw],))
-            lwins = c4.fetchone()
-            c4.close()
-            conn4.close()
+            lwins = dbquery('SELECT lottowins FROM players WHERE steamid = "%s"' % (winners[eachw],), fetch='one')
             wins.append(lwins[0])
             if wins[eachw] > 10:
                 adjj = 10
@@ -67,59 +46,32 @@ def determinewinner(linfo):
             adjpicks.append(picks[eachw] - adjj * 5)
         winneridx = argmax(adjpicks)
         winnersid = winners[winneridx]
-        conn4 = sqlite3.connect(sqldb)
-        c4 = conn4.cursor()
-        c4.execute('SELECT * FROM players WHERE steamid = ?', (winnersid,))
-        lwinner = c4.fetchone()
-        c4.execute('UPDATE lotteryinfo SET winner = ? WHERE id = ?', (lwinner[1], linfo[0]))
-        conn4.commit()
-        c4.close()
-        conn4.close()
+        lwinner = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (winnersid,), fetch='one')
+        dbupdate('UPDATE lotteryinfo SET winner = "%s" WHERE id = "%s"' % (lwinner[1], linfo[0]))
         log.info(f'Lottery winner is: {lwinner[1]}')
         winners.remove(winnersid)
         log.info(f'queuing up lottery deposits for {winners}')
         for ueach in winners:
-            conn4 = sqlite3.connect(sqldb)
-            c4 = conn4.cursor()
-            c4.execute('SELECT * FROM players WHERE steamid = ?', (ueach,))
-            kk = c4.fetchone()
-            c4.execute('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
-                       (?, ?, ?, ?, ?)', (kk[0], kk[1], time.time(), linfo[4], 0))
-            conn4.commit()
-            c4.close()
-            conn4.close()
+            kk = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (ueach,), fetch='one')
+            dbupdate('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
+                       ("%s", "%s", "%s", "%s", "%s")' % (kk[0], kk[1], time.time(), linfo[4], 0))
         msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!\n'
         if linfo[1] == 'points':
             msg = msg + f'{lwinner[1].capitalize()} has won {linfo[2]} ARc Reward Points'
             writediscord(msg, time.time())
             writeglobal('ALERT', 'ALERT', msg)
-            conn4 = sqlite3.connect(sqldb)
-            c4 = conn4.cursor()
-            c4.execute('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
-                       (?, ?, ?, ?, ?)', (lwinner[0], lwinner[1], time.time(), linfo[2], 1))
+            dbupdate('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
+                       ("%s", "%s", "%s", "%s", "%s")' % (lwinner[0], lwinner[1], time.time(), linfo[2], 1))
             nlw = int(lwinner[19]) + int(linfo[2])
-            c4.execute('UPDATE players SET lottowins = ?, lotterywinnings = ? WHERE steamid = ?', (int(lwinner[18]) + 1, nlw, lwinner[0]))
-            conn4.commit()
-            c4.close()
-            conn4.close()
+            dbupdate('UPDATE players SET lottowins = "%s", lotterywinnings = "%s" WHERE steamid = "%s"' % (int(lwinner[18]) + 1, nlw, lwinner[0]))
         else:
             msg = msg + f'{lwinner[1].capitalize()} has won a {linfo[2]}'
             writediscord(msg, time.time())
             writeglobal('ALERT', 'ALERT', msg)
-            conn4 = sqlite3.connect(sqldb)
-            c4 = conn4.cursor()
-            c4.execute('UPDATE players SET lottowins = ? WHERE steamid = ?', (int(lwinner[18]) + 1, lwinner[0]))
-            conn4.commit()
-            c4.close()
-            conn4.close()
+            dbupdate('UPDATE players SET lottowins = "%s" WHERE steamid = "%s"' % (int(lwinner[18]) + 1, lwinner[0]))
     else:
         log.info(f'Lottery has ended. Not enough players: {len(lottoers)}')
-        conn4 = sqlite3.connect(sqldb)
-        c4 = conn4.cursor()
-        c4.execute('UPDATE lotteryinfo SET winner = "None" WHERE winner = "Incomplete"')
-        conn4.commit()
-        c4.close()
-        conn4.close()
+        dbupdate('UPDATE lotteryinfo SET winner = "None" WHERE winner = "Incomplete"')
         msg = f'Lottery has ended. Not enough players have participated.  Requires at least 3 players.'
         writediscord(msg, time.time())
         writeglobal('ALERT', 'ALERT', msg)
@@ -132,19 +84,14 @@ def determinewinner(linfo):
 def lotteryloop(linfo):
     if linfo[8] == 0 or linfo[8] is None:
         log.debug('clearing lotteryplayers table')
-        conn4 = sqlite3.connect(sqldb)
-        c4 = conn4.cursor()
-        c4.execute('UPDATE lotteryinfo SET announced = 1 WHERE id = ?', (linfo[0],))
-        c4.execute('DELETE FROM lotteryplayers')
-        conn4.commit()
-        c4.close()
-        conn4.close()
+        dbupdate('UPDATE lotteryinfo SET announced = 1 WHERE id = "%s"' % (linfo[0],))
+        dbupdate('DELETE FROM lotteryplayers')
     inlottery = True
     log.info('lottery loop has begun, waiting for lottery entries')
     while inlottery:
-        time.sleep(60)
+        time.sleep(Secs['1min'])
         try:
-            tdy = float(linfo[3]) + (3600 * int(linfo[5]))
+            tdy = float(linfo[3]) + (Secs['hour'] * int(linfo[5]))
         # tdy = float(linfo[3])+300*int(linfo[5]) ## quick 5 min for testing
             if time.time() >= tdy:
                 determinewinner(linfo)
@@ -161,7 +108,7 @@ def startlottery(lottoinfo):
     else:
         lottotype = 'Item'
         litm = lottoinfo[2]
-    lottoend = estshift(datetime.fromtimestamp(float(lottoinfo[3]) + (3600 * int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
+    lottoend = estshift(datetime.fromtimestamp(float(lottoinfo[3]) + (Secs['hour'] * int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
     if lottoinfo[8] == 0 or lottoinfo[8] is None:
         log.info(f'A lottery has started. Type: {lottotype} Payout: {lottoinfo[2]} Buyin: {lottoinfo[4]} \
 Length: {lottoinfo[5]} Hours, Ends: {lottoend}')
@@ -174,12 +121,7 @@ Length: {lottoinfo[5]} Hours, Ends: {lottoend}')
 
 
 def checkfornewlottery():
-    conn4 = sqlite3.connect(sqldb)
-    c4 = conn4.cursor()
-    c4.execute('SELECT * FROM lotteryinfo WHERE winner == "Incomplete"')
-    lottoinfo = c4.fetchone()
-    c4.close()
-    conn4.close()
+    lottoinfo = dbquery('SELECT * FROM lotteryinfo WHERE winner == "Incomplete"', fetch='one')
     if lottoinfo:
         startlottery(lottoinfo)
 
@@ -188,6 +130,6 @@ def lotterywatcher():
     while True:
         try:
             checkfornewlottery()
-            time.sleep(60)
+            time.sleep(Secs['1min'])
         except:
             log.critical('Critical Error Lottery Watcher!', exc_info=True)

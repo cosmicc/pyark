@@ -2,7 +2,7 @@ import os, logging, subprocess, time, filecmp, threading, socket
 from datetime import datetime
 from datetime import time as dt
 from timebetween import is_time_between
-from timehelper import wcstamp
+from timehelper import wcstamp, Secs
 from configreader import sharedpath, arkroot, numinstances, instance, instr, isupdater
 from dbhelper import dbquery, dbupdate
 from pushover import pushover
@@ -12,7 +12,7 @@ log = logging.getLogger(name=hstname)
 
 confupdtimer = 0
 dwtimer = 0
-updgennotify = time.time() - 3600
+updgennotify = time.time() - Secs['hour']
 
 
 def writediscord(msg, tstamp):
@@ -95,7 +95,7 @@ def restartbit(inst):
 def checkwipe(inst):
     global dwtimer
     lastwipe = getlastwipe(inst)
-    if time.time() - float(lastwipe) > 86400:
+    if time.time() - float(lastwipe) > Secs['day']:
         if playercount(inst) == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
             writechat(inst, 'ALERT', f'### Empty server is over 24 hours since wild dino wipe. Wiping now.', wcstamp())
@@ -184,7 +184,7 @@ def restartloop(inst):
                                    '\n\n\n          The server will be restarting in %s minutes for a %s'" @%s""" %
                                    (timeleft, reason, inst), stdout=subprocess.DEVNULL,
                                    stderr=subprocess.DEVNULL, shell=True)
-                time.sleep(60)
+                time.sleep(Secs['1min'])
                 timeleft = timeleft - 1
                 updatetimer(inst, timeleft)
                 snr = stillneedsrestart(inst)
@@ -320,7 +320,7 @@ def checkupdates():
     global ugennotify
     try:
         ustate, curver, avlver = isnewarkver(instance[0]['name'])
-        if not ustate and time.time() - updgennotify > 3600:
+        if not ustate and time.time() - updgennotify > Secs['hour']:
             log.debug('ark update check found no ark updates available')
         else:
             if isupdater:
@@ -381,6 +381,6 @@ def arkupd():
             checkbackup()
             checkupdates()
             checkconfig()
-            time.sleep(300)
+            time.sleep(Secs['5min'])
         except:
             log.critical('Critical Error in Ark Updater!', exc_info=True)

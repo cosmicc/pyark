@@ -1,5 +1,6 @@
 import time, logging, subprocess, socket
 from dbhelper import dbquery, dbupdate
+from timehelper import Secs
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -78,4 +79,4 @@ def eventwatcher(inst):
                 stopserverevent(inst)
         except:
             log.critical(f'Critical error in event coordinator', exc_info=True)
-        time.sleep(60)
+        time.sleep(Secs['1min'])

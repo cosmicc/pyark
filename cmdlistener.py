@@ -1,6 +1,6 @@
 import logging, subprocess, time, threading, random, socket
 from datetime import datetime
-from timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift
+from timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift, Secs
 from configreader import instance, numinstances
 from dbhelper import dbquery, dbupdate
 
@@ -103,9 +103,9 @@ def whoisonline(inst, oinst, whoasked, filt, crnt):
         if crnt == 1:
             potime = 40
         elif crnt == 2:
-            potime = 3600
+            potime = Secs['hour']
         elif crnt == 3:
-            potime = 86400
+            potime = Secs['day']
         flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (inst,))
         pcnt = 0
         plist = ''
@@ -306,7 +306,7 @@ def voting(inst, whoasked):
         if votingpassed():
             wipeit(inst)
             arewevoting = False
-        elif time.time() - votestarttime > 300:
+        elif time.time() - votestarttime > Secs['5min']:
             if enoughvotes():
                 wipeit(inst)
                 arewevoting = False
@@ -337,14 +337,14 @@ def startvoter(inst, whoasked):
     if isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat Voting has already started. cast your vote" @%s' %
                        (inst), shell=True)
-    elif time.time() - float(getlastvote(inst)) < 14400:          # 4 hours between wipes
-        rawtimeleft = 14400 - (time.time() - float(getlastvote(inst)))
+    elif time.time() - float(getlastvote(inst)) < Secs['4hour']:          # 4 hours between wipes
+        rawtimeleft = Secs['4hour'] - (time.time() - float(getlastvote(inst)))
         timeleft = playedTime(rawtimeleft)
         subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
         log.info(f'vote start denied for {whoasked} on {inst} because 4 hour timer')
-    elif time.time() - float(lastvoter) < 600:      # 10 min between attempts
-        rawtimeleft = 600 - (time.time() - lastvoter)
+    elif time.time() - float(lastvoter) < Secs['10min']:      # 10 min between attempts
+        rawtimeleft = Secs['10min'] - (time.time() - lastvoter)
         timeleft = playedTime(rawtimeleft)
         subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
@@ -494,7 +494,7 @@ def sendlotteryinfo(linfo, lpinfo, inst):
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
     msg = f'{linfo[6]} players have entered into this lottery so far'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
-    ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (3600 * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+    ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
     msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
     amiin = dbquery('SELECT * FROM lotteryplayers WHERE steamid = "%s"' % (lpinfo[0],), fetch='one')
@@ -515,7 +515,7 @@ def lotteryquery(whoasked, lchoice, inst):
                 lfo = 'ARc Rewards Points'
             else:
                 lfo = linfo[2]
-            ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (3600 *
+            ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] *
                                                                        int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
             if lpcheck is None:
                 dbupdate('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ("%s", "%s", "%s", "%s")' %

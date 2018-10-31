@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import time, logging, subprocess, socket
 from dbhelper import dbquery, dbupdate
 
