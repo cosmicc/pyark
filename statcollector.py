@@ -32,12 +32,12 @@ def checkiftableexists(inst):
 
 def addvalue(inst, value):
     ldate = int(time())
-    dbupdate('INSERT INTO %s (date, value) VALUES (%s, %s)' % (inst, ldate, value), sdb='statsdb')
+    dbupdate('INSERT INTO %s (date, value) VALUES ("%s", "%s")' % (inst, ldate, value), sdb='statsdb')
 
 
 def flushold(tinst):
     aweek = int(time()) - 2592000
-    dbupdate('DELETE FROM %s WHERE date < %s' % (tinst, aweek), sdb='statsdb')
+    dbupdate('DELETE FROM "%s" WHERE date < "%s"' % (tinst, aweek), sdb='statsdb')
 
 
 def howmanyon(inst):

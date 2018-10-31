@@ -126,7 +126,6 @@ def main():
     if restapi_enabled == "True" or restapi_enabled == "true":
         log.info(f'Starting RestAPI Server on IP: {restapi_ip} PORT: {restapi_port}')
         try:
-            pass
             restapi = threading.Thread(name='restapi', target=app.run, kwargs={'host': restapi_ip, 'port': restapi_port})
             restapi.start()
         except:

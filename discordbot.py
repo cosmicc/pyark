@@ -425,6 +425,17 @@ to change home servers'
             lspago = elapsedTime(time.time(), float(lsplayer[6]))
             msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
             await client.send_message(message.channel, msg)
+        elif message.content.startswith('!topplayed') or message.content.startswith('!topplayed'):
+            lsplayer = dbquery('SELECT * from players ORDER BY playedtime DESC LIMIT 10')
+            log.info(f'responding to topplayed request on discord')
+            msg = ''
+            nom = 0
+            for each in lsplayer:
+                nom += 1
+                lspago = playedTime(float(each[4]))
+                msg = msg + f'#{nom} {each[1].capitalize()} at {lspago}\n'
+            await client.send_message(message.channel, msg)
+
         elif message.content.startswith('!mods'):
             whofor = str(message.author).lower()
             msg = f'Galaxy Cluster Ultimate Extinction Core Mod Collection:\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'

@@ -2,6 +2,8 @@ from datetime import timedelta, datetime
 
 tzfix = timedelta(hours=4)
 
+Seconds = {'minute': 60, 'hour': 3600, 'day': 86400, 'week': 604800, 'month': 2592000}
+
 intervals = (
     ('weeks', 604800),  # 60 * 60 * 24 * 7
     ('days', 86400),    # 60 * 60 * 24
@@ -31,14 +33,14 @@ def wcstamp():
     return a.strftime('%m-%d %I:%M%p')
 
 
-def elapsedTime(start_time, stop_time):
+def elapsedTime(start_time, stop_time, now=True):
     result = []
     seconds = float(start_time) - float(stop_time)
-    if seconds > 60 and seconds < 3600:
+    if seconds > Seconds['minute'] and seconds < Seconds['hour']:
         granularity = 1
     else:
         granularity = 2
-    if seconds > 60:
+    if seconds > Seconds['minute']:
         for name, count in intervals:
             value = seconds // count
             if value:
@@ -46,6 +48,8 @@ def elapsedTime(start_time, stop_time):
                 if value == 1:
                     name = name.rstrip('s')
                 result.append("{} {}".format(int(value), name))
+
+                
         return ', '.join(result[:granularity])
     else:
         return 'now'
@@ -55,7 +59,7 @@ def playedTime(seconds):
     result = []
     if type(seconds) != float:
         seconds = float(seconds.replace(',', ''))
-    if seconds < 3600:
+    if seconds < Seconds['hour']:
         granularity = 1
     else:
         granularity = 2

@@ -5,7 +5,50 @@ hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 
-def dbquery(query, sdb='sqldb', fetch='all'):
+def formatdbdata(data, table, qtype='tuple', sdb='sqldb', single=False):
+    if qtype == 'tuple':
+        return data
+    elif qtype == 'count':
+        pcnt = 0
+        for each in data:
+            pcnt += 1
+        return pcnt
+    elif qtype == 'string':
+        pstring = ''
+        for each in data:
+            if pstring == '':
+                if single:
+                    pstring = '%s' % (each[0])
+                else:
+                    pstring = '%s' % (each)
+            else:
+                if single:
+                    pstring = pstring + ', %s' % (each[0])
+                else:
+                    pstring = pstring + ', %s' % (each)
+        return pstring
+    elif qtype == 'list':
+        plist = []
+        for each in data:
+            if single:
+                plist.append(each[0])
+            else:
+                plist.append(each)
+        return plist
+    elif qtype == 'dict':
+        clmndata = dbquery('PRAGMA table_info("%s")' % (table,))
+        clmnn = []
+        for eclmn in clmndata:
+            clmnn.append(eclmn[1])
+        nlist = []
+        itern = 0
+        for edata in data:
+            nlist.append(dict(zip(clmnn, edata)))
+            itern += 1
+        return nlist
+
+
+def dbquery(query, sdb='sqldb', fetch='all', fmt='tuple', single=False):
     try:
         if sdb == 'sqldb':
             conn = sqlite3.connect(sqldb)
@@ -28,7 +71,14 @@ def dbquery(query, sdb='sqldb', fetch='all'):
         c.close()
         conn.close()
         if dbdata is not None:
-            return dbdata
+            if fmt == 'tuple':
+                return dbdata
+            else:
+                a = (query.split('FROM'))
+                if len(a) > 1:
+                    b = a[1].split(' ')
+                    table = b[1]
+                return formatdbdata(dbdata, table, qtype=fmt, sdb=sdb, single=single)
         else:
             return None
 
@@ -54,53 +104,33 @@ def dbupdate(query, sdb='sqldb'):
         conn.close()
 
 
-def numberliststring(qtype, data):
-    pcnt = 0
-    pstring = ''
-    plist = []
-    for each in data:
-        pcnt += 1
-        if pstring == '':
-            pstring = '%s' % (each[0].title())
-            plist.append(each[0].title())
-        else:
-            pstring = pstring + ', %s' % (each[0].title())
-            plist.append(each[0].title())
-    if qtype == 'number':
-        return pcnt
-    elif qtype == 'string':
-        return pstring
-    elif qtype == 'list':
-        return plist
+def gettablevalue(select, table, qtype='tuple'):
+    dbdata = dbquery('SELECT %s FROM "%s"' % (select, table))
+    return formatdbdata(dbdata, table, qtype)
 
 
-def getplayersonline(inst, qtype):
+def getplayersonline(inst, qtype='tuple'):
     if inst == 'all':
-        dbdata = dbquery('SELECT playername FROM players WHERE lastseen > %s' % (time.time() - 40))
+        dbdata = dbquery('SELECT playername FROM players WHERE lastseen > "%s"' % (time.time() - 40))
     else:
-        dbdata = dbquery('SELECT playername FROM players WHERE lastseen > %s AND server == "%s"' % (time.time() - 40, inst))
-    return numberliststring(qtype, dbdata)
+        dbdata = dbquery('SELECT playername FROM players WHERE lastseen > "%s" AND server == "%s"' % (time.time() - 40, inst))
+    return formatdbdata(dbdata, qtype)
 
 
-def getinstances(qtype):
-    dbdata = dbquery('SELECT name FROM instances')
-    return numberliststring(qtype, dbdata)
+def getlastplayersonline(inst, qtype):
+    if inst == 'all':
+        dbdata = dbquery('SELECT playername FROM players ORDER BY lastseen LIMIT 5' % (time.time() - 40))
+    else:
+        dbdata = dbquery('SELECT playername FROM players ORDER BY lastseen AND server == "%s" LIMIT 5' % (time.time() - 40, inst))
+    return formatdbdata(dbdata, qtype)
 
 
-def lastplayersonline(inst, qtype):
-    pass
-
-
-def sendservermessage(inst, whos, msg, ):  # old writeglobal()
-    conn = sqlite3.connect(sqldb)
-    c = conn.cursor()
-    c.execute('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES (?, ?, ?, ?)',
-              (inst, whos, msg, time.time()))
-    conn.commit()
-    c.close()
-    conn.close()
+def sendservermessage(inst, whos, msg):  # old writeglobal()
+    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
+             (inst, whos, msg, time.time()))
 
 
 if __name__ == '__main__':
     # print(dbquery('SELECT playername FROM players WHERE lastseen > %s' % (time.time() - 40)))
-    print(getinstances(qtype='list'))
+    print(dbquery("SELECT * FROM instances", fmt='list', single=False))
+
