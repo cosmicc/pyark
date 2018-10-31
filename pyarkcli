@@ -12,13 +12,16 @@ from urllib.request import urlopen, Request
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform',
-                    action='store', choices=['cluster', 'players', 'delplayer', 'startevent',
+                    action='store', choices=['cluster', 'players', 'delplayer', 'startevent', 'start', 'stop', 'restart',
                                              'linkplayer', 'startlottery', 'lottery', 'restartserver',
                                              'listtables', 'notlinked', 'newest', 'server', 'dinowipe',
                                              'logwatch', 'lotterytables', 'log', 'topplayers', 'test',
                                              'debugwatch', 'showtable', 'oldest', 'logsearch', 'banplayer', 'banlist',
                                              'unbanplayer', 'tribewipe', 'backupdb', 'shortest'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
+action_group.add_argument('start', action='store_true', help='Start the pyark daemon Systemctl')
+action_group.add_argument('stop', action='store_true', help='Stop the pyark daemon Systemctl')
+action_group.add_argument('restart', action='store_true', help='Restart the pyark daemon Systemctl')
 action_group.add_argument('cluster', action='store_true', help='Cluster information')
 action_group.add_argument('showtable', action='store_true', help='Show players table')
 action_group.add_argument('listtables', action='store_true', help='List tables in database')
@@ -257,7 +260,17 @@ def sendtoserver(tribeid):
 "DestroyTribeIdDinos {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdStructures {tribeid}" @all && \
 arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd "DestroyTribeId {tribeid}" @all"""
     command = f"""sshpass -p {sshpass} ssh {sshuser}@{sshhost} '{commands}'"""
-    subprocess.run(command, shell=True)
+    subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+
+
+def sctl(scmd):
+    if scmd == 'start':
+        command = '/bin/systemctl start pyark'
+    elif scmd == 'stop':
+        command = '/bin/systemctl stop pyark'
+    elif scmd == 'restart':
+        command = '/bin/systemctl restart pyark'
+    subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
 
 
 def printplayer(feach):
@@ -1357,6 +1370,12 @@ try:
         startlottery()
     elif args.action_to_perform == 'startevent':
         startevent()
+    elif args.action_to_perform == 'start':
+        sctl('start')
+    elif args.action_to_perform == 'stop':
+        sctl('stop')
+    elif args.action_to_perform == 'restart':
+        sctl('restart')
     elif args.action_to_perform == 'test':
         print(getallavg('monthly'))
     elif args.action_to_perform == 'log':
