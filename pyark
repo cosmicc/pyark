@@ -41,8 +41,8 @@ args = parser.parse_args()
 log.setLevel(logging.DEBUG)
 # else:
 #    log.setLevel(logging.INFO)
-console_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(name)s:%(threadName)s:%(message)s')
-log_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(name)s:%(threadName)s:%(message)s')
+console_format = logging.Formatter('%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] %(threadName)s : %(message)s', '%Y-%m-%d %H:%M:%S')
+log_format = logging.Formatter('%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] %(threadName)s : %(message)s', '%Y-%m-%d %H:%M:%S')
 
 if args.quiet is False:
     log_console = logging.StreamHandler()

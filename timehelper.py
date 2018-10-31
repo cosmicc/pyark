@@ -12,14 +12,14 @@ intervals = (
     ('seconds', 1),)
 
 
-def now(fmt='dt', est=False):
+def now(fmt='epoch', est=False):
     if fmt == 'dt':
         if est:
             return estshift(datetime.now())
         else:
             return datetime.now()
     elif fmt == 'epoch':
-        return datetime.now().timestamp()
+        return int(datetime.now().timestamp())
     elif fmt == 'string':
         if est:
             return estshift(datetime.now()).strftime('%a, %b %d %I:%M %p')
@@ -55,9 +55,8 @@ def wcstamp():
     return a.strftime('%m-%d %I:%M%p')
 
 
-def elapsedTime(start_time, stop_time, now=True):
+def elapsedTime(start_time, stop_time, nowifmin=True):
     result = []
-    print(f'start: {int(start_time)} stop: {int(stop_time)}')
     if start_time > stop_time:
         seconds = int(start_time) - int(stop_time)
     else:
@@ -82,8 +81,7 @@ def elapsedTime(start_time, stop_time, now=True):
 
 def playedTime(seconds):
     result = []
-    if type(seconds) != float:
-        seconds = float(seconds.replace(',', ''))
+    seconds = int(seconds)
     if seconds < Secs['hour']:
         granularity = 1
     else:
