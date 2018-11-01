@@ -1,5 +1,8 @@
-import logging, sqlite3, time, socket
 from configreader import sqldb, statsdb
+import logging
+import socket
+import sqlite3
+import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)

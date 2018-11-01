@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 
-import time, logging, socket
 from datetime import datetime
-from numpy.random import seed, shuffle, randint
-from numpy import argmax
 from dbhelper import dbquery, dbupdate
+from numpy import argmax
+from numpy.random import seed, shuffle, randint
 from timehelper import estshift, Secs
+import logging
+import socket
+import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)

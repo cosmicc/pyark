@@ -1,8 +1,12 @@
-import time, socket, logging, threading, subprocess
-from timehelper import elapsedTime, playedTime, wcstamp
 from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import iseventtime, getcurrenteventinfo
 from dbhelper import dbquery, dbupdate
+from timehelper import elapsedTime, playedTime, wcstamp
+import logging
+import socket
+import subprocess
+import threading
+import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)

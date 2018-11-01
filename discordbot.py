@@ -1,14 +1,16 @@
 #!/usr/bin/python3
 
-import time, logging, socket
-import discord
-import asyncio
-from datetime import datetime
-from timehelper import elapsedTime, playedTime, estshift, wcstamp, epochto
 from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
 from configreader import config
+from datetime import datetime
 from dbhelper import dbquery, dbupdate
+from timehelper import elapsedTime, playedTime, estshift, wcstamp, epochto
+import asyncio
+import discord
+import logging
+import socket
+import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)

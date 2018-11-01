@@ -1,9 +1,11 @@
-import os, time, logging, socket
-from configparser import RawConfigParser, NoSectionError
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from configparser import RawConfigParser, NoSectionError
 from configreader import po_userkey, po_appkey
-
+import logging
+import os
 import requests
+import socket
+import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)

@@ -1,14 +1,16 @@
-import time, logging, socket
+from clusterevents import getcurrenteventinfo, iseventtime
+from configreader import restapi_ip, restapi_port, apilogfile
 from datetime import datetime
-from numpy import mean
+from dbhelper import dbquery, dbupdate
 from flask import Flask, request, Blueprint
 from flask_restplus import Api, Resource, fields
 from functools import wraps
-from timehelper import estshift, elapsedTime, playedTime
-from configreader import restapi_ip, restapi_port, apilogfile
+from numpy import mean
 from secrets import token_urlsafe
-from dbhelper import dbquery, dbupdate
-from clusterevents import getcurrenteventinfo, iseventtime
+from timehelper import estshift, elapsedTime, playedTime
+import logging
+import socket
+import time
 
 hstname = socket.gethostname()
 

@@ -1,5 +1,8 @@
-import time, logging, subprocess, socket
 from dbhelper import dbquery, dbupdate
+import logging
+import socket
+import subprocess
+import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)

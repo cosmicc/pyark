@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 
-import socket, logging, subprocess
-from time import sleep
 from dbhelper import dbquery, dbupdate
+from time import sleep
+import logging
+import socket
+import subprocess
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)

@@ -1,7 +1,8 @@
-import socket, logging
-from time import time, sleep
 from dbhelper import dbupdate, getplayersonline, getallinstancenames
+from time import time, sleep
 from timehelper import Secs
+import logging
+import socket
 
 statinst = getallinstancenames()
 
