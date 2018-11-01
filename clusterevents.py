@@ -1,9 +1,8 @@
 from dbhelper import dbquery, dbupdate
-from timehelper import Secs
+from timehelper import Now, Secs
 import logging
 import socket
 import subprocess
-import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -17,7 +16,7 @@ def setmotd(inst, motd=None, cancel=False):
 
 
 def iseventtime():
-    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < "%s"' % (time.time(),))
+    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < "%s"' % (Now(),))
     if inevent:
         return True
     else:
@@ -25,12 +24,12 @@ def iseventtime():
 
 
 def getcurrenteventid():
-    inevent = dbquery('SELECT id FROM events WHERE completed == 0 AND starttime < "%s"' % (time.time(),), fetch='one')
+    inevent = dbquery('SELECT id FROM events WHERE completed == 0 AND starttime < "%s"' % (Now(),), fetch='one')
     return inevent[0]
 
 
 def getcurrenteventinfo():
-    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < "%s"' % (time.time(),), fetch='one')
+    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime < "%s"' % (Now(),), fetch='one')
     return inevent
 
 
@@ -40,7 +39,7 @@ def getlasteventinfo():
 
 
 def getnexteventinfo():
-    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime > "%s"' % (time.time(),), fetch='one')
+    inevent = dbquery('SELECT * FROM events WHERE completed == 0 AND starttime > "%s"' % (Now(),), fetch='one')
     return inevent
 
 
@@ -66,7 +65,7 @@ def stopserverevent(inst):
 def checkifeventover():
     curevent = getcurrenteventinfo()
     if curevent or curevent is not None:
-        if curevent[3] < time.time():
+        if curevent[3] < Now():
             log.info(f'Event {curevent[5]} has passed end time. Ending Event')
             dbupdate('UPDATE events SET completed = 1 WHERE id = "%s"' % (curevent[0],))
 

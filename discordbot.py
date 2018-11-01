@@ -1,16 +1,13 @@
-#!/usr/bin/python3
-
 from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
 from configreader import config
-from datetime import datetime
 from dbhelper import dbquery, dbupdate
-from timehelper import elapsedTime, playedTime, estshift, wcstamp, epochto
+from time import sleep
+from timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs
 import asyncio
 import discord
 import logging
 import socket
-import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -53,7 +50,7 @@ def writechat(inst, whos, msg, tstamp):
 
 def writeglobal(inst, whos, msg):
     dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
-             (inst, whos, msg, time.time()))
+             (inst, whos, msg, Now()))
 
 
 def islinkeduser(duser):
@@ -88,7 +85,7 @@ def discordbot():
                             await client.send_message(channel, msg)
                             await asyncio.sleep(2)
                     dbupdate('DELETE FROM chatbuffer')
-                now = float(time.time())
+                now = Now()
                 cbuffr = dbquery('SELECT * FROM players WHERE lastseen < "%s" AND lastseen > "%s"' % (now - 40, now - 45))
                 if cbuffr:
                     for reach in cbuffr:
@@ -130,7 +127,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 pcnt = 0
                 plist = ''
                 for row in flast:
-                    chktme = time.time() - float(row[2])
+                    chktme = Now() - float(row[2])
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
@@ -148,14 +145,14 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 or message.content.startswith('!lasthour'):
             # await asyncio.sleep(5)
             log.info('responding to recent players request from discord')
-            potime = 3600
+            potime = Secs['hour']
             srvrs = dbquery('SELECT * FROM instances')
             for each in srvrs:
                 flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (each[0],))
                 pcnt = 0
                 plist = ''
                 for row in flast:
-                    chktme = time.time() - float(row[2])
+                    chktme = Now() - float(row[2])
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
@@ -178,7 +175,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     msg = f'No player was found with name {seenname}'
                     await client.send_message(message.channel, msg)
                 else:
-                    plasttime = elapsedTime(time.time(), float(flast[2]))
+                    plasttime = elapsedTime(Now(), float(flast[2]))
                     if plasttime != 'now':
                         msg = f'{seenname.capitalize()} was last seen {plasttime} ago on {flast[3]}'
                         await client.send_message(message.channel, msg)
@@ -193,26 +190,26 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             lwt = message.content.split(' ')
             if len(lwt) > 1:
                 instr = lwt[1]
-                lastwipet = elapsedTime(time.time(), float(getlastwipe(instr)))
+                lastwipet = elapsedTime(Now(), float(getlastwipe(instr)))
                 msg = f'Last wild dino wipe for {instr.capitalize()} was {lastwipet} ago'
                 await client.send_message(message.channel, msg)
             else:
                 srvrs = dbquery('SELECT * FROM instances')
                 for each in srvrs:
-                    lastwipet = elapsedTime(time.time(), float(getlastwipe(each[0])))
+                    lastwipet = elapsedTime(Now(), float(getlastwipe(each[0])))
                     msg = f'Last wild dino wipe for {each[0].capitalize()} was {lastwipet} ago'
                     await client.send_message(message.channel, msg)
         elif message.content.startswith('!lastrestart'):
             lwt = message.content.split(' ')
             if len(lwt) > 1:
                 instr = lwt[1]
-                lastrestartt = elapsedTime(time.time(), float(getlastrestart(instr)))
+                lastrestartt = elapsedTime(Now(), float(getlastrestart(instr)))
                 msg = f'Last server restart for {instr.capitalize()} was {lastrestartt} ago'
                 await client.send_message(message.channel, msg)
             else:
                 srvrs = dbquery('SELECT * FROM instances')
                 for each in srvrs:
-                    lastwipet = elapsedTime(time.time(), float(getlastrestart(each[0])))
+                    lastwipet = elapsedTime(Now(), float(getlastrestart(each[0])))
                     msg = f'Last server restart for {each[0].capitalize()} was {lastwipet} ago'
                     await client.send_message(message.channel, msg)
 
@@ -233,7 +230,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 pcnt = 0
                 plist = ''
                 for row in flast:
-                    chktme = time.time() - float(row[2])
+                    chktme = Now() - float(row[2])
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
@@ -255,13 +252,13 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             nextevent = getnexteventinfo()
             msg = ''
             if lastevent and lastevent is not None:
-                msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(lastevent[3], time.time())} ago\n'
+                msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(lastevent[3], Now())} ago\n'
             if currentevent and currentevent is not None:
-                msg = msg + f'Current Event is: {currentevent[4]} - {currentevent[5]}\nCurrent Event ends {epochto(currentevent[3], 'string')} EST in {elapsedTime(currentevent[3], time.time())}\n'
+                msg = msg + f'Current Event is: {currentevent[4]} - {currentevent[5]}\nCurrent Event ends {epochto(currentevent[3], "string")} EST in {elapsedTime(currentevent[3], Now())}\n'
             else:
                 msg = msg + f'There is no Event currently running\n'
             if nextevent and nextevent is not None:
-                msg = msg + f'Next Event is: {nextevent[4]} and starts {epochto(nextevent[2], 'string')} EST in {elapsedTime(nextevent[2], time.time())}\n'
+                msg = msg + f'Next Event is: {nextevent[4]} and starts {epochto(nextevent[2], "string")} EST in {elapsedTime(nextevent[2], Now())}\n'
             else:
                 msg = msg + f'Next Event is not scheduled yet.\n'
             await client.send_message(message.channel, msg)
@@ -281,12 +278,11 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     woodtime = 1310400
                     stonetime = 1969200
                     metaldinotime = 2592000
-                    now = time.time()
                     try:
-                        etime = now - float(kuser[2])
-                        wdate = estshift(datetime.fromtimestamp(float(kuser[2]) + woodtime)).strftime('%a, %b %d %I:%M %p')
-                        sdate = estshift(datetime.fromtimestamp(float(kuser[2]) + stonetime)).strftime('%a, %b %d %I:%M %p')
-                        mdate = estshift(datetime.fromtimestamp(float(kuser[2]) + metaldinotime)).strftime('%a, %b %d %I:%M %p')
+                        etime = Now() - float(kuser[2])
+                        wdate = epochto(float(kuser[2]) + woodtime, 'string', est=True)
+                        sdate = epochto(float(kuser[2]) + stonetime, 'string', est=True)
+                        mdate = epochto(float(kuser[2]) + metaldinotime, 'string', est=True)
                         if woodtime > etime:
                             woodt = f'Your Wood Expires: {wdate} EST - {elapsedTime(woodtime, etime)} Left'
                         elif etime < 3600:
@@ -319,7 +315,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     msg = f'Your discord account is not connected to a player yet.'
                     await client.send_message(message.channel, msg)
                 else:
-                    if time.time() - float(kuser[2]) > 300:
+                    if Now() - float(kuser[2]) > 300:
                         log.info(f'kickme request from {whofor} denied, not connected to a server')
                         msg = f'You are not connected to any servers'
                         await client.send_message(message.channel, msg)
@@ -353,7 +349,7 @@ to change home servers'
             last5 = dbquery('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" AND winner != "None" ORDER BY id DESC LIMIT 5')
             top5 = dbquery('SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5')
             msg = 'Last 5 Lottery Winners:\n'
-            now = time.time()
+            now = Now()
             try:
                 for peach in last5:
                     msg = msg + f'{peach[7].capitalize()} won {peach[2]} Points  {elapsedTime(now, int(peach[5])*3600 + float(peach[3]))} ago\n'
@@ -366,7 +362,6 @@ to change home servers'
             except:
                 log.critical('Critical Error determining lottery winners!', exc_info=True)
             await client.send_message(message.channel, msg)
-
 
         elif message.content.startswith('!myinfo') or message.content.startswith('!mypoints'):
             whofor = str(message.author).lower()
@@ -383,7 +378,7 @@ to change home servers'
                     au1, au2, au3 = getauctionstats(pauctions)
                     writeauctionstats(kuser[0], au1, au2, au3)
                     ptime = playedTime(float(kuser[4]))
-                    ptr = elapsedTime(float(time.time()), float(kuser[2]))
+                    ptr = elapsedTime(Now(), float(kuser[2]))
                     msg = f'Your current ARc reward points: {kuser[5]}\nLast played on {kuser[3].capitalize()} {ptr} ago.\n'
                     msg = msg + f'Your home server is: {kuser[15].capitalize()}\nYour total play time is {ptime}\n'
                     msg = msg + f'You have {au1} current auctions: {au2} Items, {au3} Dinos\n'
@@ -392,27 +387,26 @@ to change home servers'
                     woodtime = 1296000
                     stonetime = 1987200
                     metaldinotime = 2624400
-                    now = time.time()
                     try:
-                        etime = now - float(kuser[2])
-                        wdate = estshift(datetime.fromtimestamp(float(kuser[2]) + woodtime)).strftime('%a, %b %d %I:%M %p')
-                        sdate = estshift(datetime.fromtimestamp(float(kuser[2]) + stonetime)).strftime('%a, %b %d %I:%M %p')
-                        mdate = estshift(datetime.fromtimestamp(float(kuser[2]) + metaldinotime)).strftime('%a, %b %d %I:%M %p')
+                        etime = Now() - float(kuser[2])
+                        wdate = epochto(float(kuser[2]) + woodtime, 'string', est=True)
+                        sdate = epochto(float(kuser[2]) + stonetime, 'string', est=True)
+                        mdate = epochto(float(kuser[2]) + metaldinotime, 'string', est=True)
                         if woodtime > etime:
                             woodt = f'Your Wood Structures Expire: {wdate} EST - {elapsedTime(woodtime, etime)} Left'
-                        elif etime < 3600:
+                        elif etime < Secs['hour']:
                             woodt = f'Your Wood Structures Expire: 15 Days Left'
                         else:
                             woodt = 'Your Wood Structures have passed Experation Time!'
                         if stonetime > etime:
                             stonet = f'Your Stone Structures Expire: {sdate} EST - {elapsedTime(stonetime, etime)} Left'
-                        elif etime < 3600:
+                        elif etime < Secs['hour']:
                             stonet = f'Your Stone Structures Expire: 23 Days Left'
                         else:
                             stonet = 'Your Stone Structures have passwd Experation Time!'
                         if metaldinotime > etime:
                             metalt = f'Your Metal & Dinos Expire: {mdate} EST - {elapsedTime(metaldinotime, etime)} Left'
-                        elif etime < 3600:
+                        elif etime < Secs['hour']:
                             metalt = f'Your Metal & Dinos Expire: 30 Days Left'
                         else:
                             metalt = 'Your Metal Structures & Dinos have passed Experation Time!'
@@ -424,7 +418,7 @@ to change home servers'
             lastseens = dbquery('SELECT firstseen FROM players')
             lsplayer = dbquery('SELECT * from players WHERE firstseen = "%s"' % (max(lastseens,)))
             log.info(f'responding to lastnew request on discord')
-            lspago = elapsedTime(time.time(), float(lsplayer[6]))
+            lspago = elapsedTime(Now(), float(lsplayer[6]))
             msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!topplayed') or message.content.startswith('!topplayed'):
@@ -463,28 +457,28 @@ to change home servers'
                     flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (instt[0],))
                     pcnt = 0
                     for row in flast:
-                        chktme = time.time() - float(row[2])
+                        chktme = Now() - float(row[2])
                         if chktme < 40:
                             pcnt += 1
                 msg = f'Server {instt[0].capitalize()} is {onl} Players ({pcnt}/50) - {instt[15]} \
 - {instt[16]} - {instt[17]}\n'
                 await client.send_message(message.channel, msg)
-                time.sleep(.5)
+                sleep(.5)
 
         elif message.content.startswith('!lastlotto') or message.content.startswith('!lastlottery'):
             whofor = str(message.author).lower()
             linfo = dbquery('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" ORDER BY id DESC', fetch='one')
             if linfo[1] == 'item':
                 msg = f'Last lottery was {linfo[2]} won by {linfo[7].capitalize()}. \
-{elapsedTime(time.time(),linfo[3])} ago'
+{elapsedTime(Now(),linfo[3])} ago'
                 await client.send_message(message.channel, msg)
             elif linfo[1] == 'points':
                 if linfo[7] == 'None':
                     msg = f'Last lottery was {linfo[2]} Arc reward points not won because lack of players. \
-{elapsedTime(time.time(),linfo[3])} ago'
+{elapsedTime(Now(),linfo[3])} ago'
                 else:
                     msg = f'Last lottery was {linfo[2]} Arc reward points won by {linfo[7].capitalize()}. \
-{elapsedTime(time.time(),linfo[3])} ago'
+{elapsedTime(Now(),linfo[3])} ago'
                 await client.send_message(message.channel, msg)
         elif message.content.startswith('!lotto') or message.content.startswith('!lottery'):
             whofor = str(message.author).lower()
@@ -505,22 +499,21 @@ discord.\nType !linkme in game'
                             lfo = 'ARc Rewards Points'
                         else:
                             lfo = linfo[2]
-                        ltime = estshift(datetime.fromtimestamp(float(linfo[3]) +
-                                                                (3600 * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+                        ltime = epochto(float(linfo[3]) + (Secs['hour'] * int(linfo[5])), 'string', est=True)
                         if lpcheck is None:
                             dbupdate('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES \
-                                     (%s, %s, %s, %s)' % (lpinfo[0], lpinfo[1], time.time(), 0))
+                                     (%s, %s, %s, %s)' % (lpinfo[0], lpinfo[1], Now(), 0))
                             if linfo[1] == 'points':
                                 dbupdate('UPDATE lotteryinfo SET payoutitem = "%s" WHERE winner = "Incomplete"' %
                                          (str(int(linfo[2]) + int(linfo[4])), ))
                             dbupdate('UPDATE lotteryinfo SET players = "%s" WHERE id = "%s"' % (int(linfo[6]) + 1, linfo[0]))
                             msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen on {ltime} \
-in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}. Good Luck!'
+in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}. Good Luck!'
                             await client.send_message(message.channel, msg)
                             log.info(f'player {whofor} has joined the current active lottery.')
                         else:
                             msg = f'You are already participating in this lottery for {lfo}.\nLottery ends {ltime} \
-in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
+in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
                             await client.send_message(message.channel, msg)
             else:
                 if linfo:
@@ -531,9 +524,8 @@ in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
                     await client.send_message(message.channel, msg)
                     msg = f'{linfo[6]} players have entered into this lottery so far.'
                     await client.send_message(message.channel, msg)
-                    ltime = estshift(datetime.fromtimestamp(float(linfo[3]) +
-                                                            (3600 * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
-                    msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),time.time())}'
+                    ltime = epochto(float(linfo[3]) + (Secs["hour"] * int(linfo[5])), 'string', est=True)
+                    msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(Secs["hour"] * int(linfo[5])),Now())}'
                     await client.send_message(message.channel, msg)
                     msg = f'Type !lotto enter to join the lottery'
                     await client.send_message(message.channel, msg)

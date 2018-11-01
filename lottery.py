@@ -4,10 +4,11 @@ from datetime import datetime
 from dbhelper import dbquery, dbupdate
 from numpy import argmax
 from numpy.random import seed, shuffle, randint
-from timehelper import estshift, Secs
+from time import sleep
+from timehelper import estshift, Secs, Now
 import logging
 import socket
-import time
+
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -20,7 +21,7 @@ def writediscord(msg, tstamp):
 
 def writeglobal(inst, whos, msg):
     dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
-             (inst, whos, msg, time.time()))
+             (inst, whos, msg, Now()))
 
 
 def determinewinner(linfo):
@@ -56,30 +57,30 @@ def determinewinner(linfo):
         for ueach in winners:
             kk = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (ueach,), fetch='one')
             dbupdate('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
-                       ("%s", "%s", "%s", "%s", "%s")' % (kk[0], kk[1], time.time(), linfo[4], 0))
+                       ("%s", "%s", "%s", "%s", "%s")' % (kk[0], kk[1], Now(), linfo[4], 0))
         msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!\n'
         if linfo[1] == 'points':
             msg = msg + f'{lwinner[1].capitalize()} has won {linfo[2]} ARc Reward Points'
-            writediscord(msg, time.time())
+            writediscord(msg, Now())
             writeglobal('ALERT', 'ALERT', msg)
             dbupdate('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
-                       ("%s", "%s", "%s", "%s", "%s")' % (lwinner[0], lwinner[1], time.time(), linfo[2], 1))
+                       ("%s", "%s", "%s", "%s", "%s")' % (lwinner[0], lwinner[1], Now(), linfo[2], 1))
             nlw = int(lwinner[19]) + int(linfo[2])
             dbupdate('UPDATE players SET lottowins = "%s", lotterywinnings = "%s" WHERE steamid = "%s"' % (int(lwinner[18]) + 1, nlw, lwinner[0]))
         else:
             msg = msg + f'{lwinner[1].capitalize()} has won a {linfo[2]}'
-            writediscord(msg, time.time())
+            writediscord(msg, Now())
             writeglobal('ALERT', 'ALERT', msg)
             dbupdate('UPDATE players SET lottowins = "%s" WHERE steamid = "%s"' % (int(lwinner[18]) + 1, lwinner[0]))
     else:
         log.info(f'Lottery has ended. Not enough players: {len(lottoers)}')
         dbupdate('UPDATE lotteryinfo SET winner = "None" WHERE winner = "Incomplete"')
         msg = f'Lottery has ended. Not enough players have participated.  Requires at least 3 players.'
-        writediscord(msg, time.time())
+        writediscord(msg, Now())
         writeglobal('ALERT', 'ALERT', msg)
-        time.sleep(3)
+        sleep(3)
         msg = f'No points will be withdrawn from any participants.'
-        writediscord(msg, time.time())
+        writediscord(msg, Now())
         writeglobal('ALERT', 'ALERT', msg)
 
 
@@ -91,11 +92,11 @@ def lotteryloop(linfo):
     inlottery = True
     log.info('lottery loop has begun, waiting for lottery entries')
     while inlottery:
-        time.sleep(Secs['1min'])
+        sleep(Secs['1min'])
         try:
             tdy = float(linfo[3]) + (Secs['hour'] * int(linfo[5]))
         # tdy = float(linfo[3])+300*int(linfo[5]) ## quick 5 min for testing
-            if time.time() >= tdy:
+            if Now() >= tdy:
                 determinewinner(linfo)
                 inlottery = False
         except:
@@ -117,8 +118,8 @@ Length: {lottoinfo[5]} Hours, Ends: {lottoend}')
         msg = f'A new {lottotype} lottery has started! {lottoinfo[4]} ARc Points to enter\nWinning prize: \
 {litm}, Lottery Ends: {lottoend} - Type !lotto for more info'
         writeglobal('ALERT', 'ALERT', msg)
-        writediscord(msg, time.time())
-        time.sleep(3.1)
+        writediscord(msg, Now())
+        sleep(3.1)
     lotteryloop(lottoinfo)
 
 
@@ -132,6 +133,6 @@ def lotterywatcher():
     while True:
         try:
             checkfornewlottery()
-            time.sleep(Secs['1min'])
+            sleep(Secs['1min'])
         except:
             log.critical('Critical Error Lottery Watcher!', exc_info=True)

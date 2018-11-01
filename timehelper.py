@@ -22,7 +22,7 @@ def datetimeto(dt, fmt, est=False):
             return dt.strftime('%a, %b %d %I:%M %p')
 
 
-def now(fmt='epoch', est=False):
+def Now(fmt='epoch', est=False):
     if fmt == 'dt':
         if est:
             return estshift(datetime.now())

@@ -4,9 +4,10 @@ from colorizer import RST, WHT, BWHT, BYEL, BRED, BGRN, BLU, ORG, BCYN, SKN, BMG
     MAU, MGT, PUR, LREV, BGN
 from configreader import config, sqldb, statsdb, sharedpath
 from datetime import datetime
+from dbhelper import dbquery, dbupdate
 from numpy import mean
 from sys import exit
-from timehelper import elapsedTime, estshift, gmtshift, playedTime, wcstamp, dt2epoch
+from timehelper import elapsedTime, estshift, gmtshift, playedTime, wcstamp, datetimeto, Now, Secs
 from urllib.request import urlopen, Request
 import argparse
 import json
@@ -109,15 +110,15 @@ def f2dec(num):
 
 def getallavg(length):
     if length == 'daily':
-        ilength = 86400
+        ilength = Secs['day']
     elif length == 'weekly':
-        ilength = 604800
+        ilength = Secs['weel']
     elif length == 'monthly':
-        ilength = 2592000
+        ilength = Secs['month']
     elif length == 'hourly':
-        ilength = 3600
+        ilength = Secs['hour']
     elif length == 'eighthour':
-        ilength = 28800
+        ilength = Secs['8hour']
     avglist = []
     ntime = int(time.time())
     for each in statinst:
@@ -175,7 +176,6 @@ def getallhighest(length):
             datelist = dlist
     nt = datetime.fromtimestamp(datelist[avglist.index(max(avglist))])
     return max(avglist), estshift(nt).strftime('%a %b %-d %-I:%M %p')
-
 
 
 def getaverage(inst, length):
@@ -474,10 +474,6 @@ def playersraw():
 def showservers():
     global tclr
     global trclr
-    c.execute('SELECT cfgver from general')
-    gencfgver = c.fetchone()
-    #print(f'{BYEL}CURRENT CONFIG VERSION: {BCYN}{gencfgver[0]}{RST}')
-    #print('    ')
     c.execute('SELECT * from instances')
     allservers = c.fetchall()
     for each in allservers:
@@ -535,7 +531,7 @@ def showservers():
     print(f'{WHT}Cluster Players online now: {moo}{jo} {WHT}Trends: Last Hour {uoo}{y1} {WHT}Last 8 Hour {uoo2}{y2} {WHT}Last Day {uoo3}{y3}{RST}')
     print('    ')
     print(f'{WHT}Last Hour Avg: {BCYN}{f2dec(getallavg("hourly"))} {WHT}High: {BMGT}{ahv} {WHT}players at {BYEL}{ahd}{RST}')
-    print(f'{WHT}Last 8 Hour Avg: {BCYN}{f2dec(getallavg("eighthour"))} {WHT}High: {BMGT}{aev} {WHT}players at {BYEL}{aed}{RST}') 
+    print(f'{WHT}Last 8 Hour Avg: {BCYN}{f2dec(getallavg("eighthour"))} {WHT}High: {BMGT}{aev} {WHT}players at {BYEL}{aed}{RST}')
     print(f'{WHT}Last 24 Hour Avg: {BCYN}{f2dec(getallavg("daily"))} {WHT}High: {BMGT}{adv} {WHT}players at {BYEL}{add}{RST}')
     print(f'{WHT}Last Week Avg: {BCYN}{f2dec(getallavg("weekly"))} {WHT}High: {BMGT}{awv} {WHT}players at {BYEL}{awd}{RST}')
     print(f'{WHT}Last Month Avg: {BCYN}{f2dec(getallavg("monthly"))} {WHT}High: {BMGT}{amv} {WHT}players at {BYEL}{amd}{RST}')
@@ -1163,7 +1159,7 @@ def startevent():
     except:
         print(f'\nCould not determine date from input. Exiting\n')
         exit()
-    if dt2epoch(estopdt) < time.time():
+    if datetimeto(estopdt, 'epoch') < time.time():
         print(f'\nEnd Time cannot be before current time. Exiting\n')
         exit()
     print(f'{BGRN}New Event:{RST}')
@@ -1172,12 +1168,12 @@ def startevent():
     print(f'{BYEL}Event Description: {BCYN}{edesc}{RST}')
     print(f'{BYEL}Config Suffix: {BCYN}{esuffix}  {BMGT}(ex. Game-{esuffix}.ini){RST}')
     print('    ')
-    if dt2epoch(estartdt) < time.time():
-        print(f'{BYEL}Event Started: {BCYN}{estshift(estartdt)}  {BMGT}{elapsedTime(time.time(),dt2epoch(estartdt))} ago{RST}')
+    if datetimeto(estartdt, 'epoch') < Now():
+        print(f'{BYEL}Event Started: {BCYN}{estshift(estartdt)}  {BMGT}{elapsedTime(Now(),datetimeto(estartdt, "epoch"))} ago{RST}')
     else:
-        print(f'{BYEL}Event Starts: {BCYN}{estshift(estartdt)}  {BMGT}in {elapsedTime(dt2epoch(estartdt),time.time())}{RST}')
-    print(f'{BYEL}Event Ends: {BCYN}{estshift(estopdt)}  {BMGT}in {elapsedTime(dt2epoch(estopdt),time.time())}{RST}')
-    print(f'{BYEL}Event Length: {BCYN}{elapsedTime(dt2epoch(estopdt), dt2epoch(estartdt))}{RST}')
+        print(f'{BYEL}Event Starts: {BCYN}{estshift(estartdt)}  {BMGT}in {elapsedTime(datetimeto(estartdt, "epoch"),Now())}{RST}')
+    print(f'{BYEL}Event Ends: {BCYN}{estshift(estopdt)}  {BMGT}in {elapsedTime(datetimeto(estopdt, "epoch"),Now())}{RST}')
+    print(f'{BYEL}Event Length: {BCYN}{elapsedTime(datetimeto(estopdt, "epoch"), datetimeto(estartdt, "epoch"))}{RST}')
     ags = getresponce('Start this event now? (y/n)')
     print(ags)
     if ags != 'y':
@@ -1186,7 +1182,7 @@ def startevent():
     conn = sqlite3.connect(sqldb)
     c = conn.cursor()
     c.execute('INSERT INTO events (completed,starttime,endtime,title,description,cfgfilesuffix) VALUES \
-              (?,?,?,?,?,?)', (0, dt2epoch(estartdt), dt2epoch(estopdt), etitle, edesc, esuffix))
+              (?,?,?,?,?,?)', (0, datetime(estartdt, 'epoch'), datetime(estopdt, 'epoch'), etitle, edesc, esuffix))
     conn.commit()
     c.close()
     conn.close()

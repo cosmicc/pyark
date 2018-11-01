@@ -1,6 +1,6 @@
-import json
-from urllib.request import urlopen
 from dbhelper import dbupdate
+from urllib.request import urlopen
+import json
 
 
 def fetchauctiondata(steamid):
