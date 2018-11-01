@@ -12,6 +12,16 @@ intervals = (
     ('seconds', 1),)
 
 
+def datetimeto(dt, fmt, est=False):
+    if fmt == 'epoch':
+        return int(dt.timestamp())
+    elif fmt == 'string':
+        if est:
+            return estshift(dt).strftime('%a, %b %d %I:%M %p')
+        else:
+            return dt.strftime('%a, %b %d %I:%M %p')
+
+
 def now(fmt='epoch', est=False):
     if fmt == 'dt':
         if est:
@@ -22,13 +32,22 @@ def now(fmt='epoch', est=False):
         return int(datetime.now().timestamp())
     elif fmt == 'string':
         if est:
-            return estshift(datetime.now()).strftime('%a, %b %d %I:%M %p')
+            return datetimeto(datetime.now(), 'string', est=True)
         else:
-            return datetime.now().strftime('%a, %b %d %I:%M %p')
+            return datetimeto(datetime.now(), 'string')
 
 
-def dt2epoch(dt):
-    return float(dt.timestamp())
+def epochto(epoch, fmt, est=False):
+    if fmt == 'dt':
+        if est:
+            estshift(datetime.fromtimestamp(int(epoch)))
+        else:
+            datetime.fromtimestamp(int(epoch))
+    elif fmt == 'string':
+        if est:
+            datetimeto(datetime.fromtimestamp(int(epoch)), 'string', est=True)
+        else:
+            datetimeto(datetime.fromtimestamp(int(epoch)), 'string')
 
 
 def estshift(otime):
@@ -37,17 +56,6 @@ def estshift(otime):
 
 def gmtshift(otime):
     return otime + tzfix
-
-
-def dt2string(dt, est=False):
-    if est:
-        return estshift(dt).strftime('%a, %b %d %I:%M %p')
-    else:
-        return dt.strftime('%a, %b %d %I:%M %p')
-
-
-def epoch2string(epoch):
-    return dt2string(datetime.fromtimestamp(float(epoch)))
 
 
 def wcstamp():

@@ -266,10 +266,13 @@ arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd 
 def sctl(scmd):
     if scmd == 'start':
         command = '/bin/systemctl start pyark'
+        print('Starting PyArk Daemon')
     elif scmd == 'stop':
         command = '/bin/systemctl stop pyark'
+        print('Stopping PyArk Daemon')
     elif scmd == 'restart':
         command = '/bin/systemctl restart pyark'
+        print('Restarting PyArk Daemon')
     subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
 
 
@@ -1383,6 +1386,8 @@ try:
             print('You must specify number of log lines to show with -j option.')
         else:
             pyarklogs()
+    else:
+        subprocess.run('/home/ark/pyark/pyarkcli -h', shell=True)
     print('       ')
     c.close()
     conn.close()
