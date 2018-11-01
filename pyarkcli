@@ -112,7 +112,7 @@ def getallavg(length):
     if length == 'daily':
         ilength = Secs['day']
     elif length == 'weekly':
-        ilength = Secs['weel']
+        ilength = Secs['week']
     elif length == 'monthly':
         ilength = Secs['month']
     elif length == 'hourly':

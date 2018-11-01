@@ -81,7 +81,7 @@ def elapsedTime(start_time, stop_time, nowifmin=True):
             if value == 1:
                 name = name.rstrip('s')
             result.append("{} {}".format(int(value), name))
-    if tseconds < 60 and now:
+    if tseconds < 60 and nowifmin:
         return 'now'
     else:
         return ', '.join(result[:granularity])
