@@ -1,8 +1,10 @@
-import json, socket, logging
-from time import sleep
 from dbhelper import dbquery, dbupdate
-from urllib.request import urlopen, Request
+from time import sleep
 from timehelper import Secs
+from urllib.request import urlopen, Request
+import json
+import logging
+import socket
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)

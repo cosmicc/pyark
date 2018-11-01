@@ -1,22 +1,26 @@
 #!/usr/bin/python3
 
-import logging, argparse, time, threading, socket
-from sys import exit
 # from git import Repo
-from arkupdater import arkupd
-from cmdlistener import clisten
-from onlinemonitor import onlineupdate
-from discordbot import discordbot
-from statcollector import oscollect
-from kicker import kicker
-from configreader import logfile, instance, numinstances, imthedbot, restapi_enabled, restapi_ip, restapi_port
-from gchatrelay import gchatrelay
-from restapi import app
 from arkserversnet import arkserversnet
+from arkupdater import arkupd
 from clusterevents import eventwatcher
+from cmdlistener import clisten
+from configreader import logfile, instance, numinstances, imthedbot, restapi_enabled, restapi_ip, restapi_port
 from dbhelper import dbquery, dbupdate
+from discordbot import discordbot
+from gchatrelay import gchatrelay
+from kicker import kicker
+from onlinemonitor import onlineupdate
+from restapi import app
+from statcollector import oscollect
+from sys import exit
+import argparse
+import logging
 import lottery
 import processlock
+import socket
+import threading
+import time
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"

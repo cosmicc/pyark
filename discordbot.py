@@ -4,7 +4,7 @@ import time, logging, socket
 import discord
 import asyncio
 from datetime import datetime
-from timehelper import elapsedTime, playedTime, estshift, wcstamp, epoch2string
+from timehelper import elapsedTime, playedTime, estshift, wcstamp, epochto
 from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
 from configreader import config
@@ -255,11 +255,11 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             if lastevent and lastevent is not None:
                 msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(lastevent[3], time.time())} ago\n'
             if currentevent and currentevent is not None:
-                msg = msg + f'Current Event is: {currentevent[4]} - {currentevent[5]}\nCurrent Event ends {epoch2string(currentevent[3])} EST in {elapsedTime(currentevent[3], time.time())}\n'
+                msg = msg + f'Current Event is: {currentevent[4]} - {currentevent[5]}\nCurrent Event ends {epochto(currentevent[3], 'string')} EST in {elapsedTime(currentevent[3], time.time())}\n'
             else:
                 msg = msg + f'There is no Event currently running\n'
             if nextevent and nextevent is not None:
-                msg = msg + f'Next Event is: {nextevent[4]} and starts {epoch2string(nextevent[2])} EST in {elapsedTime(nextevent[2], time.time())}\n'
+                msg = msg + f'Next Event is: {nextevent[4]} and starts {epochto(nextevent[2], 'string')} EST in {elapsedTime(nextevent[2], time.time())}\n'
             else:
                 msg = msg + f'Next Event is not scheduled yet.\n'
             await client.send_message(message.channel, msg)

@@ -1,11 +1,17 @@
-import os, logging, subprocess, time, filecmp, threading, socket
+from configreader import sharedpath, arkroot, numinstances, instance, instr, isupdater
 from datetime import datetime
 from datetime import time as dt
-from timebetween import is_time_between
-from timehelper import wcstamp, Secs
-from configreader import sharedpath, arkroot, numinstances, instance, instr, isupdater
 from dbhelper import dbquery, dbupdate
 from pushover import pushover
+from timebetween import is_time_between
+from timehelper import wcstamp, Secs
+import filecmp
+import logging
+import os
+import socket
+import subprocess
+import threading
+import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)

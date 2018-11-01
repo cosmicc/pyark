@@ -1,8 +1,13 @@
-import logging, subprocess, time, threading, random, socket
-from datetime import datetime
-from timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift, Secs
 from configreader import instance, numinstances
+from datetime import datetime
 from dbhelper import dbquery, dbupdate
+from timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift, Secs
+import logging
+import random
+import socket
+import subprocess
+import threading
+import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
