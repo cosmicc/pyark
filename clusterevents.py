@@ -1,4 +1,5 @@
 from dbhelper import dbquery, dbupdate
+from time import sleep
 from timehelper import Now, Secs
 import logging
 import socket
@@ -81,4 +82,4 @@ def eventwatcher(inst):
                 stopserverevent(inst)
         except:
             log.critical(f'Critical error in event coordinator', exc_info=True)
-        time.sleep(Secs['1min'])
+        sleep(Secs['1min'])
