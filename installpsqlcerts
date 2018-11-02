@@ -1,0 +1,4 @@
+cp /home/ark/shared/CA/rootCA.crt ~/.postgresql/root.crt
+cp /home/ark/shared/CA/client/client.crt ~/.postgresql/postgresql.crt
+cp /home/ark/shared/CA/client/client.key ~/.postgresql/postgresql.key
+chmod 600 ~/.postgresql/postgresql.key
