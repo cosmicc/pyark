@@ -1,0 +1,15 @@
+CREATE TABLE instances(name VARCHAR NOT NONE PRIMARY KEY, lastrestart VARCHAR, lastdinowipe VARCHAR, needsrestart VARCHAR, lastvote VARCHAR, restartreason VARCHAR, cfgver VARCHAR, restartcountdown SMALLINT, arkserverkey VARCHAR, isup SMALLINT, islistening SMALLINT, isrunning SMALLINT, uptimestamp VARCHAR, actmem VARCHAR, totmem VARCHAR, steamlink VARCHAR, arkserverslink VARCHAR, battlemetricslink VARCHAR, arkversion VARCHAR, uptime SMALLINT, rank SMALLINT, score SMALLINT, votes SMALLINT, hostname VARCHAR, inevent SMALLINT);
+CREATE TABLE players(steamid CHAR(18) PRIMARY KEY, playername VARCHAR, lastseen REAL, server VARCHAR, playedtime REAL, rewardpoints INT, firstseen REAL, connects SMALLINT, discordid VARCHAR, banned VARCHAR, totalauctions SMALLINT, itemauctions SMALLINT, dinoauctions SMALLINT, restartbit SMALLINT, primordialbit SMALLINT, homeserver VARCHAR, transferpoints SMALLINT, lastpointtimestamp VARCHAR, lottowins SMALLINT, lotterywinnings SMALLINT, email VARCHAR, password VARCHAR, apikey VARCHAR);
+CREATE TABLE discordnames (discordname VARCHAR);
+CREATE TABLE kicklist (instance VARCHAR, steamid CHAR(18));
+CREATE TABLE linkrequests (steamid CHAR, name VARCHAR, reqcode VARCHAR(4));
+CREATE TABLE chatbuffer (server VARCHAR, name VARCHAR, message VARCHAR, timestamp VARCHAR);
+CREATE TABLE banlist (steamid CHAR(18));
+#CREATE TABLE auctions (steamid CHAR(18), date VARCHAR, type VARCHAR, name VARCHAR, sellingclass VARCHAR, quantity VARCHAR, askingclass VARCHAR, askingamount VARCHAR, tamedname VARCHAR, baselevel INTEGER, extrlevel INTEGER, level INTEGER, gender VARCHAR, quality INTEGER, rating REAL, armor REAL, durability REAL, damage REAL, blueprint VARCHAR);
+CREATE TABLE globalbuffer (id SERIAL, server VARCHAR, name VARCHAR, message VARCHAR, timestamp VARCHAR);
+CREATE TABLE sqlite_sequence(name,seq);
+CREATE TABLE lotteryinfo (id SERIAL PRIMARY KEY, type VARCHAR, payoutitem VARCHAR, timestamp VARCHAR, buyinpoints SMALLINT, lengthdays SMALLINT, players SMALLINT, winner VARCHAR, announced SMALLINT);
+CREATE TABLE lotteryplayers (steamid CHAR(18), playername VARCHAR, timestamp VARCHAR, paid SMALLINT);
+CREATE TABLE lotterydeposits (steamid CHAR(18), playername VARCHAR, timestamp VARCHAR, points SMALLINT, givetake SMALLINT);
+CREATE TABLE general (cfgver VARCHAR, announce VARCHAR);
+CREATE TABLE events (id SERIAL PRIMARY KEY, completed SMALLINT, starttime REAL, endtime REAL, title VARCHAR, description VARCHAR, cfgfilesuffix VARCHAR);
