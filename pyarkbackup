@@ -1,7 +1,7 @@
-echo '.dump' | /usr/bin/sqlite3 /home/ark/shared/db/pyark.db > /usr/bin/sqlite3 /home/ark/shared/db/daily.dump
 rsync -arq /home/ark/shared/ark-backups /mnt/backup/ark_backup/
 rsync -arq /home/ark/ARK/ShooterGame/Saved/clusters /mnt/backup/ark_backup/
 rsync -arq /home/ark/shared/config /mnt/backup/ark_backup/
 rsync -arq /home/ark/shared/db /mnt/backup/ark_backup/
 rsync -arq /home/ark/shared/logs /mnt/backup/ark_backup/
 rsync -arq /etc/arkmanager /mnt/backup/ark_backup/
+find /home/ark/shared/ark-backups/* -type d -ctime +30 | xargs rm -rf

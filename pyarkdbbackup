@@ -1,0 +1,7 @@
+#!/bin/bash
+
+nowtime=`date '+%Y-%m-%d-%H-%M'`;
+pg_dumpall -c | gzip > /home/ark/shared/db/full_$nowtime.gz
+pg_dump -Fc pyark > /home/ark/shared/db/pyark_$nowtime.bak;
+pg_dump -Fc pyarkstats > /home/ark/shared/db/pyarkstats_$nowtime.bak;
+find /home/ark/shared/db/* -type f -ctime +30 | xargs rm -rf
