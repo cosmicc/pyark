@@ -24,8 +24,8 @@ sqldb = config.get('general', 'pyarkdb')
 pshost = config.get('postgresql', 'host')
 psport = config.get('postgresql', 'port')
 pspw = config.get('postgresql', 'password')
-psql_pyark = f"dbname='pyark', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
-psql_stats = f"dbname='pyarkstats', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
+psql_pyark = """dbname=pyark, user=pyark, password=SchVS#An8d86T!Mg, host=%s, port=%s""" % (pshost, psport)
+psql_stats = "dbname='pyarkstats', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
 statsdb = config.get('general', 'statsdb')
 
 numinstances = int(config.get('general', 'instances'))
