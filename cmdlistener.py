@@ -429,8 +429,8 @@ new player to cluster.')
                       firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
-                     (steamid, playername, timestamp, inst, playtime, rewardpoints, timestamp, 1, '', '', 0, 0, 0, 0,
-                      0, inst, 0, timestamp, 0))
+                     (steamid, playername, Now(), inst, int(playtime), rewardpoints, Now(), 1, '', '', 0, 0, 0, 0,
+                      0, inst, 0, Now(), 0))
     elif steamid != '':
         if inst == pexist[15]:
             log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating.')
