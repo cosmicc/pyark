@@ -1,12 +1,12 @@
 from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import iseventtime, getcurrenteventinfo
 from dbhelper import dbquery, dbupdate
-from timehelper import elapsedTime, playedTime, wcstamp
+from timehelper import elapsedTime, playedTime, wcstamp, Now
 import logging
 import socket
 import subprocess
 import threading
-import time
+from time import sleep
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -33,18 +33,18 @@ def writechat(inst, whos, msg, tstamp):
 def welcomenewplayer(steamid, inst):
         global welcomthreads
         log.info(f'welcome message thread started for new player {steamid} on {inst}')
-        time.sleep(5)
+        sleep(3)
         mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(3)
+        sleep(3)
         mtxt = 'ARc rewards points earned as you play. Public teleporters, crafting area, and auction house. Build \
 or find a rewards vault, free starter items.'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(3)
+        sleep(3)
         mtxt = 'You get all your items back when you die automatically, The engram menu is laggy, sorry. Admins and \
 help in discord. Press F1 at anytime for help. Have Fun!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        time.sleep(3)
+        sleep(3)
         mtxt = 'Everyone welcome a new player to the cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
         log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
@@ -115,10 +115,8 @@ def playergreet(steamid, inst):
     xferpoints = 0
     global welcomthreads
     oplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
-    timestamp = time.time()
     poplayer = dbquery("SELECT * FROM players WHERE steamid = '%s' AND banned != ''" % (steamid,), fetch='one')
     bplayer = dbquery("SELECT * FROM banlist WHERE steamid = '%s'" % (steamid,), fetch='one')
-    timestamp = time.time()
     if poplayer:
         if not bplayer:
             log.error(f'banned player out of sync issue {steamid} on instance {inst}. not in banlist')
@@ -138,8 +136,8 @@ kicking and banning.')
                        firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                        primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
                        ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
-                     (steamid, 'newplayer', timestamp, inst, '1', 50, timestamp, 1, '', '', 0, 0, 0,
-                      0, 0, inst, 0, timestamp, 0))
+                     (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0,
+                      0, 0, inst, 0, Now(), 0))
             if not iswelcoming(steamid):
                 welcom = threading.Thread(name='welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid, inst))
                 welcomthreads.append({'steamid': steamid, 'sthread': welcom})
@@ -155,7 +153,8 @@ kicking and banning.')
                     dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                     subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                    (steamid, xferpoints, inst), shell=True)
-            if float(oplayer[2]) + 300 > float(time.time()):
+            log.warning(f'{float(oplayer[2])} - {Now()}')
+            if int(oplayer[2]) + 300 > Now():
                 if oplayer[3] != inst:
                     gogo = 1
                     mtxt = f'{oplayer[1].capitalize()} has transferred here from {oplayer[3].capitalize()}'
@@ -164,14 +163,14 @@ kicking and banning.')
 {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
                     log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
                 log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
-                dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (timestamp, inst, steamid))
+                dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
             else:
                 log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. \
 updating info.")
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s' WHERE steamid = '%s'" %
-                         (timestamp, inst, int(oplayer[7]) + 1, steamid))
-                laston = elapsedTime(float(time.time()), float(oplayer[2]))
-                totplay = playedTime(float(oplayer[4]))
+                         (Now(), inst, int(oplayer[7]) + 1, steamid))
+                laston = elapsedTime(Now(), int(oplayer[2]))
+                totplay = playedTime(int(oplayer[4]))
                 try:
                     log.debug(f'fetching steamid {steamid} auctions from auction api website')
                     pauctions = fetchauctiondata(steamid)
@@ -181,18 +180,18 @@ updating info.")
                 except:
                     strauctions = ', 0 Auctions'
                     log.error(f'error in parsing auction data')
-                time.sleep(3)
+                sleep(3)
                 newpoints = int(oplayer[5]) + xferpoints
                 mtxt = f'Welcome back {oplayer[1]}, you have {newpoints} ARc reward points on \
 {oplayer[15].capitalize()}{strauctions}, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-                time.sleep(1)
+                sleep(1)
                 flast = dbquery("SELECT * FROM players WHERE server = '%s' AND steamid != '%s'" % (inst, steamid))
                 pcnt = 0
                 plist = ''
                 potime = 40
                 for row in flast:
-                    chktme = time.time() - float(row[2])
+                    chktme = Now() - int(row[2])
                     if chktme < potime:
                         pcnt += 1
                         if plist == '':
@@ -204,43 +203,43 @@ updating info.")
                 else:
                     msg = f'There are no other players are online on this server.'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
-                time.sleep(2)
+                sleep(2)
                 if int(oplayer[14]) == 1 and int(oplayer[13]) == 1 and oplayer[3] == inst:
                     mtxt = f'WARNING: Server has restarted since you logged in, vivarium your primordials!'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (steamid, mtxt, inst), shell=True)
                     resetplayerbit(steamid)
                 if oplayer[8] == '':
-                    time.sleep(5)
+                    sleep(5)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (steamid, mtxt, inst), shell=True)
                 if not isinlottery(steamid):
-                    time.sleep(3)
+                    sleep(3)
                     mtxt = f'A lottery you have not entered yet is underway. Type !lotto for more information'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (steamid, mtxt, inst), shell=True)
 
             if xferpoints != 0:
-                    time.sleep(2)
+                    sleep(2)
                     mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (steamid, mtxt, inst), shell=True)
             checklottodeposits(steamid, inst)
-            if float(oplayer[2]) + 60 < float(time.time()) and gogo == 0:
+            if int(oplayer[2]) + 60 < Now() and gogo == 0:
                 mtxt = f'{oplayer[1].capitalize()} has joined the server'
                 subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                 writechat(inst, 'ALERT', f'<<< {oplayer[1].capitalize()} has joined the server', wcstamp())
                 serverisinrestart(steamid, inst, oplayer)
                 if iseventtime():
                     eventinfo = getcurrenteventinfo()
-                    time.sleep(2)
+                    sleep(2)
                     mtxt = f'{eventinfo[4]} event is currently active!'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (steamid, mtxt, inst), shell=True)
                 annc = dbquery("SELECT announce FROM general", fetch='one')
                 if annc and annc[0] is not None:
-                    time.sleep(2)
+                    sleep(2)
                     mtxt = annc[0]
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (steamid, mtxt, inst), shell=True)
@@ -280,6 +279,6 @@ def onlineupdate(inst):
                                 log.debug(f'greeting already running for {nsteamid}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
-            time.sleep(10)
+            sleep(10)
         except:
             log.critical('Critical Error in Online Updater!', exc_info=True)

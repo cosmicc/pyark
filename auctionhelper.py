@@ -33,4 +33,4 @@ def getauctionstats(auctiondata):
 
 
 def writeauctionstats(steamid, numauctions, numitems, numdinos):
-    dbupdate('UPDATE players SET totalauctions = "%s", itemauctions = "%s", dinoauctions = "%s" WHERE steamid = "%s"' % (numauctions, numitems, numdinos, steamid))
+    dbupdate("UPDATE players SET totalauctions = '%s', itemauctions = '%s', dinoauctions = '%s' WHERE steamid = '%s'" % (numauctions, numitems, numdinos, steamid))
