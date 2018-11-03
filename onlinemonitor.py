@@ -129,7 +129,7 @@ kicking and banning.')
         subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (steamid, inst), shell=True)
         subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
-        log.debug(f'player {steamid} passed ban checks')
+        # log.debug(f'player {steamid} passed ban checks')
         if not oplayer:
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
