@@ -435,7 +435,7 @@ new player to cluster.')
         if inst == pexist[15]:
             log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating.')
             dbupdate("UPDATE players SET playername = '%s', playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
-                     (playername, playtime, rewardpoints, steamid))
+                     (playername, int(playtime), rewardpoints, steamid))
         else:
             log.debug(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
             if int(pexist[16]) != int(rewardpoints):
