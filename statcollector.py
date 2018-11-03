@@ -9,22 +9,22 @@ log = logging.getLogger(name=hstname)
 
 
 def checkiftableexists(inst):
-    dbupdate("CREATE TABLE IF NOT EXISTS '%s' (date INT, value SMALLINT)" % (inst,), sdb='statsdb')
+    dbupdate("CREATE TABLE IF NOT EXISTS %s (date INT, value SMALLINT)" % (inst,), sdb='statsdb')
 
 
 def addvalue(inst, value):
     ldate = int(time())
-    dbupdate("INSERT INTO '%s' (date, value) VALUES ('%s', '%s')" % (inst, ldate, value), sdb='statsdb')
+    dbupdate("INSERT INTO %s (date, value) VALUES ('%s', '%s')" % (inst, ldate, value), sdb='statsdb')
 
 
 def flushold(tinst):  # not implimented
     aweek = int(time()) - Secs['week']
-    dbupdate("DELETE FROM '%s' WHERE date < '%s'" % (tinst, aweek), sdb='statsdb')
+    dbupdate("DELETE FROM %s WHERE date < '%s'" % (tinst, aweek), sdb='statsdb')
 
 
 def oscollect():
-    log.debug(f'starting online stats collector for instances {statinst}')
-    for each in db_getvalue('name', 'instance')
+    log.debug(f'starting online stats collectors')
+    for each in db_getvalue('name', 'instance'):
         checkiftableexists(each)
     while True:
         try:
