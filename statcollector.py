@@ -1,4 +1,4 @@
-from dbhelper import dbupdate, getplayersonline, db_getvalue
+from dbhelper import dbupdate, dbquery, getplayersonline
 from time import time, sleep
 from timehelper import Secs
 import logging
@@ -24,11 +24,12 @@ def flushold(tinst):  # not implimented
 
 def oscollect():
     log.debug(f'starting online stats collectors')
-    for each in db_getvalue('name', 'instances'):
+    stinst = dbquery('SELECT name FROM instances')
+    for each in stinst:
         checkiftableexists(each)
     while True:
         try:
-            for each in statinst:
+            for each in stinst:
                 addvalue(each, getplayersonline(each, qtype='count'))
         except:
             log.critical('Critical Error in Online Stat Collector!', exc_info=True)
