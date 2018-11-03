@@ -153,7 +153,6 @@ kicking and banning.')
                     dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                     subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                    (steamid, xferpoints, inst), shell=True)
-            log.warning(f'{float(oplayer[2])} - {Now()}')
             if int(oplayer[2]) + 300 > Now():
                 if oplayer[3] != inst:
                     gogo = 1

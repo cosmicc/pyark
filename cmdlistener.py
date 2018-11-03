@@ -382,7 +382,7 @@ def isserver(line):
 
 
 def linker(minst, whoasked):
-    dplayer = dbquery('SELECT * FROM players WHERE playername == "%s"' % (whoasked,), fetch='one')
+    dplayer = dbquery("SELECT * FROM players WHERE playername == '%s'" % (whoasked,), fetch='one')
     if dplayer:
         if dplayer[8] is None or dplayer[8] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
@@ -402,7 +402,7 @@ def linker(minst, whoasked):
 
 
 def writechatlog(inst, whos, msg, tstamp):
-    isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos, ), fetch='one')
+    isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos, ), fetch='one')
     if isindb:
         clog = f'{tstamp} [{whos.upper()}]{msg}\n'
         with open(f"/home/ark/shared/logs/{inst}/chatlog/chat.log", "at") as f:
@@ -502,7 +502,7 @@ def sendlotteryinfo(linfo, lpinfo, inst):
     ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
     msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
-    amiin = dbquery('SELECT * FROM lotteryplayers WHERE steamid = "%s"' % (lpinfo[0],), fetch='one')
+    amiin = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
     if amiin:
         msg = f'You are enterted into this lottery. Good Luck!'
     else:
