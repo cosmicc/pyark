@@ -21,10 +21,13 @@ logfile = config.get('general', 'logfile')
 apilogfile = config.get('restapi', 'logfile')
 
 sqldb = config.get('general', 'pyarkdb')
-pshost = config.get('postgresql', 'host')
-psport = config.get('postgresql', 'port')
-pspw = config.get('postgresql', 'password')
-psql_pyark = """dbname=pyark, user=pyark, password=SchVS#An8d86T!Mg, host=%s, port=%s""" % (pshost, psport)
+psql_host = config.get('postgresql', 'host')
+psql_port = config.get('postgresql', 'port')
+psql_user = config.get('postgresql', 'user')
+psql_pw = config.get('postgresql', 'password')
+psql_db = config.get('postgresql', 'db')
+psql_statsdb = config.get('postgresql', 'statsdb')
+
 psql_stats = "dbname='pyarkstats', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
 statsdb = config.get('general', 'statsdb')
 

@@ -1,9 +1,10 @@
-from configreader import sqldb, statsdb
+from configreader import sqldb, statsdb, psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 import logging
 import socket
 import sqlite3
 from sys import exit
 from timehelper import Now
+import psycopg2
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -55,9 +56,9 @@ def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False):
 def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
     try:
         if db == 'sqldb':
-            conn = sqlite3.connect(sqldb)
+            conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         elif db == 'statsdb':
-            conn = sqlite3.connect(statsdb)
+            conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         c = conn.cursor()
         c.execute(query)
     except:
@@ -90,9 +91,9 @@ def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
 def dbupdate(query, db='sqldb'):
     try:
         if db == 'sqldb':
-            conn = sqlite3.connect(sqldb)
+            conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         elif db == 'statsdb':
-            conn = sqlite3.connect(statsdb)
+            conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         c = conn.cursor()
     except:
         log.error(f'Error in database init: {db} - {query}')
