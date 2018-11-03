@@ -418,8 +418,8 @@ def processtcdata(inst, tcdata):
     timestamp = Now()
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
-    playtime = tcdata['TotalPlayed'].replace(',', '')
-    rewardpoints = tcdata['Points'].replace(',', '')
+    playtime = int(tcdata['TotalPlayed'].replace(',', ''))
+    rewardpoints = int(tcdata['Points'].replace(',', ''))
     pexist = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid, ), fetch='one')
     if not pexist:
         if steamid != '':
@@ -435,7 +435,7 @@ new player to cluster.')
         if inst == pexist[15]:
             log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating.')
             dbupdate("UPDATE players SET playername = '%s', playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
-                     (playername, int(playtime), rewardpoints, steamid))
+                     (playername, playtime, rewardpoints, steamid))
         else:
             log.debug(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
             if int(pexist[16]) != int(rewardpoints):
