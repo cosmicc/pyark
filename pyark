@@ -145,7 +145,7 @@ def main():
             else:
                 checkgit += 1
             time.sleep(60)
-            for each in range(numinstances):
+            # for each in range(numinstances):
                 # log.debug(f'{instance[each]["name"]} {list(instance[each].keys())}')
             if not arkupdt.is_alive():
                 t = 'ark updater'
