@@ -23,7 +23,7 @@ def writechat(inst, whos, msg, tstamp):
     if whos != 'ALERT':
         isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
         if isindb:
-            dbupdate("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', %s, '%s')""" % (inst, whos, msg, tstamp))
+            dbupdate("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')""" % (inst, whos, msg.replace("'", ""), tstamp))
 
     elif whos == "ALERT":
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
