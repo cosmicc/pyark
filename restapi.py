@@ -78,7 +78,7 @@ def getallavg(length, statsinst):
     for each in statsinst:
         slist = []
         navglist = []
-        nlist = dbquery("SELECT value FROM '%s' WHERE date > '%s'" % (each, ntime - ilength), sdb='statsdb')
+        nlist = dbquery("SELECT value FROM %s WHERE date > '%s'" % (each, ntime - ilength), db='statsdb')
         for y in nlist:
             slist.append(y[0])
         if avglist == []:
@@ -185,7 +185,7 @@ def getallhighest(length, statsinst):
         navglist = []
         dlist = []
         datelist = []
-        nlist = dbquery("SELECT value, date FROM '%s' WHERE date > '%s'" % (each, ntime - ilength), sdb='statsdb')
+        nlist = dbquery("SELECT value, date FROM %s WHERE date > '%s'" % (each, ntime - ilength), db='statsdb')
         for y, x in nlist:
             slist.append(y)
             dlist.append(x)
@@ -253,7 +253,7 @@ class lotteryplayers(fields.Raw):
 
 class whenlastplayer(fields.Raw):
     def format(self, value):
-        linfo = dbquery("SELECT date FROM '%s' WHERE value != 0 ORDER BY date DESC LIMIT 1" % (value,), sdb='statsdb')
+        linfo = dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1" % (value,), db='statsdb')
         return elapsedTime(time.time(), int(linfo[0]))
 
 
@@ -266,7 +266,7 @@ class svrinevent(fields.Raw):
 
 
 def whenlastplayersvr(inst):
-    linfo = dbquery("SELECT date FROM '%s' WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), sdb='statsdb', fetch='one')
+    linfo = dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), db='statsdb', fetch='one')
     return elapsedTime(time.time(), int(linfo[0]))
 
 
@@ -274,7 +274,7 @@ def whenlastplayerall():
     instances = dbquery("SELECT name from instances")
     a = 0
     for each in instances:
-        lastone = dbquery("SELECT date FROM '%s' WHERE value != 0 ORDER BY date DESC" % (each[0],), sdb='statsdb', fetch='one')
+        lastone = dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC" % (each[0],), db='statsdb', fetch='one')
         if a == 0:
             lastdate = lastone[0]
         else:

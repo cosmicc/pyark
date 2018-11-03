@@ -415,10 +415,9 @@ def writeglobal(inst, whos, msg):
 
 
 def processtcdata(inst, tcdata):
-    timestamp = Now()
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
-    playtime = int(tcdata['TotalPlayed'].replace(',', ''))
+    playtime = int(float(tcdata['TotalPlayed'].replace(',', '')))
     rewardpoints = int(tcdata['Points'].replace(',', ''))
     pexist = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid, ), fetch='one')
     if not pexist:
