@@ -124,7 +124,7 @@ Length: {lottoinfo[5]} Hours, Ends: {lottoend}')
 
 
 def checkfornewlottery():
-    lottoinfo = dbquery("SELECT * FROM lotteryinfo WHERE winner == 'Incomplete'", fetch='one')
+    lottoinfo = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
     if lottoinfo:
         startlottery(lottoinfo)
 

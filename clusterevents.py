@@ -17,7 +17,7 @@ def setmotd(inst, motd=None, cancel=False):
 
 
 def iseventtime():
-    inevent = dbquery("SELECT * FROM events WHERE completed == 0 AND starttime < '%s'" % (Now(),))
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(),))
     if inevent:
         return True
     else:
@@ -25,27 +25,27 @@ def iseventtime():
 
 
 def getcurrenteventid():
-    inevent = dbquery("SELECT id FROM events WHERE completed == 0 AND starttime < '%s'" % (Now(),), fetch='one')
+    inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(),), fetch='one')
     return inevent[0]
 
 
 def getcurrenteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed == 0 AND starttime < '%s'" % (Now(),), fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(),), fetch='one')
     return inevent
 
 
 def getlasteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed == 1 ORDER BY id DESC LIMIT 1", fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY id DESC LIMIT 1", fetch='one')
     return inevent
 
 
 def getnexteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed == 0 AND starttime > '%s'" % (Now(),), fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s'" % (Now(),), fetch='one')
     return inevent
 
 
 def currentserverevent(inst):
-    inevent = dbquery("SELECT inevent FROM instances WHERE name == '%s'" % (inst,), fetch='one')
+    inevent = dbquery("SELECT inevent FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     return inevent[0]
 
 

@@ -24,7 +24,7 @@ def flushold(tinst):  # not implimented
 
 def oscollect():
     log.debug(f'starting online stats collectors')
-    for each in db_getvalue('name', 'instance'):
+    for each in db_getvalue('name', 'instances'):
         checkiftableexists(each)
     while True:
         try:
