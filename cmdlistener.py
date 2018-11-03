@@ -21,16 +21,16 @@ arewevoting = False
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,), fetch='one')
+        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
         if isindb:
-            dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' % (inst, whos, msg, tstamp))
+            dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
     elif whos == "ALERT":
-        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' % (inst, whos, msg, tstamp))
+        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
 def getsteamid(whoasked):
-    sid = dbquery('SELECT steamid FROM players WHERE playername = "%s"' % (whoasked,), fetch='one')
+    sid = dbquery("SELECT steamid FROM players WHERE playername = '%s'" % (whoasked,), fetch='one')
     if sid is None:
         log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
         return 0
@@ -39,7 +39,7 @@ def getsteamid(whoasked):
 
 
 def resptimeleft(inst, whoasked):
-    dbtl = dbquery('SELECT restartcountdown, needsrestart FROM instances WHERE name = "%s"' % (inst, ), fetch='one')
+    dbtl = dbquery("SELECT restartcountdown, needsrestart FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
     if dbtl[1] == 'True':
         subprocess.run('arkmanager rconcmd "ServerChat Server is restarting in %s minutes" @%s' %
                        (dbtl[0], inst), shell=True)
@@ -48,17 +48,17 @@ def resptimeleft(inst, whoasked):
 
 
 def getlastrestart(inst):
-    lastwipe = dbquery('SELECT lastrestart FROM instances WHERE name = "%s"' % (inst, ))
+    lastwipe = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst, ))
     return ''.join(lastwipe[0])
 
 
 def getlastwipe(inst):
-    lastwipe = dbquery('SELECT lastdinowipe FROM instances WHERE name = "%s"' % (inst, ))
+    lastwipe = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst, ))
     return ''.join(lastwipe[0])
 
 
 def getlastseen(seenname):
-    flast = dbquery('SELECT * FROM players WHERE playername = "%s"' % (seenname, ), fetch='one')
+    flast = dbquery("SELECT * FROM players WHERE playername = '%s'" % (seenname, ), fetch='one')
     if not flast:
         return 'no player found with that name'
     else:
@@ -70,14 +70,14 @@ def getlastseen(seenname):
 
 
 def respmyinfo(inst, whoasked):
-    pinfo = dbquery('SELECT * FROM players WHERE playername = "%s"' % (whoasked,))
+    pinfo = dbquery("SELECT * FROM players WHERE playername = '%s'" % (whoasked,))
     ptime = playedTime(float(pinfo[4]))
     mtxt = f"Your current reward points: {pinfo[5]}.\nYour total play time is {ptime}\nYour home server is {pinfo[15].capitalize()}"
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 
 def gettimeplayed(seenname):
-    flast = dbquery('SELECT * FROM players WHERE playername = "%s"' % (seenname,), fetch='one')
+    flast = dbquery("SELECT * FROM players WHERE playername = '%s'" % (seenname,), fetch='one')
     if not flast:
         return 'No player found'
     else:
@@ -87,7 +87,7 @@ def gettimeplayed(seenname):
 
 def getserverlist():
     newlist = []
-    flast = dbquery('SELECT name FROM instances')
+    flast = dbquery("SELECT name FROM instances")
     for each in flast:
         newlist.append(each[0])
     return newlist
@@ -111,7 +111,7 @@ def whoisonline(inst, oinst, whoasked, filt, crnt):
             potime = Secs['hour']
         elif crnt == 3:
             potime = Secs['day']
-        flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (inst,))
+        flast = dbquery("SELECT * FROM players WHERE server = '%s'" % (inst,))
         pcnt = 0
         plist = ''
         for row in flast:
@@ -142,7 +142,7 @@ def whoisonline(inst, oinst, whoasked, filt, crnt):
 
 
 def getlastvote(inst):
-    flast = dbquery('SELECT lastdinowipe FROM instances WHERE name = "%s"' % (inst,), fetch='one')
+    flast = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     return ''.join(flast[0])
 
 
@@ -160,7 +160,7 @@ def populatevoters(inst):
     global votertable
     votertable = []
     pcnt = 0
-    pdata = dbquery('SELECT * FROM players WHERE server = "%s"' % (inst,))
+    pdata = dbquery("SELECT * FROM players WHERE server = '%s'" % (inst,))
     for row in pdata:
         chktme = Now() - float(row[2])
         if chktme < 90:
@@ -190,7 +190,7 @@ def castedvote(inst, whoasked, myvote):
     if not isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat No vote is taking place now" @%s' % (inst), shell=True)
     else:
-        pdata = dbquery('SELECT * FROM players WHERE playername = "%s"' % (whoasked,))
+        pdata = dbquery("SELECT * FROM players WHERE playername = '%s'" % (whoasked,))
         if getvote(whoasked) == 99:
             mtxt = 'Sorry, you are not eligible to vote in this round'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
@@ -258,12 +258,12 @@ def enoughvotes():
 
 def resetlastvote(inst):
     newtime = Now()
-    dbupdate('UPDATE instances SET lastvote = "%s" WHERE name = "%s"' % (newtime, inst))
+    dbupdate("UPDATE instances SET lastvote = '%s' WHERE name = '%s'" % (newtime, inst))
 
 
 def resetlastwipe(inst):
     newtime = Now()
-    dbupdate('UPDATE instances SET lastdinowipe = "%s" WHERE name = "%s"' % (newtime, inst))
+    dbupdate("UPDATE instances SET lastdinowipe = '%s' WHERE name = '%s'" % (newtime, inst))
 
 
 def howmanyvotes():
@@ -387,8 +387,8 @@ def linker(minst, whoasked):
         if dplayer[8] is None or dplayer[8] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
             log.info(f'generated code {rcode} for link request from {dplayer[1]} on {minst}')
-            dbupdate('DELETE from linkrequests WHERE steamid = "%s"' % (dplayer[0],))
-            dbupdate('INSERT INTO linkrequests (steamid, name, reqcode) VALUES ("%s", "%s", "%s")' % (dplayer[0], dplayer[1], str(rcode)))
+            dbupdate("DELETE from linkrequests WHERE steamid = '%s'" % (dplayer[0],))
+            dbupdate("INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('%s', '%s', '%s')" % (dplayer[0], dplayer[1], str(rcode)))
             msg = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0], msg, minst), shell=True)
         else:
@@ -411,7 +411,7 @@ def writechatlog(inst, whos, msg, tstamp):
 
 
 def writeglobal(inst, whos, msg):
-    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' % (inst, whos, msg, Now()))
+    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, Now()))
 
 
 def processtcdata(inst, tcdata):
@@ -420,21 +420,21 @@ def processtcdata(inst, tcdata):
     playername = tcdata['PlayerName'].lower()
     playtime = tcdata['TotalPlayed'].replace(',', '')
     rewardpoints = tcdata['Points'].replace(',', '')
-    pexist = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (steamid, ), fetch='one')
+    pexist = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid, ), fetch='one')
     if not pexist:
         if steamid != '':
             log.info(f'player {playername} with steamid {steamid} was not found on {inst}. adding \
 new player to cluster.')
-            dbupdate('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
+            dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                       firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
-                      ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' %
+                      ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
                      (steamid, playername, timestamp, inst, playtime, rewardpoints, timestamp, 1, '', '', 0, 0, 0, 0,
                       0, inst, 0, timestamp, 0))
     elif steamid != '':
         if inst == pexist[15]:
             log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating.')
-            dbupdate('UPDATE players SET playername = "%s", playedtime = "%s", rewardpoints = "%s" WHERE steamid = "%s"' %
+            dbupdate("UPDATE players SET playername = '%s', playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
                      (playername, playtime, rewardpoints, steamid))
         else:
             log.debug(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
@@ -443,7 +443,7 @@ new player to cluster.')
                     if Now() - float(pexist[17]) > 60:
                         log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for \
 {playername} on {inst}')
-                        dbupdate('UPDATE players SET transferpoints = "%s", lastpointtimestamp = "%s" WHERE steamid = "%s"' %
+                        dbupdate("UPDATE players SET transferpoints = '%s', lastpointtimestamp = '%s' WHERE steamid = '%s'" %
                                  (int(rewardpoints) + int(pexist[16]), str(Now()), str(steamid)))
                         subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
                                        (steamid, inst), shell=True)
@@ -458,7 +458,7 @@ new player to cluster.')
 
 def homeserver(inst, whoasked, ext):
     steamid = getsteamid(whoasked)
-    pinfo = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (steamid,), fetch='one')
+    pinfo = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     if ext != '':
         tservers = ['ragnarok', 'island', 'volcano']
         if ext in tservers:
@@ -468,7 +468,7 @@ def homeserver(inst, whoasked, ext):
 with {pinfo[5]} points')
                     subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
                                    (steamid, inst), shell=True)
-                    dbupdate('UPDATE players SET transferpoints = "%s", homeserver = "%s" WHERE steamid = "%s"' %
+                    dbupdate("UPDATE players SET transferpoints = '%s', homeserver = '%s' WHERE steamid = '%s'" %
                              (pinfo[5], ext, steamid))
                     msg = f'Your {pinfo[5]} points have been transferred to your new home server: {ext.capitalize()}'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
@@ -511,11 +511,11 @@ def sendlotteryinfo(linfo, lpinfo, inst):
 
 
 def lotteryquery(whoasked, lchoice, inst):
-    linfo = dbquery('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"', fetch='one')
-    lpinfo = dbquery('SELECT * FROM players WHERE playername = "%s"' % (whoasked,), fetch='one')
+    linfo = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
+    lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s'" % (whoasked,), fetch='one')
     if linfo:
         if lchoice == 'join' or lchoice == 'enter':
-            lpcheck = dbquery('SELECT * FROM lotteryplayers WHERE steamid = "%s"' % (lpinfo[0],), fetch='one')
+            lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
             if linfo[1] == 'points':
                 lfo = 'ARc Rewards Points'
             else:
@@ -523,12 +523,12 @@ def lotteryquery(whoasked, lchoice, inst):
             ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] *
                                                                        int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
             if lpcheck is None:
-                dbupdate('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ("%s", "%s", "%s", "%s")' %
+                dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('%s', '%s', '%s', '%s')" %
                          (lpinfo[0], lpinfo[1], Now(), 0))
                 if linfo[1] == 'points':
-                    dbupdate('UPDATE lotteryinfo SET payoutitem = "%s" WHERE winner = "Incomplete"' %
+                    dbupdate("UPDATE lotteryinfo SET payoutitem = '%s' WHERE winner = 'Incomplete'" %
                              (str(int(linfo[2]) + int(linfo[4])), ))
-                dbupdate('UPDATE lotteryinfo SET players = "%s" WHERE id = "%s"' % (int(linfo[6]) + 1, linfo[0]))
+                dbupdate("UPDATE lotteryinfo SET players = '%s' WHERE id = '%s'" % (int(linfo[6]) + 1, linfo[0]))
                 msg = f'You have been added to the {lfo} lottery! A winner will be choosen on {ltime} in \
 {elapsedTime(float(linfo[3])+(86400*int(linfo[5])),Now())}. Good Luck!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)

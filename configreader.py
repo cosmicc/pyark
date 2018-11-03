@@ -21,6 +21,11 @@ logfile = config.get('general', 'logfile')
 apilogfile = config.get('restapi', 'logfile')
 
 sqldb = config.get('general', 'pyarkdb')
+pshost = config.get('postgresql', 'host')
+psport = config.get('postgresql', 'port')
+pspw = config.get('postgresql', 'password')
+psql_pyark = f"dbname='pyark', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
+psql_stats = f"dbname='pyarkstats', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
 statsdb = config.get('general', 'statsdb')
 
 numinstances = int(config.get('general', 'instances'))

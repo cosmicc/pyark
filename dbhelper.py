@@ -2,13 +2,14 @@ from configreader import sqldb, statsdb
 import logging
 import socket
 import sqlite3
-import time
+from sys import exit
+from timehelper import Now
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 
-def formatdbdata(data, table, qtype='tuple', sdb='sqldb', single=False):
+def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False):
     if qtype == 'tuple':
         return data
     elif qtype == 'count':
@@ -51,16 +52,16 @@ def formatdbdata(data, table, qtype='tuple', sdb='sqldb', single=False):
         return nlist
 
 
-def dbquery(query, sdb='sqldb', fetch='all', fmt='tuple', single=False):
+def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
     try:
-        if sdb == 'sqldb':
+        if db == 'sqldb':
             conn = sqlite3.connect(sqldb)
-        elif sdb == 'statsdb':
+        elif db == 'statsdb':
             conn = sqlite3.connect(statsdb)
         c = conn.cursor()
         c.execute(query)
     except:
-        log.error(f'Error in database init: {sdb} - {query} - {fetch}')
+        log.error(f'Error in database init: {db} - {query} - {fetch}')
         c.close()
         conn.close()
     else:
@@ -70,7 +71,7 @@ def dbquery(query, sdb='sqldb', fetch='all', fmt='tuple', single=False):
             elif fetch == 'one':
                 dbdata = c.fetchone()
         except:
-            log.error(f'Error in {sdb} database query {query}')
+            log.error(f'Error in {db} database query {query}')
         c.close()
         conn.close()
         if dbdata is not None:
@@ -81,20 +82,20 @@ def dbquery(query, sdb='sqldb', fetch='all', fmt='tuple', single=False):
                 if len(a) > 1:
                     b = a[1].split(' ')
                     table = b[1]
-                return formatdbdata(dbdata, table, qtype=fmt, sdb=sdb, single=single)
+                return formatdbdata(dbdata, table, qtype=fmt, db=db, single=single)
         else:
             return None
 
 
-def dbupdate(query, sdb='sqldb'):
+def dbupdate(query, db='sqldb'):
     try:
-        if sdb == 'sqldb':
+        if db == 'sqldb':
             conn = sqlite3.connect(sqldb)
-        elif sdb == 'statsdb':
+        elif db == 'statsdb':
             conn = sqlite3.connect(statsdb)
         c = conn.cursor()
     except:
-        log.error(f'Error in database init: {sdb} - {query}')
+        log.error(f'Error in database init: {db} - {query}')
         c.close()
         conn.close()
     else:
@@ -107,38 +108,46 @@ def dbupdate(query, sdb='sqldb'):
         conn.close()
 
 
-def gettablevalue(select, table, qtype='tuple'):
-    dbdata = dbquery('SELECT %s FROM "%s"' % (select, table))
-    return formatdbdata(dbdata, table, qtype)
+def db_getcolumns(table, fmt='tuple'):
+    dbdata = dbquery("SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' and table_name = '%s'" % (table,))
+    return formatdbdata(dbdata, table, qtype=fmt)
 
 
-def getplayersonline(inst, qtype='tuple'):
+def db_gettables(db, fmt='tuple'):
+    dbdata = dbquery("SELECT table_schema || '.' || table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema')")
+    return formatdbdata(dbdata, qtype=fmt)
+
+
+def db_getall(table, fmt='tuple', fetch='all'):
+    dbdata = dbquery("SELECT * FROM '%s'" % (table,), fetch=fetch)
+    return formatdbdata(dbdata, table, qtype=fmt)
+
+
+def db_getvalue(select, table, fmt='tuple', fetch='one'):
+    dbdata = dbquery("SELECT %s FROM '%s'" % (select, table), fetch=fetch)
+    return formatdbdata(dbdata, table, qtype=fmt, single=True)
+
+
+def getplayersonline(inst, fmt='tuple'):
     if inst == 'all':
-        dbdata = dbquery('SELECT playername FROM players WHERE lastseen > "%s"' % (time.time() - 40))
+        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s'" % (Now() - 40))
     else:
-        dbdata = dbquery('SELECT playername FROM players WHERE lastseen > "%s" AND server == "%s"' % (time.time() - 40, inst))
-    return formatdbdata(dbdata, 'players', qtype)
+        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' AND server == '%s'" % (Now() - 40, inst))
+    return formatdbdata(dbdata, 'players', qtype=fmt)
 
 
-def getlastplayersonline(inst, qtype):
+def getlastplayersonline(inst, fmt='tuple', last=5):
     if inst == 'all':
-        dbdata = dbquery('SELECT playername FROM players ORDER BY lastseen LIMIT 5' % (time.time() - 40))
+        dbdata = dbquery("SELECT playername FROM players ORDER BY lastseen LIMIT '%s'" % (last,))
     else:
-        dbdata = dbquery('SELECT playername FROM players ORDER BY lastseen AND server == "%s" LIMIT 5' % (time.time() - 40, inst))
-    return formatdbdata(dbdata, 'players', qtype)
-
-
-def getallinstancenames():
-    return dbquery('SELECT name FROM instances', fmt='list', single=True)
+        dbdata = dbquery("SELECT playername FROM players ORDER BY lastseen AND server == '%s' LIMIT '%s'" % (inst, last))
+    return formatdbdata(dbdata, 'players', qtype=fmt)
 
 
 def sendservermessage(inst, whos, msg):  # old writeglobal()
-    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
-             (inst, whos, msg, time.time()))
+    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
+             (inst, whos, msg, Now()))
 
 
 if __name__ == '__main__':
-    # print(dbquery('SELECT playername FROM players WHERE lastseen > %s' % (time.time() - 40)))
-    # print(dbquery("SELECT * FROM instances", fmt='list', single=False))
-    print(getallinstancenames())
-
+    exit()

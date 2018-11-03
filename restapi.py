@@ -78,7 +78,7 @@ def getallavg(length, statsinst):
     for each in statsinst:
         slist = []
         navglist = []
-        nlist = dbquery('SELECT value FROM %s WHERE date > %s' % (each, ntime - ilength), sdb='statsdb')
+        nlist = dbquery("SELECT value FROM '%s' WHERE date > '%s'" % (each, ntime - ilength), sdb='statsdb')
         for y in nlist:
             slist.append(y[0])
         if avglist == []:
@@ -91,7 +91,7 @@ def getallavg(length, statsinst):
 
 def howmanyonline():
     pcnt = 0
-    allplayers = dbquery('SELECT * from players')
+    allplayers = dbquery("SELECT * from players")
     oplayers = []
     for row in allplayers:
         diff_time = float(time.time()) - float(row[2])
@@ -107,7 +107,7 @@ def howmanyonline():
 
 def howmanyonlinesvr(inst):
     pcnt = 0
-    allplayers = dbquery('SELECT * from players WHERE server = "%s"' % (inst,))
+    allplayers = dbquery("SELECT * from players WHERE server = '%s'" % (inst,))
     oplayers = []
     for row in allplayers:
         diff_time = float(time.time()) - float(row[2])
@@ -128,7 +128,7 @@ def newplayers(when):
         utime = 604800
     elif when == 'monthly':
         utime = 2592000
-    nplayers = dbquery('SELECT playername from players WHERE firstseen > %s ORDER BY firstseen DESC' % (time.time() - utime,))
+    nplayers = dbquery("SELECT playername from players WHERE firstseen > '%s' ORDER BY firstseen DESC" % (time.time() - utime,))
     return len(nplayers)
 
 
@@ -146,7 +146,7 @@ class playerson(fields.Raw):
     def format(self, value):
         def howmanyon(inst):
             pcnt = 0
-            allplayers = dbquery('SELECT * from players')
+            allplayers = dbquery("SELECT * from players")
             for row in allplayers:
                 diff_time = float(time.time()) - float(row[2])
                 total_min = diff_time / 60
@@ -160,7 +160,7 @@ class playerson(fields.Raw):
 
 
 def serverstatus(inst):
-    nlist = dbquery('SELECT isup FROM instances WHERE name = "%s"' % (inst,), fetch='one')
+    nlist = dbquery("SELECT isup FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     if nlist[0] == 1:
         return 'Online'
     elif nlist[0] == 0:
@@ -185,7 +185,7 @@ def getallhighest(length, statsinst):
         navglist = []
         dlist = []
         datelist = []
-        nlist = dbquery('SELECT value, date FROM %s WHERE date > %s' % (each, ntime - ilength), sdb='statsdb')
+        nlist = dbquery("SELECT value, date FROM '%s' WHERE date > '%s'" % (each, ntime - ilength), sdb='statsdb')
         for y, x in nlist:
             slist.append(y)
             dlist.append(x)
@@ -202,7 +202,7 @@ def getallhighest(length, statsinst):
 
 class getinstances(fields.Raw):
     def format(self, value):
-        instr = dbquery('SELECT name from instances')
+        instr = dbquery("SELECT name from instances")
         return instr
 
 
@@ -218,7 +218,7 @@ class int2bool(fields.Raw):
 
 class lotteryends(fields.Raw):
     def format(self, value):
-        linfo = dbquery('SELECT timestamp, lengthdays from lotteryinfo WHERE id = %s' % (value,))
+        linfo = dbquery("SELECT timestamp, lengthdays from lotteryinfo WHERE id = '%s'" % (value,))
         endtime = float(linfo[0]) + (3600 * linfo[1])
         if endtime > time.time():
             return f'in {elapsedTime(endtime, time.time())}'
@@ -227,7 +227,7 @@ class lotteryends(fields.Raw):
 
 
 def isinlottery():
-    linfo = dbquery('SELECT * from lotteryinfo WHERE winner = "Incomplete"')
+    linfo = dbquery("SELECT * from lotteryinfo WHERE winner = 'Incomplete'")
     if linfo:
         return True
     else:
@@ -236,7 +236,7 @@ def isinlottery():
 
 class lotteryendtime(fields.Raw):
     def format(self, value):
-        linfo = dbquery('SELECT timestamp, lengthdays from lotteryinfo WHERE id = %s' % (value,))
+        linfo = dbquery("SELECT timestamp, lengthdays from lotteryinfo WHERE id = '%s'" % (value,))
         endtime = float(linfo[0]) + (3600 * linfo[1])
         endtime = datetime.fromtimestamp(endtime)
         return estshift(endtime).strftime('%a %b %-d %-I:%M %p')
@@ -244,7 +244,7 @@ class lotteryendtime(fields.Raw):
 
 class lotteryplayers(fields.Raw):
     def format(self, value):
-        linfo = dbquery('SELECT playername from lotteryplayers')
+        linfo = dbquery("SELECT playername from lotteryplayers")
         nlinfo = []
         for each in linfo:
             nlinfo.append(each[0].title())
@@ -253,7 +253,7 @@ class lotteryplayers(fields.Raw):
 
 class whenlastplayer(fields.Raw):
     def format(self, value):
-        linfo = dbquery('SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1' % (value,), sdb='statsdb')
+        linfo = dbquery("SELECT date FROM '%s' WHERE value != 0 ORDER BY date DESC LIMIT 1" % (value,), sdb='statsdb')
         return elapsedTime(time.time(), int(linfo[0]))
 
 
@@ -266,15 +266,15 @@ class svrinevent(fields.Raw):
 
 
 def whenlastplayersvr(inst):
-    linfo = dbquery('SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1' % (inst,), sdb='statsdb', fetch='one')
+    linfo = dbquery("SELECT date FROM '%s' WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), sdb='statsdb', fetch='one')
     return elapsedTime(time.time(), int(linfo[0]))
 
 
 def whenlastplayerall():
-    instances = dbquery('SELECT name from instances')
+    instances = dbquery("SELECT name from instances")
     a = 0
     for each in instances:
-        lastone = dbquery('SELECT date FROM %s WHERE value != 0 ORDER BY date DESC' % (each[0],), sdb='statsdb', fetch='one')
+        lastone = dbquery("SELECT date FROM '%s' WHERE value != 0 ORDER BY date DESC" % (each[0],), sdb='statsdb', fetch='one')
         if a == 0:
             lastdate = lastone[0]
         else:
@@ -368,7 +368,7 @@ m_clottery = api.clone('currentlottery', m_lottery, {
 
 
 def listcolums(mtable):
-    alldata = dbquery('PRAGMA table_info(%s)' % (mtable,))
+    alldata = dbquery("PRAGMA table_info('%s')" % (mtable,))
     ap = []
     for row in alldata:
         ap.append(f'{row[1]}')
@@ -384,7 +384,7 @@ def token_required(f):
         if not token:
             apilog.warning(f'API request without a token')
             return {'message': 'Not Authorized'}, 401
-        pkeys = dbquery('SELECT playername, apikey, email, banned FROM players WHERE apikey = "%s"' % (token,))
+        pkeys = dbquery("SELECT playername, apikey, email, banned FROM players WHERE apikey = '%s'" % (token,))
         if pkeys is None:
             apilog.warning(f'API request invalid token: {token}')
             return {'message': 'Invalid Token'}, 401
@@ -426,7 +426,7 @@ class Players(Resource):
     def get(self):
         nap = []
         pcnt = 0
-        pps = dbquery('SELECT playername FROM players ORDER BY playername')
+        pps = dbquery("SELECT playername FROM players ORDER BY playername")
         for each in pps:
             pcnt += 1
             nap.append(each[0])
@@ -439,7 +439,7 @@ class Servers(Resource):
     # @token_required
     def get(self):
         nap = []
-        qinst = dbquery('SELECT name FROM instances')
+        qinst = dbquery("SELECT name FROM instances")
         scnt = 0
         for each in qinst:
             scnt += 1
@@ -456,7 +456,7 @@ class ServerInfo(Resource):
     def post(self):
         sname = api.payload['servername']
         if sname is not None or sname != 'string':
-            q_server = dbquery('SELECT * FROM instances WHERE name = "%s"' % (sname,))
+            q_server = dbquery("SELECT * FROM instances WHERE name = '%s'" % (sname,))
         else:
             return {'message': 'Must specify server name'}, 400
         if not q_server:
@@ -473,7 +473,7 @@ class ClusterInfo(Resource):
     # @api.marshal_with(m_clusterinfo)
     def get(self):
         global apilog
-        instr = dbquery('SELECT name from instances')
+        instr = dbquery("SELECT name from instances")
         cluster = {}
         statsinst = []
         np, oplayers = howmanyonline()
@@ -504,7 +504,7 @@ class ClusterStats(Resource):
     # @token_required
     # @api.marshal_with(m_clusterinfo)
     def get(self):
-        instr = dbquery('SELECT name from instances')
+        instr = dbquery("SELECT name from instances")
         cluster = {}
         statsinst = []
         for each in instr:
@@ -559,8 +559,8 @@ class BannedPlayers(Resource):
         newnap = []
         supernap = {}
         try:
-            q_player = dbquery('SELECT * FROM players WHERE banned != NULL')
-            banlist = dbquery('SELECT * FROM banlist')
+            q_player = dbquery("SELECT * FROM players WHERE banned != NULL")
+            banlist = dbquery("SELECT * FROM banlist")
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         if q_player:
@@ -584,9 +584,9 @@ class PlayerInfo(Resource):
         pname = api.payload['playername']
         steamid = api.payload['steamid']
         if pname is not None or pname != 'string':
-            q_player = dbquery('SELECT * FROM players WHERE playername = "%s"' % (pname,))
+            q_player = dbquery("SELECT * FROM players WHERE playername = '%s'" % (pname,))
         elif steamid is not None or steamid != 0:
-            q_player = dbquery('SELECT * FROM players WHERE steamid = %s' % (steamid,))
+            q_player = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,))
         else:
             return {'message': 'Must specify player name or steamid'}, 400
         if q_player is None:
@@ -604,7 +604,7 @@ class NewPlayers(Resource):
     def get(self):
         newnap = []
         try:
-            q_player = dbquery('SELECT * FROM players ORDER BY firstseen DESC LIMIT 10')
+            q_player = dbquery("SELECT * FROM players ORDER BY firstseen DESC LIMIT 10")
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         try:
@@ -625,7 +625,7 @@ class TopPlayers(Resource):
     def get(self):
         newnap = []
         try:
-            q_player = dbquery('SELECT * FROM players ORDER BY playedtime DESC LIMIT 10')
+            q_player = dbquery("SELECT * FROM players ORDER BY playedtime DESC LIMIT 10")
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         try:
@@ -646,7 +646,7 @@ class HNRPlayers(Resource):
     def get(self):
         newnap = []
         try:
-            q_player = dbquery('SELECT * FROM players WHERE playedtime < 3600 ORDER BY playedtime')
+            q_player = dbquery("SELECT * FROM players WHERE playedtime < 3600 ORDER BY playedtime")
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         try:
@@ -667,7 +667,7 @@ class ClusterLottery(Resource):
     @api.marshal_with(m_clottery)
     def get(self):
         try:
-            current_lotto = dbquery('SELECT * FROM lotteryinfo WHERE winner == "Incomplete"')
+            current_lotto = dbquery("SELECT * FROM lotteryinfo WHERE winner == 'Incomplete'")
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         try:
@@ -688,7 +688,7 @@ class LotteryWinners(Resource):
     @api.marshal_with(m_lotteryplayers)
     def get(self):
         try:
-            lottowinners = dbquery('SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 10')
+            lottowinners = dbquery("SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 10")
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         newnap = []
@@ -709,7 +709,7 @@ class LotteryHistory(Resource):
     @api.marshal_with(m_lottery)
     def get(self):
         try:
-            lhist = dbquery('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" ORDER BY id DESC')
+            lhist = dbquery("SELECT * FROM lotteryinfo WHERE winner != 'Incomplete' ORDER BY id DESC")
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         newnap = []
@@ -729,12 +729,12 @@ class StartLottery(Resource):
     @api.expect(lotteryquery)
     @token_required
     def post(self):
-        afetch = dbquery('SELECT * FROM lotteryinfo WHERE winner == "Incomplete"')
+        afetch = dbquery("SELECT * FROM lotteryinfo WHERE winner == 'Incomplete'")
         if not afetch:
             try:
                 bip = api.payload['buyinpoints'] * 10
                 lottoends = datetime.fromtimestamp(time.time() + (3600 * int(api.payload['length']))).strftime('%a, %b %d %I:%M%p')
-                dbupdate('INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner) VALUES (%s,%s,%s,%s,%s,0,"Incomplete")' % ('points', bip, time.time(), api.payload['buyinpoints'], api.payload['length']))
+                dbupdate("INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner) VALUES ('%s','%s','%s','%s','%s',0,'Incomplete')" % ('points', bip, time.time(), api.payload['buyinpoints'], api.payload['length']))
                 return {'message': 'Lottery Started', 'payout': bip, 'buyinpoints': api.payload['buyinpoints'], 'lotterylength': api.payload['length'], 'lotteryends': lottoends}
             except:
                 return {'message': 'Error starting lottery'}
@@ -750,7 +750,7 @@ class ExpiredPlayers(Resource):
     def get(self):
         newnap = []
         try:
-            q_player = dbquery('SELECT * FROM players WHERE lastseen < %s ORDER BY lastseen ASC' % (time.time() - 2592000,))
+            q_player = dbquery("SELECT * FROM players WHERE lastseen < '%s' ORDER BY lastseen ASC" % (time.time() - 2592000,))
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         try:

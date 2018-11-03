@@ -22,15 +22,15 @@ updgennotify = time.time() - Secs['hour']
 
 
 def writediscord(msg, tstamp):
-    dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' % ('generalchat', 'ALERT', msg, tstamp))
+    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % ('generalchat', 'ALERT', msg, tstamp))
 
 
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,))
+        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,))
     elif whos == "ALERT" or isindb:
-        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' % (inst, whos, msg, tstamp))
+        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
 def playercount(inst):
@@ -50,52 +50,52 @@ def playercount(inst):
 
 
 def updatetimer(inst, ctime):
-    dbupdate('UPDATE instances SET restartcountdown = "%s" WHERE name = "%s"' % (ctime, inst))
+    dbupdate("UPDATE instances SET restartcountdown = '%s' WHERE name = '%s'" % (ctime, inst))
 
 
 def setcfgver(inst, cver):
     if inst == 'general':
-        dbupdate('UPDATE general SET cfgver = "%s"' % (cver,))
+        dbupdate("UPDATE general SET cfgver = '%s'" % (cver,))
     else:
-        dbupdate('UPDATE instances SET cfgver = "%s" WHERE name = "%s"' % (cver, inst))
+        dbupdate("UPDATE instances SET cfgver = '%s' WHERE name = '%s'" % (cver, inst))
 
 
 def getcfgver(inst):
     if inst == 'general':
-        lastwipe = dbquery('SELECT cfgver FROM general', fetch='one')
+        lastwipe = dbquery("SELECT cfgver FROM general", fetch='one')
     else:
-        lastwipe = dbquery('SELECT cfgver FROM instances WHERE name = "%s"' % (inst,), fetch='one')
+        lastwipe = dbquery("SELECT cfgver FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     return ''.join(lastwipe[0])
 
 
 def getlastwipe(inst):
-    lastwipe = dbquery('SELECT lastdinowipe FROM instances WHERE name = "%s"' % (inst, ))
+    lastwipe = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst, ))
     return ''.join(lastwipe[0])
 
 
 def resetlastwipe(inst):
     newtime = time.time()
-    dbupdate('UPDATE instances SET lastdinowipe = "%s" WHERE name = "%s"' % (newtime, inst))
+    dbupdate("UPDATE instances SET lastdinowipe = '%s' WHERE name = '%s'" % (newtime, inst))
 
 
 def resetlastrestart(inst):
     newtime = time.time()
-    dbupdate('UPDATE instances SET lastrestart = "%s" WHERE name = "%s"' % (newtime, inst))
-    dbupdate('UPDATE instances SET needsrestart = "False" WHERE name = "%s"' % (inst, ))
-    dbupdate('UPDATE instances SET cfgver = "%s" WHERE name = "%s"' % (getcfgver('general'), inst))
-    dbupdate('UPDATE instances SET restartcountdown = 30')
+    dbupdate("UPDATE instances SET lastrestart = '%s' WHERE name = '%s'" % (newtime, inst))
+    dbupdate("UPDATE instances SET needsrestart = 'False' WHERE name = '%s'" % (inst, ))
+    dbupdate("UPDATE instances SET cfgver = '%s' WHERE name = '%s'" % (getcfgver('general'), inst))
+    dbupdate("UPDATE instances SET restartcountdown = 30")
 
 
 def setrestartbit(inst):
-    dbupdate('UPDATE instances SET needsrestart = "True" WHERE name = "%s"' % (inst, ))
+    dbupdate("UPDATE instances SET needsrestart = 'True' WHERE name = '%s'" % (inst, ))
 
 
 def unsetstartbit(inst):
-    dbupdate('UPDATE instances SET needsrestart = "False" WHERE name = "%s"' % (inst, ))
+    dbupdate("UPDATE instances SET needsrestart = 'False' WHERE name = '%s'" % (inst, ))
 
 
 def restartbit(inst):
-    dbupdate('UPDATE players SET restartbit = 1 WHERE server = "%s"' % (inst, ))
+    dbupdate("UPDATE players SET restartbit = 1 WHERE server = '%s'" % (inst, ))
 
 
 def checkwipe(inst):
@@ -132,7 +132,7 @@ def isrebooting(inst):
 
 
 def stillneedsrestart(inst):
-    lastwipe = dbquery('SELECT needsrestart FROM instances WHERE name = "%s"' % (inst,))
+    lastwipe = dbquery("SELECT needsrestart FROM instances WHERE name = '%s'" % (inst,))
     ded = ''.join(lastwipe[0])
     if ded == "True":
         return True
@@ -163,7 +163,7 @@ def restartinstnow(inst):
 def restartloop(inst):
     log.debug(f'{inst} restart loop has started')
     setrestartbit(inst)
-    timeleftraw = dbquery('SELECT restartcountdown, restartreason from instances WHERE name = "%s"' % (inst,), fetch='one')
+    timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
     timeleft = int(timeleftraw[0])
     reason = timeleftraw[1]
     if playercount(inst) == 0:
@@ -233,7 +233,7 @@ def instancerestart(inst, reason):
     if (inmaint and reason == "configuration update") \
        or (inmaint and reason == "maintenance restart") \
        or (reason != "configuration update" and reason != "maintenance restart"):
-        dbupdate('UPDATE instances SET restartreason = "%s" WHERE name = "%s"' % (reason, inst))
+        dbupdate("UPDATE instances SET restartreason = '%s' WHERE name = '%s'" % (reason, inst))
         if not isrebooting(inst):
             for each in range(numinstances):
                 if instance[each]['name'] == inst:
@@ -269,7 +269,7 @@ def checkconfig():
     for each in range(numinstances):
         inst = instance[each]['name']
         if not isrebooting(inst):
-            lstsv = dbquery('SELECT lastrestart FROM instances WHERE name = "%s"' % (inst,), fetch='one')
+            lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
             t, s, e = datetime.now(), dt(11, 0), dt(11, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
             inmaint = is_time_between(t, s, e)
             if float(time.time()) - float(lstsv[0]) > 432000 and inmaint:
@@ -305,7 +305,7 @@ def checkbackup():
     for seach in range(numinstances):
         sinst = instance[seach]['name']
         if not isrebooting(sinst):
-            lastrestr = dbquery('SELECT lastrestart FROM instances WHERE name = "%s"' % (sinst, ))
+            lastrestr = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (sinst, ))
             lt = float(time.time()) - float(lastrestr[0][0])
             if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
                 log.info(f'performing a world data backup on {sinst}')
@@ -314,7 +314,7 @@ def checkbackup():
 
 
 def checkifalreadyrestarting(inst):
-    lastwipe = dbquery('SELECT needsrestart FROM instances WHERE name = "%s"' % (inst, ), fetch='one')
+    lastwipe = dbquery("SELECT needsrestart FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
     ded = lastwipe[0]
     if ded == "True":
         if not isrebooting(inst):

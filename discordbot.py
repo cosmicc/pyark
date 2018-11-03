@@ -19,17 +19,17 @@ channel2 = discord.Object(id=config.get('general', 'discordgenchan'))
 
 
 def getlastwipe(inst):
-    lastwipe = dbquery('SELECT lastdinowipe FROM instances WHERE name = "%s"' % (inst,))
+    lastwipe = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst,))
     return ''.join(lastwipe[0])
 
 
 def getlastrestart(inst):
-    lastwipe = dbquery('SELECT lastrestart FROM instances WHERE name = "%s"' % (inst,))
+    lastwipe = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,))
     return ''.join(lastwipe[0])
 
 
 def getlottowinnings(pname):
-    pwins = dbquery('SELECT type, payoutitem FROM lotteryinfo WHERE winner = "%s"' % (pname,))
+    pwins = dbquery("SELECT type, payoutitem FROM lotteryinfo WHERE winner = '%s'" % (pname,))
     totpoints = 0
     twins = 0
     for weach in pwins:
@@ -42,19 +42,19 @@ def getlottowinnings(pname):
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,), fetch='one')
+        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
     elif whos == "ALERT" or isindb:
-        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
+        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
                  (inst, whos, msg, tstamp))
 
 
 def writeglobal(inst, whos, msg):
-    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
+    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
              (inst, whos, msg, Now()))
 
 
 def islinkeduser(duser):
-    islinked = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (duser.lower(),))
+    islinked = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (duser.lower(),))
     if islinked:
         return True
     else:
@@ -62,7 +62,7 @@ def islinkeduser(duser):
 
 
 def setprimordialbit(steamid, pbit):
-    dbupdate('UPDATE players SET primordialbit = "%s" WHERE steamid = "%s"' % (pbit, steamid))
+    dbupdate("UPDATE players SET primordialbit = '%s' WHERE steamid = '%s'" % (pbit, steamid))
 
 
 def discordbot():
@@ -70,7 +70,7 @@ def discordbot():
         await client.wait_until_ready()
         while not client.is_closed:
             try:
-                cbuff = dbquery('SELECT * FROM chatbuffer')
+                cbuff = dbquery("SELECT * FROM chatbuffer")
                 if cbuff:
                     for each in cbuff:
                         if each[0] == "generalchat":
@@ -84,9 +84,9 @@ def discordbot():
                                 msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
                             await client.send_message(channel, msg)
                             await asyncio.sleep(2)
-                    dbupdate('DELETE FROM chatbuffer')
+                    dbupdate("DELETE FROM chatbuffer")
                 now = Now()
-                cbuffr = dbquery('SELECT * FROM players WHERE lastseen < "%s" AND lastseen > "%s"' % (now - 40, now - 45))
+                cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 40, now - 45))
                 if cbuffr:
                     for reach in cbuffr:
                         log.info(f'{reach[1]} has left the server {reach[3]}')
@@ -98,9 +98,9 @@ def discordbot():
             await asyncio.sleep(5)
 
     def savediscordtodb(author):
-        didexists = dbquery('SELECT * FROM discordnames WHERE discordname = "%s"' % (str(author),), fetch='one')
+        didexists = dbquery("SELECT * FROM discordnames WHERE discordname = '%s'" % (str(author),), fetch='one')
         if not didexists:
-            dbupdate('INSERT INTO discordnames (discordname) VALUES ("%s")' % (str(author),))
+            dbupdate("INSERT INTO discordnames (discordname) VALUES ('%s')" % (str(author),))
 
     @client.event
     async def on_member_join(member):
@@ -121,9 +121,9 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 or message.content.startswith('!whosonline'):
             log.info('responding to whos online request from discord')
             potime = 40
-            srvrs = dbquery('SELECT * FROM instances')
+            srvrs = dbquery("SELECT * FROM instances")
             for each in srvrs:
-                flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (each[0],))
+                flast = dbquery("SELECT * FROM players WHERE server = '%s'" % (each[0],))
                 pcnt = 0
                 plist = ''
                 for row in flast:
@@ -146,9 +146,9 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             # await asyncio.sleep(5)
             log.info('responding to recent players request from discord')
             potime = Secs['hour']
-            srvrs = dbquery('SELECT * FROM instances')
+            srvrs = dbquery("SELECT * FROM instances")
             for each in srvrs:
-                flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (each[0],))
+                flast = dbquery("SELECT * FROM players WHERE server = '%s'" % (each[0],))
                 pcnt = 0
                 plist = ''
                 for row in flast:
@@ -170,7 +170,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             if len(newname) > 1:
                 log.info(f'responding to lastseen request for {newname[1]} from discord')
                 seenname = newname[1]
-                flast = dbquery('SELECT * FROM players WHERE playername = "%s"' % (seenname,), fetch='one')
+                flast = dbquery("SELECT * FROM players WHERE playername = '%s'" % (seenname,), fetch='one')
                 if not flast:
                     msg = f'No player was found with name {seenname}'
                     await client.send_message(message.channel, msg)
@@ -194,7 +194,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 msg = f'Last wild dino wipe for {instr.capitalize()} was {lastwipet} ago'
                 await client.send_message(message.channel, msg)
             else:
-                srvrs = dbquery('SELECT * FROM instances')
+                srvrs = dbquery("SELECT * FROM instances")
                 for each in srvrs:
                     lastwipet = elapsedTime(Now(), float(getlastwipe(each[0])))
                     msg = f'Last wild dino wipe for {each[0].capitalize()} was {lastwipet} ago'
@@ -207,7 +207,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 msg = f'Last server restart for {instr.capitalize()} was {lastrestartt} ago'
                 await client.send_message(message.channel, msg)
             else:
-                srvrs = dbquery('SELECT * FROM instances')
+                srvrs = dbquery("SELECT * FROM instances")
                 for each in srvrs:
                     lastwipet = elapsedTime(Now(), float(getlastrestart(each[0])))
                     msg = f'Last server restart for {each[0].capitalize()} was {lastwipet} ago'
@@ -224,9 +224,9 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             # await asyncio.sleep(5)
             log.info('responding to recent players request from discord')
             potime = 86400
-            srvrs = dbquery('SELECT * FROM instances')
+            srvrs = dbquery("SELECT * FROM instances")
             for each in srvrs:
-                flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (each[0],))
+                flast = dbquery("SELECT * FROM players WHERE server = '%s'" % (each[0],))
                 pcnt = 0
                 plist = ''
                 for row in flast:
@@ -266,7 +266,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
         elif message.content.startswith('!decay') or message.content.startswith('!expire'):
             whofor = str(message.author).lower()
             log.info(f'decay request from {whofor} on discord')
-            kuser = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
+            kuser = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
             msg = f'Galaxy Cluster structure & dino decay times:\nDinos: 30 Days, Tek: 38 Days, Metal: 30 Days, Stone: 23 Days, Wood: 15 Days, Thatch: 7.5 Days, Greenhouse: 9.5 Days (Use MetalGlass for 30 Day Greenhouse).\n'
             if kuser:
                 if kuser[8] != whofor:
@@ -308,7 +308,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
         elif message.content.startswith('!kickme') or message.content.startswith('!kick'):
             whofor = str(message.author).lower()
             log.info(f'kickme request from {whofor} on discord')
-            kuser = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
+            kuser = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
             if kuser:
                 if kuser[8] != whofor:
                     log.info(f'kickme request from {whofor} denied, no account linked')
@@ -323,11 +323,11 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                         log.info(f'kickme request from {whofor} passed, kicking player on {kuser[3]}')
                         msg = f'Kicking {kuser[1].capitalize()} from the {kuser[3].capitalize()} server'
                         await client.send_message(message.channel, msg)
-                        dbupdate('INSERT INTO kicklist (instance,steamid) VALUES (%s,%s)' % (kuser[3], kuser[0]))
+                        dbupdate("INSERT INTO kicklist (instance,steamid) VALUES ('%s','%s')" % (kuser[3], kuser[0]))
         elif message.content.startswith('!home') or message.content.startswith('!myhome'):
             newsrv = message.content.split(' ')
             whofor = str(message.author).lower()
-            kuser = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
+            kuser = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
             if kuser:
                 if len(newsrv) > 1:
                     log.info(f'home server change request for {kuser[1]}')
@@ -346,8 +346,8 @@ to change home servers'
         elif message.content.startswith('!winners') or message.content.startswith('!lottowinners'):
             whofor = str(message.author).lower()
             log.info(f'lotto winners request from {whofor} on discord')
-            last5 = dbquery('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" AND winner != "None" ORDER BY id DESC LIMIT 5')
-            top5 = dbquery('SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5')
+            last5 = dbquery("SELECT * FROM lotteryinfo WHERE winner != 'Incomplete' AND winner != 'None' ORDER BY id DESC LIMIT 5")
+            top5 = dbquery("SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5")
             msg = 'Last 5 Lottery Winners:\n'
             now = Now()
             try:
@@ -366,7 +366,7 @@ to change home servers'
         elif message.content.startswith('!myinfo') or message.content.startswith('!mypoints'):
             whofor = str(message.author).lower()
             log.info(f'myinfo request from {whofor} on discord')
-            kuser = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
+            kuser = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
             if kuser:
                 if kuser[8] != whofor:
                     log.info(f'myinfo request from {whofor} denied, no account linked')
@@ -415,14 +415,14 @@ to change home servers'
                         log.critical('Critical Error in decay calculation!', exc_info=True)
                     await client.send_message(message.channel, msg)
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
-            lastseens = dbquery('SELECT firstseen FROM players')
-            lsplayer = dbquery('SELECT * from players WHERE firstseen = "%s"' % (max(lastseens,)))
+            lastseens = dbquery("SELECT firstseen FROM players")
+            lsplayer = dbquery("SELECT * from players WHERE firstseen = '%s'" % (max(lastseens,)))
             log.info(f'responding to lastnew request on discord')
             lspago = elapsedTime(Now(), float(lsplayer[6]))
             msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!topplayed') or message.content.startswith('!topplayed'):
-            lsplayer = dbquery('SELECT * from players ORDER BY playedtime DESC LIMIT 10')
+            lsplayer = dbquery("SELECT * from players ORDER BY playedtime DESC LIMIT 10")
             log.info(f'responding to topplayed request on discord')
             msg = ''
             nom = 0
@@ -446,7 +446,7 @@ to change home servers'
             await client.send_message(message.channel, msg)
         elif message.content.startswith('!servers'):
             whofor = str(message.author).lower()
-            dbsvr = dbquery('SELECT * FROM instances')
+            dbsvr = dbquery("SELECT * FROM instances")
             # msg = 'Galaxy Cluster Ultimate Extinction Core Servers:\n'
             for instt in dbsvr:
                 if int(instt[9]) == 0:
@@ -454,7 +454,7 @@ to change home servers'
                     pcnt = 0
                 elif int(instt[9]) == 1:
                     onl = 'ONLINE'
-                    flast = dbquery('SELECT * FROM players WHERE server = "%s"' % (instt[0],))
+                    flast = dbquery("SELECT * FROM players WHERE server = '%s'" % (instt[0],))
                     pcnt = 0
                     for row in flast:
                         chktme = Now() - float(row[2])
@@ -467,7 +467,7 @@ to change home servers'
 
         elif message.content.startswith('!lastlotto') or message.content.startswith('!lastlottery'):
             whofor = str(message.author).lower()
-            linfo = dbquery('SELECT * FROM lotteryinfo WHERE winner != "Incomplete" ORDER BY id DESC', fetch='one')
+            linfo = dbquery("SELECT * FROM lotteryinfo WHERE winner != 'Incomplete' ORDER BY id DESC", fetch='one')
             if linfo[1] == 'item':
                 msg = f'Last lottery was {linfo[2]} won by {linfo[7].capitalize()}. \
 {elapsedTime(Now(),linfo[3])} ago'
@@ -483,10 +483,10 @@ to change home servers'
         elif message.content.startswith('!lotto') or message.content.startswith('!lottery'):
             whofor = str(message.author).lower()
             newname = message.content.split(' ')
-            linfo = dbquery('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"', fetch='one')
+            linfo = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
             if len(newname) > 1:
                 if newname[1] == 'enter' or newname[1] == 'join':
-                    lpinfo = dbquery('SELECT * FROM players WHERE discordid = "%s"' % (whofor,), fetch='one')
+                    lpinfo = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
                     if not lpinfo:
                         log.info(f'lottery join request from {whofor} denied, account not linked')
                         msg = f'Your discord account must be linked to your player account to join a lottery from \
@@ -494,19 +494,19 @@ discord.\nType !linkme in game'
                         await client.send_message(message.channel, msg)
                     else:
                         whofor = lpinfo[1]
-                        lpcheck = dbquery('SELECT * FROM lotteryplayers WHERE steamid = "%s"' % (lpinfo[0],), fetch='one')
+                        lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
                         if linfo[1] == 'points':
                             lfo = 'ARc Rewards Points'
                         else:
                             lfo = linfo[2]
                         ltime = epochto(float(linfo[3]) + (Secs['hour'] * int(linfo[5])), 'string', est=True)
                         if lpcheck is None:
-                            dbupdate('INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES \
-                                     (%s, %s, %s, %s)' % (lpinfo[0], lpinfo[1], Now(), 0))
+                            dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES \
+                                     ('%s', '%s', '%s', '%s')" % (lpinfo[0], lpinfo[1], Now(), 0))
                             if linfo[1] == 'points':
-                                dbupdate('UPDATE lotteryinfo SET payoutitem = "%s" WHERE winner = "Incomplete"' %
+                                dbupdate("UPDATE lotteryinfo SET payoutitem = '%s' WHERE winner = 'Incomplete'" %
                                          (str(int(linfo[2]) + int(linfo[4])), ))
-                            dbupdate('UPDATE lotteryinfo SET players = "%s" WHERE id = "%s"' % (int(linfo[6]) + 1, linfo[0]))
+                            dbupdate("UPDATE lotteryinfo SET players = '%s' WHERE id = '%s'" % (int(linfo[6]) + 1, linfo[0]))
                             msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen on {ltime} \
 in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}. Good Luck!'
                             await client.send_message(message.channel, msg)
@@ -535,7 +535,7 @@ in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
 
         elif message.content.startswith('!primordial'):
             whofor = str(message.author).lower()
-            pplayer = dbquery('SELECT * from players WHERE discordid = "%s"' % (whofor,), fetch='one')
+            pplayer = dbquery("SELECT * from players WHERE discordid = '%s'" % (whofor,), fetch='one')
             if not pplayer:
                 msg = f'Your discord account needs to be linked to you game account first. !link in game'
                 await client.send_message(message.channel, msg)
@@ -554,7 +554,7 @@ in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
             user = message.author
             log.info(f'responding to link account request on discord from {whofor}')
             sw = message.content.split(' ')
-            dplayer = dbquery('SELECT * FROM players WHERE discordid == "%s"' % (whofor,), fetch='one')
+            dplayer = dbquery("SELECT * FROM players WHERE discordid == '%s'" % (whofor,), fetch='one')
             if dplayer:
                 log.info(f'link account request on discord from {whofor} denied, already linked')
                 msg = f'Your discord account is already linked to your game account'
@@ -562,12 +562,12 @@ in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
             else:
                 if len(sw) > 1:
                     rcode = sw[1]
-                    reqs = dbquery('SELECT * FROM linkrequests WHERE reqcode == "%s"' % (rcode,), fetch='one')
+                    reqs = dbquery("SELECT * FROM linkrequests WHERE reqcode == '%s'" % (rcode,), fetch='one')
                     if reqs:
                         log.info(f'link account request on discord from {whofor} accepted. \
 {reqs[1]} {whofor} {reqs[0]}')
-                        dbupdate('UPDATE players SET discordid = "%s" WHERE steamid = %s' % (whofor, reqs[0]))
-                        dbupdate('DELETE FROM linkrequests WHERE reqcode = "%s"' % (rcode,))
+                        dbupdate("UPDATE players SET discordid = '%s' WHERE steamid = '%s'" % (whofor, reqs[0]))
+                        dbupdate("DELETE FROM linkrequests WHERE reqcode = '%s'" % (rcode,))
                         msg = f'Your discord account [{whofor}] is now linked to your player {reqs[1]}'
                         await client.send_message(message.channel, msg)
                         role = discord.utils.get(user.server.roles, name="Linked Player")
@@ -583,7 +583,7 @@ in-game to get your code'
 to link your account'
                     await client.send_message(message.channel, msg)
         elif str(message.channel) == 'server-chat':
-            whos = dbquery('SELECT playername FROM players WHERE discordid = "%s"' % (str(message.author).lower(),), fetch='one')
+            whos = dbquery("SELECT playername FROM players WHERE discordid = '%s'" % (str(message.author).lower(),), fetch='one')
             if whos:
                 writeglobal('discord', whos[0], str(message.content))
     client.loop.create_task(chatbuffer())

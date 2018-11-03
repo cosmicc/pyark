@@ -181,7 +181,7 @@ def main():
                             log.debug(f'{eachinst["name"]} passed instance online check')
 
                 # log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
-                dbupdate('UPDATE instances SET isup = %s, islistening = %s, isrunning = %s, uptimestamp = %s, actmem = %s, totmem = %s WHERE name = "%s"' % (isonlineint, islisteningint, isrunningint, Now(), actmem, totmem, eachinst['name']))
+                dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, Now(), actmem, totmem, eachinst['name']))
                 for feach in isrunning:
                     if feach == eachinst['name']:
                         if isrunning[feach]['count'] == 2:

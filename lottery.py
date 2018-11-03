@@ -15,12 +15,12 @@ log = logging.getLogger(name=hstname)
 
 
 def writediscord(msg, tstamp):
-    dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
+    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
              ('generalchat', 'ALERT', msg, tstamp))
 
 
 def writeglobal(inst, whos, msg):
-    dbupdate('INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
+    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
              (inst, whos, msg, Now()))
 
 
@@ -30,8 +30,8 @@ def determinewinner(linfo):
     picks = []
     adjpicks = []
     wins = []
-    lottoers = dbquery('SELECT * FROM lotteryplayers')
-    linfo = dbquery('SELECT * FROM lotteryinfo WHERE id = "%s"' % (linfo[0],), fetch='one')
+    lottoers = dbquery("SELECT * FROM lotteryplayers")
+    linfo = dbquery("SELECT * FROM lotteryinfo WHERE id = '%s'" % (linfo[0],), fetch='one')
     if len(lottoers) >= 3:
         for eachn in lottoers:
             winners.append(eachn[0])
@@ -40,7 +40,7 @@ def determinewinner(linfo):
         seed(randint(100))
         for eachw in range(len(winners)):
             picks.append(randint(100))
-            lwins = dbquery('SELECT lottowins FROM players WHERE steamid = "%s"' % (winners[eachw],), fetch='one')
+            lwins = dbquery("SELECT lottowins FROM players WHERE steamid = '%s'" % (winners[eachw],), fetch='one')
             wins.append(lwins[0])
             if wins[eachw] > 10:
                 adjj = 10
@@ -49,32 +49,32 @@ def determinewinner(linfo):
             adjpicks.append(picks[eachw] - adjj * 5)
         winneridx = argmax(adjpicks)
         winnersid = winners[winneridx]
-        lwinner = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (winnersid,), fetch='one')
-        dbupdate('UPDATE lotteryinfo SET winner = "%s" WHERE id = "%s"' % (lwinner[1], linfo[0]))
+        lwinner = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (winnersid,), fetch='one')
+        dbupdate("UPDATE lotteryinfo SET winner = '%s' WHERE id = '%s'" % (lwinner[1], linfo[0]))
         log.info(f'Lottery winner is: {lwinner[1]}')
         winners.remove(winnersid)
         log.info(f'queuing up lottery deposits for {winners}')
         for ueach in winners:
-            kk = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (ueach,), fetch='one')
-            dbupdate('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
-                       ("%s", "%s", "%s", "%s", "%s")' % (kk[0], kk[1], Now(), linfo[4], 0))
+            kk = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (ueach,), fetch='one')
+            dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
+                       ('%s', '%s', '%s', '%s', '%s')" % (kk[0], kk[1], Now(), linfo[4], 0))
         msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!\n'
         if linfo[1] == 'points':
             msg = msg + f'{lwinner[1].capitalize()} has won {linfo[2]} ARc Reward Points'
             writediscord(msg, Now())
             writeglobal('ALERT', 'ALERT', msg)
-            dbupdate('INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
-                       ("%s", "%s", "%s", "%s", "%s")' % (lwinner[0], lwinner[1], Now(), linfo[2], 1))
+            dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
+                       ('%s', '%s', '%s', '%s', '%s')" % (lwinner[0], lwinner[1], Now(), linfo[2], 1))
             nlw = int(lwinner[19]) + int(linfo[2])
-            dbupdate('UPDATE players SET lottowins = "%s", lotterywinnings = "%s" WHERE steamid = "%s"' % (int(lwinner[18]) + 1, nlw, lwinner[0]))
+            dbupdate("UPDATE players SET lottowins = '%s', lotterywinnings = '%s' WHERE steamid = '%s'" % (int(lwinner[18]) + 1, nlw, lwinner[0]))
         else:
             msg = msg + f'{lwinner[1].capitalize()} has won a {linfo[2]}'
             writediscord(msg, Now())
             writeglobal('ALERT', 'ALERT', msg)
-            dbupdate('UPDATE players SET lottowins = "%s" WHERE steamid = "%s"' % (int(lwinner[18]) + 1, lwinner[0]))
+            dbupdate("UPDATE players SET lottowins = '%s' WHERE steamid = '%s'" % (int(lwinner[18]) + 1, lwinner[0]))
     else:
         log.info(f'Lottery has ended. Not enough players: {len(lottoers)}')
-        dbupdate('UPDATE lotteryinfo SET winner = "None" WHERE winner = "Incomplete"')
+        dbupdate("UPDATE lotteryinfo SET winner = 'None' WHERE winner = 'Incomplete'")
         msg = f'Lottery has ended. Not enough players have participated.  Requires at least 3 players.'
         writediscord(msg, Now())
         writeglobal('ALERT', 'ALERT', msg)
@@ -87,8 +87,8 @@ def determinewinner(linfo):
 def lotteryloop(linfo):
     if linfo[8] == 0 or linfo[8] is None:
         log.debug('clearing lotteryplayers table')
-        dbupdate('UPDATE lotteryinfo SET announced = 1 WHERE id = "%s"' % (linfo[0],))
-        dbupdate('DELETE FROM lotteryplayers')
+        dbupdate("UPDATE lotteryinfo SET announced = 1 WHERE id = '%s'" % (linfo[0],))
+        dbupdate("DELETE FROM lotteryplayers")
     inlottery = True
     log.info('lottery loop has begun, waiting for lottery entries')
     while inlottery:
@@ -124,7 +124,7 @@ Length: {lottoinfo[5]} Hours, Ends: {lottoend}')
 
 
 def checkfornewlottery():
-    lottoinfo = dbquery('SELECT * FROM lotteryinfo WHERE winner == "Incomplete"', fetch='one')
+    lottoinfo = dbquery("SELECT * FROM lotteryinfo WHERE winner == 'Incomplete'", fetch='one')
     if lottoinfo:
         startlottery(lottoinfo)
 

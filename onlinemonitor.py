@@ -18,15 +18,15 @@ global instance
 
 
 def resetplayerbit(steamid):
-    dbupdate('UPDATE players SET restartbit = 0 WHERE steamid = "%s"' % (steamid,))
+    dbupdate("UPDATE players SET restartbit = 0 WHERE steamid = '%s'" % (steamid,))
 
 
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        isindb = dbquery('SELECT * from players WHERE playername = "%s"' % (whos,), fetch='one')
+        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
     elif whos == "ALERT" or isindb:
-        dbupdate('INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ("%s", "%s", "%s", "%s")' %
+        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
                  (inst, whos, msg, tstamp))
 
 
@@ -70,7 +70,7 @@ def isgreeting(steamid):
 
 
 def serverisinrestart(steamid, inst, oplayer):
-    rbt = dbquery('SELECT * FROM instances WHERE name = "%s"' % (inst,), fetch='one')
+    rbt = dbquery("SELECT * FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     if rbt[3] == "True":
         log.info(f'notifying player {oplayer[1]} that server {inst} will be restarting in {rbt[7]} min')
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
@@ -78,9 +78,9 @@ def serverisinrestart(steamid, inst, oplayer):
 
 
 def isinlottery(steamid):
-    isinlotto = dbquery('SELECT * FROM lotteryinfo WHERE winner = "Incomplete"', fetch='one')
+    isinlotto = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
     if isinlotto:
-        isinlotto2 = dbquery('SELECT * FROM lotteryplayers WHERE steamid = "%s"' % (steamid,), fetch='one')
+        isinlotto2 = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (steamid,), fetch='one')
         if isinlotto2:
             return True
         else:
@@ -90,8 +90,8 @@ def isinlottery(steamid):
 
 
 def checklottodeposits(steamid, inst):
-    lottocheck = dbquery('SELECT * FROM lotterydeposits WHERE steamid = "%s"' % (steamid,))
-    elpinfo = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (steamid,), fetch='one')
+    lottocheck = dbquery("SELECT * FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
+    elpinfo = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     if lottocheck and inst == elpinfo[15]:
         for weach in lottocheck:
             if weach[4] == 1:
@@ -106,7 +106,7 @@ def checklottodeposits(steamid, inst):
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s %s" @%s' %
                                (steamid, str(int(elpinfo[5]) - int(weach[3])), inst), shell=True)
-        dbupdate('DELETE FROM lotterydeposits WHERE steamid = %s' % (steamid,))
+        dbupdate("DELETE FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
 
 
 def playergreet(steamid, inst):
@@ -114,10 +114,10 @@ def playergreet(steamid, inst):
     gogo = 0
     xferpoints = 0
     global welcomthreads
-    oplayer = dbquery('SELECT * FROM players WHERE steamid = "%s"' % (steamid,), fetch='one')
+    oplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     timestamp = time.time()
-    poplayer = dbquery('SELECT * FROM players WHERE steamid = "%s" AND banned != ""' % (steamid,), fetch='one')
-    bplayer = dbquery('SELECT * FROM banlist WHERE steamid = "%s"' % (steamid,), fetch='one')
+    poplayer = dbquery("SELECT * FROM players WHERE steamid = '%s' AND banned != ''" % (steamid,), fetch='one')
+    bplayer = dbquery("SELECT * FROM banlist WHERE steamid = '%s'" % (steamid,), fetch='one')
     timestamp = time.time()
     if poplayer:
         if not bplayer:
@@ -134,10 +134,10 @@ kicking and banning.')
         log.debug(f'player {steamid} passed ban checks')
         if not oplayer:
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
-            dbupdate('INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
+            dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                        firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                        primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
-                       ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' %
+                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
                      (steamid, 'newplayer', timestamp, inst, '1', 50, timestamp, 1, '', '', 0, 0, 0,
                       0, 0, inst, 0, timestamp, 0))
             if not iswelcoming(steamid):
@@ -152,7 +152,7 @@ kicking and banning.')
                     xferpoints = int(oplayer[16])
                     log.info(f'transferring {xferpoints} non home server points into account for \
 {oplayer[1]} on {inst}')
-                    dbupdate('UPDATE players SET transferpoints = 0 WHERE steamid = "%s"' % (steamid,))
+                    dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                     subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                    (steamid, xferpoints, inst), shell=True)
             if float(oplayer[2]) + 300 > float(time.time()):
@@ -164,11 +164,11 @@ kicking and banning.')
 {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
                     log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
                 log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
-                dbupdate('UPDATE players SET lastseen = "%s", server = "%s" WHERE steamid = "%s"' % (timestamp, inst, steamid))
+                dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (timestamp, inst, steamid))
             else:
                 log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. \
 updating info.")
-                dbupdate('UPDATE players SET lastseen = "%s", server = "%s", connects = "%s" WHERE steamid = "%s"' %
+                dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s' WHERE steamid = '%s'" %
                          (timestamp, inst, int(oplayer[7]) + 1, steamid))
                 laston = elapsedTime(float(time.time()), float(oplayer[2]))
                 totplay = playedTime(float(oplayer[4]))
@@ -187,7 +187,7 @@ updating info.")
 {oplayer[15].capitalize()}{strauctions}, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 time.sleep(1)
-                flast = dbquery('SELECT * FROM players WHERE server = "%s" AND steamid != "%s"' % (inst, steamid))
+                flast = dbquery("SELECT * FROM players WHERE server = '%s' AND steamid != '%s'" % (inst, steamid))
                 pcnt = 0
                 plist = ''
                 potime = 40
@@ -238,7 +238,7 @@ updating info.")
                     mtxt = f'{eventinfo[4]} event is currently active!'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (steamid, mtxt, inst), shell=True)
-                annc = dbquery('SELECT announce FROM general', fetch='one')
+                annc = dbquery("SELECT announce FROM general", fetch='one')
                 if annc and annc[0] is not None:
                     time.sleep(2)
                     mtxt = annc[0]
