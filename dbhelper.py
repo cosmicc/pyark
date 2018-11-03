@@ -132,7 +132,7 @@ def getplayersonline(inst, fmt='tuple'):
     if inst == 'all':
         dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s'" % (Now() - 40))
     else:
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' AND server == '%s'" % (Now() - 40, inst))
+        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' AND server = '%s'" % (Now() - 40, inst))
     return formatdbdata(dbdata, 'players', qtype=fmt)
 
 
@@ -140,7 +140,7 @@ def getlastplayersonline(inst, fmt='tuple', last=5):
     if inst == 'all':
         dbdata = dbquery("SELECT playername FROM players ORDER BY lastseen LIMIT '%s'" % (last,))
     else:
-        dbdata = dbquery("SELECT playername FROM players ORDER BY lastseen AND server == '%s' LIMIT '%s'" % (inst, last))
+        dbdata = dbquery("SELECT playername FROM players ORDER BY lastseen AND server = '%s' LIMIT '%s'" % (inst, last))
     return formatdbdata(dbdata, 'players', qtype=fmt)
 
 
