@@ -156,15 +156,15 @@ kicking and banning.')
             if int(oplayer[2]) + 300 > Now():
                 if oplayer[3] != inst:
                     gogo = 1
-                    mtxt = f'{oplayer[1].capitalize()} has transferred here from {oplayer[3].capitalize()}'
+                    mtxt = f'{oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
                     subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                     writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from \
 {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
                     log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
-                log.debug(f'online player {oplayer[1]} with {steamid} was found. updating info.')
+                log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
             else:
-                log.info(f"player {oplayer[1]} has joined {inst}, total player's connections {int(oplayer[7])+1}. \
+                log.info(f"player {oplayer[1].title()} has joined {inst}, total player's connections {int(oplayer[7])+1}. \
 updating info.")
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s' WHERE steamid = '%s'" %
                          (Now(), inst, int(oplayer[7]) + 1, steamid))
@@ -181,7 +181,7 @@ updating info.")
                     log.error(f'error in parsing auction data')
                 sleep(3)
                 newpoints = int(oplayer[5]) + xferpoints
-                mtxt = f'Welcome back {oplayer[1]}, you have {newpoints} ARc reward points on \
+                mtxt = f'Welcome back {oplayer[1].title()}, you have {newpoints} ARc reward points on \
 {oplayer[15].capitalize()}{strauctions}, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 sleep(1)

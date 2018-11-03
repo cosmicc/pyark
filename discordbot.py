@@ -92,7 +92,7 @@ def discordbot():
                         log.info(f'{reach[1]} has left the server {reach[3]}')
                         mt = f'{reach[1].capitalize()} has left the server'
                         writeglobal(reach[3], 'ALERT', mt)
-                        writechat(reach[3], 'ALERT', f'>>> {reach[1].capitalize()} has left the server', wcstamp())
+                        writechat(reach[3], 'ALERT', f'>>> {reach[1].title()} has left the server', wcstamp())
             except:
                 log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
             await asyncio.sleep(5)
