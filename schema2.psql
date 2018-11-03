@@ -1,0 +1,3 @@
+CREATE TABLE ragnarok (date INT, value SMALLINT);
+CREATE TABLE island (date INT, value SMALLINT);
+CREATE TABLE volcano (date INT, value SMALLINT);

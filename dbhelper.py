@@ -1,7 +1,6 @@
-from configreader import sqldb, statsdb, psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
+from configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 import logging
 import socket
-import sqlite3
 from sys import exit
 from timehelper import Now
 import psycopg2
@@ -41,7 +40,7 @@ def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False):
                 plist.append(each)
         return plist
     elif qtype == 'dict':
-        clmndata = dbquery('PRAGMA table_info("%s")' % (table,))
+        clmndata = db_getcolumns(table)
         clmnn = []
         for eclmn in clmndata:
             clmnn.append(eclmn[1])
@@ -120,12 +119,12 @@ def db_gettables(db, fmt='tuple'):
 
 
 def db_getall(table, fmt='tuple', fetch='all'):
-    dbdata = dbquery("SELECT * FROM '%s'" % (table,), fetch=fetch)
+    dbdata = dbquery("SELECT * FROM %s" % (table,), fetch=fetch)
     return formatdbdata(dbdata, table, qtype=fmt)
 
 
 def db_getvalue(select, table, fmt='tuple', fetch='one'):
-    dbdata = dbquery("SELECT %s FROM '%s'" % (select, table), fetch=fetch)
+    dbdata = dbquery("SELECT %s FROM %s" % (select, table), fetch=fetch)
     return formatdbdata(dbdata, table, qtype=fmt, single=True)
 
 

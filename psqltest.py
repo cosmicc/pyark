@@ -9,7 +9,7 @@ conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psq
 
 c = conn.cursor()
 
-c.execute("SELECT * FROM players")
+c.execute("SELECT * FROM lotteryinfo ORDER BY id DESC LIMIT 1")
 allplayers = c.fetchall()
 for each in allplayers:
     print(each)

@@ -84,7 +84,7 @@ trclr = ''
 
 print('    ')
 
-dbupdate("DELETE from players WHERE playedtime = 0")
+#dbupdate("DELETE from players WHERE playedtime = 0")
 
 
 def percentage(part, whole):
@@ -117,7 +117,7 @@ def getallavg(length):
     for each in statinst:
         slist = []
         navglist = []
-        nlist = dbquery("SELECT value FROM '%s' WHERE date > '%s'" % (each, ntime - ilength), db='statsdb')
+        nlist = dbquery("SELECT value FROM %s WHERE date > '%s'" % (each, ntime - ilength), db='statsdb')
         for y in nlist:
             slist.append(y[0])
         if avglist == []:
@@ -146,7 +146,7 @@ def getallhighest(length):
         navglist = []
         dlist = []
         datelist = []
-        nlist = dbquery("SELECT value, date FROM '%s' WHERE date > '%s'" % (each, ntime - ilength))
+        nlist = dbquery("SELECT value, date FROM %s WHERE date > '%s'" % (each, ntime - ilength), db='statsdb')
         for y, x in nlist:
             slist.append(y)
             dlist.append(x)
@@ -174,7 +174,7 @@ def getaverage(inst, length):
         ilength = 28800
     avglist = []
     ntime = int(time.time())
-    slist = dbquery("SELECT value FROM '%s' WHERE date > '%s'" % (inst, ntime - ilength))
+    slist = dbquery("SELECT value FROM %s WHERE date > '%s'" % (inst, ntime - ilength), db='statsdb')
     for te in slist:
         avglist.append(te[0])
     return f2dec(mean(avglist))
@@ -193,7 +193,7 @@ def getplaytime(inst, length):
         ilength = 28800
     ptime = 0
     ntime = int(time.time())
-    slist = dbquery("SELECT value FROM '%s' WHERE date > '%s'" % (inst, ntime - ilength))
+    slist = dbquery("SELECT value FROM %s WHERE date > '%s'" % (inst, ntime - ilength), db='statsdb')
     for te in slist:
         ptime = ptime + (te[0] * (5 * 60))
     return ptime
@@ -212,7 +212,7 @@ def gethighest(inst, length):
         ilength = 28800
 
     ntime = int(time.time())
-    slist = dbquery("SELECT date, MAX(value) FROM '%s' WHERE date > '%s' ORDER BY date ASC" % (inst, ntime - ilength), fetch='one')
+    slist = dbquery("SELECT date, MAX(value) FROM %s WHERE date > '%s' GROUP BY DATE ORDER BY date ASC" % (inst, ntime - ilength), db='statsdb', fetch='one')
     htime = datetime.fromtimestamp(slist[0])
     return slist[1], estshift(htime).strftime('%a %b %-d %-I:%M %p')
 
@@ -373,7 +373,7 @@ def printserverinfo(each):
     hhv, hhd = gethighest(each[0], 'hourly')
     ehv, ehd = gethighest(each[0], 'eighthour')
 
-    svrifo = dbquery("SELECT * from instances WHERE name = '%s'" % (each[0],))
+    svrifo = dbquery("SELECT * from instances WHERE name = '%s'" % (each[0],), fetch='one')
     sdata = fetcharkserverdata(svrifo[8])
     if int(sdata['is_online']) == 1:
         fug = f'{BGRN}True{RST}'
@@ -498,7 +498,7 @@ def showservers():
     print('   ')
     print(f'{BLU}-----------------------------------[{ORG}CLUSTER LOTTERY{BLU}]-----------------------------------{RST}')
     lastlottery = dbquery("SELECT * FROM lotteryinfo ORDER BY id DESC LIMIT 1", fetch='one')
-    lotteryplayers = db_getall("SELECT * FROM lotteryplayers")
+    lotteryplayers = db_getall("lotteryplayers")
     lli = float(lastlottery[3]) + (3600 * int(lastlottery[5]))
     lottostart = estshift(datetime.fromtimestamp(lli)).strftime('%a, %b %d %I:%M%p')
     plist = ''
