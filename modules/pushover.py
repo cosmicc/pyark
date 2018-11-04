@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from configparser import RawConfigParser, NoSectionError
-from configreader import po_userkey, po_appkey
+from modules.configreader import po_userkey, po_appkey
 import logging
 import os
 import requests

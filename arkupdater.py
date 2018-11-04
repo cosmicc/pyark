@@ -1,24 +1,25 @@
-from configreader import sharedpath, arkroot, numinstances, instance, instr, isupdater
+from modules.configreader import sharedpath, arkroot, numinstances, instance, instr, isupdater
 from datetime import datetime
 from datetime import time as dt
-from dbhelper import dbquery, dbupdate
-from pushover import pushover
+from modules.dbhelper import dbquery, dbupdate, getlastwipe
+from modules.pushover import pushover
+from modules.players import getplayersonline
 from timebetween import is_time_between
-from timehelper import wcstamp, Secs
+from modules.timehelper import wcstamp, Secs, Now
+from time import sleep
 import filecmp
 import logging
 import os
 import socket
 import subprocess
 import threading
-import time
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 confupdtimer = 0
 dwtimer = 0
-updgennotify = time.time() - Secs['hour']
+updgennotify = Now() - Secs['hour']
 
 
 def writediscord(msg, tstamp):
@@ -31,22 +32,6 @@ def writechat(inst, whos, msg, tstamp):
         isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,))
     elif whos == "ALERT" or isindb:
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
-
-
-def playercount(inst):
-    playercount = 0
-    cmdpipe = subprocess.Popen('arkmanager rconcmd ListPlayers @%s' % inst, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, shell=True)
-    b = cmdpipe.stdout.read().decode("utf-8")
-    for line in iter(b.splitlines()):
-        if line.startswith('Running command') or line.startswith('"') or line.startswith(' "'):
-            pass
-        else:
-            if line.startswith('"No Players'):
-                return 0
-            else:
-                playercount += 1
-    return playercount
 
 
 def updatetimer(inst, ctime):
@@ -68,19 +53,12 @@ def getcfgver(inst):
     return ''.join(lastwipe[0])
 
 
-def getlastwipe(inst):
-    lastwipe = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst, ))
-    return ''.join(lastwipe[0])
-
-
 def resetlastwipe(inst):
-    newtime = time.time()
-    dbupdate("UPDATE instances SET lastdinowipe = '%s' WHERE name = '%s'" % (newtime, inst))
+    dbupdate("UPDATE instances SET lastdinowipe = '%s' WHERE name = '%s'" % (Now(), inst))
 
 
 def resetlastrestart(inst):
-    newtime = time.time()
-    dbupdate("UPDATE instances SET lastrestart = '%s' WHERE name = '%s'" % (newtime, inst))
+    dbupdate("UPDATE instances SET lastrestart = '%s' WHERE name = '%s'" % (Now(), inst))
     dbupdate("UPDATE instances SET needsrestart = 'False' WHERE name = '%s'" % (inst, ))
     dbupdate("UPDATE instances SET cfgver = '%s' WHERE name = '%s'" % (getcfgver('general'), inst))
     dbupdate("UPDATE instances SET restartcountdown = 30")
@@ -101,8 +79,8 @@ def restartbit(inst):
 def checkwipe(inst):
     global dwtimer
     lastwipe = getlastwipe(inst)
-    if time.time() - float(lastwipe) > Secs['day']:
-        if playercount(inst) == 0:
+    if Now() - lastwipe > Secs['day']:
+        if getplayersonline(inst, fmt='count') == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
             writechat(inst, 'ALERT', f'### Empty server is over 24 hours since wild dino wipe. Wiping now.', wcstamp())
             subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL,
@@ -166,7 +144,7 @@ def restartloop(inst):
     timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
     timeleft = int(timeleftraw[0])
     reason = timeleftraw[1]
-    if playercount(inst) == 0:
+    if getplayersonline(inst, fmt='count') == 0:
             log.info(f'server {inst} is empty and restarting now for a {reason}')
             writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
             message = f'server {inst.capitalize()} is restarting now for a {reason}'
@@ -190,11 +168,11 @@ def restartloop(inst):
                                    '\n\n\n          The server will be restarting in %s minutes for a %s'" @%s""" %
                                    (timeleft, reason, inst), stdout=subprocess.DEVNULL,
                                    stderr=subprocess.DEVNULL, shell=True)
-                time.sleep(Secs['1min'])
+                sleep(Secs['1min'])
                 timeleft = timeleft - 1
                 updatetimer(inst, timeleft)
                 snr = stillneedsrestart(inst)
-                if playercount(inst) == 0 or timeleft == 0:
+                if getplayersonline(inst, fmt='count') == 0 or timeleft == 0:
                     gotime = True
             if stillneedsrestart(inst):
                 log.info(f'server {inst} is restarting now for a {reason}')
@@ -206,7 +184,7 @@ def restartloop(inst):
                 subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL, shell=True)
                 pushover('Instance Restart', message)
-                time.sleep(10)
+                sleep(10)
                 restartinstnow(inst)
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
@@ -220,14 +198,14 @@ def instancerestart(inst, reason):
     log.debug(f'instance restart verification starting for {inst}')
     global instance
     global confupdtimer
-    t, s, e = datetime.now(), dt(11, 0), dt(11, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
+    t, s, e = Now(fmt='dt'), dt(11, 0), dt(11, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
     inmaint = is_time_between(t, s, e)
     if inmaint:
                 log.info(f'maintenance window reached, running server os maintenance')
                 subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 subprocess.run('apt full-upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 subprocess.run('apt autoremove -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                time.sleep(3)
+                sleep(3)
                 if os.path.isfile('/var/run/reboot-required'):
                     log.warning(f'{inst} physical server needs a hardware reboot after package updates')
     if (inmaint and reason == "configuration update") \
@@ -272,7 +250,7 @@ def checkconfig():
             lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
             t, s, e = datetime.now(), dt(11, 0), dt(11, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
             inmaint = is_time_between(t, s, e)
-            if float(time.time()) - float(lstsv[0]) > 432000 and inmaint:
+            if Now() - float(lstsv[0]) > 432000 and inmaint:
                 maintrest = "maintenance restart"
             else:
                 maintrest = "configuration update"
@@ -306,7 +284,7 @@ def checkbackup():
         sinst = instance[seach]['name']
         if not isrebooting(sinst):
             lastrestr = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (sinst, ))
-            lt = float(time.time()) - float(lastrestr[0][0])
+            lt = Now() - float(lastrestr[0][0])
             if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
                 log.info(f'performing a world data backup on {sinst}')
                 subprocess.run('arkmanager backup @%s' % (sinst, ), stdout=subprocess.DEVNULL,
@@ -326,7 +304,7 @@ def checkupdates():
     global ugennotify
     try:
         ustate, curver, avlver = isnewarkver(instance[0]['name'])
-        if not ustate and time.time() - updgennotify > Secs['hour']:
+        if not ustate and Now() - updgennotify > Secs['hour']:
             log.debug('ark update check found no ark updates available')
         else:
             if isupdater:
@@ -336,7 +314,7 @@ def checkupdates():
                 log.debug('ark update downloaded to staging area')
                 msg = f'Ark update has been released. Servers will start a reboot countdown now.\n\
 https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-283112-server-283112/'
-                writediscord(msg, time.time())
+                writediscord(msg, Now())
                 pushover('Ark Update', msg)
             for each in range(numinstances):
                 instancerestart(instance[each]['name'], 'ark game update')
@@ -357,7 +335,7 @@ https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-2
                     modid = al[1]
                     modname = al[2]
             if modchk != 0:
-                ugennotify = time.time()
+                ugennotify = Now()
                 log.info(f'ark mod update {modname} id {modid} detected for instance {instance[each]["name"]}')
                 log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
                 subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']),
@@ -367,7 +345,7 @@ https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-2
                 if instance[each]["name"] == 'volcano':
                     msg = f'Mod {modname} has been updated. Servers will start a reboot countdown now.\n\
 https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
-                    writediscord(msg, time.time())
+                    writediscord(msg, Now())
                     pushover('Mod Update', msg)
                 for neo in range(numinstances):
                         instancerestart(instance[neo]['name'], aname)
@@ -387,6 +365,6 @@ def arkupd():
             checkbackup()
             checkupdates()
             checkconfig()
-            time.sleep(Secs['5min'])
+            sleep(Secs['5min'])
         except:
             log.critical('Critical Error in Ark Updater!', exc_info=True)

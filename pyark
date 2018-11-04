@@ -5,22 +5,23 @@ from arkserversnet import arkserversnet
 from arkupdater import arkupd
 from clusterevents import eventwatcher
 from cmdlistener import clisten
-from configreader import logfile, instance, numinstances, imthedbot, restapi_enabled, restapi_ip, restapi_port
-from dbhelper import dbquery, dbupdate
 from discordbot import discordbot
 from gchatrelay import gchatrelay
 from kicker import kicker
+from modules.configreader import logfile, instance, numinstances, imthedbot, restapi_enabled, restapi_ip, restapi_port
+from modules.dbhelper import dbquery, dbupdate
+from modules.processlock import plock
 from onlinemonitor import onlineupdate
 from restapi import app
 from statcollector import oscollect
 from sys import exit
+from time import sleep
+from modules.timehelper import Now
 import argparse
 import logging
 import lottery
-import processlock
 import socket
 import threading
-import time
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -64,7 +65,7 @@ log_filej.setLevel(logging.DEBUG)
 log.addHandler(log_fileh)
 log.addHandler(log_filej)
 
-processlock.lock()
+plock()
 
 log.info(f'>>> pyark daemon is starting on {hstname}')
 
@@ -94,10 +95,9 @@ def main():
     for ins in range(numinstances):
         chkinst = dbquery("SELECT * FROM instances WHERE name = '%s'" % (instance[ins]['name'],))
         if not chkinst:
-            now = time.time()
             log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
             dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote) VALUES \
-                      ('%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], now, now, 'False', now))
+                      ('%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now()))
         else:
             log.debug(f'found server {instance[ins]["name"]} in server table')
     log.debug('database initilization complete')
@@ -144,9 +144,9 @@ def main():
                 checkgit = 0
             else:
                 checkgit += 1
-            time.sleep(60)
+            sleep(60)
             # for each in range(numinstances):
-                # log.debug(f'{instance[each]["name"]} {list(instance[each].keys())}')
+            # log.debug(f'{instance[each]["name"]} {list(instance[each].keys())}')
             if not arkupdt.is_alive():
                 t = 'ark updater'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')

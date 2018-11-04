@@ -1,6 +1,4 @@
-#!/usr/bin/python3
-
-from dbhelper import dbquery, dbupdate
+from modules.dbhelper import dbquery, dbupdate
 from time import sleep
 import logging
 import socket

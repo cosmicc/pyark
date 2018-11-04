@@ -1,8 +1,8 @@
-from configreader import instance, numinstances
 from datetime import datetime
-from dbhelper import dbquery, dbupdate, getlastwipe, getlastrestart
+from modules.configreader import instance, numinstances
+from modules.dbhelper import dbquery, dbupdate, getlastwipe, getlastrestart
+from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift, Secs, Now
 from time import sleep
-from timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift, Secs, Now
 import logging
 import random
 import socket

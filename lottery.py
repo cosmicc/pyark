@@ -1,11 +1,9 @@
-#!/usr/bin/python3
-
 from datetime import datetime
-from dbhelper import dbquery, dbupdate
+from modules.dbhelper import dbquery, dbupdate
+from modules.timehelper import estshift, Secs, Now
 from numpy import argmax
 from numpy.random import seed, shuffle, randint
 from time import sleep
-from timehelper import estshift, Secs, Now
 import logging
 import socket
 

@@ -1,8 +1,8 @@
-from configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
+from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 import logging
 import socket
 from sys import exit
-from timehelper import Now
+from modules.timehelper import Now
 import psycopg2
 
 hstname = socket.gethostname()
@@ -164,61 +164,6 @@ def db_getall(table, fmt='tuple', fetch='all'):
 def db_getvalue(select, table, fmt='tuple', fetch='one'):
     dbdata = dbquery("SELECT %s FROM %s" % (select, table), fetch=fetch)
     return formatdbdata(dbdata, table, qtype=fmt, single=True)
-
-
-def getplayer(steamid):
-    dbdata = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
-    return dbdata
-
-
-def getplayerlastseen(steamid='', playername=''):
-    if playername != '':
-        dbdata = dbquery("SELECT lastseen FROM players WHERE playername = '%s'" % (playername.lower(),), fetch='one', fmt='string')
-    elif steamid != '':
-        dbdata = dbquery("SELECT lastseen FROM players WHERE steamid = '%s'" % (steamid,), fetch='one', fmt='string')
-    else:
-        raise ValueError
-        return None
-    if dbdata:
-        return int(dbdata)
-    else:
-        return None
-
-
-def getplayerlastserver(steamid='', playername=''):
-    if playername != '':
-        dbdata = dbquery("SELECT server FROM players WHERE playername = '%s'" % (playername.lower(),), fetch='one', fmt='string')
-    elif steamid != '':
-        dbdata = dbquery("SELECT lastseen FROM players WHERE steamid = '%s'" % (steamid,), fetch='one', fmt='string')
-    else:
-        raise ValueError
-        return None
-    return dbdata
-
-
-def getplayersonline(inst, fmt='tuple', case='normal'):
-    if inst == 'all':
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s'" % (Now() - 40))
-    else:
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' AND server = '%s'" % (Now() - 40, inst.lower()))
-    return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
-
-
-def getlastplayersonline(inst, fmt='tuple', last=5, case='normal'):
-    if inst == 'all':
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen < %s ORDER BY lastseen DESC LIMIT %s" % (Now() - 60, last))
-    else:
-        dbdata = dbquery("SELECT playername FROM players WHERE server = '%s' AND lastseen < %s ORDER BY lastseen DESC LIMIT %s" % (inst.lower(), Now() - 60, last))
-    return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
-
-
-def isplayerlinked(discordid='', steamid=''):
-    islinked = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (duser.lower(),))
-    if islinked:
-        return True
-    else:
-        return False
-
 
 
 def instancelist():

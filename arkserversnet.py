@@ -1,6 +1,6 @@
-from dbhelper import dbquery, dbupdate
+from modules.dbhelper import dbquery, dbupdate
+from modules.timehelper import Secs
 from time import sleep
-from timehelper import Secs
 from urllib.request import urlopen, Request
 import json
 import logging

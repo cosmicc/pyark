@@ -1,6 +1,7 @@
-from dbhelper import dbupdate, dbquery, getplayersonline
+from modules.dbhelper import dbupdate, dbquery
+from modules.players import getplayersonline
+from modules.timehelper import Secs
 from time import time, sleep
-from timehelper import Secs
 import logging
 import socket
 

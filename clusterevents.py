@@ -1,6 +1,6 @@
-from dbhelper import dbquery, dbupdate
+from modules.dbhelper import dbquery, dbupdate
+from modules.timehelper import Now, Secs
 from time import sleep
-from timehelper import Now, Secs
 import logging
 import socket
 import subprocess

@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 
-from colorizer import RST, WHT, BWHT, BYEL, BRED, BGRN, BLU, ORG, BCYN, SKN, BMGT, RMY, SLT, YEL, GRN, RED, \
-    MAU, MGT, PUR, LREV, BGN
-from configreader import config, sqldb, statsdb, sharedpath
 from datetime import datetime
-from dbhelper import dbquery, dbupdate, db_getall, db_getvalue, db_getcolumns, db_gettables
+from modules.colorizer import RST, WHT, BWHT, BYEL, BRED, BGRN, BLU, ORG, BCYN, SKN, BMGT, RMY, SLT, YEL, GRN, RED, \
+    MAU, MGT, PUR, LREV, BGN
+from modules.configreader import config, sqldb, statsdb, sharedpath
+from modules.dbhelper import dbquery, dbupdate, db_getall, db_getvalue, db_getcolumns, db_gettables
+from modules.timehelper import elapsedTime, estshift, gmtshift, playedTime, wcstamp, datetimeto, Now, Secs
 from numpy import mean
 from sys import exit
-from timehelper import elapsedTime, estshift, gmtshift, playedTime, wcstamp, datetimeto, Now, Secs
 from urllib.request import urlopen, Request
 import argparse
 import json

@@ -15,7 +15,7 @@ def cleanName(filename):
     return filename
 
 
-def lock():
+def plock():
     ppid = str(os.getpid())
 
     def aquireLock():

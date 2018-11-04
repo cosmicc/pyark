@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
-from configreader import instance
-from dbhelper import dbupdate
-from pushover import pushover
+from modules.configreader import instance
+from modules.dbhelper import dbupdate
+from modules.pushover import pushover
 from sys import exit
 from time import sleep
-from timehelper import Secs, Now
+from modules.timehelper import Secs, Now
 import argparse
 import logging
 import re
