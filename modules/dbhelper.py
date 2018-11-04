@@ -2,7 +2,6 @@ from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_
 import logging
 import socket
 from sys import exit
-from modules.timehelper import Now
 import psycopg2
 
 hstname = socket.gethostname()
@@ -164,32 +163,6 @@ def db_getall(table, fmt='tuple', fetch='all'):
 def db_getvalue(select, table, fmt='tuple', fetch='one'):
     dbdata = dbquery("SELECT %s FROM %s" % (select, table), fetch=fetch)
     return formatdbdata(dbdata, table, qtype=fmt, single=True)
-
-
-def instancelist():
-    dbdata = dbquery('SELECT name FROM instances', fmt='list', single=True)
-    return dbdata
-
-
-def getlastwipe(inst):
-    dbdata = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='string', fetch='one')
-    if dbdata:
-        return int(dbdata)
-    else:
-        return None
-
-
-def getlastrestart(inst):
-    dbdata = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst.lower(),), fetch='one', single=True)
-    if dbdata:
-        return int(dbdata[0])
-    else:
-        return None
-
-
-def sendservermessage(inst, whos, msg):  # old writeglobal()
-    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-             (inst.lower(), whos, msg, Now()))
 
 
 if __name__ == '__main__':

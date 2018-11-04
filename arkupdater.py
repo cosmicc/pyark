@@ -1,9 +1,10 @@
 from modules.configreader import sharedpath, arkroot, numinstances, instance, instr, isupdater
 from datetime import datetime
 from datetime import time as dt
-from modules.dbhelper import dbquery, dbupdate, getlastwipe
+from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
 from modules.players import getplayersonline
+from modules.instances import getlastwipe
 from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
 from time import sleep

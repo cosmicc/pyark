@@ -1,7 +1,8 @@
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from modules.configreader import config
-from modules.dbhelper import dbquery, dbupdate, instancelist, getlastwipe, getlastrestart
+from modules.dbhelper import dbquery, dbupdate
+from modules.instances import instancelist, getlastwipe, getlastrestart
 from modules.players import getplayerlastserver, getplayersonline, getlastplayersonline, getplayerlastseen
 from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs
 from time import sleep

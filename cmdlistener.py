@@ -1,6 +1,7 @@
 from datetime import datetime
 from modules.configreader import instance, numinstances
-from modules.dbhelper import dbquery, dbupdate, getlastwipe, getlastrestart
+from modules.dbhelper import dbquery, dbupdate
+from modules.instances import getlastwipe, getlastrestart
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift, Secs, Now
 from time import sleep
 import logging
