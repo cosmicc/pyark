@@ -10,15 +10,19 @@ hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 
+def fetchurldata(url):
+    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    html = urlopen(req).read()
+    return json.loads(html)
+
+
 def fetcharkserverdata():
     hinst = dbquery('SELECT name from instances')
     for each in hinst:
         svrifo = dbquery("SELECT * from instances WHERE name = '%s'" % (each[0],), fetch='one')
         try:
             url = f'https://ark-servers.net/api/?object=servers&element=detail&key={svrifo[8]}'
-            req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            html = urlopen(req).read()
-            adata = json.loads(html)
+            adata = fetchurldata(url)
         except:
             log.error(f'Error fetching ArkServers data from web')
         else:

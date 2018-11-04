@@ -1,6 +1,6 @@
 from auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import iseventtime, getcurrenteventinfo
-from dbhelper import dbquery, dbupdate
+from dbhelper import dbquery, dbupdate, getplayer
 from timehelper import elapsedTime, playedTime, wcstamp, Now
 import logging
 import socket
@@ -109,27 +109,26 @@ def checklottodeposits(steamid, inst):
         dbupdate("DELETE FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
 
 
+def checkifbanned(steamid):
+    oplayer = dbquery("SELECT steamid FROM players WHERE steamid = '%s' AND banned != ''" % (steamid,), fetch='one')
+    bplayer = dbquery("SELECT steamid FROM banlist WHERE steamid = '%s'" % (steamid,), fetch='one')
+    if oplayer or bplayer:
+        return True
+    else:
+        return False
+
+
 def playergreet(steamid, inst):
     global greetthreads
+    global welcomthreads
     gogo = 0
     xferpoints = 0
-    global welcomthreads
-    oplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
-    poplayer = dbquery("SELECT * FROM players WHERE steamid = '%s' AND banned != ''" % (steamid,), fetch='one')
-    bplayer = dbquery("SELECT * FROM banlist WHERE steamid = '%s'" % (steamid,), fetch='one')
-    if poplayer:
-        if not bplayer:
-            log.error(f'banned player out of sync issue {steamid} on instance {inst}. not in banlist')
-    if bplayer:
-        if not poplayer:
-            log.error(f'banned player out of sync issue {steamid} on instance {inst}. not banned in playerlist')
-    if poplayer or bplayer:
-        log.warning(f'banned player with steamid {steamid} has tried to connect or is online on {inst}.\
-kicking and banning.')
+    if checkifbanned(steamid):
+        log.warning(f'banned player with steamid {steamid} has tried to connect or is online on {inst}. kicking and banning.')
         subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (steamid, inst), shell=True)
-        subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
+        # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
-        # log.debug(f'player {steamid} passed ban checks')
+        oplayer = getplayer(steamid)
         if not oplayer:
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
@@ -145,14 +144,15 @@ kicking and banning.')
             else:
                 log.debug(f'welcome message thread already running for new player {steamid}')
             writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
-        elif len(oplayer) > 2:
+        else:
+        # elif len(oplayer) > 2:
             if oplayer[16] != 0 and oplayer[15] == inst:
-                    xferpoints = int(oplayer[16])
-                    log.info(f'transferring {xferpoints} non home server points into account for \
+                xferpoints = int(oplayer[16])
+                log.info(f'transferring {xferpoints} non home server points into account for \
 {oplayer[1]} on {inst}')
-                    dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
-                    subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
-                                   (steamid, xferpoints, inst), shell=True)
+                dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
+                subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
+                               (steamid, xferpoints, inst), shell=True)
             if int(oplayer[2]) + 300 > Now():
                 if oplayer[3] != inst:
                     gogo = 1

@@ -1,0 +1,5 @@
+pg_dump -Fc -f pyark.pgdump -d pyark &&\
+dropdb pyark_test &&\
+createdb pyark_test &&\
+pg_restore -d pyark_test pyark.pgdump &&\
+rm -r pyark.pgdump

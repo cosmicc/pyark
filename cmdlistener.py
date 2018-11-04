@@ -1,6 +1,6 @@
 from configreader import instance, numinstances
 from datetime import datetime
-from dbhelper import dbquery, dbupdate
+from dbhelper import dbquery, dbupdate, getlastwipe, getlastrestart
 from time import sleep
 from timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift, Secs, Now
 import logging
@@ -45,16 +45,6 @@ def resptimeleft(inst, whoasked):
                        (dbtl[0], inst), shell=True)
     else:
         subprocess.run('arkmanager rconcmd "ServerChat Server is not pending a restart" @%s' % (inst), shell=True)
-
-
-def getlastrestart(inst):
-    lastwipe = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst, ))
-    return ''.join(lastwipe[0])
-
-
-def getlastwipe(inst):
-    lastwipe = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst, ))
-    return ''.join(lastwipe[0])
 
 
 def getlastseen(seenname):
@@ -588,18 +578,21 @@ def checkcommands(minst):
 to send to all servers" @%s""" % (minst), shell=True)
             except:
                 log.critical('Critical Error in global chat writer!', exc_info=True)
+
         elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
             whoasked = getnamefromchat(line)
-            lastwipe = elapsedTime(Now(), float(getlastwipe(minst)))
+            lastwipe = elapsedTime(Now(), getlastwipe(minst))
             subprocess.run('arkmanager rconcmd "ServerChat Last wild dino wipe was %s ago" @%s' %
                            (lastwipe, minst), shell=True)
             log.info(f'responded to a lastdinowipe query on {minst} from {whoasked}')
+
         elif line.find('!lastrestart') != -1:
             whoasked = getnamefromchat(line)
-            lastrestart = elapsedTime(Now(), float(getlastrestart(minst)))
+            lastrestart = elapsedTime(Now(), getlastrestart(minst))
             subprocess.run('arkmanager rconcmd "ServerChat Last server restart was %s ago" @%s' %
                            (lastrestart, minst), shell=True)
             log.info(f'responded to a lastrestart query on {minst} from {whoasked}')
+
         elif line.find('!lastseen') != -1:
             whoasked = getnamefromchat(line)
             rawseenname = line.split(':')
@@ -613,6 +606,7 @@ to send to all servers" @%s""" % (minst), shell=True)
                 subprocess.run('arkmanager rconcmd "ServerChat You must specify a player name to search" @%s' %
                                (minst), shell=True)
             log.info(f'responding to a lastseen request for {seenname} from {orgname}')
+
         elif line.find('!playedtime') != -1:
             rawseenname = line.split(':')
             orgname = rawseenname[1].strip()

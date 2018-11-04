@@ -553,16 +553,14 @@ def restartserver(server):
 
 def printcolmns(mtable):
     alldata = db_getcolumns(mtable)
-    ap = []
-    for row in alldata:
-        ap.append(f'{row[1]}[{row[0]}] {row[2]}')
-    print(f'{BMGT}{ap}{RST}')
+    print(f'{BMGT}{alldata}{RST}')
     print('  ')
 
 
-def showtable(mtable, aplay):
+def showtable(mtable):
     sc = 0
     cnt = 0
+    aplay = dbquery("SELECT * FROM %s" % (mtable,))
     if aplay:
         for each in aplay:
             cnt += 1
@@ -575,7 +573,7 @@ def showtable(mtable, aplay):
                 sc = 0
             else:
                 sc = 1
-        print('   ')
+            print('   ')
         print(f'{BWHT}Table: {BGRN}{mtable}{BWHT} Total rows: {BMGT}{cnt}{RST}')
     else:
         print(f'{BYEL}{mtable} table is empty.{RST}')
