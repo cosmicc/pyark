@@ -1,6 +1,6 @@
 import sys
 sys.path.append('/home/ark/pyark')
-import modules.auctionhelper
+import modules.auctionhelper as auctionhelper
 
 
 def test_fetchauctiondata():

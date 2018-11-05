@@ -1,5 +1,5 @@
 #!/usr/bin/python3
 
-import time
+from modules.timehelper import Now
 
-print(time.time())
+print(Now())
