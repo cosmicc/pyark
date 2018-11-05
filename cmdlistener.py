@@ -1,6 +1,7 @@
 from datetime import datetime
 from modules.configreader import instance, numinstances
 from modules.dbhelper import dbquery, dbupdate
+from modules.players import getplayer
 from modules.instances import getlastwipe, getlastrestart
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift, Secs, Now
 from time import sleep
@@ -61,8 +62,8 @@ def getlastseen(seenname):
 
 
 def respmyinfo(inst, whoasked):
-    pinfo = dbquery("SELECT * FROM players WHERE playername = '%s'" % (whoasked,))
-    ptime = playedTime(float(pinfo[4]))
+    pinfo = getplayer(playername=whoasked)
+    ptime = playedTime(pinfo[4])
     mtxt = f"Your current reward points: {pinfo[5]}.\nYour total play time is {ptime}\nYour home server is {pinfo[15].capitalize()}"
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 

@@ -364,6 +364,7 @@ to change home servers'
             log.info(f'responding to topplayed request on discord')
             lsplayer = gettopplayedplayers('all', last=10)
             nom = 0
+            msg = ''
             for each in lsplayer:
                 nom += 1
                 lsplay = getplayer(playername=each)
