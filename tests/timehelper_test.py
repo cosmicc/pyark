@@ -1,6 +1,6 @@
 import sys
 sys.path.append('/home/ark/pyark')
-import timehelper
+import modules.timehelper as timehelper
 from datetime import datetime
 
 

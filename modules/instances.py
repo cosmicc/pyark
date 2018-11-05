@@ -1,4 +1,5 @@
 from modules.dbhelper import dbquery, dbupdate
+from modules.players import getplayer
 from modules.timehelper import Now
 from sys import exit
 import logging
@@ -29,9 +30,18 @@ def getlastrestart(inst):
         return None
 
 
-def sendservermessage(inst, whos, msg):  # old writeglobal()
+def writechat(inst, whos, msg, tstamp):
+    isindb = False
+    if whos != 'ALERT':
+        isindb = getplayer(whos)
+    elif whos == "ALERT" or isindb:
+        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
+                 (inst, whos, msg, tstamp))
+
+
+def writeglobal(inst, whos, msg):
     dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-             (inst.lower(), whos, msg, Now()))
+             (inst, whos, msg, Now()))
 
 
 if __name__ == '__main__':

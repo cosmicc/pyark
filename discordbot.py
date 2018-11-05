@@ -2,8 +2,8 @@ from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinf
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from modules.configreader import config
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import instancelist, getlastwipe, getlastrestart
-from modules.players import getplayerlastserver, getplayersonline, getlastplayersonline, getplayerlastseen
+from modules.instances import instancelist, getlastwipe, getlastrestart, writechat, writeglobal
+from modules.players import getplayer, getplayerlastserver, getplayersonline, getlastplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers
 from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs
 from time import sleep
 import asyncio
@@ -29,20 +29,6 @@ def getlottowinnings(pname):
             totpoints = totpoints + int(weach[1])
         twins += 1
     return twins, totpoints
-
-
-def writechat(inst, whos, msg, tstamp):
-    isindb = False
-    if whos != 'ALERT':
-        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
-    elif whos == "ALERT" or isindb:
-        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-                 (inst, whos, msg, tstamp))
-
-
-def writeglobal(inst, whos, msg):
-    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-             (inst, whos, msg, Now()))
 
 
 def setprimordialbit(steamid, pbit):
@@ -101,10 +87,26 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
     @client.event
     async def on_message(message):
         savediscordtodb(message.author)
-        if message.content.startswith('!who') or message.content.startswith('!whoson') \
+        if message.content.startswith('!help'):
+            msg = f'Commands: !mods, !ec, !rewards, !servers, !event, !decay, !myinfo, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !lotto, !lastlotto, !winners, !timeleft, !lastwipe, !lastrestart, !lastseen, !primordial\n\nCommand descriptions pinned in #game-help channel\nCommands can be privately messaged directly to the bot or publicly in any channel'
+            await client.send_message(message.channel, msg)
+
+        elif message.content.startswith('!whotoday') or message.content.startswith('!today') \
+                or message.content.startswith('!lastday'):
+            log.info('responding to recent players request from discord')
+            for each in instancelist():
+                pcnt = getplayerstoday(each, fmt='count')
+                plist = getplayerstoday(each, fmt='string')
+                if pcnt != 0:
+                    msg = f'{each[0].capitalize()} has had {pcnt} players today: {plist}'
+                    await client.send_message(message.channel, msg)
+                else:
+                    msg = f'{each[0].capitalize()} has had no players today.'
+                    await client.send_message(message.channel, msg)
+
+        elif message.content.startswith('!who') or message.content.startswith('!whoson') \
                 or message.content.startswith('!whosonline'):
             log.info('responding to whos online request from discord')
-            potime = 40
             for each in instancelist():
                 pcnt = getplayersonline(each, fmt='count')
                 plist = getplayersonline(each, fmt='string', case='title')
@@ -171,38 +173,9 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                     msg = f'Last server restart for {each.capitalize()} was {lastwipet} ago'
                     await client.send_message(message.channel, msg)
 
-        elif message.content.startswith('!help'):
-            msg = f'Commands: !mods, !ec, !rewards, !servers, !event, !decay, !myinfo, !who, !lasthour, !lastday, !lastnew, !linkme, !kickme, !lotto, !lastlotto, !winners, !timeleft, !lastwipe, !lastrestart, !lastseen, !primordial\n\nCommand descriptions pinned in #game-help channel\nCommands can be privately messaged directly to the bot or publicly in any channel'
-            await client.send_message(message.channel, msg)
-
         elif message.content.startswith('!vote') or message.content.startswith('!startvote'):
             msg = f'Voting is only allowed in-game'
             await client.send_message(message.channel, msg)
-
-        elif message.content.startswith('!whotoday') or message.content.startswith('!today') \
-                or message.content.startswith('!lastday'):
-            # await asyncio.sleep(5)
-            log.info('responding to recent players request from discord')
-            potime = 86400
-            srvrs = dbquery("SELECT * FROM instances")
-            for each in srvrs:
-                flast = dbquery("SELECT * FROM players WHERE server = '%s'" % (each[0],))
-                pcnt = 0
-                plist = ''
-                for row in flast:
-                    chktme = Now() - float(row[2])
-                    if chktme < potime:
-                        pcnt += 1
-                        if plist == '':
-                            plist = '%s' % (row[1].capitalize())
-                        else:
-                            plist = plist + ', %s' % (row[1].capitalize())
-                if pcnt != 0:
-                    msg = f'{each[0].capitalize()} has had {pcnt} players today: {plist}'
-                    await client.send_message(message.channel, msg)
-                else:
-                    msg = f'{each[0].capitalize()} has had no players today.'
-                    await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!event') or message.content.startswith('!events'):
             whofor = str(message.author).lower()
@@ -226,7 +199,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
         elif message.content.startswith('!decay') or message.content.startswith('!expire'):
             whofor = str(message.author).lower()
             log.info(f'decay request from {whofor} on discord')
-            kuser = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
+            kuser = getplayer(discordid=whofor)
             msg = f'Galaxy Cluster structure & dino decay times:\nDinos: 30 Days, Tek: 38 Days, Metal: 30 Days, Stone: 23 Days, Wood: 15 Days, Thatch: 7.5 Days, Greenhouse: 9.5 Days (Use MetalGlass for 30 Day Greenhouse).\n'
             if kuser:
                 if kuser[8] != whofor:
@@ -269,7 +242,7 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
         elif message.content.startswith('!kickme') or message.content.startswith('!kick'):
             whofor = str(message.author).lower()
             log.info(f'kickme request from {whofor} on discord')
-            kuser = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
+            kuser = getplayer(discordid=whofor)
             if kuser:
                 if kuser[8] != whofor:
                     log.info(f'kickme request from {whofor} denied, no account linked')
@@ -289,11 +262,11 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
         elif message.content.startswith('!home') or message.content.startswith('!myhome'):
             newsrv = message.content.split(' ')
             whofor = str(message.author).lower()
-            kuser = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
+            kuser = getplayer(discordid=whofor)
             if kuser:
                 if len(newsrv) > 1:
                     log.info(f'home server change request for {kuser[1]}')
-                    msg = f'You have to type !myhome on your current home server {kuser[15].capitalize()} \
+                    msg = f'You must type !myhome on your current home server {kuser[15].capitalize()} \
 to change home servers'
                     await client.send_message(message.channel, msg)
                 else:
@@ -328,7 +301,7 @@ to change home servers'
         elif message.content.startswith('!myinfo') or message.content.startswith('!mypoints'):
             whofor = str(message.author).lower()
             log.info(f'myinfo request from {whofor} on discord')
-            kuser = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
+            kuser = getplayer(discordid=whofor)
             if kuser:
                 if kuser[8] != whofor:
                     log.info(f'myinfo request from {whofor} denied, no account linked')
@@ -339,8 +312,8 @@ to change home servers'
                     pauctions = fetchauctiondata(kuser[0])
                     au1, au2, au3 = getauctionstats(pauctions)
                     writeauctionstats(kuser[0], au1, au2, au3)
-                    ptime = playedTime(float(kuser[4]))
-                    ptr = elapsedTime(Now(), float(kuser[2]))
+                    ptime = playedTime(int(kuser[4]))
+                    ptr = elapsedTime(Now(), int(kuser[2]))
                     msg = f'Your current ARc reward points: {kuser[5]}\nLast played on {kuser[3].capitalize()} {ptr} ago.\n'
                     msg = msg + f'Your home server is: {kuser[15].capitalize()}\nYour total play time is {ptime}\n'
                     msg = msg + f'You have {au1} current auctions: {au2} Items, {au3} Dinos\n'
@@ -350,10 +323,10 @@ to change home servers'
                     stonetime = 1987200
                     metaldinotime = 2624400
                     try:
-                        etime = Now() - float(kuser[2])
-                        wdate = epochto(float(kuser[2]) + woodtime, 'string', est=True)
-                        sdate = epochto(float(kuser[2]) + stonetime, 'string', est=True)
-                        mdate = epochto(float(kuser[2]) + metaldinotime, 'string', est=True)
+                        etime = Now() - int(kuser[2])
+                        wdate = epochto(int(kuser[2]) + woodtime, 'string', est=True)
+                        sdate = epochto(int(kuser[2]) + stonetime, 'string', est=True)
+                        mdate = epochto(int(kuser[2]) + metaldinotime, 'string', est=True)
                         if woodtime > etime:
                             woodt = f'Your Wood Structures Expire: {wdate} EST - {elapsedTime(woodtime, etime)} Left'
                         elif etime < Secs['hour']:
@@ -378,21 +351,24 @@ to change home servers'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!newest') or message.content.startswith('!lastnew'):
-            lastseens = dbquery("SELECT firstseen FROM players")
-            lsplayer = dbquery("SELECT * from players WHERE firstseen = '%s'" % (max(lastseens,)))
             log.info(f'responding to lastnew request on discord')
-            lspago = elapsedTime(Now(), float(lsplayer[6]))
-            msg = f'Newest cluster player is {lsplayer[1].capitalize()} online {lspago} ago on {lsplayer[3]}'
+            newlist = getnewestplayers('all', last=3)
+            msg = f'Last 3 Newest Players in cluster:\n'
+            for each in newlist:
+                lsplayer = getplayer(playername=each)
+                lspago = elapsedTime(Now(), lsplayer[6])
+                msg = msg + f'{lsplayer[1].title()} on {lsplayer[3].capitalize()} {lspago} ago\n'
             await client.send_message(message.channel, msg)
-        elif message.content.startswith('!topplayed') or message.content.startswith('!topplayed'):
-            lsplayer = dbquery("SELECT * from players ORDER BY playedtime DESC LIMIT 10")
+
+        elif message.content.startswith('!topplayed') or message.content.startswith('!topplayers'):
             log.info(f'responding to topplayed request on discord')
-            msg = ''
+            lsplayer = gettopplayedplayers('all', last=10)
             nom = 0
             for each in lsplayer:
                 nom += 1
-                lspago = playedTime(float(each[4]))
-                msg = msg + f'#{nom} {each[1].capitalize()} at {lspago}\n'
+                lsplay = getplayer(playername=each)
+                lspago = playedTime(lsplay[4])
+                msg = msg + f'#{nom} {lsplay[1].title()} home {lsplay[15].capitalize()} at {lspago}\n'
             await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!mods'):
