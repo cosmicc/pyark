@@ -44,5 +44,10 @@ def writeglobal(inst, whos, msg):
              (inst, whos, msg, Now()))
 
 
+def serverchat(msg, inst='ALERT', whosent='ALERT'):
+    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
+             (inst, whosent, msg, Now()))
+
+
 if __name__ == '__main__':
     exit()

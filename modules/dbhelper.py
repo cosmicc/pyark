@@ -64,20 +64,17 @@ def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='nor
                 plist.append(each)
         return plist
     elif qtype == 'dict':
-        clmndata = db_getcolumns(table)
-        clmnn = []
-        for eclmn in clmndata:
-            clmnn.append(eclmn[0])
+        clmndata = db_getcolumns(table, raw=True)
         itern = 0
         if type(data) is tuple:
             nlist = {}
-            nlist = dict(zip(clmnn, data))
+            nlist = dict(zip(clmndata, data))
             itern += 1
         else:
             nlist = []
             for eeach in data:
                 itern += 1
-                nlist.append(dict(zip(clmnn, eeach)))
+                nlist.append(dict(zip(clmndata, eeach)))
         return nlist
 
 
@@ -142,12 +139,19 @@ def dbupdate(query, db='sqldb'):
         return True
 
 
-def db_getcolumns(table):
-    dbdata = dbquery("SELECT column_name, ordinal_position FROM information_schema.columns WHERE table_schema = 'public' and table_name = '%s'" % (table,))
+def db_getcolumns(table, raw=False):
+    dbdata = dbquery("SELECT column_name, ordinal_position, data_type  FROM information_schema.columns WHERE table_schema = 'public' and table_name = '%s'" % (table,))
     nt = ''
+    ntl = []
     for each in dbdata:
-        nt = nt + f'{each[0]}[{each[1]-1}], '
-    return nt
+        if not raw:
+            nt = nt + f'{each[0]}[{each[1]-1}] ({each[2]}), '
+        elif raw:
+            ntl.append(each[0])
+    if not raw:
+        return nt
+    elif raw:
+        return ntl
 
 
 def db_gettables(db, fmt='tuple'):

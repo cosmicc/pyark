@@ -83,16 +83,16 @@ def determinewinner(linfo):
 
 
 def lotteryloop(linfo):
-    if linfo[8] == 0 or linfo[8] is None:
+    if linfo[8] is False or linfo[8] is None:
         log.debug('clearing lotteryplayers table')
-        dbupdate("UPDATE lotteryinfo SET announced = 1 WHERE id = '%s'" % (linfo[0],))
+        dbupdate("UPDATE lotteryinfo SET announced = True WHERE timestamp = %s" % (linfo[3],))
         dbupdate("DELETE FROM lotteryplayers")
     inlottery = True
     log.info('lottery loop has begun, waiting for lottery entries')
     while inlottery:
         sleep(Secs['1min'])
         try:
-            tdy = float(linfo[3]) + (Secs['hour'] * int(linfo[5]))
+            tdy = linfo[3] + (Secs['hour'] * int(linfo[5]))
         # tdy = float(linfo[3])+300*int(linfo[5]) ## quick 5 min for testing
             if Now() >= tdy:
                 determinewinner(linfo)

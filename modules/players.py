@@ -2,14 +2,14 @@ from modules.dbhelper import dbquery, formatdbdata
 from modules.timehelper import Now, Secs
 
 
-def getplayer(steamid='', discordid='', playername=''):
+def getplayer(steamid='', discordid='', playername='', fmt='tuple'):
     if steamid != '':
         dbdata = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     elif playername != '':
         dbdata = dbquery("SELECT * FROM players WHERE playername = '%s'" % (playername,), fetch='one')
     elif discordid != '':
         dbdata = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (discordid,), fetch='one')
-    return dbdata
+    return formatdbdata(dbdata, 'players', qtype=fmt, single=True)
 
 
 def getplayerlastseen(steamid='', playername=''):

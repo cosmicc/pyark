@@ -1,4 +1,5 @@
-from modules.dbhelper import dbquery, dbupdate
+from modules.dbhelper import dbupdate
+from modules.players import getplayer
 from modules.timehelper import Now
 from time import sleep
 import logging
@@ -12,18 +13,23 @@ log = logging.getLogger(name=hstname)
 def gchatrelay(inst):
     while True:
         try:
-            cbuff = dbquery("SELECT * FROM globalbuffer")
+            cbuff = db_getall('globalbuffer', fmt='dict')
             if cbuff:
                 for each in cbuff:
-                    if each[1] == 'ALERT' and each[2] == 'ALERT' and float(each[4]) > Now() - 3:
-                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each[3], inst), shell=True)
-                    elif each[1] == inst and each[2] == 'ALERT' and float(each[4]) > Now() - 3:
-                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each[3], inst), shell=True)
-                    elif each[1] != inst and each[2] != 'ALERT' and float(each[4]) > Now() - 3:
+                    if each['server'] == 'ALERT' and each['name'] == 'ALERT' and each['private'] is False and float(each['timestamp']) > Now() - 3:
+                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each['message'], inst), shell=True)
+                    elif each['server'] == inst and each['name'] == 'ALERT' and each['private'] is False and float(each['timestamp']) > Now() - 3:
+                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each['message'], inst), shell=True)
+                    elif each['server'] != inst and each['name'] != 'ALERT' and each['private'] is False and float(each['timestamp']) > Now() - 3:
                         subprocess.run('arkmanager rconcmd "ServerChat %s@%s: %s" @%s'
-                                       % (each[2].capitalize(), each[1].capitalize(), each[3], inst), shell=True)
-                    if float(each[4]) < Now() - 10:
-                        dbupdate("DELETE FROM globalbuffer WHERE id = '%s'" % (each[0],))
+                                       % (each['name'].title(), each['server'].capitalize(), each['message'], inst), shell=True)
+                    elif each['private'] is True and float(each['timestamp']) > Now() - 3:
+                        cplayer = getplayer(playername=each['name'], fmt='dict'):
+                        if cplayer:
+                            if cplayer['server'] == inst:
+                                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (cplayer['steamid'], each['message'], inst), shell=True)
+                    if float(each['timestamp']) < Now() - 10:
+                        dbupdate("DELETE FROM globalbuffer WHERE id = '%s'" % (each['id'],))
             sleep(3)
         except:
             log.critical('Critical Error in Global Chat Relayer!', exc_info=True)

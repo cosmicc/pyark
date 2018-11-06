@@ -1,0 +1,138 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 10.5 (Ubuntu 10.5-0ubuntu0.18.04)
+-- Dumped by pg_dump version 10.5 (Ubuntu 10.5-0ubuntu0.18.04)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: lotteryinfo; Type: TABLE; Schema: public; Owner: root
+--
+
+CREATE TABLE public.lotteryinfo (
+    id integer NOT NULL,
+    type character varying,
+    payoutitem character varying,
+    timestamp int,
+    buyinpoints smallint,
+    lengthdays smallint,
+    players smallint,
+    winner character varying,
+    announced bool
+);
+
+
+ALTER TABLE public.lotteryinfo OWNER TO root;
+
+--
+-- Name: lotteryinfo_id_seq; Type: SEQUENCE; Schema: public; Owner: root
+--
+
+CREATE SEQUENCE public.lotteryinfo_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.lotteryinfo_id_seq OWNER TO root;
+
+--
+-- Name: lotteryinfo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
+--
+
+ALTER SEQUENCE public.lotteryinfo_id_seq OWNED BY public.lotteryinfo.id;
+
+
+--
+-- Name: lotteryinfo id; Type: DEFAULT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.lotteryinfo ALTER COLUMN id SET DEFAULT nextval('public.lotteryinfo_id_seq'::regclass);
+
+
+--
+-- Data for Name: lotteryinfo; Type: TABLE DATA; Schema: public; Owner: root
+--
+
+COPY public.lotteryinfo (id, type, payoutitem, "timestamp", buyinpoints, lengthdays, players, winner, announced) FROM stdin;
+10	points	8	1538280212 	1	1	6	doomfire103	True
+11	points	240	1538285490 	20	14	10	skeet	True
+15	points	35	1538786889   5	5	1	5	markimus	True
+16	item	20x biotoxin	1538801641      	1	1	3	bartimusprime	True
+17	points	50	1538847025 	10	1	3	zauron	True
+18	points	400	1538860583 	50	2	6	markimus	True
+19	points	200	1538962910 	50	1	2	None	True
+20	points	300	1538973891 	50	18	4	zauron	True
+21	points	160	1539045616 	20	10	6	kayla	True
+22	points	350	1539094243 	50	9	5	haus	True
+23	points	200	1539132481 	50	9	0	None	True
+24	points	250	1539277851	50	8	1	None	True
+25	points	240	1539311086 	20	22	8	weiser	True
+26	points	250	1539402108 	50	13	1	None	True
+27	points	400	1539469009 	50	24	4	snuffy	True
+28	points	350	1539891653 	50	6	3	sumax	True
+29	points	280	1539914896 	20	20	4	haus	True
+30	points	480	1539996911 	30	14	6	mondo	True
+31	points	240	1540070425 	20	6	2	None	True
+32	points	390	1540150371	30	7	3	mondo	True
+33	points	750	1540178540	50	21	5	az	True
+34	points	390	1540313774	30	8	3	kyle katarn	True
+35	points	850	1540357274	50	43	7	sumax	True
+36	points	800	1540564690	50	52	6	sheriffen	True
+38	points	450	1540785835	30	67	5	mondo	True
+39	points	750	1541036257	50	5	5	sumax	True
+40	points	640	1541135482 	40	48	6	thom fulari	True
+1	points	600	1541388970	40	58	5	Incomplete	True
+\.
+
+
+--
+-- Name: lotteryinfo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
+--
+
+SELECT pg_catalog.setval('public.lotteryinfo_id_seq', 1, true);
+
+
+--
+-- Name: lotteryinfo lotteryinfo_pkey; Type: CONSTRAINT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.lotteryinfo
+    ADD CONSTRAINT lotteryinfo_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: TABLE lotteryinfo; Type: ACL; Schema: public; Owner: root
+--
+
+GRANT ALL ON TABLE public.lotteryinfo TO pyark;
+
+
+--
+-- Name: SEQUENCE lotteryinfo_id_seq; Type: ACL; Schema: public; Owner: root
+--
+
+GRANT SELECT,USAGE ON SEQUENCE public.lotteryinfo_id_seq TO pyark;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
