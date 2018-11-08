@@ -145,7 +145,7 @@ def db_getcolumns(table, raw=False):
     ntl = []
     for each in dbdata:
         if not raw:
-            nt = nt + f'{each[0]}[{each[1]-1}] ({each[2]}), '
+            nt = nt + f'{each[1]-1} {each[0]} ({each[2]})\n'
         elif raw:
             ntl.append(each[0])
     if not raw:

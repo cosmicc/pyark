@@ -1055,7 +1055,7 @@ def startevent():
     except:
         print(f'\nCould not determine date from input. Exiting\n')
         exit()
-    if datetimeto(estopdt, 'epoch') < time.time():
+    if datetimeto(estopdt, 'epoch') < Now():
         print(f'\nEnd Time cannot be before current time. Exiting\n')
         exit()
     print(f'{BGRN}New Event:{RST}')
@@ -1076,7 +1076,7 @@ def startevent():
         print('Event NOT started')
         exit()
     dbupdate("INSERT INTO events (completed,starttime,endtime,title,description,cfgfilesuffix) VALUES \
-              ('%s','%s','%s','%s','%s','%s')" % (0, datetime(estartdt, 'epoch'), datetime(estopdt, 'epoch'), etitle, edesc, esuffix))
+              ('%s','%s','%s','%s','%s','%s')" % (0, datetimeto(estartdt, 'epoch'), datetimeto(estopdt, 'epoch'), etitle, edesc, esuffix))
 
 
 def startlottery():
