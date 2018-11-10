@@ -1,0 +1,46 @@
+<!doctype html>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fontawesome.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
+
+<div class="columns is-mobile is-centered is-size-1-mobile">
+    {% for instance in instances %}
+  <a class="column is-info is-large">
+    <h1 class='is-size-1 has-text-centered is-capitalized'>{{ instance }}</h1>
+        <h2 class='is-size-1 has-text-centered'>{{ ui_getplayersonline(instance, 'count') }}</h2>
+  </a>
+    {% endfor %}
+</div>
+
+<div class="columns is-mobile is-centered is-size-1-mobile">
+    <div class="column">
+        <a class="button is-large is-danger is-rounded is-outlined is-fullwidth">Cluster Event Inactive</a>
+    </div>
+    <div class="column">
+        <a class="button is-large is-success is-rounded is-outlined is-fullwidth">Cluster Lottery Active</a>
+    </div>
+</div>
+
+
+
+  <div class="container">
+      <a class='box'>
+      <h1 class= 'is-size-1 has-text-centered '>Cluster Players Online: {{ui_getplayersonline('all', 'count')}}</h1>
+        {% for player in ui_getplayersonline('all', 'list') %}
+            <h2 class='has-text-centered is-size-2'>{{ player }}</h2>
+        {% endfor %}
+    </a>
+  </div>
+
+<div class="container">
+      <a class='box'>
+      <h1 class= 'is-size-1 has-text-centered '>Last 5 Players Online:</h1>
+        {% for player in ui_getlastplayersonline('all', 'list') %}
+            <h2 class='has-text-centered is-size-2'>{{ player }}</h2>
+        {% endfor %}
+    </a>
+  </div>
+
+
+
+

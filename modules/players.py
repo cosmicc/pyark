@@ -39,9 +39,9 @@ def getplayerlastserver(steamid='', playername=''):
 
 def getplayersonline(inst, fmt='list', case='normal'):
     if inst == 'all':
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s'" % (Now() - 40))
+        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' ORDER BY playername" % (Now() - 40))
     else:
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' AND server = '%s'" % (Now() - 40, inst.lower()))
+        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' AND server = '%s' ORDER BY playername" % (Now() - 40, inst.lower()))
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
 
 

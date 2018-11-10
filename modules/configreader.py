@@ -50,6 +50,12 @@ po_userkey = config.get('general', 'pushover_userkey')
 po_appkey = config.get('general', 'pushover_appkey')
 
 restapi_enabled = config.get('restapi', 'enabled')
-restapi_token = config.get('restapi', 'token')
+restapi_debug = config.get('restapi', 'debug')
 restapi_ip = config.get('restapi', 'ip')
 restapi_port = config.get('restapi', 'port')
+restapi_token = config.get('restapi', 'token')
+
+webui_enabled = config.get('webui', 'enabled')
+webui_debug = config.get('webui', 'debug')
+webui_ip = config.get('webui', 'ip')
+webui_port = config.get('webui', 'port')

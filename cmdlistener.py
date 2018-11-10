@@ -427,6 +427,8 @@ new player to cluster.')
             log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating.')
             dbupdate("UPDATE players SET playername = '%s', playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
                      (playername, playtime, rewardpoints, steamid))
+        elif inst == 'extinction':
+            log.debug(f'player {playername} with steamid {steamid} was found on extinction server {inst}. skipping.')
         else:
             log.debug(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating.')
             if int(pexist[16]) != int(rewardpoints):
@@ -473,7 +475,7 @@ with {pinfo[5]} points')
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                (pinfo[0], msg, inst), shell=True)
         else:
-            msg = f'{ext.capitalize()} is not a server in the cluster.'
+            msg = f'{ext.capitalize()} is not a server you can call home in the cluster.'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0], msg, inst), shell=True)
     else:
         msg = f'Your current home server is: {pinfo[15].capitalize()}'

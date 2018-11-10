@@ -901,7 +901,7 @@ def serverinfo(svr):
 def playerage():
     print(f'{BCYN}PLAYERS BY LAST TIME SEEN:{RST}')
     print('    ')
-    lastones = dbquery("SELECT * from players ORDER BY lastseen DESC")
+    lastones = dbquery("SELECT * from players ORDER BY playername DESC")
     for feach in lastones:
         printplayer(feach)
     print('   ')

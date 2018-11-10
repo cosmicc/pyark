@@ -11,6 +11,8 @@ pandas = "*"
 gitpython = "*"
 colored = "*"
 "psycopg2" = "*"
+py-time-between = "*"
+discord = "*"
 
 [dev-packages]
 

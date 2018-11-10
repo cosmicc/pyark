@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import Flask, request, Blueprint
 from flask_restplus import Api, Resource, fields
 from functools import wraps
-from modules.configreader import restapi_ip, restapi_port, apilogfile
+from modules.configreader import restapi_ip, restapi_port, restapi_debug, apilogfile
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import estshift, elapsedTime, playedTime
 from numpy import mean
@@ -764,4 +764,4 @@ class ExpiredPlayers(Resource):
 
 
 if __name__ == '__main__':
-    app.run(host=restapi_ip, port=restapi_port, debug=True)
+    app.run(host=restapi_ip, port=restapi_port, debug=restapi_debug)

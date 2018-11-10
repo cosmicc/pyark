@@ -35,7 +35,7 @@ def test_dbupdate():
 
 
 def test_db_getcolumns():
-    assert dbhelper.db_getcolumns('kicklist') == 'instance[0], steamid[1], '
+    assert dbhelper.db_getcolumns('kicklist') == '0 instance (character varying)\n1 steamid (character)\n'
 
 
 def test_db_gettables():

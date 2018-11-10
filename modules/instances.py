@@ -10,7 +10,7 @@ log = logging.getLogger(name=hstname)
 
 
 def instancelist():
-    dbdata = dbquery('SELECT name FROM instances', fmt='list', single=True)
+    dbdata = dbquery('SELECT name FROM instances ORDER BY name', fmt='list', single=True)
     return dbdata
 
 
