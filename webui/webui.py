@@ -5,7 +5,7 @@ from modules.configreader import webui_ip, webui_port, webui_debug
 from modules.dbhelper import dbquery
 from modules.instances import instancelist, isinstanceup, isinrestart
 from modules.players import getplayersonline, getlastplayersonline
-from modules.timehelper import elapsedTime, Now, playedTime
+from modules.timehelper import elapsedTime, Now, playedTime, epochto
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 import json
 sys.path.append('/home/ark/pyark/webui')
@@ -103,6 +103,25 @@ def _playedTime():
     return dict(ui_playedTime=ui_playedTime)
 
 
+@app.context_processor
+def _epochto():
+    def ui_epochto(epoch, fmt=''):
+        return epochto(int(epoch))
+    return dict(ui_epochto=ui_epochto)
+
+
+@app.context_processor
+def _lastactive():
+    def ui_lastactive(inst):
+        retime = int(dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), db='statsdb', fetch='one', fmt='string'))
+        if Now() - retime > 300:
+            return f'{elapsedTime(Now(), retime)} ago'
+        else:
+            return 'Now'
+
+    return dict(ui_lastactive=ui_lastactive)
+
+
 def instanceinfo(inst):
     return dbquery("SELECT * FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='dict', fetch='one')
 
@@ -113,6 +132,18 @@ def getplayerinfo(player):
 
 def getplayernames():
     return dbquery("SELECT playername FROM players ORDER BY playername ASC", fmt='list', single=True)
+
+
+def getlastevent():
+    return dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY endtime DESC", fmt='dict', fetch='one')
+
+
+def getcurrentevent():
+    return dbquery("SELECT * FROM events WHERE completed = 0 AND startime < '%s' ORDER BY endtime DESC" % (Now(),), fmt='dict', fetch='one')
+
+
+def getfutureevent():
+    return dbquery("SELECT * FROM events WHERE completed = 0 AND startime > '%s' ORDER BY endtime DESC" % (Now(),), fmt='dict', fetch='one')
 
 
 @app.route('/manifest.json')
@@ -146,7 +177,7 @@ def serverinfo(instance):
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance), instance=instance)
 
 
-@app.route('/playerinfo', methods = ['POST', 'GET'])
+@app.route('/playersearch', methods = ['POST', 'GET'])
 def result():
    if request.method == 'POST':
       return render_template("playerinfo.html", playerinfo=getplayerinfo(request.form['player']))
@@ -157,9 +188,14 @@ def playerinfo(player):
     return render_template('playerinfo.html', playerinfo=getplayerinfo(player))
 
 
-@app.route('/players')
+@app.route('/playerinfo')
 def _players():
     return render_template('playerselect.html', players=getplayernames())
+
+
+@app.route('/events')
+def _events():
+    return render_template('eventinfo.html', lastevent=getlastevent(), currentevent=getcurrentevent(), futureevent=getfutureevent())
 
 
 if __name__ == '__main__':
