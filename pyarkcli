@@ -1099,8 +1099,7 @@ def startlottery():
     print(f'{BYEL}Buyin Points: {BMGT}{lbuyin}{RST}')
     print(f'{BYEL}Lottery Length: {BMGT}{ldays} Hours{RST}')
     print('    ')
-    dbupdate("INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner,announced) VALUES \
-             ('%s','%s','%s','%s','%s',0,'Incomplete')" % (ltype, litm, Now(), lbuyin, ldays, False))
+    dbupdate("INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner,announced) VALUES ('%s','%s','%s','%s','%s',0,'Incomplete',False)" % (ltype, litm, Now(), lbuyin, ldays))
 
 
 def lottery():

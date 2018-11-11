@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="refresh" content="60">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    </head>
+
+    <body>
+    <nav class="navbar is-info">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="#" style="font-weight:bold;">
+            Galaxy Cluster Ark Servers
+          </a>
+          <span class="navbar-burger burger" data-target="navMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </div>
+        <div id="navMenu" class="navbar-menu">
+          <div class="navbar-end">
+            <a href="/" class="navbar-item is-active">Dashboard</a>
+            <a href="/players" class="navbar-item">Players</a>
+            <a href="/events" class="navbar-item">Events</a>
+            <a href="/lottery" class="navbar-item">Lottery</a>
+            <a href="/stats" class="navbar-item">Stats</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <script type="text/javascript">
+      (function() {
+        var burger = document.querySelector('.burger');
+        var nav = document.querySelector('#'+burger.dataset.target);
+        burger.addEventListener('click', function(){
+          burger.classList.toggle('is-active');
+          nav.classList.toggle('is-active');
+        });
+      })();
+    </script>
+    <div class="container is-mobile is-centered top-pad-10 bottom-pad-10">
+    <nav class="level is-mobile">
+
+            {% for instance in instances %}
+            <div class="level-item is-mobile">
+                <div>
+                <p class='heading is-size-6 has-text-centered is-capitalized'>{{ instance }}</p>
+                <p class='title is-size-4 has-text-centered'>{{ ui_getplayersonline(instance, 'count') }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        </nav>
+    </div>
+     <div class="container is-mobile is-centered">
+         {% for instance in instances %}
+         {% if ui_isinstanceup(instance) %}
+        {% if ui_isinrestart(instance) %}
+             <a class="button has-background-primary is-mobile is-centered has-text-white is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;v{{ ui_getinstver(instance) }}&nbsp;{{ ui_getrestartleft(instance) }}&nbsp;min</a>
+        {% else %}
+            <a class="button has-background-success is-mobile is-centered has-text-white is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;v{{ ui_getinstver(instance) }}</a>
+        {% endif %}
+        {% else %}
+            <a class="button has-background-danger is-mobile is-centered has-text-white is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;v{{ ui_getinstver(instance) }}</a>
+        {% endif %}
+        {% endfor %}
+    </div>
+        <div class="container is-mobile is-centered">
+            <div>
+                <p class= 'subtitle top-pad-10 is-size-5 has-text-centered '>Current Players Online: {{ui_getplayersonline('all', 'count')}}</p>
+            </div>
+                {% for player in ui_getplayersonline('all', 'list') %}
+                    <a class='button is-centered has-background-success has-text-white is-mobile is-fullwidth' href="/playerinfo/{{ player }}">
+                        {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
+                    </a>
+                {% endfor %}
+        </div>
+<div class="container is-mobile is-centered">
+    <div>
+      <p class= 'subtitle top-pad-dbl is-size-5 has-text-centered '>Last 5 Players Online:</p>
+    </div>
+        {% for player in ui_getlastplayersonline('all', 'list') %}
+            <a class='button has-background-grey has-text-white is-centered is-mobile is-fullwidth' href="/playerinfo/{{ player }}">
+                {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}&nbsp;ago
+        </a>
+        {% endfor %}
+  </div>
+        <div class="container is-mobile is-centered top-pad-5">
+            <a class="button is-warning is-centered is-fullwidth" href="/events">No Active Cluster Events</a>
+            {% if ui_isinlottery() %}
+        </div>
+        <div class="container is-mobile is-centered top-pad-5">
+            <a class="button is-success is-centered has-text-white is-fullwidth" href="/lottery">Lottery Active with {{ ui_getlotteryplayers(fmt='count') }} Players</a>
+            {% else %}
+            <a class="button is-warning is-centered is-fullwidth" href="/lottery">No Active Cluster Lotterys</a>
+            {% endif %}
+        </div>
+
+
+
+
+

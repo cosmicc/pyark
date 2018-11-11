@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="refresh" content="60">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    </head>
+
+    <body>
+    <nav class="navbar is-info">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="#" style="font-weight:bold;">
+            Galaxy Cluster Ark Servers
+          </a>
+          <span class="navbar-burger burger" data-target="navMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </div>
+        <div id="navMenu" class="navbar-menu">
+          <div class="navbar-end">
+            <a href="/" class="navbar-item is-active">Dashboard</a>
+            <a href="/playerinfo" class="navbar-item">Players</a>
+            <a href="/events" class="navbar-item">Events</a>
+            <a href="/lottery" class="navbar-item">Lottery</a>
+            <a href="/stats" class="navbar-item">Stats</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <script type="text/javascript">
+      (function() {
+        var burger = document.querySelector('.burger');
+        var nav = document.querySelector('#'+burger.dataset.target);
+        burger.addEventListener('click', function(){
+          burger.classList.toggle('is-active');
+          nav.classList.toggle('is-active');
+        });
+      })();
+    </script>
+    <div class='container is-mobile has-background-success bottom-pad-10'>
+        <div>
+            <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>{{ serverinfo['name'].title() }}</h1>
+            <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>{{ serverinfo['hostname'] }}</h2>
+        </div>
+    </div>
+    <div class='container is-mobile left-pad'>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Last Server Restart: <b>{{ ui_elapsedTime(serverinfo['lastrestart']) }}</b></p>
+            <p class='is-2'>Restart Reason: <b>{{ serverinfo['restartreason'].title() }}</b></p>
+            <p class='is-2'>Ark Game Version: <b>v{{ serverinfo['arkversion'] }}</b></p>
+        </div>
+    </div>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Last Dino Wipe: <b>{{ ui_elapsedTime(serverinfo['lastdinowipe']) }}</b></p>
+            <p class='is-2'>Last Wipe Vote: <b>{{ ui_elapsedTime(serverinfo['lastvote']) }}</b></p>
+        </div>
+    </div>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Config Version: <b>v{{ serverinfo['cfgver'] }}</b></p>
+            <p class='is-2'>Is Running: <b>{{ serverinfo['isrunning'] }}</b></p>
+            <p class='is-2'>Is Listening: <b>{{ serverinfo['islistening'] }}</b></p>
+            <p class='is-2'>Is Online: <b>{{ serverinfo['isup'] }}</b></p>
+            <p class='is-2'>Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
+        </div>
+    </div>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Active Memory: <b>{{ serverinfo['actmem'] }} gigs</b></p>
+            <p class='is-2'>Total Memory: <b>{{ serverinfo['totmem'] }} gigs</b></p>
+        </div>
+    </div>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
+            <p class='is-2'>Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>
+        </div>
+    </div>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Server Event: <b>{{ serverinfo['inevent'] }}</b></p>
+        </div>
+    </div>
+        <div class="container is-mobile is-centered">
+            <div>
+                <p class= 'subtitle top-pad-10 is-size-5 has-text-centered '>Current Players Online: {{ui_getplayersonline(instance, 'count')}}</p>
+            </div>
+                {% for player in ui_getplayersonline(instance, 'list') %}
+                    <a class='button is-centered has-background-success has-text-white is-mobile is-fullwidth' href="/playerinfo/{{ player }}">
+                        {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
+                    </a>
+                {% endfor %}
+        </div>
+<div class="container is-mobile is-centered">
+    <div>
+      <p class= 'subtitle top-pad-dbl is-size-5 has-text-centered '>Last 5 Players Online:</p>
+    </div>
+        {% for player in ui_getlastplayersonline(instance, 'list') %}
+            <a class='button has-background-grey has-text-white is-centered is-mobile is-fullwidth' href="/playerinfo/{{ player }}">
+                {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}&nbsp;ago
+        </a>
+        {% endfor %}
+  </div>
+ 
+    </div>
+
+

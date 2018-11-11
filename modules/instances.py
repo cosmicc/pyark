@@ -9,6 +9,22 @@ hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 
+def isinrestart(inst):
+    dbdata = dbquery("SELECT needsrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
+    if dbdata[0] == 1:
+        return True
+    else:
+        return False
+
+
+def isinstanceup(inst):
+    dbdata = dbquery("SELECT isup FROM instances WHERE name = '%s'" % (inst,), fetch='one')
+    if dbdata[0] == 1:
+        return True
+    else:
+        return False
+
+
 def instancelist():
     dbdata = dbquery('SELECT name FROM instances ORDER BY name', fmt='list', single=True)
     return dbdata

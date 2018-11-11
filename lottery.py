@@ -22,6 +22,27 @@ def writeglobal(inst, whos, msg):
              (inst, whos, msg, Now()))
 
 
+def isinlottery():
+    linfo = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'")
+    if linfo:
+        return True
+    else:
+        return False
+
+
+def getlotteryplayers(fmt):
+    linfo = dbquery("SELECT playername FROM lotteryplayers", fmt=fmt)
+    return linfo
+
+
+def getlotteryendtime():
+    linfo = dbquery("SELECT timestamp, lengthdays from lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
+    endtime = float(linfo[0]) + (3600 * linfo[1])
+    endtime = datetime.fromtimestamp(endtime)
+    return estshift(endtime).strftime('%a %b %-d %-I:%M %p')
+
+
+
 def determinewinner(linfo):
     log.info('Lottery time has ended. Determining winner.')
     winners = []

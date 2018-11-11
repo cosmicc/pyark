@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    </head>
+
+    <body>
+    <nav class="navbar is-info">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="#" style="font-weight:bold;">
+            Galaxy Cluster Ark Servers
+          </a>
+          <span class="navbar-burger burger" data-target="navMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </div>
+        <div id="navMenu" class="navbar-menu">
+          <div class="navbar-end">
+            <a href="/" class="navbar-item is-active">Dashboard</a>
+            <a href="/playerinfo" class="navbar-item">Players</a>
+            <a href="/events" class="navbar-item">Events</a>
+            <a href="/lottery" class="navbar-item">Lottery</a>
+            <a href="/stats" class="navbar-item">Stats</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <script type="text/javascript">
+      (function() {
+        var burger = document.querySelector('.burger');
+        var nav = document.querySelector('#'+burger.dataset.target);
+        burger.addEventListener('click', function(){
+          burger.classList.toggle('is-active');
+          nav.classList.toggle('is-active');
+        });
+      })();
+    </script>
+    <div class='container is-mobile has-background-success bottom-pad-10'>
+        <div>
+            <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>{{ playerinfo['playername'].title() }}</h1>
+            {% if playerinfo['discordid'] == '' %}
+                <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>{{ playerinfo['steamid'] }}</h2>
+            {% else %}
+            <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>{{ playerinfo['steamid'] }} - {{ playerinfo['discordid'].capitalize() }}</h2>
+            {% endif %}
+        </div>
+    </div>
+    <div class='container is-mobile left-pad'>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Last Seen: <b>{{ ui_elapsedTime(playerinfo['lastseen']) }} ago on {{ playerinfo['server'].title() }}</b></p>
+            <p class='is-2'>Home Server: <b>{{ playerinfo['homeserver'].title() }}</b></p>
+        </div>
+    </div>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Total Played Time: <b>{{ ui_playedTime(playerinfo['playedtime']) }}</b></p>
+            <p class='is-2'>Joined: <b>{{ ui_elapsedTime(playerinfo['firstseen']) }} ago</b></p>
+            <p class='is-2'>Total Connections: <b>{{ playerinfo['connects'] }}</b></p>
+        </div>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Total Reward Points: <b>{{ playerinfo['rewardpoints'] }} points</b></p>
+            <p class='is-2'>Pending Transfer Points: <b>{{ playerinfo['transferpoints'] }} points</b></p>
+            <p class='is-2'>Lottery Wins: <b>{{ playerinfo['lottowins'] }} wins</b></p>
+            <p class='is-2'>Total Lottery Winnings: <b>{{ playerinfo['lotterywinnings'] }} points</b></p>
+        </div>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>Total Auctions: <b>{{ playerinfo['totalauctions'] }} auctions</b></p>
+            <p class='is-2'>Item Auctions: <b>{{ playerinfo['itemauctions'] }} auctions</b></p>
+            <p class='is-2'>Dino Auctions: <b>{{ playerinfo['dinoauctions'] }} auctions</b></p>
+        </div>
+    <div class='container top-pad-5 is-mobile'>
+        <div>
+            <p class='is-2'>On Since Restart: <b>{{ playerinfo['restartbit'] }}</b></p>
+            <p class='is-2'>Primordial Warning: <b>{{ playerinfo['primordialbit'] }}</b></p>
+
+        </div>
+
+    </div>
+
+

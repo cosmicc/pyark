@@ -8,11 +8,11 @@ from cmdlistener import clisten
 from discordbot import discordbot
 from gchatrelay import gchatrelay
 from kicker import kicker
-from modules.configreader import logfile, instance, numinstances, imthedbot, restapi_enabled, restapi_ip, restapi_port
+from modules.configreader import logfile, instance, numinstances, imthedbot, webui_enabled, webui_ip, webui_port, webui_debug
 from modules.dbhelper import dbquery, dbupdate
 from modules.processlock import plock
 from onlinemonitor import onlineupdate
-from restapi import app
+from webui.webui import app
 from statcollector import oscollect
 from sys import exit
 from time import sleep
@@ -96,8 +96,7 @@ def main():
         chkinst = dbquery("SELECT * FROM instances WHERE name = '%s'" % (instance[ins]['name'],))
         if not chkinst:
             log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
-            dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote) VALUES \
-                      ('%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now()))
+            dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote, restartreason, cfgver, restartcountdown) VALUES ('%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now(), 'admin restart', 0, 30))
         else:
             log.debug(f'found server {instance[ins]["name"]} in server table')
     log.debug('database initilization complete')
@@ -127,10 +126,10 @@ def main():
         lotteryt.start()
         ostat = threading.Thread(name='stat-collector', target=oscollect)
         ostat.start()
-    if restapi_enabled == "True" or restapi_enabled == "true":
-        log.info(f'Starting RestAPI Server on IP: {restapi_ip} PORT: {restapi_port}')
+    if webui_enabled == "True" or webui_enabled == "true":
+        log.info(f'Starting WebUI Server on IP: {webui_ip} PORT: {webui_port}')
         try:
-            restapi = threading.Thread(name='restapi', target=app.run, kwargs={'host': restapi_ip, 'port': restapi_port})
+            restapi = threading.Thread(name='restapi', target=app.run, kwargs={'host': webui_ip, 'port': webui_port})
             restapi.start()
         except:
             log.critical(f'Flask RestAPI failed to start.', exc_info=True)
@@ -182,7 +181,7 @@ def main():
                 if not instance[each]['eventthread'].is_alive():
                     t = f'{inst} event monitor'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-            if restapi_enabled == "True" or restapi_enabled == "true":
+            if webui_enabled == "True" or webui_enabled == "true":
                 if not restapi.is_alive():
                     t = f'{inst} rest api'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
