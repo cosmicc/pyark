@@ -4,51 +4,29 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="manifest" href="/manifest.json">
+        <script src="/static/js/jquery-3.3.1.min.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
+        <script src="/static/js/bulma-toast.min.js"></script>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-    </head>
+        <script>
+            $(function(){
+                $("#gnavbar").load("/static/navbar.html");
+            });
+        </script>
 
+    </head>
     <body>
-    <nav class="navbar is-info">
-      <div class="container">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="#" style="font-weight:bold;">
-            Galaxy Cluster Ark Servers
-          </a>
-          <span class="navbar-burger burger" data-target="navMenu">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-        </div>
-        <div id="navMenu" class="navbar-menu">
-          <div class="navbar-end">
-            <a href="/" class="navbar-item is-active">Dashboard</a>
-            <a href="/playerinfo" class="navbar-item">Players</a>
-            <a href="/events" class="navbar-item">Events</a>
-            <a href="/lottery" class="navbar-item">Lottery</a>
-            <a href="/stats" class="navbar-item">Stats</a>
-          </div>
-        </div>
-      </div>
-    </nav>
-    <script type="text/javascript">
-      (function() {
-        var burger = document.querySelector('.burger');
-        var nav = document.querySelector('#'+burger.dataset.target);
-        burger.addEventListener('click', function(){
-          burger.classList.toggle('is-active');
-          nav.classList.toggle('is-active');
-        });
-      })();
-    </script>
+    <div id="gnavbar"></div>
+
+
     <div class='container is-mobile is-centered left-pad top-pad-10'>
         <div class='container top-pad-15 is-centered is-mobile'>
+            <b>&nbsp;Player Lookup ({{ ui_len(players) }}):</b>
             <form action="/playersearch" method="POST">
                 <div class="field has-addons">
                     <div class="control">
-                        <div class="select" id="player">
+                        <div class="select is-medium" id="player">
                             <select name="player">
                             <option value="">Select Player</option>
                             {% for player in players %}
@@ -58,14 +36,79 @@
                         </div> 
                     </div>
                     <div class="control">
-                        <button class="button" type="submit">
-                        <span class="icon is-large">
+                        <button class="button is-medium" type="submit">
                             <i class="fas fa-lg fa-search"i></i>
-                        </span>
                         </button>
                     </div>
                 </div>
             </form>
         </div>
+        <div class='container top-pad-15 is-centered is-mobile'>
+            <b>&nbsp;Banned Players ({{ ui_len(bannedplayers) }}):</b>:
+            <form action="/playersearch" method="POST">
+                <div class="field has-addons">
+                    <div class="control">
+                        <div class="select is-medium" id="player">
+                            <select name="player">
+                            <option value="">Select Player</option>
+                            {% for player in bannedplayers %}
+                            <option value="{{ player }}">{{ player.title() }}</option>
+                            {% endfor %}
+                            </select>
+                        </div> 
+                    </div>
+                    <div class="control">
+                        <button class="button is-medium" type="submit">
+                            <i class="fas fa-lg fa-search"i></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+         <div class='container top-pad-15 is-centered is-mobile'>
+             <b>&nbsp;Expired Players ({{ ui_len(expiredplayers) }}):</b>:
+            <form action="/playersearch" method="POST">
+                <div class="field has-addons">
+                    <div class="control">
+                        <div class="select is-medium" id="player">
+                            <select name="player">
+                            <option value="">Select Player</option>
+                            {% for player in expiredplayers %}
+                            <option value="{{ player }}">{{ player.title() }}</option>
+                            {% endfor %}
+                            </select>
+                        </div> 
+                    </div>
+                    <div class="control">
+                        <button class="button is-medium" type="submit">
+                            <i class="fas fa-lg fa-search"i></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+          <div class='container top-pad-15 is-centered is-mobile'>
+             <b>&nbsp;New Players This Week ({{ ui_len(newplayers) }}):</b>:
+            <form action="/playersearch" method="POST">
+                <div class="field has-addons">
+                    <div class="control">
+                        <div class="select is-medium" id="player">
+                            <select name="player">
+                            <option value="">Select Player</option>
+                            {% for player in newplayers %}
+                            <option value="{{ player }}">{{ player.title() }}</option>
+                            {% endfor %}
+                            </select>
+                        </div> 
+                    </div>
+                    <div class="control">
+                        <button class="button is-medium" type="submit">
+                            <i class="fas fa-lg fa-search"i></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+ 
     </div>
 

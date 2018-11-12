@@ -3,52 +3,29 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="refresh" content="60">
         <link rel="manifest" href="/manifest.json">
+        <script src="/static/js/jquery-3.3.1.min.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
+        <script src="/static/js/bulma-toast.min.js"></script>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-    </head>
+        <script>
+            $(function(){
+                $("#gnavbar").load("/static/navbar.html");
+            });
+        </script>
 
+    </head>
     <body>
-    <nav class="navbar is-info">
-      <div class="container">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="#" style="font-weight:bold;">
-            Galaxy Cluster Ark Servers
-          </a>
-          <span class="navbar-burger burger" data-target="navMenu">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-        </div>
-        <div id="navMenu" class="navbar-menu">
-          <div class="navbar-end">
-            <a href="/" class="navbar-item is-active">Dashboard</a>
-            <a href="/playerinfo" class="navbar-item">Players</a>
-            <a href="/events" class="navbar-item">Events</a>
-            <a href="/lottery" class="navbar-item">Lottery</a>
-            <a href="/stats" class="navbar-item">Stats</a>
-          </div>
-        </div>
-      </div>
-    </nav>
-    <script type="text/javascript">
-      (function() {
-        var burger = document.querySelector('.burger');
-        var nav = document.querySelector('#'+burger.dataset.target);
-        burger.addEventListener('click', function(){
-          burger.classList.toggle('is-active');
-          nav.classList.toggle('is-active');
-        });
-      })();
-    </script>
+    <div id="gnavbar"></div>
+
     <div class='container is-mobile'>
         {% if not currentevent %}
-        <div class='container top-pad-5 left-pad bottom-pad-10 is-mobile has-background-warning'>
+        <div class='container top-pad-10 left-pad bottom-pad-10 is-mobile has-background-warning'>
             <div>
-                <h1 class="title">No Current Events</h1>
-                <h2 class="subtitle">Last Event was {{ ui_elapsedTime(lastevent['endtime']) }} ago</h2>
+                <h1 class="title">&nbsp;No Current Events</h1>
+                <h2 class="subtitle">&nbsp;Last Event was {{ ui_elapsedTime(lastevent['endtime']) }} ago</h2>
             </div>
         </div>
         {% else %}
@@ -59,16 +36,16 @@
             </div>
         </div>
         {% endif %}
-        <div class='container top-pad-10 bottom-pad-10 left-pad has-background-light'>
-            <div>
+        <div class='container top-pad-5 bottom-pad-5 left-pad right-pad'>
+            <div class='box has-background-grey-lighter top-pad-5 bottom-pad-5 left-pad right-pad'>
                 <p class='is-2'>Last Event: </p>
                 <p class='is-2'><b>{{ lastevent['title'].title() }}</p>
                 <p class='is-2'>{{ lastevent['description'].title() }}</p>
                 <p class='is-2'>Ended {{ ui_elapsedTime(lastevent['endtime']) }} ago</b></p>
             </div>
         </div>
-        <div class='container top-pad-10 bottom-pad-10 left-pad has-background-grey-lighter'>
-            <div>
+        <div class='container top-pad-5 bottom-pad-5 left-pad right-pad'>
+            <div class='box has-background-light top-pad-5 bottom-pad-5 left-pad right-pad'>
                 <p class='is-2'>Next Event:</p>
                 {% if not futureevent %}
                 <p class='is-2'><b>Not Yet Scheduled</b></p>
@@ -81,9 +58,9 @@
                 {% endif %}
             </div>
         </div>
-        <div class='container top-pad-10 bottom-pad-10'>
+        <div class='container top-pad-10 bottom-pad-10 right-pad left-pad'>
             <div>
-                <a class="button has-background-primary is-mobile is-centered has-text-white is-fullwidth" href="/startevent">Schedule an Event</a>
+                <a class="button has-background-success is-mobile is-centered has-text-white is-rounded is-fullwidth" href="/startevent">Schedule an Event</a>
             </div>
         </div>
 

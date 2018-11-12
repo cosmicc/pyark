@@ -1,4 +1,4 @@
-from modules.dbhelper import dbquery, formatdbdata
+from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.timehelper import Now, Secs
 
 
@@ -45,6 +45,32 @@ def getplayersonline(inst, fmt='list', case='normal'):
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
 
 
+def isplayeronline(playername='', steamid=''):
+    if steamid != '':
+        dbdata = dbquery("SELECT playername FROM players WHERE steamid = '%s' AND lastseen > '%s'" % (steamid, Now() - 40), fetch='one')
+    elif playername != '':
+        dbdata = dbquery("SELECT playername FROM players WHERE playername = '%s' AND lastseen > '%s'" % (playername, Now() - 40), fetch='one')
+    if dbdata:
+        return True
+    else:
+        return False
+
+
+def kickplayer(instance, steamid):
+        dbupdate("INSERT INTO kicklist (instance,steamid) VALUES ('%s','%s')" % (instance, steamid))
+
+
+def isplayerold(playername='', steamid=''):
+    if steamid != '':
+        dbdata = dbquery("SELECT playername FROM players WHERE steamid = '%s' AND lastseen > '%s'" % (steamid, Now() - Secs['month']), fetch='one')
+    elif playername != '':
+        dbdata = dbquery("SELECT playername FROM players WHERE playername = '%s' AND lastseen > '%s'" % (playername, Now() - Secs['month']), fetch='one')
+    if dbdata:
+        return False
+    else:
+        return True
+
+
 def getlastplayersonline(inst, fmt='list', last=5, case='normal'):
     if inst == 'all':
         dbdata = dbquery("SELECT playername FROM players WHERE lastseen < %s ORDER BY lastseen DESC LIMIT %s" % (Now() - Secs['1min'], last))
@@ -65,6 +91,36 @@ def isplayerlinked(discordid='', steamid=''):
     islinked = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (discordid.lower(),))
     if islinked:
         return True
+
+
+def isplayerbanned(steamid='', playername=''):
+    if steamid == '':
+        isbanned = dbquery("SELECT * FROM players WHERE banned != '' AND playername = '%s'" % (playername.lower(),), fetch='one')
+    else:
+        isbanned = dbquery("SELECT * FROM players WHERE banned != '' AND steamid = '%s'" % (steamid,), fetch='one')
+    if isbanned:
+        return True
+    else:
+        return False
+
+
+def banunbanplayer(steamid='', playername='', discordid='', ban=False):
+    if steamid != '':
+        if ban:
+            dbupdate("UPDATE players SET banned = True WHERE steamid = '%s'" % (steamid,))
+            return True
+        else:
+            dbupdate("UPDATE players SET banned = NULL WHERE steamid = '%s'" % (steamid,))
+            return True
+    elif playername != '':
+        if ban:
+            dbupdate("UPDATE players SET banned = True WHERE playername = '%s'" % (playername.lower(),))
+            return True
+        else:
+            dbupdate("UPDATE players SET banned = True NULL playername = '%s'" % (playername.lower(),))
+            return True
+    else:
+        return False
 
 
 def getnewestplayers(inst, fmt='list', case='normal', last=5):

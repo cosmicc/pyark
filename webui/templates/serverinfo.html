@@ -5,143 +5,106 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="refresh" content="60">
         <link rel="manifest" href="/manifest.json">
+        <script src="/static/js/jquery-3.3.1.min.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
+        <script src="/static/js/bulma-toast.min.js"></script>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-    </head>
+        <script>
+            $(function(){
+                $("#gnavbar").load("/static/navbar.html");
+            });
+        </script>
 
+    </head>
     <body>
-    <nav class="navbar is-info">
-      <div class="container">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="#" style="font-weight:bold;">
-            Galaxy Cluster Ark Servers
-          </a>
-          <span class="navbar-burger burger" data-target="navMenu">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-        </div>
-        <div id="navMenu" class="navbar-menu">
-          <div class="navbar-end">
-            <a href="/" class="navbar-item is-active">Dashboard</a>
-            <a href="/playerinfo" class="navbar-item">Players</a>
-            <a href="/events" class="navbar-item">Events</a>
-            <a href="/lottery" class="navbar-item">Lottery</a>
-            <a href="/stats" class="navbar-item">Stats</a>
-          </div>
-        </div>
-      </div>
-    </nav>
-    <script type="text/javascript">
-      (function() {
-        var burger = document.querySelector('.burger');
-        var nav = document.querySelector('#'+burger.dataset.target);
-        burger.addEventListener('click', function(){
-          burger.classList.toggle('is-active');
-          nav.classList.toggle('is-active');
-        });
-      })();
+    <div id="gnavbar"></div>
+
+
+    {% if alertmessage %}
+    <script>
+    bulmaToast.toast(  {
+        message: "<h1 class='subtitle is-uppercase'>{{ alertmessage }}</h1>",
+    duration: 10000,
+    type: "is-danger",
+    position: "center",
+    closeOnClick: true,
+    opacity: 0.9
+  })
     </script>
+    {% endif %}
+
     <div class='container is-mobile has-background-success bottom-pad-10'>
         <div>
-            <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50</h1>
-            <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>Active {{ ui_lastactive(serverinfo['name']) }} </h2>
+            <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50</h1>
+            <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>&nbsp;&nbsp;Active {{ ui_lastactive(serverinfo['name']) }} </h2>
         </div>
     </div>
-    <div class='container is-mobile left-pad'>
-    <div class='container is-mobile is-centered'>
-        <div>
-           <button class="button" type="submit">
-                        <span class="icon is-large">
+    <div class='container is-mobile is-centered left-pad-extra right-pad-extra top-pad-10 bottom-pad-5'>
+        <div class='columns left-pad is-mobile'>
+        <div class='column'>
+            <a class="button" href="/server/dinowipe/{{ serverinfo['name'] }}">
                             <i class="fas fa-lg fa-brush"></i>
-                        </span>
-                        </button>
-            <button class="button" type="submit">
-                        <span class="icon is-large">
+                        </a>
+        </div>
+        <div class='column'>
+            <a class="button" href="/server/restart/{{ serverinfo['name'] }}">
                             <i class="fas fa-lg fa-sync"></i>
-                        </span>
-                        </button>
-
-
-            <button class="button" type="submit">
-                        <span class="icon is-large">
+                        </a>
+        </div>
+        <div class='column'>
+            <a class="button" href="/server/cancelrestart/{{ serverinfo['name'] }}">
                             <i class="fas fa-lg fa-minus-circle"></i>
-                        </span>
-                        </button>
-            <button class="button" type="submit">
-                        <span class="icon is-large">
+                        </a>
+        </div>
+        <div class='column'>
+            <a class="button" href="/server/chatlog/{{ serverinfo['name'] }}">
                             <i class="far fa-lg fa-comment"></i>
-                        </span>
-                        </button>
-            <button class="button" type="submit">
-                        <span class="icon is-large">
+                        </a>
+        </div>
+        <div class='column'>
+            <a class="button" type="submit">
                             <i class="far fa-lg fa-file-alt"></i>
-                        </span>
-                        </button>
- 
-
-
-
+                        </a>
         </div>
     </div>
-    <div class='container top-pad-5 is-mobile'>
-        <div>
+    </div>
+    <div class='container is-mobile is-centered left-pad right-pad'>
+        <div class='section is-mobile left-pad top-pad-5 bottom-pad-0'>
             <p class='is-2'>Ark Game Version: <b>v{{ serverinfo['arkversion'] }}</b></p>
             <p class='is-2'>Config Version: <b>v{{ serverinfo['cfgver'] }}</b></p>
             <p class='is-2'>Last Server Restart: <b>{{ ui_elapsedTime(serverinfo['lastrestart']) }}</b></p>
             <p class='is-2'>Restart Reason: <b>{{ serverinfo['restartreason'].title() }}</b></p>
-        </div>
-    </div>
-    <div class='container top-pad-5 is-mobile'>
-        <div>
             <p class='is-2'>Last Dino Wipe: <b>{{ ui_elapsedTime(serverinfo['lastdinowipe']) }}</b></p>
             <p class='is-2'>Last Wipe Vote: <b>{{ ui_elapsedTime(serverinfo['lastvote']) }}</b></p>
-        </div>
-    </div>
-    <div class='container top-pad-5 is-mobile'>
-        <div>
             <p class='is-2'>Is Running: <b>{{ serverinfo['isrunning'] }}</b></p>
             <p class='is-2'>Is Listening: <b>{{ serverinfo['islistening'] }}</b></p>
             <p class='is-2'>Is Online: <b>{{ serverinfo['isup'] }}</b></p>
             <p class='is-2'>Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
-        </div>
-    </div>
-    <div class='container top-pad-5 is-mobile'>
-        <div>
             <p class='is-2'>Active Memory: <b>{{ serverinfo['actmem'] }} gigs</b></p>
             <p class='is-2'>Total Memory: <b>{{ serverinfo['totmem'] }} gigs</b></p>
-        </div>
-    </div>
-    <div class='container top-pad-5 is-mobile'>
-        <div>
             <p class='is-2'>Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
             <p class='is-2'>Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>
-        </div>
-    </div>
-    <div class='container top-pad-5 is-mobile'>
-        <div>
             <p class='is-2'>Server Event: <b>{{ serverinfo['inevent'] }}</b></p>
-        </div>
     </div>
-        <div class="container is-mobile is-centered">
+    </div>
+        <div class="container is-mobile is-centered right-pad left-pad">
             <div>
-                <p class= 'subtitle top-pad-10 is-size-5 has-text-centered '>Current Players Online: {{ui_getplayersonline(instance, 'count')}}</p>
+                <p class= 'subtitle top-pad-0 is-size-5 has-text-centered '>Current Players Online: {{ui_getplayersonline(serverinfo['name'], 'count')}}</p>
             </div>
-                {% for player in ui_getplayersonline(instance, 'list') %}
-                    <a class='button is-centered has-background-success has-text-white is-mobile is-fullwidth' href="/playerinfo/{{ player }}">
+                {% for player in ui_getplayersonline(serverinfo['name'], 'list') %}
+                    <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
                         {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
                     </a>
                 {% endfor %}
         </div>
-<div class="container is-mobile is-centered">
+<div class="container is-mobile is-centered left-pad right-pad">
     <div>
       <p class= 'subtitle top-pad-dbl is-size-5 has-text-centered '>Last 5 Players Online:</p>
     </div>
-        {% for player in ui_getlastplayersonline(instance, 'list') %}
-            <a class='button has-background-grey has-text-white is-centered is-mobile is-fullwidth' href="/playerinfo/{{ player }}">
-                {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}&nbsp;ago
+        {% for player in ui_getlastplayersonline(serverinfo['name'], 'list') %}
+            <a class='button has-background-grey has-text-white is-centered is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
+                {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}
         </a>
         {% endfor %}
   </div>

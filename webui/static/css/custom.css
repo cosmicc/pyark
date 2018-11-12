@@ -1,4 +1,10 @@
 <style>
+  .top-pad-0 {
+     padding-top: 0px;
+  }
+  .bottom-pad-0 {
+     padding-bottom: 0px;
+  }
   .bottom-pad-5 {
      padding-bottom: 5px;
   }
@@ -24,8 +30,14 @@
   .left-pad {
      padding-left: 5px;
   }
+  .left-pad-extra {
+     padding-left: 10px;
+  }
   .right-pad {
      padding-right: 5px;
+  }
+  .right-pad-extra {
+     padding-right: 15px;
   }
 
 

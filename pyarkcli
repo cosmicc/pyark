@@ -542,7 +542,7 @@ def showservers():
         printplayer(feach)
 
 
-def restartserver(server):
+def restrtserver(server):
     if not args.cancel:
         dbupdate("UPDATE instances SET needsrestart = 'True', restartreason = 'admin restart' WHERE name = '%s'" % (server, ))
         print(f'{BYEL}server {BMGT}{server}{BYEL} has been set to {BRED}RESTART{RST}')

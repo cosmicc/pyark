@@ -3,9 +3,9 @@ import sys
 sys.path.append('/home/ark/pyark')
 from modules.configreader import webui_ip, webui_port, webui_debug
 from modules.dbhelper import dbquery
-from modules.instances import instancelist, isinstanceup, isinrestart
-from modules.players import getplayersonline, getlastplayersonline
-from modules.timehelper import elapsedTime, Now, playedTime, epochto
+from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog
+from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
+from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 import json
 sys.path.append('/home/ark/pyark/webui')
@@ -111,6 +111,34 @@ def _epochto():
 
 
 @app.context_processor
+def _isbanned():
+    def ui_isbanned(steamid):
+        return isplayerbanned(steamid=steamid)
+    return dict(ui_isbanned=ui_isbanned)
+
+
+@app.context_processor
+def _isplayeronline():
+    def ui_isplayeronline(steamid):
+        return isplayeronline(steamid=steamid)
+    return dict(ui_isplayeronline=ui_isplayeronline)
+
+
+@app.context_processor
+def _isplayerold():
+    def ui_isplayerold(steamid):
+        return isplayerold(steamid=steamid)
+    return dict(ui_isplayerold=ui_isplayerold)
+
+
+@app.context_processor
+def _length():
+    def ui_len(alist):
+        return len(alist)
+    return dict(ui_len=ui_len)
+
+
+@app.context_processor
 def _lastactive():
     def ui_lastactive(inst):
         retime = int(dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), db='statsdb', fetch='one', fmt='string'))
@@ -118,20 +146,45 @@ def _lastactive():
             return f'{elapsedTime(Now(), retime)} ago'
         else:
             return 'Now'
-
     return dict(ui_lastactive=ui_lastactive)
+
+
+@app.context_processor
+def _playerlastactive():
+    def ui_playerlastactive(lastseen):
+        if Now() - lastseen > 40:
+            return f'{elapsedTime(Now(), lastseen)} ago'
+        else:
+            return 'Now'
+    return dict(ui_playerlastactive=ui_playerlastactive)
+
+
+@app.context_processor
+def _getannouncement():
+    def ui_getannouncement():
+        return dbquery("SELECT announce FROM general ", fmt='string', fetch='one')
+    return dict(ui_getannouncement=ui_getannouncement)
 
 
 def instanceinfo(inst):
     return dbquery("SELECT * FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='dict', fetch='one')
 
 
-def getplayerinfo(player):
-    return dbquery("SELECT * FROM players WHERE playername = '%s'" % (player.lower(),), fmt='dict', fetch='one')
-
-
 def getplayernames():
     return dbquery("SELECT playername FROM players ORDER BY playername ASC", fmt='list', single=True)
+
+
+def getbannedplayers():
+    return dbquery("SELECT playername FROM players WHERE banned != '' ORDER BY playername ASC", fmt='list', single=True)
+
+
+
+def getexpiredplayers():
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen < '%s' ORDER BY playername ASC" % (Now() - Secs['month'],), fmt='list', single=True)
+
+
+def getnewplayers(atime):
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND firstseen > '%s' ORDER BY playername ASC" % (Now() - Secs[atime],), fmt='list', single=True)
 
 
 def getlastevent():
@@ -144,6 +197,14 @@ def getcurrentevent():
 
 def getfutureevent():
     return dbquery("SELECT * FROM events WHERE completed = 0 AND startime > '%s' ORDER BY endtime DESC" % (Now(),), fmt='dict', fetch='one')
+
+
+@app.context_processor
+def _getlog():
+    def ui_getlog(instance, wlog):
+        chatlog = getlog(instance, wlog)
+        return chatlog[::-1]
+    return dict(ui_getlog=ui_getlog)
 
 
 @app.route('/manifest.json')
@@ -159,10 +220,10 @@ def manifest():
             }
         ],
         "start_url": "/",
-        "background_color": "#3367D6",
+        "background_color": "#000000",
         "display": "standalone",
         "scope": "/",
-        "theme_color": "#3367D6"
+        "theme_color": "#000000"
     })
     return Response(data, mimetype='application/x-web-app-manifest+json')
 
@@ -174,28 +235,62 @@ def dashboard():
 
 @app.route('/serverinfo/<instance>')
 def serverinfo(instance):
-    return render_template('serverinfo.html', serverinfo=instanceinfo(instance), instance=instance)
+    return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
 
 
-@app.route('/playersearch', methods = ['POST', 'GET'])
+@app.route('/playersearch', methods=['POST', 'GET'])
 def result():
-   if request.method == 'POST':
-      return render_template("playerinfo.html", playerinfo=getplayerinfo(request.form['player']))
+    if request.method == 'POST':
+        return render_template("playerinfo.html", playerinfo=getplayer(playername=request.form['player'].lower(), fmt='dict'))
 
 
 @app.route('/playerinfo/<player>')
 def playerinfo(player):
-    return render_template('playerinfo.html', playerinfo=getplayerinfo(player))
+    return render_template('playerinfo.html', playerinfo=getplayer(playername=player.lower(), fmt='dict'))
 
 
 @app.route('/playerinfo')
 def _players():
-    return render_template('playerselect.html', players=getplayernames())
+    return render_template('playerselect.html', players=getplayernames(), bannedplayers=getbannedplayers(), expiredplayers=getexpiredplayers(), newplayers=getnewplayers('week'))
 
 
 @app.route('/events')
 def _events():
     return render_template('eventinfo.html', lastevent=getlastevent(), currentevent=getcurrentevent(), futureevent=getfutureevent())
+
+
+@app.route('/bantoggle/<steamid>')
+def _bantoggle(steamid):
+    if isplayerbanned(steamid=steamid):
+        banunbanplayer(steamid=steamid, ban=False)
+        return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
+    else:
+        banunbanplayer(steamid=steamid, ban=True)
+        return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'), alertmessage='has been banned from cluster')
+
+
+@app.route('/kickplayer/<steamid>/<instance>')
+def _kickplayer(steamid, instance):
+    kickplayer(instance, steamid)
+    return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'), alertmessage='has been kicked from server')
+
+
+@app.route('/server/restart/<instance>')
+def _restartinstance(instance):
+    restartinstance(instance, cancel=False)
+    return render_template('serverinfo.html', serverinfo=instanceinfo(instance), alertmessage='server is set to restart')
+
+
+@app.route('/server/cancelrestart/<instance>')
+def _cancelrestartinstance(instance):
+    restartinstance(instance, cancel=True)
+    return render_template('serverinfo.html', serverinfo=instanceinfo(instance), alertmessage='server restart canceled')
+
+
+@app.route('/server/chatlog/<instance>')
+def _chatlog(instance):
+    chatlog = getlog(instance, 'chat')
+    return render_template('serverchatlog.html', serverinfo=instanceinfo(instance), chatlog=chatlog[::-1])
 
 
 if __name__ == '__main__':

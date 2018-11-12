@@ -65,5 +65,32 @@ def serverchat(msg, inst='ALERT', whosent='ALERT'):
              (inst, whosent, msg, Now()))
 
 
+def restartinstance(server, cancel=False):
+    if not cancel:
+        dbupdate("UPDATE instances SET needsrestart = 'True', restartreason = 'admin restart' WHERE name = '%s'" % (server, ))
+    else:
+        dbupdate("UPDATE instances SET needsrestart = 'False' WHERE name = '%s'" % (server, ))
+
+
+def getlog(inst, whichlog, lines=20):
+    if whichlog == 'chat':
+        clogfile = f'/home/ark/shared/logs/{inst}/chatlog/chat.log'
+    elif whichlog == 'game':
+        clogfile = f'/home/ark/shared/logs/{inst}/gamelog/game.log'
+    num_lines = sum(1 for line in open(clogfile))
+    cloglist = []
+    with open(clogfile, 'r') as filehandle:
+        cline = 1
+        for line in filehandle:
+            if cline > num_lines - lines:
+                alist = {}
+                alist['dtime'] = line.split(' [')[0]
+                alist['pname'] = line[line.find("[") + 1:line.find("]")]
+                alist['msg'] = line.split(']: ')[1].strip('\n')
+                cloglist.append(alist)
+            cline += 1
+    return cloglist
+
+
 if __name__ == '__main__':
     exit()
