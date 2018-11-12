@@ -3,22 +3,23 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="refresh" content="15">
         <link rel="manifest" href="/manifest.json">
         <script src="/static/js/jquery-3.3.1.min.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         <script src="/static/js/bulma-toast.min.js"></script>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-        <script>
+          <script>
             $(function(){
                 $("#gnavbar").load("/static/navbar.html");
             });
+        setInterval(function(){ 
+            $("#servertitle").load(" #servertitle"); 
+            $("#chatlog").load(" #chatlog"); 
+        }, 15000);
         </script>
-
     </head>
-    <body>
-    <div id="gnavbar"></div>
     {% if alertmessage %}
     <script>
     bulmaToast.toast(  {
@@ -28,16 +29,18 @@
     position: "center",
     closeOnClick: true,
     opacity: 0.9
-  })
+    })
     </script>
     {% endif %}
+   <body>
+<div id="gnavbar"></div>
 
-    <div class='container is-mobile has-background-success bottom-pad-10'>
-        <div>
-            <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50</h1>
-            <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>&nbsp;{{ ui_getplayersonline(serverinfo['name'], fmt='string') }} </h2>
-        </div>
+<div class='container is-mobile has-background-success bottom-pad-10'>
+    <div id='servertitle'>
+        <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50</h1>
+        <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>&nbsp;{{ ui_getplayersonline(serverinfo['name'], fmt='string') }} </h2>
     </div>
+</div>
         <div class='container top-pad-15 is-centered is-mobile left-pad right-pad'>
             <form action="/server/sendbroadcast" method="POST">
                 <div class="field has-addons bottom-pad-10">
@@ -65,19 +68,20 @@
             </form>
         </div>
 
-    <div class='container top-pad-5 is-mobile left-pad right-pad'>
+
+<div class='container top-pad-5 is-mobile left-pad right-pad'>
+    <div id="chatlog">
         {% for message in ui_getlog(serverinfo['name'], 'chat') %}
-        <div>
-            <article class="message is-small top-pad-0 bottom-pad-0">
+            <article class="message is-small is-marginless bottom-pad-5 has-text-weight-bold">
             <div class="message-header">
-            <p>{{ message['dtime'] }} - {{ message['pname'].title() }}</p>
+                <p class="is-size-6">{{ message['dtime'] }} - {{ message['pname'].title() }}</p>
             </div>
-            <div class="message-body">
-            <p>{{ message['msg'] }}</p>
+            <div class="message-body has-background-grey-lighter">
+                <p class="is-size-7">{{ message['msg'] }}</p>
             </div>
             </article>
-        </div>
-        {% endfor %}
+            {% endfor %}
     </div>
+</div>
 
 

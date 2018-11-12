@@ -3,19 +3,24 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="refresh" content="60">
         <link rel="manifest" href="/manifest.json">
         <script src="/static/js/jquery-3.3.1.min.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
         <script src="/static/js/bulma-toast.min.js"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
         <script>
             $(function(){
                 $("#gnavbar").load("/static/navbar.html");
             });
+        setInterval(function(){ 
+            $("#servertitle").load(" #servertitle"); 
+            $("#svrinfo").load(" #svrinfo"); 
+            $("#currentplayers").load(" #currentplayers");
+            $("#lastfive").load(" #lastfive");
+        }, 60000);
         </script>
-
     </head>
     <body>
     <div id="gnavbar"></div>
@@ -34,12 +39,25 @@
     </script>
     {% endif %}
 
+<div id='servertitle'>
+    {% if not ui_isinstanceup(serverinfo['name']) %}
+    <div class='container is-mobile has-background-danger bottom-pad-10'>
+    {% elif ui_isinrestart(serverinfo['name']) %}
+    <div class='container is-mobile has-background-info bottom-pad-10'>
+    {% elif not ui_iscurrentconfig(serverinfo['name']) %}
+    <div class='container is-mobile has-background-primary bottom-pad-10'>
+    {% else %}
     <div class='container is-mobile has-background-success bottom-pad-10'>
-        <div>
-            <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50</h1>
-            <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>&nbsp;&nbsp;Active {{ ui_lastactive(serverinfo['name']) }} </h2>
-        </div>
+    {% endif %}
+    <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50</h1>
+    {% if ui_isinrestart(serverinfo['name']) %}
+        <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;Restarting in {{ serverinfo['restartcountdown'] }} minutes</h2>
+    {% else %}
+        <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active {{ ui_lastactive(serverinfo['name']) }} </h2>
+    {% endif %}
     </div>
+</div>
+
     <div class='container is-mobile is-centered left-pad-extra right-pad-extra top-pad-10 bottom-pad-5'>
         <div class='columns left-pad is-mobile'>
         <div class='column'>
@@ -69,46 +87,50 @@
         </div>
     </div>
     </div>
-    <div class='container is-mobile is-centered left-pad right-pad'>
-        <div class='section is-mobile left-pad top-pad-5 bottom-pad-0'>
-            <p class='is-2'>Ark Game Version: <b>v{{ serverinfo['arkversion'] }}</b></p>
-            <p class='is-2'>Config Version: <b>v{{ serverinfo['cfgver'] }}</b></p>
-            <p class='is-2'>Last Server Restart: <b>{{ ui_elapsedTime(serverinfo['lastrestart']) }}</b></p>
-            <p class='is-2'>Restart Reason: <b>{{ serverinfo['restartreason'].title() }}</b></p>
-            <p class='is-2'>Last Dino Wipe: <b>{{ ui_elapsedTime(serverinfo['lastdinowipe']) }}</b></p>
-            <p class='is-2'>Last Wipe Vote: <b>{{ ui_elapsedTime(serverinfo['lastvote']) }}</b></p>
-            <p class='is-2'>Is Running: <b>{{ serverinfo['isrunning'] }}</b></p>
-            <p class='is-2'>Is Listening: <b>{{ serverinfo['islistening'] }}</b></p>
-            <p class='is-2'>Is Online: <b>{{ serverinfo['isup'] }}</b></p>
-            <p class='is-2'>Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
-            <p class='is-2'>Active Memory: <b>{{ serverinfo['actmem'] }} gigs</b></p>
-            <p class='is-2'>Total Memory: <b>{{ serverinfo['totmem'] }} gigs</b></p>
-            <p class='is-2'>Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
-            <p class='is-2'>Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>
-            <p class='is-2'>Server Event: <b>{{ serverinfo['inevent'] }}</b></p>
-    </div>
-    </div>
-        <div class="container is-mobile is-centered right-pad left-pad">
-            <div>
-                <p class= 'subtitle top-pad-0 is-size-5 has-text-centered '>Current Players Online: {{ui_getplayersonline(serverinfo['name'], 'count')}}</p>
-            </div>
-                {% for player in ui_getplayersonline(serverinfo['name'], 'list') %}
-                    <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
-                        {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
-                    </a>
-                {% endfor %}
+
+<div class='container is-mobile is-centered left-pad right-pad'>
+    <div class='section is-mobile left-pad top-pad-5 bottom-pad-0'>
+        <div id="svrinfo">
+        <p class='is-2'>Ark Game Version: <b>v{{ serverinfo['arkversion'] }}</b></p>
+        <p class='is-2'>Config Version: <b>v{{ serverinfo['cfgver'] }}</b></p>
+        <p class='is-2'>Last Server Restart: <b>{{ ui_elapsedTime(serverinfo['lastrestart']) }}</b></p>
+        <p class='is-2'>Restart Reason: <b>{{ serverinfo['restartreason'].title() }}</b></p>
+        <p class='is-2'>Last Dino Wipe: <b>{{ ui_elapsedTime(serverinfo['lastdinowipe']) }}</b></p>
+        <p class='is-2'>Last Wipe Vote: <b>{{ ui_elapsedTime(serverinfo['lastvote']) }}</b></p>
+        <p class='is-2'>Is Running: <b>{{ serverinfo['isrunning'] }}</b></p>
+        <p class='is-2'>Is Listening: <b>{{ serverinfo['islistening'] }}</b></p>
+        <p class='is-2'>Is Online: <b>{{ serverinfo['isup'] }}</b></p>
+        <p class='is-2'>Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
+        <p class='is-2'>Active Memory: <b>{{ serverinfo['actmem'] }} gigs</b></p>
+        <p class='is-2'>Total Memory: <b>{{ serverinfo['totmem'] }} gigs</b></p>
+        <p class='is-2'>Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
+        <p class='is-2'>Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>
+        <p class='is-2'>Server Event: <b>{{ serverinfo['inevent'] }}</b></p>
         </div>
-<div class="container is-mobile is-centered left-pad right-pad">
+    </div>
+</div>
+
+<div class="container is-mobile is-centered right-pad left-pad">
+    <div id="currentplayers">
     <div>
-      <p class= 'subtitle top-pad-dbl is-size-5 has-text-centered '>Last 5 Players Online:</p>
+        <p class= 'subtitle top-pad-0 is-size-5 has-text-weight-bold has-text-centered'>Current Players Online: {{ui_getplayersonline(serverinfo['name'], 'count')}}</p>
     </div>
-        {% for player in ui_getlastplayersonline(serverinfo['name'], 'list') %}
-            <a class='button has-background-grey has-text-white is-centered is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
-                {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}
-        </a>
-        {% endfor %}
-  </div>
- 
+    {% for player in ui_getplayersonline(serverinfo['name'], 'list') %}
+    <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}</a>
+    {% endfor %}
     </div>
+</div>
+
+<div class="container is-mobile is-centered left-pad right-pad">
+    <div id="lastfive">
+    <div>
+        <p class='subtitle has-text-weight-bold top-pad-dbl is-size-5 has-text-centered '>Last 5 Players Online:</p>
+    </div>
+    {% for player in ui_getlastplayersonline(serverinfo['name'], 'list') %}
+    <a class='button has-background-grey has-text-white is-centered is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}</a>
+    {% endfor %}
+    </div>
+</div>
+</div>
 
 

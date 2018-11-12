@@ -3,31 +3,26 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="refresh" content="60">
         <link rel="manifest" href="/manifest.json">
         <script src="/static/js/jquery-3.3.1.min.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
         <script src="/static/js/bulma-toast.min.js"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-        <script>
+         <script>
             $(function(){
                 $("#gnavbar").load("/static/navbar.html");
             });
+        setInterval(function(){ 
+            $("#playertitle").load(" #playertitle"); 
+            $("#chatbar").load(" #chatbar"); 
+            $("#buttons").load(" #buttons");
+            $("#playerinfi").load(" #playerinfo");
+        }, 60000);
         </script>
-
     </head>
-    <body>
-    <div id="gnavbar"></div>
-   {% if ui_isbanned(playerinfo['steamid']) %}
-    <div class='container is-mobile has-background-danger bottom-pad-10'>
-    {% elif ui_isplayeronline(playerinfo['steamid']) %}
-    <div class='container is-mobile has-background-success bottom-pad-10'>
-    {% elif ui_isplayerold(playerinfo['steamid']) %}
-    <div class='container is-mobile has-background-black bottom-pad-10'>
-    {% else %}
-    <div class='container is-mobile has-background-grey bottom-pad-10'>
-    {% endif %}
+
     {% if alertmessage %}
     <script>
     bulmaToast.toast(  {
@@ -40,28 +35,42 @@
   })
     </script>
     {% endif %}
-        <div>
-            <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ playerinfo['playername'].title() }}</h1>
-                <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>&nbsp;&nbsp;Active: {{ ui_playerlastactive(playerinfo['lastseen']) }}</h2>
-        </div>
+
+    <body>
+    <div id="gnavbar"></div>
+<div id="playertitle">
+    {% if ui_isbanned(playerinfo['steamid']) %}
+    <div class='container is-mobile has-background-danger bottom-pad-10'>
+    {% elif ui_isplayeronline(playerinfo['steamid']) %}
+    <div class='container is-mobile has-background-success bottom-pad-10'>
+    {% elif ui_isplayerold(playerinfo['steamid']) %}
+    <div class='container is-mobile has-background-black bottom-pad-10'>
+    {% else %}
+    <div class='container is-mobile has-background-grey bottom-pad-10'>
+    {% endif %}
+    <div>
+        <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ playerinfo['playername'].title() }}</h1>
+        <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active: {{ ui_playerlastactive(playerinfo['lastseen']) }}</h2>
     </div>
-    <div class='container left-pad-extra right-pad-extra'>
-        <div class='columns left-pad right-pad top-pad-10 is-mobile is-centered'>
-        <div class='column has-text-centered'>
- 
+</div>
+
+<div id="buttons" class='container left-pad-extra right-pad-extra'>
+    <div class='columns left-pad right-pad top-pad-10 is-mobile is-centered'>
+        <div class='column is-mobile has-text-centered'>
             <a class="button is-centered" href="/bantoggle/{{ playerinfo['steamid'] }}">
-                            <i class="fas fa-lg fa-ban"></i>
-                        </a>
-            </div>
-            {% if ui_isplayeronline(steamid=playerinfo['steamid']) %}
-            <div class='column has-text-centered'>
+            <i class="fas fa-lg fa-ban"></i></a>
+        </div>
+        {% if ui_isplayeronline(steamid=playerinfo['steamid']) %}
+        <div class='column is-mobile has-text-centered'>
             <a class="button" href="/kickplayer/{{ playerinfo['steamid'] }}/{{ playerinfo['server'] }}">
-                            <i class="far fa-lg fa-times-circle"></i>
-                        </a>
-            </div>
-            {% endif %}
+            <i class="far fa-lg fa-times-circle"></i></a>
+        </div>
+        {% endif %}
         </div>
     </div>
+</div>
+
+<div id="chatbar">
     {% if ui_isplayeronline(playerinfo['steamid']) %}
     <div class='container top-pad-10 is-mobile left-pad right-pad bottom-pad-0'>
         <div>
@@ -78,23 +87,27 @@
         </div>
     </div>
     {% endif %}
-    <div class='container is-mobile left-pad right-pad'>
-            <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
-            <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>
-            <p class='is-2'>Last Seen on: <b>{{ playerinfo['server'].title() }}</b></p>
-            <p class='is-2'>Home Server: <b>{{ playerinfo['homeserver'].title() }}</b></p>
-            <p class='is-2'>Total Played Time: <b>{{ ui_playedTime(playerinfo['playedtime']) }}</b></p>
-            <p class='is-2'>Joined: <b>{{ ui_elapsedTime(playerinfo['firstseen']) }} ago</b></p>
-            <p class='is-2'>Total Connections: <b>{{ playerinfo['connects'] }}</b></p>
-            <p class='is-2'>Total Reward Points: <b>{{ playerinfo['rewardpoints'] }} points</b></p>
-            <p class='is-2'>Pending Transfer Points: <b>{{ playerinfo['transferpoints'] }} points</b></p>
-            <p class='is-2'>Lottery Wins: <b>{{ playerinfo['lottowins'] }} wins</b></p>
-            <p class='is-2'>Total Lottery Winnings: <b>{{ playerinfo['lotterywinnings'] }} points</b></p>
-            <p class='is-2'>Total Auctions: <b>{{ playerinfo['totalauctions'] }} auctions</b></p>
-            <p class='is-2'>Item Auctions: <b>{{ playerinfo['itemauctions'] }} auctions</b></p>
-            <p class='is-2'>Dino Auctions: <b>{{ playerinfo['dinoauctions'] }} auctions</b></p>
-            <p class='is-2'>On Since Restart: <b>{{ playerinfo['restartbit'] }}</b></p>
-            <p class='is-2'>Primordial Warning: <b>{{ playerinfo['primordialbit'] }}</b></p>
+</div>
+
+<div class='container is-mobile left-pad right-pad'>
+    <div id="playerinfo">
+        <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
+        <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>
+        <p class='is-2'>Last Seen on: <b>{{ playerinfo['server'].title() }}</b></p>
+        <p class='is-2'>Home Server: <b>{{ playerinfo['homeserver'].title() }}</b></p>
+        <p class='is-2'>Total Played Time: <b>{{ ui_playedTime(playerinfo['playedtime']) }}</b></p>
+        <p class='is-2'>Joined: <b>{{ ui_elapsedTime(playerinfo['firstseen']) }} ago</b></p>
+        <p class='is-2'>Total Connections: <b>{{ playerinfo['connects'] }}</b></p>
+        <p class='is-2'>Total Reward Points: <b>{{ playerinfo['rewardpoints'] }} points</b></p>
+        <p class='is-2'>Pending Transfer Points: <b>{{ playerinfo['transferpoints'] }} points</b></p>
+        <p class='is-2'>Lottery Wins: <b>{{ playerinfo['lottowins'] }} wins</b></p>
+        <p class='is-2'>Total Lottery Winnings: <b>{{ playerinfo['lotterywinnings'] }} points</b></p>
+        <p class='is-2'>Total Auctions: <b>{{ playerinfo['totalauctions'] }} auctions</b></p>
+        <p class='is-2'>Item Auctions: <b>{{ playerinfo['itemauctions'] }} auctions</b></p>
+        <p class='is-2'>Dino Auctions: <b>{{ playerinfo['dinoauctions'] }} auctions</b></p>
+        <p class='is-2'>On Since Restart: <b>{{ playerinfo['restartbit'] }}</b></p>
+        <p class='is-2'>Primordial Warning: <b>{{ playerinfo['primordialbit'] }}</b></p>
     </div>
+</div>
 
 

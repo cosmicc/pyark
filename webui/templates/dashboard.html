@@ -3,58 +3,71 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="refresh" content="60">
         <link rel="manifest" href="/manifest.json">
         <script src="/static/js/jquery-3.3.1.min.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
         <script src="/static/js/bulma-toast.min.js"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
         <script>
             $(function(){
                 $("#gnavbar").load("/static/navbar.html");
             });
+        setInterval(function(){ 
+            $("#livebar").load(" #livebar"); 
+            $("#servers").load(" #servers"); 
+            $("#currentplayers").load(" #currentplayers");
+            $("#events").load(" #events");
+            $("#lottery").load(" #lottery");
+            $("#lastfive").load(" #lastfive");
+        }, 60000);
         </script>
 
     </head>
     <body>
     <div id="gnavbar"></div>
-
-    <div class="container is-mobile is-centered top-pad-10 bottom-pad-10 left-pad right-pad">
-    <nav class="level is-mobile">
-            {% for instance in instances %}
-            <div class="level-item is-mobile">
-                <div>
-                <p class='heading is-size-6 has-text-centered is-capitalized'>{{ instance }}</p>
-                <p class='title is-size-4 has-text-centered'>{{ ui_getplayersonline(instance, 'count') }}</p>
+    <div class="container is-mobile is-centered left-pad right-pad top-pad-10 bottom-pad-10">
+        <div id="livebar">
+        <nav class="level is-mobile is-marginless is-paddingless">
+                {% for instance in instances %}
+                <div class="level-item is-mobile">
+                    <div>
+                    <p class='subtitle is-size-6 has-text-centered is-capitalized'>{{ instance }}</p>
+                    <p class='title is-size-3 has-text-centered'>{{ ui_getplayersonline(instance, 'count') }}</p>
+                    </div>
                 </div>
-            </div>
-            {% endfor %}
+                {% endfor %}
         </nav>
+        </div>
     </div>
      <div class="container is-mobile is-centered left-pad right-pad">
+        <div id="servers">
          {% for instance in instances %}
-         {% if ui_isinstanceup(instance) %}
-        {% if ui_isinrestart(instance) %}
-        <a class="button has-background-primary is-mobile is-medium is-centered has-text-white is-rounded is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;v-&nbsp;{{ ui_getinstver(instance) }}&nbsp;-&nbsp;{{ ui_getplayersonline(instance, fmt='count') }}/50}&nbsp;-&nbsp;{{ ui_getrestartleft(instance) }}&nbsp;min</a>
+         {% if not ui_isinstanceup(instance) %}
+         <a class="button has-background-danger is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href=    "/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
+        {% elif ui_isinrestart(instance) %}
+        <a class="button has-background-info is-mobile is-medium is-centered has-text-white is-rounded is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}&nbsp;-&nbsp;{{ ui_getplayersonline(instance, fmt='count') }}/50&nbsp;-&nbsp;{{ ui_getrestartleft(instance) }}&nbsp;min</a>
+        {% elif not ui_iscurrentconfig(instance) %}
+        <a class="button has-background-primary is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href    ="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
         {% else %}
             <a class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
-        {% endif %}
-        {% else %}
-            <a class="button has-background-danger is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}&nbsp;&nbsp;{{ ui_getplayersonline(instance, fmt='count') }}/50</a>
         {% endif %}
         {% endfor %}
     </div>
         <div class="container is-mobile is-centered left-pad right-pad">
-            <div>
-                <p class= 'subtitle top-pad-10 is-size-5 has-text-centered '>Current Players Online: {{ui_getplayersonline('all', 'count')}}</p>
-            </div>
+            <div id="currentplayers">
+                <div>
+                    <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Total Players Online: {{ui_getplayersonline('all', 'count')}}</p>
+                </div>
                 {% for player in ui_getplayersonline('all', 'list') %}
-                    <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
+                <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
                         {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
-                    </a>
+                </a>
                 {% endfor %}
+            </div>
         </div>
+    </div>
         <div class='container top-pad-5 is-centered is-mobile left-pad right-pad bottom-pad-5'>
             <p>&nbsp;&nbsp;Cluster Login Announcement:</p>
             <form action="/setannounce" method="POST">
@@ -70,30 +83,33 @@
         </div>
 
 
-        <div class="container is-mobile is-centered top-pad-5 left-pad right-pad">
-            <div class='bottom-pad-5'>
-            <a class="button has-background-warning is-medium is-centered is-rounded is-fullwidth" href="/events">No Active Cluster Events</a>
-            {% if ui_isinlottery() %}
-            </div>
-        </div>
-        <div class="container is-mobile is-centered top-pad-5 left-pad right-pad">
-            <div>
-            <a class="button has-background-success is-medium is-centered has-text-white is-fullwidth" href="/lottery">Lottery Active with {{ ui_getlotteryplayers(fmt='count') }} Players</a>
-            {% else %}
-            <a class="button has-background-warning is-medium is-centered is-rounded is-fullwidth" href="/lottery">No Active Cluster Lotterys</a>
-            {% endif %}
-            </div>
-        </div>
-<div class="container is-mobile is-centered left-pad right-pad">
-    <div>
-      <p class= 'subtitle top-pad-dbl is-size-5 has-text-centered '>Last 5 Players Online:</p>
+<div class="container is-mobile is-centered top-pad-5 left-pad right-pad">
+    <div id="events">
+        <a class="button has-background-warning is-medium is-centered is-rounded is-fullwidth" href="/events">No Active Cluster Events</a>
     </div>
-        {% for player in ui_getlastplayersonline('all', 'list') %}
-            <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player }}">
-                {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}
-        </a>
-        {% endfor %}
-  </div>
+</div>
+
+<div class="container is-mobile is-centered top-pad-5 left-pad right-pad">
+    <div id="lottery">
+        {% if ui_isinlottery() %}
+        <a class="button has-background-success is-medium is-rounded is-centered has-text-white is-fullwidth" href="/lottery">Lottery Active with {{ ui_getlotteryplayers(fmt='count') }} Players</a>
+        {% else %}
+        <a class="button has-background-warning is-medium is-centered is-rounded is-fullwidth" href="/lottery">No Active Cluster Lotterys</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container is-mobile is-centered top-pad-10 left-pad right-pad">
+    <div id="lastfive">
+    <div>
+        <p class= 'subtitle top-pad-dbl is-size-5 has-text-weight-bold has-text-centered '>Last 5 Players Online:</p>
+    </div>
+    {% for player in ui_getlastplayersonline('all', 'list') %}
+    <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}
+    </a>
+    {% endfor %}
+    </div>
+</div>
 
 
 

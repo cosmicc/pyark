@@ -3,7 +3,7 @@ import sys
 sys.path.append('/home/ark/pyark')
 from modules.configreader import webui_ip, webui_port, webui_debug
 from modules.dbhelper import dbquery
-from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog
+from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
@@ -87,6 +87,13 @@ def database_processor11():
     def ui_isinrestart(inst):
         return isinrestart(inst)
     return dict(ui_isinrestart=ui_isinrestart)
+
+
+@app.context_processor
+def _iscurrentconfig():
+    def ui_iscurrentconfig(inst):
+        return iscurrentconfig(inst)
+    return dict(ui_iscurrentconfig=ui_iscurrentconfig)
 
 
 @app.context_processor

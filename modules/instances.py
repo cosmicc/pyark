@@ -9,9 +9,18 @@ hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 
+def iscurrentconfig(inst):
+    gcfg = dbquery("SELECT cfgver FROM general", fetch='one')
+    dbdata = dbquery("SELECT cfgver FROM instances WHERE name = '%s'" % (inst,), fetch='one')
+    if dbdata[0] == gcfg[0]:
+        return True
+    else:
+        return False
+
+
 def isinrestart(inst):
     dbdata = dbquery("SELECT needsrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    if dbdata[0] == 1:
+    if dbdata[0] == 'True':
         return True
     else:
         return False
