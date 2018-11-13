@@ -14,6 +14,9 @@ colored = "*"
 py-time-between = "*"
 discord = "*"
 "psycopg2-binary" = "*"
+flask-login = "*"
+sqlalchemy = "*"
+active-alchemy = "*"
 
 [dev-packages]
 
