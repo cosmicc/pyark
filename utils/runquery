@@ -1,0 +1,34 @@
+#!/usr/bin/python3
+
+from dbhelper import dbupdate, dbquery
+import time
+
+now = time.time()
+
+##delete the admin account from db
+#c.execute('DELETE from players WHERE steamid = 76561198408657294')
+
+#c.execute('DELETE from players WHERE playername = "newplayer"')
+#c.execute('UPDATE instances SET arkserverslink = "https://ark-servers.net/server/147631" WHERE name = "ragnarok"')
+#c.execute('CREATE TABLE IF NOT EXISTS apikeys (name TEXT, key TEXT')
+#c.execute('ALTER TABLE instances ADD COLUMN inevent INTEGER')
+#c.execute('CREATE TABLE lotteryinfo (id INTEGER PRIMARY KEY AUTOINCREMENT, type INTEGER, payoutitem TEXT, timestamp TEXT, buyinpoints INTEGER, lengthdays INTEGER, players INTEGER, winner TEXT)')
+#c.execute('DROP TABLE events')
+#c.execute('CREATE TABLE events (id INTEGER PRIMARY KEY AUTOINCREMENT, completed INTEGER, starttime REAL, endtime REAL, title TEXT, description TEXT, cfgfilesuffix TEXT)')
+#c.execute('DELETE FROM volcano WHERE date = "1540957458"')
+#c.execute('UPDATE instances SET inevent = 0')
+#c.execute('CREATE TABLE general (cfgver TEXT, announce TEXT)')
+#c.execute('INSERT INTO events (completed, starttime, length, title, description) VALUES (0, 1540705038.8689234, 4, "Halloween Weekend", "2x XP, 2x Reward Points, Trasmitter Coords")')
+#c.execute('INSERT INTO lotterydeposits (steamid,playername,timestamp,points,givetake) VALUES ("76561198408657294","admin","12500000","5","0")')
+#c.execute('PRAGMA table_info(ragnarok)')
+#c.execute('UPDATE players SET apikey = "uKG1Wy9ipm0eZI4f7SdhBIScJ1OaWdJ4" WHERE playername = "rykker"')
+#c.execute('DELETE FROM players WHERE discordid = "weiser#37    68"')
+#conn.commit()
+#c.execute('SELECT name FROM sqlite_master WHERE type="table" ORDER BY name')
+allplayers = dbquery('SELECT * FROM players')
+for each in allplayers:
+    dbupdate("UPDATE players SET firstseen = '%s' WHERE steamid = '%s'" %(int(each[6]), each[0]))
+#    conn.commit()
+
+    #c.execute(f'UPDATE players SET homeserver = ? WHERE steamid = ?', (row[3],row[0]))
+#conn.commit()
