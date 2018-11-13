@@ -5,7 +5,7 @@ A custom Ark Survival Evolved Server/Player Cluster Management System used by th
 
 Requires:
 A PostgreSQL Server
-ARK Server running on linux, using arkmanager https://github.com/FezVrasta/ark-server-tools, 
+ARK Server running on linux, using arkmanager https://github.com/FezVrasta/ark-server-tools,
 ARK server running TC Rewards Mod https://steamcommunity.com/sharedfiles/filedetails/?id=1260983937
 
 Gives:
