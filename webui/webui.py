@@ -275,7 +275,7 @@ def login():
             if form.password.data == user.password:
                 login_user(user, remember=form.remember.data)
                 return redirect(url_for('dashboard'))
-        return render_template('login.html', alertmessage='Invalid Login')
+        return render_template('login.html', form=form)
 
     return render_template('login.html', form=form)
 
