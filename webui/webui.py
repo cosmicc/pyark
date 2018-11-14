@@ -7,6 +7,7 @@ from wtforms.validators import InputRequired, Email, Length
 import sys
 sys.path.append('/home/ark/pyark')
 from modules.configreader import webui_ip, webui_port, webui_debug, psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
+from modules.dbhelper import dbquery
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs
