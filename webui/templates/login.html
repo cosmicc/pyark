@@ -10,26 +10,60 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
         <script src="/static/js/bulma-toast.min.js"></script>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-    {% if alertmessage %}
-    <script>
-    bulmaToast.toast(  {
-        message: "<h1 class='subtitle is-uppercase'>{{ alertmessage }}</h1>",
-    duration: 10000,
-    type: "is-danger",
-    position: "center",
-    closeOnClick: true,
-    opacity: 0.9
-  })
-    </script>
-    {% endif %}
-<style>
-html { background-color:#ffffff;
-}
-</style>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+             <script>
+            $(function () {
+                toastr.options = {
+                  "closeButton": false,
+                  "debug": false,
+                  "newestOnTop": false,
+                  "progressBar": false,
+                  "positionClass": "toast-top-center",
+                  "preventDuplicates": false,
+                  "onclick": null,
+                  "showDuration": "300",
+                  "hideDuration": "1000",
+                  "timeOut": "5000",
+                  "extendedTimeOut": "1000",
+                  "showEasing": "swing",
+                  "hideEasing": "linear",
+                  "showMethod": "fadeIn",
+                  "hideMethod": "fadeOut"
+                    }
+                });
+            </script>
+            <script>
+                $(function () {
+            {% for category, message in messages %}
+            {% if category == "success" %}
+                toastr.success("{{ message }}");
+            {% elif category == "warning" %}
+                toastr.warning("{{ message }}");
+            {% elif category == "error" %}
+                toastr.error("{{ message }}");
+            {% else %}
+                toastr.info("{{ message }}");
+            {% endif %}
+                var $notifyContainer = $('#toast-container').closest('.toast-top-center');
+                if ($notifyContainer) {
+                // align center
+                var windowHeight = $(window).height() - 90;
+                $notifyContainer.css("margin-top", windowHeight / 5);
+                }
+            });
+            </script>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <style>
+            html { background-color:#ffffff; }
+        </style>
     </head>
-
 <body>
 <div class="section">
     <div id="login">

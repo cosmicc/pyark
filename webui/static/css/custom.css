@@ -39,7 +39,19 @@
   .right-pad-extra {
      padding-right: 15px;
   }
-
-
 </style>
+
+#toast-container > .toast {
+    background-image: none !important;
+
+.toast-top-center { 
+   top: 12px;   
+   margin: 0 auto;  
+   left: 50%;   
+   margin-left: -150px;
+   width: 100px;
+ }
+
+}
+
 

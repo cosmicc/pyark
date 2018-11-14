@@ -1,5 +1,5 @@
 from active_alchemy import ActiveAlchemy
-from flask import Flask, render_template, Response, request, redirect, url_for
+from flask import Flask, render_template, Response, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
@@ -275,7 +275,8 @@ def login():
             if form.password.data == user.password:
                 login_user(user, remember=form.remember.data)
                 return redirect(url_for('dashboard'))
-        return render_template('login.html', form=form)
+        flash(u'Invalid Login', 'error')
+        return redirect(url_for('login'))
 
     return render_template('login.html', form=form)
 
@@ -283,6 +284,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+    flash(u'You have been logged out', 'info')
     return redirect(url_for('login'))
 
 
@@ -335,9 +337,11 @@ def _stats():
 def _bantoggle(steamid):
     if isplayerbanned(steamid=steamid):
         banunbanplayer(steamid=steamid, ban=False)
+        flash(u'Player has been Un-Banned', 'success')
         return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
     else:
         banunbanplayer(steamid=steamid, ban=True)
+        flash(u'Player has been BANNED!', 'error')
         return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'), alertmessage='has been banned from cluster')
 
 
@@ -345,6 +349,7 @@ def _bantoggle(steamid):
 @login_required
 def _kickplayer(steamid, instance):
     kickplayer(instance, steamid)
+    flash(u'Kicking player from %s' % (instance,), 'info')
     return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'), alertmessage='has been kicked from server')
 
 
@@ -352,6 +357,7 @@ def _kickplayer(steamid, instance):
 @login_required
 def _restartinstance(instance):
     restartinstance(instance, cancel=False)
+    flash(u'Restarting Server', 'info')
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance), alertmessage='server is set to restart')
 
 
@@ -359,6 +365,7 @@ def _restartinstance(instance):
 @login_required
 def _cancelrestartinstance(instance):
     restartinstance(instance, cancel=True)
+    flash(u'Cencelling Server Restart', 'info')
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance), alertmessage='server restart canceled')
 
 

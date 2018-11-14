@@ -2,7 +2,8 @@
 {% block head %}
     {{ super() }}
     <script>
-        setInterval(function(){ 
+        setInterval(function(){
+            $("#livebar").load(" #livebar");
             $("#servers").load(" #servers"); 
             $("#currentplayers").load(" #currentplayers"); 
             $("#events").load(" #events");
