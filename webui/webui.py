@@ -15,7 +15,7 @@ from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 import json
 sys.path.append('/home/ark/pyark/webui')
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'fuckoff'
+app.config['SECRET_KEY'] = '4CZywb8pQMxNCwB25TCpxYay'
 
 db = ActiveAlchemy(f"postgresql+pg8000://{psql_user}:{psql_pw}@{psql_host}:{psql_port}/{psql_db}", app=app)
 
