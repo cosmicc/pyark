@@ -1,7 +1,7 @@
 PyArk
 A custom Ark Survival Evolved Server/Player Cluster Management System used by the Galaxy Cluster Ark Servers.
 
-(this isn't really built for public use, yet?)
+(this isn't really built for public use, but that could change)
 
 Requires:
 A PostgreSQL Server
