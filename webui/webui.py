@@ -317,6 +317,19 @@ def _events():
     return render_template('eventinfo.html', lastevent=getlastevent(), currentevent=getcurrentevent(), futureevent=getfutureevent())
 
 
+@app.route('/lottery')
+@login_required
+def _lottery():
+    return render_template('template.html')
+
+
+@app.route('/stats')
+@login_required
+def _stats():
+    return render_template('template.html')
+
+
+
 @app.route('/bantoggle/<steamid>')
 @login_required
 def _bantoggle(steamid):
