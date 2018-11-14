@@ -1,8 +1,29 @@
-    {% macro form_field(field) %}
+    {% macro username_form_field(field) %}
     <div class="field">
       <label class="label">{{ field.name.label }}</label>
       <div class="control">
-         {{ field(class="input", type="text", placeholder="") }}
+         {{ field(class="input", type="text", placeholder=field.name) }}
+      </div>
+    </div>
+   {% endmacro %}
+    {% macro password_form_field(field) %}
+    <div class="field">
+      <label class="label">{{ field.name.label }}</label>
+      <div class="control">
+         {{ field(class="input", type="password", placeholder=field.name) }}
+      </div>
+    </div>
+   {% endmacro %}
+
+
+    {% macro checkbox_form_field(field) %}
+    <div class="field">
+      <label class="label">{{ field.name.label }}</label>
+      <div class="control">
+          <div class="checkbox level-left">
+         {{ field(class="regular-checkbox", type="checkbox") }}
+        <span>Remember me</span>
+          </div>
       </div>
     </div>
    {% endmacro %}
