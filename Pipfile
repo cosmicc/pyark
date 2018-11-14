@@ -17,6 +17,8 @@ discord = "*"
 flask-login = "*"
 sqlalchemy = "*"
 active-alchemy = "*"
+wtforms = "*"
+flask-wtf = "*"
 
 [dev-packages]
 

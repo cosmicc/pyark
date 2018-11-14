@@ -1,33 +1,18 @@
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="manifest" href="/manifest.json">
-        <script src="/static/js/jquery-3.3.1.min.js"></script>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
-        <script src="/static/js/bulma-toast.min.js"></script>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-        <script>
-            $(function(){
-                $("#gnavbar").load("/static/navbar.html");
-            });
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <script>
         setInterval(function(){ 
-            $("#livebar").load(" #livebar"); 
-            $("#servers").load(" #servers"); 
-            $("#currentplayers").load(" #currentplayers");
-            $("#events").load(" #events");
-            $("#lottery").load(" #lottery");
-            $("#lastfive").load(" #lastfive");
+            $("#playertitle").load(" #playertitle"); 
+            $("#chatbar").load(" #chatbar"); 
+            $("#buttons").load(" #buttons");
+            $("#playerinfo").load(" #playerinfo");
         }, 60000);
-        </script>
+    </script>
+{% endblock %}
 
-    </head>
-    <body>
-    <div id="gnavbar"></div>
-    <div class="container is-mobile is-centered left-pad right-pad top-pad-10 bottom-pad-10">
+{% block content %}
+<div class="container is-mobile is-centered left-pad right-pad top-pad-10 bottom-pad-10">
         <div id="livebar">
         <nav class="level is-mobile is-marginless is-paddingless">
                 {% for instance in instances %}
@@ -110,7 +95,7 @@
     {% endfor %}
     </div>
 </div>
-
+{% endblock %}
 
 
 

@@ -1,0 +1,8 @@
+    {% macro form_field(field) %}
+    <div class="field">
+      <label class="label">{{ field.name.label }}</label>
+      <div class="control">
+         {{ field(class="input", type="text", placeholder="") }}
+      </div>
+    </div>
+   {% endmacro %}

@@ -1,38 +1,60 @@
-<body class="layout-default">
-  <section class="hero is-fullheight is-medium is-primary is-bold">
-        <div class="hero-body">
-          <div class="container">
-            <div class="columns is-centered"">
-              <article class="card is-rounded">
-                <div class="card-content">
-                  <h1 class="title">
-                                   
-                    <img src="https://placeholdit.imgix.net/~text?txtsize=13&txt=150%C3%9750&w=150&h=50" alt="logo" width="200">
-                  </h1>
-                  <p class="control has-icon">
-                    <input class="input" type="email" placeholder="Email">
-                    <i class="fa fa-envelope"></i>
-                  </p>
-                  <p class="control has-icon">
-                    <input class="input" type="password" placeholder="Password">
-                    <i class="fa fa-lock"></i>
-                  </p>
-                  <p class="control">
-                    <label class="checkbox">
-                      <input type="checkbox">
-                      Remember me
-                    </label>
-                  </p>
-                  <p class="control">
-                    <button class="button is-primary is-medium is-fullwidth">
-                      <i class="fa fa-user"></i>
-                      Login
-                    </button>
-                  </p>
-                </div>
-              </article>
-            </div>
-          </div>
+{% from "wtf.html" import form_field %}
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="manifest" href="/manifest.json">
+        <script src="/static/js/jquery-3.3.1.min.js"></script>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
+        <script src="/static/js/bulma-toast.min.js"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    {% if alertmessage %}
+    <script>
+    bulmaToast.toast(  {
+        message: "<h1 class='subtitle is-uppercase'>{{ alertmessage }}</h1>",
+    duration: 10000,
+    type: "is-danger",
+    position: "center",
+    closeOnClick: true,
+    opacity: 0.9
+  })
+    </script>
+    {% endif %}
+    </head>
+
+<body style="background-color:lightgray;">
+    <div class="container">
+    <div class="columns">
+        <div class="column">&nbsp;</div>
+        <div class="column">&nbsp;</div>
+        <div class="column">&nbsp;</div>
+        <div class="column">&nbsp;</div>
     </div>
-  </section>
-</body>
+<div id="login">
+  <div class="login-card is-mobile">
+    <div class="content is-mobile ">
+      <form method="POST" action="/">
+        {{ form.hidden_tag() }}
+        {{ form_field(form.username) }}
+        {{ form_field(form.password) }}
+        <div class="level options">
+          <div class="checkbox level-left">
+            <input type="checkbox" id="checkbox" class="regular-checkbox">
+            <label for="checkbox"></label>
+            <span>Remember me</span>
+          </div>
+
+          <a class="btn btn-link level-right" href="#">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary is-info">Login</button>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+    </body>
+</html>
