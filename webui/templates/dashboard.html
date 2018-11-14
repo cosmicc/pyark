@@ -3,10 +3,11 @@
     {{ super() }}
     <script>
         setInterval(function(){ 
-            $("#playertitle").load(" #playertitle"); 
-            $("#chatbar").load(" #chatbar"); 
-            $("#buttons").load(" #buttons");
-            $("#playerinfo").load(" #playerinfo");
+            $("#servers").load(" #servers"); 
+            $("#currentplayers").load(" #currentplayers"); 
+            $("#events").load(" #events");
+            $("#lottery").load(" #lottery");
+            $("#lastfive").load(" #lastfive");
         }, 60000);
     </script>
 {% endblock %}

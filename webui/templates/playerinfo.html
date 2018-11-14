@@ -1,28 +1,19 @@
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="manifest" href="/manifest.json">
-        <script src="/static/js/jquery-3.3.1.min.js"></script>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
-        <script src="/static/js/bulma-toast.min.js"></script>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-         <script>
-            $(function(){
-                $("#gnavbar").load("/static/navbar.html");
-            });
-        setInterval(function(){ 
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <script>
+    setInterval(function(){ 
             $("#playertitle").load(" #playertitle"); 
             $("#chatbar").load(" #chatbar"); 
             $("#buttons").load(" #buttons");
             $("#playerinfo").load(" #playerinfo");
         }, 60000);
         </script>
-    </head>
 
+
+{% endblock %}
+
+{% block content %}
     {% if alertmessage %}
     <script>
     bulmaToast.toast(  {
@@ -36,8 +27,6 @@
     </script>
     {% endif %}
 
-    <body>
-    <div id="gnavbar"></div>
 <div id="playertitle">
     {% if ui_isbanned(playerinfo['steamid']) %}
     <div class='container is-mobile has-background-danger bottom-pad-10'>
@@ -109,5 +98,5 @@
         <p class='is-2'>Primordial Warning: <b>{{ playerinfo['primordialbit'] }}</b></p>
     </div>
 </div>
-
+{% endblock %}
 

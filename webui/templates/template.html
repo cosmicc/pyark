@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+       <script>
+        setInterval(function(){ 
+            $("#titlebar").load(" #titlebar"); 
+        }, 60000);
+        </script>
+{% endblock %}
+
+{% block content %}
+
+<div id="titlebar" class="content">
+
+
+</div>
+
+{% endblock %}
+

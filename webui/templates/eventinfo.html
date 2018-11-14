@@ -1,26 +1,9 @@
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="refresh" content="60">
-        <link rel="manifest" href="/manifest.json">
-        <script src="/static/js/jquery-3.3.1.min.js"></script>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
-        <script src="/static/js/bulma-toast.min.js"></script>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-        <script>
-            $(function(){
-                $("#gnavbar").load("/static/navbar.html");
-            });
-        </script>
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
 
-    </head>
-    <body>
-    <div id="gnavbar"></div>
-
+{% block content %}
     <div class='container is-mobile'>
         {% if not currentevent %}
         <div class='container top-pad-10 left-pad bottom-pad-10 is-mobile has-background-warning'>
@@ -64,6 +47,5 @@
                 <a class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="/startevent">Schedule an Event</a>
             </div>
         </div>
-
-
     </div>
+{% endblock %}
