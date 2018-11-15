@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <script>
+    setInterval(function(){ 
+            $("#lotterytitle").load(" #lotterytitle"); 
+            $("#currentlotteryplayers").load(" #currentlotteryplayers"); 
+            $("#buttons").load(" #buttons");
+            $("#playerinfo").load(" #playerinfo");
+        }, 60000);
+        </script>
+{% endblock %}
+
+{% block content %}
+        <div id="lotterytitle">
+        {% if not currentlottery %}
+        <div class='container top-pad-10 left-pad bottom-pad-10 is-mobile has-background-warning'>
+            <div>
+                <h1 class="title">&nbsp;No Current Lottery</h1>
+                <h2 class="subtitle">&nbsp;Last Lottery was {{ ui_elapsedTime(lastlottery['timestamp'] + (3600 * currentlottery['lengthdays']))}} ago</h2>
+            </div>
+        </div>
+        {% else %}
+        <div class='container top-pad-5 left-pad bottom-pad-10 is-mobile has-background-success'>
+            <div>
+                <h1 class="title has-text-white">&nbsp;Lottery is at {{ currentlottery['payoutitem'] }} Points</h1>
+                <h2 class="subtitle has-text-white">&nbsp;Lottery Ends in {{ ui_elapsedTime(currentlottery['timestamp'] + (3600 * currentlottery['lengthdays'])) }}</h2>
+            </div>
+        </div>
+    </div>
+<div class='container is-mobile left-pad right-pad'>
+            <div id="currentlotteryplayers">
+                <div>
+                    <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Current Lottery Players: {{ui_getlotteryplayers(fmt='count')}}</p>
+                </div>
+                {% for player in ui_getlotteryplayers(fmt='list') %}
+                <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player[0].title() }}">
+                    {{ player[0].title() }} at {{ ui_getplayer(player[0])['lottowins'] }} wins for {{ ui_getplayer(player[0])['lotterywinnings'] }} points
+                </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+            <div id="lastlotteryplayers">
+                {% if not currentlottery %}
+                <div>
+                    <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Last Lottery Winner:</p>
+                </div>
+                    <div>
+                    <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ lastlottery['winner'].title() }}"></a>
+                    </div>
+                    <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Last Lottery Players: {{ui_getlotteryplayers(fmt='count')}}</p>
+                </div>
+                {% for player in ui_getlotteryplayers(fmt='list') %}
+                <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player[0].title() }}">{{ player[0].title() }} at {{ ui_getplayer(player[0])['lottowins'] }} wins for {{ ui_getplayer(player[0])['lotterywinnings'] }} points
+                </a>
+                {% endfor %}
+                {% else %}
+                <div>
+                     <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Last Lottery Winner:</p>
+                </div>
+                     <div>
+                     <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ lastlottery['winner'].title() }}">{{ lastlottery['winner'].title() }} with {{ ui_getplayer(lastlottery['winner'])['lottowins']}} wins for {{ ui_getplayer(lastlottery['winner'])['lotterywinnings']}} points</a>
+                     </div>
+                    <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Last Lottery Players: {{ lastlottery['players'] }}</p>
+                </div>
+
+                {% endif %}
+            </div>
+
+        <div class='container top-pad-10 bottom-pad-10 right-pad left-pad'>
+            <div>
+                {% if not currentlottery %}
+                <a class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="/startlottery">Start a Lottery</a>
+                {% else %}
+                <a disabled class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="#">Start a L    ottery</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

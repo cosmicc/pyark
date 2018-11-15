@@ -1,3 +1,4 @@
+{% from "wtf.html" import text_form_field %}
 {% extends "base.html" %}
 {% block head %}
     {{ super() }}
@@ -22,8 +23,7 @@
                     <input class="input is-rounded" type="text" placeholder="Broadcast To {{ serverinfo['name'].capitalize() }} Server"> 
                     <div class="control">
                         <button class="button" type="submit">
-                            <i class="fas fa-lg fa-share"></i>
-                        </button>
+                        <i class="fas fa-lg fa-share"></i></button>
                     </div>
                 </div>
             </form>
@@ -31,13 +31,12 @@
 
 
         <div class='container top-pad-0 is-centered is-mobile left-pad right-pad'>
-            <form action="/server/sendchat" method="POST">
+            <form action="/server/chatlog/{{ serverinfo['name'] }}" method="POST">
                 <div class="field has-addons bottom-pad-10">
-                    <input class="input is-rounded" type="text" placeholder="Send To {{ serverinfo['name'].capitalize() }} Server Chat"> 
+                    <input class="input is-rounded" type="text" name="message" placeholder="Broadcast To {{ serverinfo['name'].capitalize() }} Server">
                     <div class="control">
-                        <button class="button" type="submit">
-                            <i class="fas fa-lg fa-share"></i>
-                        </button>
+                        <button class="button" type="submit"> 
+                            <i class="fas fa-lg fa-share"></i></button>
                     </div>
                 </div>
             </form>

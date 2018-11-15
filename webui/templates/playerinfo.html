@@ -63,9 +63,9 @@
     {% if ui_isplayeronline(playerinfo['steamid']) %}
     <div class='container top-pad-10 is-mobile left-pad right-pad bottom-pad-0'>
         <div>
-        <form action="/server/sendchat" method="POST">
+            <form action="/playerinfo/{{ playerinfo['playername'].lower() }}" method="POST">
                 <div class="field has-addons bottom-pad-10">
-                    <input class="input is-rounded" type="text" placeholder="Send To {{ playerinfo['playername'].title() }} on {{ playerinfo['server'].capitalize() }}"> 
+                    <input class="input is-rounded" type="text" name="message" placeholder="Send To {{ playerinfo['playername'].title() }} on {{ playerinfo['server'].capitalize() }}"> 
                     <div class="control">
                         <button class="button" type="submit">
                             <i class="fas fa-lg fa-share"></i>

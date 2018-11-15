@@ -69,9 +69,9 @@ def writeglobal(inst, whos, msg):
              (inst, whos, msg, Now()))
 
 
-def serverchat(msg, inst='ALERT', whosent='ALERT'):
-    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-             (inst, whosent, msg, Now()))
+def serverchat(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False):
+    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp,private,broadcast) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" %
+             (inst, whosent, msg, Now(), private, broadcast))
 
 
 def restartinstance(server, cancel=False):

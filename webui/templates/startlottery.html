@@ -1,0 +1,37 @@
+{% from "wtf.html" import text_form_field %}
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+       <script>
+        setInterval(function(){ 
+            $("#titlebar").load(" #titlebar"); 
+        }, 60000);
+        </script>
+{% endblock %}
+
+{% block content %}
+
+<div class="section">
+    <div id="startlottery">
+        <article class="message">
+  <div class="message-header has-background-success has-text-centered">
+    <p>Start a Lottery</p>
+  </div>
+  <div class="message-body">
+      <form method="POST" action="/startlottery">
+        {{ form.hidden_tag() }}
+       <p>Buy-In Points:</p> 
+        {{ text_form_field(form.buyinpoints) }}
+        <p>&nbsp;Lottery Length in Hours:</p>
+        {{ text_form_field(form.length) }}
+        <div class="control">
+            <center><input class="button is-info" type="submit"></center>
+        </div>
+      </form>
+    </div>
+        </article>
+  </div>
+</div>
+
+{% endblock %}
+
