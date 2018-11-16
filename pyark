@@ -58,12 +58,12 @@ log_fileh = logging.FileHandler(logfile)
 log_fileh.setLevel(logging.INFO)
 log_fileh.setFormatter(log_format)
 
-log_filej = logging.FileHandler('/home/ark/shared/logs/pyark/pyarkdebug.log')
-log_filej.setFormatter(log_format)
-log_filej.setLevel(logging.DEBUG)
+#log_filej = logging.FileHandler('/home/ark/shared/logs/pyark/pyarkdebug.log')
+#log_filej.setFormatter(log_format)
+#log_filej.setLevel(logging.DEBUG)
 
 log.addHandler(log_fileh)
-log.addHandler(log_filej)
+#log.addHandler(log_filej)
 
 plock()
 

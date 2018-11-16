@@ -1,4 +1,7 @@
 from active_alchemy import ActiveAlchemy
+from itertools import chain
+import pandas as pd
+import psycopg2
 from datetime import datetime, timedelta
 from flask import Flask, render_template, Response, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -210,6 +213,57 @@ def _lastactive():
 
 
 @app.context_processor
+def _statpull():
+    def ui_last24avg(inst, dtype):
+        if dtype == 1:
+            hours = 1
+            tstr = ':%M'
+        elif dtype == 2:
+            hours = 24
+            rate = 'H'
+            tstr = '%-I%p'
+        elif dtype == 3:
+            hours = 192
+            rate = 'D'
+            tstr = '%a'
+        conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        if inst == 'all':
+            avglist = []
+            for each in instances():
+                slist = []
+                navglist = []
+                dlist = []
+                c = conn.cursor()
+                c.execute("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(each[0], datetime.now() - timedelta(hours=hours)))
+                nlist = c.fetchall()
+                for y in nlist:
+                    slist.append(y[1])
+                    dlist.append(y[0])
+                if avglist == []:
+                    avglist = slist
+                else:
+                    navglist = [sum(pair) for pair in zip(slist, avglist)]
+                    avglist = navglist
+            c.close()
+            conn.close()
+            ret = list(zip(dlist, avglist))
+            df = pd.DataFrame.from_records(ret, columns=['date', 'value'])
+            df = df.set_index(pd.DatetimeIndex(df['date']))
+        else:
+            df = pd.read_sql("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(inst, datetime.now() - timedelta(days=days)), conn, parse_dates=['date'], index_col='date')
+            conn.close()
+        df = df.tz_localize(tz='UTC')
+        df = df.tz_convert(tz='US/Eastern')
+        if dtype != 1:
+            df = df.resample(rate).mean()
+        datelist = []
+        for each in df.index:
+            datelist.append(each.strftime(tstr))
+        return (datelist, list(chain.from_iterable(df.values.round(1).tolist())))
+    return dict(ui_last24avg=ui_last24avg)
+
+
+@app.context_processor
 def _playerlastactive():
     def ui_playerlastactive(lastseen):
         if Now() - lastseen > 40:
@@ -224,6 +278,10 @@ def _getannouncement():
     def ui_getannouncement():
         return dbquery("SELECT announce FROM general ", fmt='string', fetch='one')
     return dict(ui_getannouncement=ui_getannouncement)
+
+
+def instances():
+    return dbquery("SELECT name FROM instances ", fmt='list', fetch='all')
 
 
 def instanceinfo(inst):
