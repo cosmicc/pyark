@@ -117,9 +117,11 @@ def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
 def statsupdate(inst, value):
     conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     c = conn.cursor()
-    c.execute("INSERT INTO %s (date, value) VALUES ('%s', '%s')" % (inst.lower(), datetime.now(), value))
+    c.execute("INSERT INTO %s (date, value) VALUES ('%s', '%s')" % (inst.lower(), datetime.now().replace(microsecond=0), value))
+    conn.commit()
     c.close()
     conn.close()
+
 
 def dbupdate(query, db='sqldb'):
     try:
