@@ -239,14 +239,20 @@ arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd 
 def sctl(scmd):
     if scmd == 'start':
         command = '/bin/systemctl start pyark'
-        print('Starting PyArk Daemon')
+        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+        command = '/bin/systemctl start arkwatchdog'
+        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+        print('PyArk Started')
     elif scmd == 'stop':
+        command = '/bin/systemctl stop arkwatchdog'
+        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
         command = '/bin/systemctl stop pyark'
+        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
         print('Stopping PyArk Daemon')
     elif scmd == 'restart':
         command = '/bin/systemctl restart pyark'
+        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
         print('Restarting PyArk Daemon')
-    subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
 
 
 def printplayer(feach):

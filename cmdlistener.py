@@ -523,12 +523,12 @@ def lotteryquery(whoasked, lchoice, inst):
                              (str(int(linfo[2]) + int(linfo[4])), ))
                 dbupdate("UPDATE lotteryinfo SET players = '%s' WHERE id = '%s'" % (int(linfo[6]) + 1, linfo[0]))
                 msg = f'You have been added to the {lfo} lottery! A winner will be choosen on {ltime} in \
-{elapsedTime(float(linfo[3])+(86400*int(linfo[5])),Now())}. Good Luck!'
+{elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}. Good Luck!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
                 log.info(f'player {whoasked} has joined the current active lottery.')
             else:
                 msg = f'You are already participating in this lottery for {lfo}.  Lottery ends {ltime} in \
-{elapsedTime(float(linfo[3])+(86400*int(linfo[5])),Now())}'
+{elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
         else:
             sendlotteryinfo(linfo, lpinfo, inst)
