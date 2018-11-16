@@ -1,4 +1,5 @@
 from active_alchemy import ActiveAlchemy
+from datetime import datetime, timedelta
 from flask import Flask, render_template, Response, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -10,7 +11,7 @@ from modules.configreader import webui_ip, webui_port, webui_debug, psql_host, p
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
-from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs
+from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 import json
 sys.path.append('/home/ark/pyark/webui')
@@ -200,9 +201,9 @@ def _length():
 @app.context_processor
 def _lastactive():
     def ui_lastactive(inst):
-        retime = int(dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), db='statsdb', fetch='one', fmt='string'))
-        if Now() - retime > 300:
-            return f'{elapsedTime(Now(), retime)} ago'
+        retime = dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), db='statsdb', fetch='one')[0]
+        if datetime.now() - retime > timedelta(seconds=300):
+            return f'{elapsedTime(Now(), datetimeto(retime, "epoch"))} ago'
         else:
             return 'Now'
     return dict(ui_lastactive=ui_lastactive)
