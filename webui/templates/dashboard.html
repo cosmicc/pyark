@@ -19,11 +19,12 @@
         <nav class="level is-mobile is-marginless is-paddingless">
                 {% for instance in instances %}
                 <div class="level-item is-mobile">
+                    <a href="/serverinfo/{{ instance }}">
                     <div>
                     <p class='subtitle is-size-6 has-text-centered is-capitalized'>{{ instance }}</p>
                     <p class='title is-size-3 has-text-centered'>{{ ui_getplayersonline(instance, 'count') }}</p>
                     </div>
-                </div>
+                </div></a>
                 {% endfor %}
         </nav>
         </div>
@@ -57,9 +58,9 @@
     </div>
         <div class='container top-pad-5 is-centered is-mobile left-pad right-pad bottom-pad-5'>
             <p>&nbsp;&nbsp;Cluster Login Announcement:</p>
-            <form action="/setannounce" method="POST">
+            <form action="/dashboard" method="POST">
                 <div class="field has-addons">
-                    <input class="input is-rounded" type="text" placeholder="{{ ui_getannouncement() }}"> 
+                    <input class="input is-rounded" name="message" type="text" placeholder="{{ ui_getannouncement() }}"> 
                     <div class="control">
                         <button class="button" type="submit">
                             <i class="fas fa-lg fa-share"></i>

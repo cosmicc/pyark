@@ -1,4 +1,4 @@
-from modules.dbhelper import dbupdate, dbquery
+from modules.dbhelper import dbupdate, dbquery, statsupdate
 from modules.players import getplayersonline
 from modules.timehelper import Secs
 from time import time, sleep
@@ -14,8 +14,8 @@ def checkiftableexists(inst):
 
 
 def addvalue(inst, value):
-    ldate = int(time())
-    dbupdate("INSERT INTO %s (date, value) VALUES ('%s', '%s')" % (inst, ldate, value), db='statsdb')
+    statsupdate(inst, value)
+    # dbupdate("INSERT INTO %s (date, value) VALUES ('%s', '%s')" % (inst, ldate, value), db='statsdb')
 
 
 def flushold(tinst):  # not implimented

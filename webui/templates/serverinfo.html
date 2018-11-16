@@ -31,8 +31,8 @@
     </div>
 </div>
 
-    <div class='container is-mobile is-centered left-pad-extra right-pad-extra top-pad-10 bottom-pad-5'>
-        <div class='columns left-pad is-mobile'>
+    <div class='container top-pad-10 bottom-pad-5'>
+        <div class='columns is-gapless left-pad-extra right-pad is-mobile'>
         <div class='column'>
             <a class="button" href="/server/dinowipe/{{ serverinfo['name'] }}">
                             <i class="fas fa-lg fa-brush"></i>
@@ -54,11 +54,16 @@
                         </a>
         </div>
         <div class='column'>
-            <a class="button" type="submit">
+            <a class="button" href="/server/stats/{{ serverinfo['name'] }}">
+                            <i class="far fa-lg fa-chart-bar"></i>
+                        </a>
+        </div>
+        <div class='column'>
+            <a class="button" href="/server/gamelog/{{ serverinfo['name'] }}">
                             <i class="far fa-lg fa-file-alt"></i>
                         </a>
         </div>
-    </div>
+        </div>
     </div>
 
 <div class='container is-mobile is-centered left-pad right-pad'>

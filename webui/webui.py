@@ -249,6 +249,13 @@ def getlastevent():
     return dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY endtime DESC", fmt='dict', fetch='one')
 
 
+def setannouncement(msg):
+    if msg != '':
+        dbupdate("UPDATE general SET announce = '%s'" % (msg,))
+    else:
+        dbupdate("UPDATE general SET announce = NULL")
+
+
 def getlastlottery():
     return dbquery("SELECT * FROM lotteryinfo WHERE winner != 'Incomplete' ORDER BY timestamp DESC", fmt='dict', fetch='one')
 
@@ -315,9 +322,13 @@ def login():
     return render_template('login.html', form=form)
 
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['POST', 'GET'])
 @login_required
 def dashboard():
+    if request.method == 'POST':
+        setannouncement(request.form["message"])
+        flash(f'Login Announcement Set', 'info')
+        return redirect(url_for('dashboard'))
     return render_template('dashboard.html', loginname=current_user.username, instances=instancelist())
 
 
@@ -396,8 +407,7 @@ def _lottery():
 @app.route('/stats')
 @login_required
 def _stats():
-    return render_template('template.html')
-
+    return render_template('stats.html')
 
 
 @app.route('/bantoggle/<steamid>')

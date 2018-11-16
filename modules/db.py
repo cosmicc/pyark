@@ -1,4 +1,4 @@
-from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
+from configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 from datetime import datetime
 import logging
 import socket
@@ -114,13 +114,6 @@ def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
             return None
 
 
-def statsupdate(inst, value):
-    conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-    c = conn.cursor()
-    c.execute("INSERT INTO %s (date, value) VALUES ('%s', '%s')" % (inst.lower(), datetime.now(), value))
-    c.close()
-    conn.close()
-
 def dbupdate(query, db='sqldb'):
     try:
         if db == 'sqldb':
@@ -178,4 +171,10 @@ def db_getvalue(select, table, fmt='tuple', fetch='one'):
 
 
 if __name__ == '__main__':
+    conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+    c = conn.cursor()
+
+    c.execute("INSERT INTO test (timestamp) VALUES ('%s')"% (datetime.now(),))
+    c.close()
+    conn.close()
     exit()

@@ -17,7 +17,7 @@
         <div class='container top-pad-10 left-pad bottom-pad-10 is-mobile has-background-warning'>
             <div>
                 <h1 class="title">&nbsp;No Current Lottery</h1>
-                <h2 class="subtitle">&nbsp;Last Lottery was {{ ui_elapsedTime(lastlottery['timestamp'] + (3600 * currentlottery['lengthdays']))}} ago</h2>
+                <h2 class="subtitle">&nbsp;Last Lottery was {{ ui_elapsedTime(lastlottery['timestamp'] + (3600 * lastlottery['lengthdays'])) }} ago</h2>
             </div>
         </div>
         {% else %}
@@ -27,35 +27,50 @@
                 <h2 class="subtitle has-text-white">&nbsp;Lottery Ends in {{ ui_elapsedTime(currentlottery['timestamp'] + (3600 * currentlottery['lengthdays'])) }}</h2>
             </div>
         </div>
+        {% endif %}
     </div>
+
 <div class='container is-mobile left-pad right-pad'>
+    {% if currentlottery %}
             <div id="currentlotteryplayers">
                 <div>
                     <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Current Lottery Players: {{ui_getlotteryplayers(fmt='count')}}</p>
                 </div>
                 {% for player in ui_getlotteryplayers(fmt='list') %}
+                {% if ui_isplayeronline(ui_getplayer( player[0])['steamid'] ) %}
                 <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player[0].title() }}">
                     {{ player[0].title() }} at {{ ui_getplayer(player[0])['lottowins'] }} wins for {{ ui_getplayer(player[0])['lotterywinnings'] }} points
                 </a>
+                {% else %}
+                <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/pla    yerinfo/{{ player[0].title() }}">
+ {{ player[0].title() }} at {{ ui_getplayer(player[0])['lottowins'] }} wins for {{ ui_getplayer(player[0])['l    otterywinnings'] }} points</a>
+                {% endif %}
                 {% endfor %}
             </div>
-        {% endif %}
-
+    {% endif %}
+    {% if not currentlottery %}
             <div id="lastlotteryplayers">
-                {% if not currentlottery %}
                 <div>
                     <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Last Lottery Winner:</p>
                 </div>
                     <div>
-                    <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ lastlottery['winner'].title() }}"></a>
+                    {% if ui_isplayeronline(ui_getplayer(lastlottery['winner'])['steamid']) %}
+                    <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ lastlottery['winner'].title() }}">{{ lastlottery['winner'].title() }} won {{ lastlottery['payoutitem'] }} points</a>
+                    {% else %}
+<a class='button is-centered has-background-grey has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ lastlottery['winner'].title() }}">{{ lastlottery['winner'].title() }} won {{ lastlottery['payoutitem'] }} points</a>
+                    {% endif %}
                     </div>
                     <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Last Lottery Players: {{ui_getlotteryplayers(fmt='count')}}</p>
                 </div>
                 {% for player in ui_getlotteryplayers(fmt='list') %}
+                {% if ui_isplayeronline(ui_getplayer(player[0])['steamid']) %}
                 <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player[0].title() }}">{{ player[0].title() }} at {{ ui_getplayer(player[0])['lottowins'] }} wins for {{ ui_getplayer(player[0])['lotterywinnings'] }} points
+                {% else %}
+                <a class='button is-centered has-background-grey has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player[0].title() }}">{{ player[0].title() }} at {{ ui_getplayer(player[0])['lottowins'] }} wins for {{ ui_getplayer(player[0])['lotterywinnings'] }} points
+                {% endif %}
                 </a>
                 {% endfor %}
-                {% else %}
+    {% else %}
                 <div>
                      <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Last Lottery Winner:</p>
                 </div>
@@ -65,7 +80,7 @@
                     <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Last Lottery Players: {{ lastlottery['players'] }}</p>
                 </div>
 
-                {% endif %}
+    {% endif %}
             </div>
 
         <div class='container top-pad-10 bottom-pad-10 right-pad left-pad'>
