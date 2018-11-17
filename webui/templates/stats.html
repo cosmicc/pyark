@@ -3,28 +3,6 @@
     {{ super() }}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
        <script>
-        setInterval(function(){ 
-            {% set last24date, last24value = ui_last24avg(inst,'chart1') %}
-            var chartdata = {
-                dates: {{ last24date|tojson }},
-                values: {{ last24value|tojson }}
-            };
-            updatechart("chart1", chartdata);
-            {% set last24date, last24value = ui_last24avg(inst,'chart2') %}
-            var chartdata = {
-                dates: {{ last24date|tojson }},
-                values: {{ last24value|tojson }}
-            };
-            updatechart("chart2", chartdata);
-            {% set last24date, last24value = ui_last24avg(inst,'chart3') %}
-            var chartdata = {
-                dates: {{ last24date|tojson }},
-                values: {{ last24value|tojson }}
-            };
-            updatechart("chart3", chartdata);
-        }, 60000);
-        </script>
-        <script>
         function updatechart(chart, chartdata) {
             var ctx = document.getElementById(chart).getContext('2d');
             var cdates = chartdata.dates;
@@ -64,8 +42,32 @@
                     }]
                 }
             }
-        }
-        )};
+        })
+        };
+        function loadchartdata(){
+            {% set last24date, last24value = ui_last24avg(inst,'chart1') %}
+            var chartdata = {
+                dates: {{ last24date|tojson }},
+                values: {{ last24value|tojson }}
+            };
+            updatechart("chart1", chartdata);
+            {% set last24date, last24value = ui_last24avg(inst,'chart2') %}
+            var chartdata = {
+                dates: {{ last24date|tojson }},
+                values: {{ last24value|tojson }}
+            };
+            updatechart("chart2", chartdata);
+            {% set last24date, last24value = ui_last24avg(inst,'chart3') %}
+            var chartdata = {
+                dates: {{ last24date|tojson }},
+                values: {{ last24value|tojson }}
+            };
+            updatechart("chart3", chartdata);
+        };
+        setInterval(function(){
+            loadchartdata()
+        }, 60000);
+        window.onload = loadchartdata;
         </script>
 {% endblock %}
 
@@ -73,44 +75,17 @@
 <div class="container is-mobile left-pad right-pad top-pad-10">
     <div class="box is-mobile left-pad right-pad top-pad-10">
         <center><p class="subtitle is-centered">10 min Average over Last 2 Hours</p></center>
-        <canvas id="chart3" width="200" height="100"></canvas>
-        <script>
-            {% set last24date, last24value = ui_last24avg(inst,'chart3') %}
-            var chartdata = {
-                dates: {{ last24date|tojson }},
-                values: {{ last24value|tojson }}
-            };
-
-        updatechart("chart3", chartdata) 
-        </script>
+        <canvas id="chart1" width="200" height="100"></canvas>
     </div>
 
     <div class="box is-mobile left-pad right-pad top-pad-10">
         <center><p class="subtitle is-centered">Hourly Average over Last 24 hours</p></center>
-        <canvas id="chart1" width="200" height="100"></canvas>
-    <script>
-            {% set last24date, last24value = ui_last24avg(inst,'chart1') %}
-            var chartdata = {
-                dates: {{ last24date|tojson }},
-                values: {{ last24value|tojson }}
-            };
-
-        updatechart("chart1", chartdata)
-        </script>
+        <canvas id="chart2" width="200" height="100"></canvas>
     </div>
 
     <div class="box is-mobile left-pad right-pad top-pad-10">
         <center><p class="subtitle is-centered">Daily Average over Last 30 Days</p></center>
-        <canvas id="chart2" width="200" height="100"></canvas>
-        <script>
-            {% set last24date, last24value = ui_last24avg(inst,'chart2') %}
-            var chartdata = {
-                dates: {{ last24date|tojson }},
-                values: {{ last24value|tojson }}
-            };
-
-        updatechart("chart2", chartdata)
-        </script>
+        <canvas id="chart3" width="200" height="100"></canvas>
     </div>
 </div>
 {% endblock %}
