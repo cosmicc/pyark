@@ -216,16 +216,21 @@ def _lastactive():
 def _statpull():
     def ui_last24avg(inst, dtype):
         if dtype == 1:
-            hours = 1
-            tstr = ':%M'
+            hours = 2
+            rate = '10T'
+            tstr = '%I:%M%p'
         elif dtype == 2:
             hours = 24
             rate = 'H'
             tstr = '%-I%p'
-        elif dtype == 3:
+        elif dtype == 4:
             hours = 192
             rate = 'D'
             tstr = '%a'
+        elif dtype == 3:
+            hours = 720
+            rate = 'D'
+            tstr = '%b %-d'
         conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         if inst == 'all':
             avglist = []
@@ -250,12 +255,11 @@ def _statpull():
             df = pd.DataFrame.from_records(ret, columns=['date', 'value'])
             df = df.set_index(pd.DatetimeIndex(df['date']))
         else:
-            df = pd.read_sql("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(inst, datetime.now() - timedelta(days=days)), conn, parse_dates=['date'], index_col='date')
+            df = pd.read_sql("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(inst, datetime.now() - timedelta(hours=hours)), conn, parse_dates=['date'], index_col='date')
             conn.close()
         df = df.tz_localize(tz='UTC')
         df = df.tz_convert(tz='US/Eastern')
-        if dtype != 1:
-            df = df.resample(rate).mean()
+        df = df.resample(rate).mean()
         datelist = []
         for each in df.index:
             datelist.append(each.strftime(tstr))
@@ -463,10 +467,10 @@ def _lottery():
     return render_template('lotteryinfo.html', lastlottery=getlastlottery(), currentlottery=getcurrentlottery())
 
 
-@app.route('/stats')
+@app.route('/stats/<inst>')
 @login_required
-def _stats():
-    return render_template('stats.html')
+def _stats(inst):
+    return render_template('stats.html', inst=inst)
 
 
 @app.route('/bantoggle/<steamid>')

@@ -125,10 +125,11 @@ def restartinstnow(inst):
     log.info(f'server {inst} instance has stopped')
     subprocess.run('arkmanager backup @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.debug(f'server {inst} instance has backed up world data')
-    subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath, arkroot),
-                   stdout=subprocess.DEVNULL, shell=True)
-    subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath, arkroot),
-                   stdout=subprocess.DEVNULL, shell=True)
+    if inst != 'extinction':
+        subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath, arkroot),
+                       stdout=subprocess.DEVNULL, shell=True)
+        subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath, arkroot),
+                       stdout=subprocess.DEVNULL, shell=True)
     log.debug(f'server {inst} updated config files')
     log.info(f'server {inst} is updating from staging directory')
     subprocess.run('arkmanager update --no-download --update-mods --no-autostart @%s' % (inst),
