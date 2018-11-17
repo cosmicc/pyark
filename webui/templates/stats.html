@@ -4,158 +4,114 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
        <script>
         setInterval(function(){ 
-            $("#myChart").load(" #myChart");
-            $("#myChart2").load(" #myChart2");
-            $("#myChart3").load(" #myChart3");
-        }, 300000);
+            {% set last24date, last24value = ui_last24avg(inst,'chart1') %}
+            var chartdata = {
+                dates: {{ last24date|tojson }},
+                values: {{ last24value|tojson }}
+            };
+            updatechart("chart1", chartdata);
+            {% set last24date, last24value = ui_last24avg(inst,'chart2') %}
+            var chartdata = {
+                dates: {{ last24date|tojson }},
+                values: {{ last24value|tojson }}
+            };
+            updatechart("chart2", chartdata);
+            {% set last24date, last24value = ui_last24avg(inst,'chart3') %}
+            var chartdata = {
+                dates: {{ last24date|tojson }},
+                values: {{ last24value|tojson }}
+            };
+            updatechart("chart3", chartdata);
+        }, 60000);
+        </script>
+        <script>
+        function updatechart(chart, chartdata) {
+            var ctx = document.getElementById(chart).getContext('2d');
+            var cdates = chartdata.dates;
+            var cvalues = chartdata.values;
+            var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: cdates,
+                datasets: [{
+                    label: 'Avg # of Players',
+                    data: cvalues,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        }
+        )};
         </script>
 {% endblock %}
 
 {% block content %}
-
 <div class="container is-mobile left-pad right-pad top-pad-10">
-<div id="chart3" class="box is-mobile left-pad right-pad top-pad-10">
-    <center><p class="subtitle is-centered">10 min Average over Last 2 Hours</p></center>
-<canvas id="myChart3" width="200" height="100"></canvas>
-<script>
-{% set last24date, last24value = ui_last24avg(inst,1) %}
-var ctx = document.getElementById("myChart3").getContext('2d');
-var cdates = {{ last24date|tojson }};
-var cvalues = {{ last24value|tojson }};
-var myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: cdates,
-        datasets: [{
-            label: 'Avg # of Players',
-            data: cvalues,
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255,99,132,1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero:true
-                }
-            }]
-        }
-    }
-});
-</script>
-</div>
+    <div class="box is-mobile left-pad right-pad top-pad-10">
+        <center><p class="subtitle is-centered">10 min Average over Last 2 Hours</p></center>
+        <canvas id="chart3" width="200" height="100"></canvas>
+        <script>
+            {% set last24date, last24value = ui_last24avg(inst,'chart3') %}
+            var chartdata = {
+                dates: {{ last24date|tojson }},
+                values: {{ last24value|tojson }}
+            };
 
+        updatechart("chart3", chartdata) 
+        </script>
+    </div>
 
+    <div class="box is-mobile left-pad right-pad top-pad-10">
+        <center><p class="subtitle is-centered">Hourly Average over Last 24 hours</p></center>
+        <canvas id="chart1" width="200" height="100"></canvas>
+    <script>
+            {% set last24date, last24value = ui_last24avg(inst,'chart1') %}
+            var chartdata = {
+                dates: {{ last24date|tojson }},
+                values: {{ last24value|tojson }}
+            };
 
-<div id="chart1" class="box is-mobile left-pad right-pad top-pad-10">
-    <center><p class="subtitle is-centered">Hourly Average over Last 24 hours</p></center>
-<canvas id="myChart" width="200" height="100"></canvas>
-<script>
-{% set last24date, last24value = ui_last24avg(inst,2) %}
-var ctx = document.getElementById("myChart").getContext('2d');
-var cdates = {{ last24date|tojson }};
-var cvalues = {{ last24value|tojson }};
-var myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: cdates,
-        datasets: [{
-            label: 'Avg # of Players',
-            data: cvalues,
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255,99,132,1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero:true
-                }
-            }]
-        }
-    }
-});
-</script>
-</div>
+        updatechart("chart1", chartdata)
+        </script>
+    </div>
 
-<div id="chart2" class="box is-mobile left-pad right-pad top-pad-10">
-    <center><p class="subtitle is-centered">Daily Average over Last 30 Days</p></center>
-<canvas id="myChart2" width="200" height="100"></canvas>
-<script>
-{% set last24date, last24value = ui_last24avg(inst,3) %}
-var ctx = document.getElementById("myChart2").getContext('2d');
-var cdates = {{ last24date|tojson }};
-var cvalues = {{ last24value|tojson }};
-var myChart2 = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: cdates,
-        datasets: [{
-            label: 'Avg # of Players',
-            data: cvalues,
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255,99,132,1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero:true
-                }
-            }]
-        }
-    }
-});
-</script>
-</div>
+    <div class="box is-mobile left-pad right-pad top-pad-10">
+        <center><p class="subtitle is-centered">Daily Average over Last 30 Days</p></center>
+        <canvas id="chart2" width="200" height="100"></canvas>
+        <script>
+            {% set last24date, last24value = ui_last24avg(inst,'chart2') %}
+            var chartdata = {
+                dates: {{ last24date|tojson }},
+                values: {{ last24value|tojson }}
+            };
+
+        updatechart("chart2", chartdata)
+        </script>
+    </div>
 </div>
 {% endblock %}
 

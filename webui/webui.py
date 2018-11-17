@@ -215,19 +215,19 @@ def _lastactive():
 @app.context_processor
 def _statpull():
     def ui_last24avg(inst, dtype):
-        if dtype == 1:
+        if dtype == 'chart1':
             hours = 2
             rate = '10T'
             tstr = '%I:%M%p'
-        elif dtype == 2:
+        elif dtype == 'chart2':
             hours = 24
             rate = 'H'
             tstr = '%-I%p'
-        elif dtype == 4:
+        elif dtype == 'chart4':
             hours = 192
             rate = 'D'
             tstr = '%a'
-        elif dtype == 3:
+        elif dtype == 'chart3':
             hours = 720
             rate = 'D'
             tstr = '%b %-d'
