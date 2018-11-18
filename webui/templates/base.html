@@ -5,13 +5,15 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="manifest" href="/manifest.json">
-        <script src="/static/js/jquery-3.3.1.min.js"></script>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltipster.bundle.min.css') }}"/>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous"/>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}"/>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/toastr.min.css') }}"/>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.min.css') }}"/>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.min.css') }}"/>
+        <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/tooltipster.bundle.min.js') }}"></script>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
              <script>
@@ -34,8 +36,6 @@
                   "hideMethod": "fadeOut"
                     }
                 });
-            </script>
-            <script>
                 $(function () {
             {% for category, message in messages %}
             {% if category == "success" %}
@@ -54,6 +54,10 @@
                 $notifyContainer.css("margin-top", windowHeight / 3);
                 }
             });
+            $(document).ready(function() {
+            $('.tooltip').tooltipster();
+            });
+
             </script>
             {% endfor %}
           {% endif %}

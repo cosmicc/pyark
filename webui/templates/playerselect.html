@@ -4,9 +4,12 @@
 {% endblock %}
 
 {% block content %}
-    <div class='container is-mobile is-centered left-pad top-pad-10'>
-        <div class='container top-pad-15 is-centered is-mobile'>
-            <b>&nbsp;Player Lookup ({{ ui_len(players) }}):</b>
+    <div class='container is-mobile top-pad-15'>
+        <center><p class="title">Player Search</p></center>
+        <div class='container top-pad-15'>
+            <div class="columns is-centered is-mobile">
+            <div class="column is-8 is-mobile">
+            <b>&nbsp;All Players ({{ ui_len(players) }}):</b>
             <form action="/playersearch" method="POST">
                 <div class="field has-addons">
                     <div class="control">
@@ -26,9 +29,14 @@
                     </div>
                 </div>
             </form>
+                </div>
+            </div>
         </div>
-        <div class='container top-pad-15 is-centered is-mobile'>
-            <b>&nbsp;Banned Players ({{ ui_len(bannedplayers) }}):</b>:
+        <div class='container top-pad-15 is-mobile'>
+            <div class='container top-pad-15'>
+            <div class="columns is-centered is-mobile">
+                <div class="column is-8 is-mobile">
+            <b>&nbsp;Banned Players ({{ ui_len(bannedplayers) }}):</b>
             <form action="/playersearch" method="POST">
                 <div class="field has-addons">
                     <div class="control">
@@ -48,8 +56,13 @@
                     </div>
                 </div>
             </form>
+            </div>
+            </div>
         </div>
-         <div class='container top-pad-15 is-centered is-mobile'>
+         <div class='container top-pad-15 is-mobile'>
+             <div class='container top-pad-15'>
+                 <div class="columns is-centered is-mobile">
+                     <div class="column is-8 is-mobile">
              <b>&nbsp;Expired Players ({{ ui_len(expiredplayers) }}):</b>:
             <form action="/playersearch" method="POST">
                 <div class="field has-addons">
@@ -71,7 +84,12 @@
                 </div>
             </form>
         </div>
-          <div class='container top-pad-15 is-centered is-mobile'>
+                 </div>
+             </div>
+          <div class='container top-pad-15 is-mobile'>
+              <div class='container top-pad-15'>
+                  <div class="columns is-centered is-mobile">
+                      <div class="column is-8 is-mobile">
              <b>&nbsp;New Players This Week ({{ ui_len(newplayers) }}):</b>:
             <form action="/playersearch" method="POST">
                 <div class="field has-addons">
@@ -93,5 +111,7 @@
                 </div>
             </form>
         </div>
+                  </div>
+              </div>
     </div>
     {% endblock %}

@@ -42,7 +42,7 @@
                     {{ player[0].title() }} at {{ ui_getplayer(player[0])['lottowins'] }} wins for {{ ui_getplayer(player[0])['lotterywinnings'] }} points
                 </a>
                 {% else %}
-                <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/pla    yerinfo/{{ player[0].title() }}">
+                <a class='button is-centered has-background-grey has-text-white is-mobile is-rounded is-fullwidth' href="/pla    yerinfo/{{ player[0].title() }}">
  {{ player[0].title() }} at {{ ui_getplayer(player[0])['lottowins'] }} wins for {{ ui_getplayer(player[0])['l    otterywinnings'] }} points</a>
                 {% endif %}
                 {% endfor %}
