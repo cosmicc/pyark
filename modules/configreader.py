@@ -15,21 +15,41 @@ class ExtConfigParser(ConfigParser):
 config = ExtConfigParser()
 config.read(configfile)
 
+# General
 sharedpath = config.get('general', 'shared')
 arkroot = config.get('general', 'arkroot')
 logfile = config.get('general', 'logfile')
+is_arkupdater = config.get('general', 'is_arkupdater')
+is_asdatapuller = config.get('general', 'is_asdatapuller')
+is_discordbot = config.get('general', 'is_discordbot')
+is_statscollector = config.get('general', 'is_statscollector')
+is_lotterymanager = config.get('general', 'is_lotterymanager')
+
 apilogfile = config.get('restapi', 'logfile')
 
-sqldb = config.get('general', 'pyarkdb')
+# Postgresql
 psql_host = config.get('postgresql', 'host')
 psql_port = config.get('postgresql', 'port')
 psql_user = config.get('postgresql', 'user')
 psql_pw = config.get('postgresql', 'password')
 psql_db = config.get('postgresql', 'db')
 psql_statsdb = config.get('postgresql', 'statsdb')
+# psql_stats = "dbname='pyarkstats', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
 
-psql_stats = "dbname='pyarkstats', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
-statsdb = config.get('general', 'statsdb')
+# Discord
+
+# Pushover
+po_userkey = config.get('pushover', 'userkey')
+po_appkey = config.get('pushover', 'appkey')
+
+# RestAPI
+restapi_enabled = config.get('restapi', 'enabled')
+restapi_token = config.get('restapi', 'token')
+
+# Webserver
+webserver_enabled = config.get('webserver', 'enabled')
+webserver_ip = config.get('webserver', 'ip')
+webserver_port = config.get('webserver', 'port')
 
 numinstances = int(config.get('general', 'instances'))
 instance = [dict() for x in range(numinstances)]
@@ -43,19 +63,3 @@ for each in range(numinstances):
         instr = '%s' % (a)
     else:
         instr = instr + ', %s' % (a)
-
-isupdater = config.get('general', 'isupdater')
-imthedbot = config.get('general', 'isdiscordbot')
-po_userkey = config.get('general', 'pushover_userkey')
-po_appkey = config.get('general', 'pushover_appkey')
-
-restapi_enabled = config.get('restapi', 'enabled')
-restapi_debug = config.get('restapi', 'debug')
-restapi_ip = config.get('restapi', 'ip')
-restapi_port = config.get('restapi', 'port')
-restapi_token = config.get('restapi', 'token')
-
-webui_enabled = config.get('webui', 'enabled')
-webui_debug = config.get('webui', 'debug')
-webui_ip = config.get('webui', 'ip')
-webui_port = config.get('webui', 'port')

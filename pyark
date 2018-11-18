@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# from git import Repo
+from git import Repo
 from arkserversnet import arkserversnet
 from arkupdater import arkupd
 from clusterevents import eventwatcher
@@ -8,20 +8,20 @@ from cmdlistener import clisten
 from discordbot import discordbot
 from gchatrelay import gchatrelay
 from kicker import kicker
-from modules.configreader import logfile, instance, numinstances, imthedbot, webui_enabled, webui_ip, webui_port, webui_debug
-from modules.dbhelper import dbquery, dbupdate
+from modules.configreader import logfile, instance, numinstances, is_arkupdater, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port
+from modules.dbhelper import dbupdate
 from modules.processlock import plock
 from onlinemonitor import onlineupdate
 from webui.webui import app
 from statcollector import oscollect
 from sys import exit
 from time import sleep
-from modules.timehelper import Now
 import argparse
 import logging
 import lottery
 import socket
 import threading
+import subprocess
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -72,34 +72,34 @@ log.info(f'>>> pyark daemon is starting on {hstname}')
 checkgit = 0
 
 
-# def gitupdatecheck():
-#    localdir = '/home/ark/pyark'
-#    repo = Repo(localdir)
-#    origin = repo.remotes.origin
-#    origin.fetch()
-#    if repo.head.commit != origin.refs[0].commit:
-#        log.warning(f'newer pyark version found. updating and restarting...')
-#        origin.pull()
-#        origin.push()
-#        subprocess.run('systemctl restart pyark', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+def gitupdatecheck():
+    localdir = '/home/ark/pyark'
+    repo = Repo(localdir)
+    origin = repo.remotes.origin
+    origin.fetch()
+    if repo.head.commit != origin.refs[0].commit:
+        log.warning(f'newer pyark version found. updating and restarting...')
+        origin.pull()
+        origin.push()
+        subprocess.run('systemctl restart pyark', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 
 def main():
     global checkgit
     global instance
-    dbupdate('CREATE TABLE IF NOT EXISTS general(cfgver TEXT)')
-    dbupdate('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart REAL, lastdinowipe REAL, \
-              needsrestart TEXT, lastvote REAL, restartreason TEXT, cfgver INTEGER, restartcountdown INTEGER)')
-    dbupdate('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, \
-              playedtime TEXT, rewardpoints INTEGER, firstseen TEXT, connects INTEGER)')
-    for ins in range(numinstances):
-        chkinst = dbquery("SELECT * FROM instances WHERE name = '%s'" % (instance[ins]['name'],))
-        if not chkinst:
-            log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
-            dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote, restartreason, cfgver, restartcountdown) VALUES ('%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now(), 'admin restart', 0, 30))
-        else:
-            log.debug(f'found server {instance[ins]["name"]} in server table')
-    log.debug('database initilization complete')
+    # dbupdate('CREATE TABLE IF NOT EXISTS general(cfgver TEXT)')
+    # dbupdate('CREATE TABLE IF NOT EXISTS instances(name TEXT, lastrestart REAL, lastdinowipe REAL, \
+    #          needsrestart TEXT, lastvote REAL, restartreason TEXT, cfgver INTEGER, restartcountdown INTEGER)')
+    # dbupdate('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, \
+    #          playedtime TEXT, rewardpoints INTEGER, firstseen TEXT, connects INTEGER)')
+    # for ins in range(numinstances):
+    #    chkinst = dbquery("SELECT * FROM instances WHERE name = '%s'" % (instance[ins]['name'],))
+    #    if not chkinst:
+    #        log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
+    #        dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote, restartreason, cfgver, restartcountdown) VALUES ('%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now(), 'admin restart', 0, 30))
+    #    else:
+    #        log.debug(f'found server {instance[ins]["name"]} in server table')
+    # log.debug('database initilization complete')
     checkgit = 0
     arkupdt = threading.Thread(name='arkupdater', target=arkupd)
     arkupdt.start()
