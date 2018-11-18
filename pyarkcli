@@ -3,7 +3,7 @@
 from datetime import datetime
 from modules.colorizer import RST, WHT, BWHT, BYEL, BRED, BGRN, BLU, ORG, BCYN, SKN, BMGT, RMY, SLT, YEL, GRN, RED, \
     MAU, MGT, PUR, LREV, BGN
-from modules.configreader import config, sqldb, statsdb, sharedpath
+from modules.configreader import sharedpath
 from modules.dbhelper import dbquery, dbupdate, db_getall, db_getvalue, db_getcolumns, db_gettables
 from modules.timehelper import elapsedTime, estshift, gmtshift, playedTime, wcstamp, datetimeto, Now, Secs
 from numpy import mean
@@ -74,7 +74,7 @@ log_console.setFormatter(console_format)
 
 configfile = '/home/ark/pyark.cfg'
 
-statinst = ['ragnarok', 'island', 'volcano']
+statinst = ['ragnarok', 'island', 'volcano', 'extinction']
 
 clr1 = f'{BYEL}'
 clr2 = f'{BCYN}'
@@ -83,8 +83,6 @@ tclr = ''
 trclr = ''
 
 print('    ')
-
-#dbupdate("DELETE from players WHERE playedtime = 0")
 
 
 def percentage(part, whole):
@@ -223,17 +221,6 @@ def fetcharkserverdata(key):
     html = urlopen(req).read()
     adata = json.loads(html)
     return adata
-
-
-def sendtoserver(tribeid):
-    sshuser = config.get('general', 'sshuser').rstrip()
-    sshhost = config.get('general', 'otherserverip').rstrip()
-    sshpass = config.get('general', 'sshpass').rstrip()
-    commands = f"""arkmanager rconcmd "saveworld" @all && arkmanager backup @all && arkmanager rconcmd \
-"DestroyTribeIdDinos {tribeid}" @all && arkmanager rconcmd "DestroyTribeIdStructures {tribeid}" @all && \
-arkmanager rconcmd "DestroyTribeIdPlayers {tribeid}" @all && arkmanager rconcmd "DestroyTribeId {tribeid}" @all"""
-    command = f"""sshpass -p {sshpass} ssh {sshuser}@{sshhost} '{commands}'"""
-    subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
 
 
 def sctl(scmd):
@@ -1001,9 +988,9 @@ def resetlastwipe(sinst):
 
 def listtables(dbn):
     if dbn == 'sqldb':
-        dbna = sqldb
+        dbna = ''
     elif dbn == 'statsdb':
-        dbna = statsdb
+        dbna = ''
     aplay = db_gettables(dbna)
     sc = 0
     cnt = 0
