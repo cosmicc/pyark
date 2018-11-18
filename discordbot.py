@@ -1,6 +1,6 @@
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
-from modules.configreader import config
+from modules.configreader import discord_channel, discord_serverchat, discordtoken
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, getlastwipe, getlastrestart, writechat, writeglobal
 from modules.players import getplayer, getplayerlastserver, getplayersonline, getlastplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers
@@ -16,8 +16,8 @@ log = logging.getLogger(name=hstname)
 
 client = discord.Client()
 
-channel = discord.Object(id=config.get('general', 'discordchatchan'))
-channel2 = discord.Object(id=config.get('general', 'discordgenchan'))
+channel = discord.Object(id=discord_serverchat)
+channel2 = discord.Object(id=discord_channel)
 
 
 def getlottowinnings(pname):
@@ -533,6 +533,6 @@ to link your account'
     client.loop.create_task(chatbuffer())
     while True:
         try:
-            client.run(config.get('general', 'discordtoken'))
+            client.run(discordtoken)
         except:
             log.critical('Critical Error in Discord Bot Routine!', exc_info=True)

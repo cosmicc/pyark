@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 
-from git import Repo
 from arkserversnet import arkserversnet
 from arkupdater import arkupd
 from clusterevents import eventwatcher
 from cmdlistener import clisten
 from discordbot import discordbot
 from gchatrelay import gchatrelay
+from git import Repo
 from kicker import kicker
-from modules.configreader import logfile, instance, numinstances, is_arkupdater, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port
+from modules.configreader import logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port
 from modules.dbhelper import dbupdate
 from modules.processlock import plock
 from onlinemonitor import onlineupdate
 from statcollector import oscollect
 from sys import exit
 from time import sleep
+from web.views import app
 import argparse
 import logging
 import lottery
 import socket
 import subprocess
 import threading
-import subprocess
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -117,22 +117,25 @@ def main():
         instance[each]['onlinethread'].start()
         instance[each]['eventthread'] = threading.Thread(name='%s-events' % inst, target=eventwatcher, args=(inst,))
         instance[each]['eventthread'].start()
-    if imthedbot == "True":
+    if is_asdatapuller == "True":
         arkserversnt = threading.Thread(name='arksvrnet-datapuller', target=arkserversnet)
         arkserversnt.start()
+    if is_discordbot == "True":
         discordt = threading.Thread(name='discord-bot', target=discordbot)
         discordt.start()
+    if is_lotterymanager == "True":
         lotteryt = threading.Thread(name='lottery-watcher', target=lottery.lotterywatcher)
         lotteryt.start()
+    if is_statscollector == "True":
         ostat = threading.Thread(name='stat-collector', target=oscollect)
         ostat.start()
-    if webui_enabled == "True" or webui_enabled == "true":
-        log.info(f'Starting Web Server on IP: {webui_ip} PORT: {webui_port}')
+        if webserver_enabled == "True":
+            log.info(f'Starting Web Server on IP: {webserver_ip} PORT: {webserver_port}')
         try:
-            restapi = threading.Thread(name='restapi', target=app.run, kwargs={'host': webui_ip, 'port': webui_port})
-            restapi.start()
+            webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port})
+            webserver.start()
         except:
-            log.critical(f'Flask RestAPI failed to start.', exc_info=True)
+            log.critical(f'Web Server failed to start.', exc_info=True)
 
     while True:
         try:
@@ -149,16 +152,19 @@ def main():
             if not arkupdt.is_alive():
                 t = 'ark updater'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-            if imthedbot == "True":
+            if is_asdatapuller == "True":
                 if not arkserversnt.is_alive():
                     t = 'arkserversnet datapuller'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if is_discordbot == "True":
                 if not discordt.is_alive():
                     t = 'discord bot'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if is_lotterymanager == "True":
                 if not lotteryt.is_alive():
                     t = 'lottery watch'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if is_statscollector == "True":
                 if not ostat.is_alive():
                     t = 'stat collector'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
@@ -179,9 +185,9 @@ def main():
                 if not instance[each]['eventthread'].is_alive():
                     t = f'{inst} event monitor'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
-            if webui_enabled == "True" or webui_enabled == "true":
-                if not restapi.is_alive():
-                    t = f'{inst} rest api'
+            if webserver_enabled == "True":
+                if not webserver.is_alive():
+                    t = f'web server'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         except KeyboardInterrupt:
             log.critical(f'Keyboard Interrupt Exiting.')

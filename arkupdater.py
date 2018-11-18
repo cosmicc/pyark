@@ -1,4 +1,4 @@
-from modules.configreader import sharedpath, arkroot, numinstances, instance, instr, isupdater
+from modules.configreader import sharedpath, arkroot, numinstances, instance, instr, is_arkupdater
 from datetime import datetime
 from datetime import time as dt
 from modules.dbhelper import dbquery, dbupdate
@@ -227,7 +227,7 @@ def instancerestart(inst, reason):
 
 
 def checkconfig():
-    if isupdater == "True":
+    if is_arkupdater == "True":
         newcfg1 = f'{sharedpath}/config/Game.ini'
         oldcfg1 = f'{sharedpath}/stagedconfig/Game.ini'
         newcfg2 = f'{sharedpath}/config/GameUserSettings.ini'
@@ -309,7 +309,7 @@ def checkupdates():
         if not ustate and Now() - updgennotify > Secs['hour']:
             log.debug('ark update check found no ark updates available')
         else:
-            if isupdater:
+            if is_arkupdater:
                 log.info(f'ark update found ({curver}>{avlver}) downloading update.')
                 subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']),
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)

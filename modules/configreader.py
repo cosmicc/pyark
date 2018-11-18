@@ -37,6 +37,9 @@ psql_statsdb = config.get('postgresql', 'statsdb')
 # psql_stats = "dbname='pyarkstats', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
 
 # Discord
+discord_channel = config.get('discord', 'general_channel')
+discord_serverchat = config.get('discord', 'serverchat_channel')
+discordtoken = config.get('discord', 'token')
 
 # Pushover
 po_userkey = config.get('pushover', 'userkey')
