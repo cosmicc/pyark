@@ -15,19 +15,20 @@ from wtforms.validators import InputRequired, Length
 import json
 import pandas as pd
 import psycopg2
-import os, sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = '669v445Xyrzqkt@4N*%!74XkerrHQmz5^86eaKS^Cr4nF3a6KW5gUQTXZPRTmQm7'
 
-mod = Blueprint('webui', __name__, template_folder='templates')
+# app.= Blueprint('webui', __name__, template_folder='templates')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 db = ActiveAlchemy(f"postgresql+pg8000://{psql_user}:{psql_pw}@{psql_host}:{psql_port}/{psql_db}", app=app)
+
+# app.register_blueprint(app. url_prefix='/')
 
 
 class users(UserMixin, db.Model):
@@ -56,154 +57,154 @@ class MessageForm(FlaskForm):
     message = StringField('message', validators=[InputRequired(), Length(min=1, max=30)])
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor():
     def ui_getplayersonline(instance, fmt):
         return getplayersonline(instance, fmt=fmt, case='title')
     return dict(ui_getplayersonline=ui_getplayersonline)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor2():
     def ui_getlastplayersonline(instance, fmt):
         return getlastplayersonline(instance, fmt=fmt, case='title')
     return dict(ui_getlastplayersonline=ui_getlastplayersonline)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor3():
     def ui_getplayerserver(player):
         return dbquery("SELECT server FROM players WHERE playername = '%s'" % (player.lower(),), fmt='string', fetch='one')
     return dict(ui_getplayerserver=ui_getplayerserver)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor4():
     def ui_getplayerlasttime(player):
         return elapsedTime(Now(), int(dbquery("SELECT lastseen FROM players WHERE playername = '%s'" % (player.lower(),), fmt='string', fetch='one')))
     return dict(ui_getplayerlasttime=ui_getplayerlasttime)
 
 
-@mod.context_processor
+@app.context_processor
 def _getplayer():
     def ui_getplayer(playername):
         return dbquery("SELECT * FROM players WHERE playername = '%s'" % (playername,), fmt='dict', fetch='one')
     return dict(ui_getplayer=ui_getplayer)
 
 
-@mod.context_processor
+@app.context_processor
 def _getlotteryplayers():
     def ui_getlotteryplayers(fmt='list'):
         return dbquery("SELECT playername FROM lotteryplayers", fmt=fmt, fetch='all', single=True)
     return dict(ui_getlotteryplayers=ui_getlotteryplayers)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor5():
     def ui_getinstver(inst):
         return dbquery("SELECT arkversion FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='string', fetch='one')
     return dict(ui_getinstver=ui_getinstver)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor6():
     def ui_getrestartleft(inst):
         return dbquery("SELECT restartcountdown FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='string', fetch='one')
     return dict(ui_getrestartleft=ui_getrestartleft)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor7():
     def ui_isinlottery():
         return isinlottery()
     return dict(ui_isinlottery=ui_isinlottery)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor8():
     def ui_getlotteryplayers(fmt):
         return getlotteryplayers(fmt=fmt)
     return dict(ui_getlotteryplayers=ui_getlotteryplayers)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor9():
     def ui_getlotteryendtime():
         return getlotteryendtime()
     return dict(ui_getlotteryendtime=ui_getlotteryendtime)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor10():
     def ui_isinstanceup(inst):
         return isinstanceup(inst)
     return dict(ui_isinstanceup=ui_isinstanceup)
 
 
-@mod.context_processor
+@app.context_processor
 def database_processor11():
     def ui_isinrestart(inst):
         return isinrestart(inst)
     return dict(ui_isinrestart=ui_isinrestart)
 
 
-@mod.context_processor
+@app.context_processor
 def _iscurrentconfig():
     def ui_iscurrentconfig(inst):
         return iscurrentconfig(inst)
     return dict(ui_iscurrentconfig=ui_iscurrentconfig)
 
 
-@mod.context_processor
+@app.context_processor
 def _elapsedTime():
     def ui_elapsedTime(etime):
         return elapsedTime(Now(), int(etime))
     return dict(ui_elapsedTime=ui_elapsedTime)
 
 
-@mod.context_processor
+@app.context_processor
 def _playedTime():
     def ui_playedTime(etime):
         return playedTime(int(etime))
     return dict(ui_playedTime=ui_playedTime)
 
 
-@mod.context_processor
+@app.context_processor
 def _epochto():
     def ui_epochto(epoch, fmt=''):
         return epochto(int(epoch))
     return dict(ui_epochto=ui_epochto)
 
 
-@mod.context_processor
+@app.context_processor
 def _isbanned():
     def ui_isbanned(steamid):
         return isplayerbanned(steamid=steamid)
     return dict(ui_isbanned=ui_isbanned)
 
 
-@mod.context_processor
+@app.context_processor
 def _isplayeronline():
     def ui_isplayeronline(steamid):
         return isplayeronline(steamid=steamid)
     return dict(ui_isplayeronline=ui_isplayeronline)
 
 
-@mod.context_processor
+@app.context_processor
 def _isplayerold():
     def ui_isplayerold(steamid):
         return isplayerold(steamid=steamid)
     return dict(ui_isplayerold=ui_isplayerold)
 
 
-@mod.context_processor
+@app.context_processor
 def _length():
     def ui_len(alist):
         return len(alist)
     return dict(ui_len=ui_len)
 
 
-@mod.context_processor
+@app.context_processor
 def _lastactive():
     def ui_lastactive(inst):
         retime = dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), db='statsdb', fetch='one')[0]
@@ -214,7 +215,7 @@ def _lastactive():
     return dict(ui_lastactive=ui_lastactive)
 
 
-@mod.context_processor
+@app.context_processor
 def _statpull():
     def ui_last24avg(inst, dtype):
         if dtype == 'chart1':
@@ -244,8 +245,8 @@ def _statpull():
                 c.execute("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(each[0], datetime.now() - timedelta(hours=hours)))
                 nlist = c.fetchall()
                 for y in nlist:
-                    slist.mod.nd(y[1])
-                    dlist.mod.nd(y[0])
+                    slist.app.nd(y[1])
+                    dlist.app.nd(y[0])
                 if avglist == []:
                     avglist = slist
                 else:
@@ -264,12 +265,12 @@ def _statpull():
         df = df.resample(rate).mean()
         datelist = []
         for each in df.index:
-            datelist.mod.nd(each.strftime(tstr))
+            datelist.app.nd(each.strftime(tstr))
         return (datelist, list(chain.from_iterable(df.values.round(1).tolist())))
     return dict(ui_last24avg=ui_last24avg)
 
 
-@mod.context_processor
+@app.context_processor
 def _playerlastactive():
     def ui_playerlastactive(lastseen):
         if Now() - lastseen > 40:
@@ -279,7 +280,7 @@ def _playerlastactive():
     return dict(ui_playerlastactive=ui_playerlastactive)
 
 
-@mod.context_processor
+@app.context_processor
 def _getannouncement():
     def ui_getannouncement():
         return dbquery("SELECT announce FROM general ", fmt='string', fetch='one')
@@ -343,7 +344,7 @@ def startthelottery(buyin, length):
     dbupdate("INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner,announced) VALUES ('%s','%s','%s','%s','%s',0,'Incomplete',False)" % ('points', litm, Now(), buyin, length))
 
 
-@mod.context_processor
+@app.context_processor
 def _getlog():
     def ui_getlog(instance, wlog):
         chatlog = getlog(instance, wlog)
@@ -351,7 +352,7 @@ def _getlog():
     return dict(ui_getlog=ui_getlog)
 
 
-@mod.route('/manifest.json')
+@app.route('/manifest.json')
 def manifest():
     data = json.dumps({
         "short_name": "Galaxy",
@@ -369,10 +370,10 @@ def manifest():
         "scope": "/",
         "theme_color": "#000000"
     })
-    return Response(data, mimetype='mod.ication/x-web-mod.manifest+json')
+    return Response(data, mimetype='app.ication/x-web-app.manifest+json')
 
 
-@mod.route('/', methods=['POST', 'GET'])
+@app.route('/', methods=['POST', 'GET'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -387,7 +388,7 @@ def login():
     return render_template('login.html', form=form)
 
 
-@mod.route('/dashboard', methods=['POST', 'GET'])
+@app.route('/dashboard', methods=['POST', 'GET'])
 @login_required
 def dashboard():
     if request.method == 'POST':
@@ -397,7 +398,7 @@ def dashboard():
     return render_template('dashboard.html', loginname=current_user.username, instances=instancelist())
 
 
-@mod.route('/logout')
+@app.route('/logout')
 @login_required
 def logout():
     logout_user()
@@ -405,20 +406,20 @@ def logout():
     return redirect(url_for('login'))
 
 
-@mod.route('/serverinfo/<instance>')
+@app.route('/serverinfo/<instance>')
 @login_required
 def serverinfo(instance):
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
 
 
-@mod.route('/playersearch', methods=['POST', 'GET'])
+@app.route('/playersearch', methods=['POST', 'GET'])
 @login_required
 def result():
     if request.method == 'POST':
         return render_template("playerinfo.html", playerinfo=getplayer(playername=request.form['player'].lower(), fmt='dict'))
 
 
-@mod.route('/startlottery', methods=['POST', 'GET'])
+@app.route('/startlottery', methods=['POST', 'GET'])
 @login_required
 def startlottery():
     form = LotteryForm()
@@ -429,7 +430,7 @@ def startlottery():
     return render_template('startlottery.html', form=form)
 
 
-@mod.route('/server/sendchat/<server>', methods=['POST'])
+@app.route('/server/sendchat/<server>', methods=['POST'])
 @login_required
 def sendchat(server):
     form = MessageForm()
@@ -441,7 +442,7 @@ def sendchat(server):
     return redirect(url_for('_chatlog', instance=server))
 
 
-@mod.route('/playerinfo/<player>', methods=['POST', 'GET'])
+@app.route('/playerinfo/<player>', methods=['POST', 'GET'])
 @login_required
 def playerinfo(player):
     if request.method == 'POST':
@@ -451,31 +452,31 @@ def playerinfo(player):
     return render_template('playerinfo.html', playerinfo=getplayer(playername=player.lower(), fmt='dict'))
 
 
-@mod.route('/playerinfo')
+@app.route('/playerinfo')
 @login_required
 def _players():
     return render_template('playerselect.html', players=getplayernames(), bannedplayers=getbannedplayers(), expiredplayers=getexpiredplayers(), newplayers=getnewplayers('week'))
 
 
-@mod.route('/events')
+@app.route('/events')
 @login_required
 def _events():
     return render_template('eventinfo.html', lastevent=getlastevent(), currentevent=getcurrentevent(), futureevent=getfutureevent())
 
 
-@mod.route('/lottery')
+@app.route('/lottery')
 @login_required
 def _lottery():
     return render_template('lotteryinfo.html', lastlottery=getlastlottery(), currentlottery=getcurrentlottery())
 
 
-@mod.route('/stats/<inst>')
+@app.route('/stats/<inst>')
 @login_required
 def _stats(inst):
     return render_template('stats.html', inst=inst)
 
 
-@mod.route('/bantoggle/<steamid>')
+@app.route('/bantoggle/<steamid>')
 @login_required
 def _bantoggle(steamid):
     if isplayerbanned(steamid=steamid):
@@ -488,7 +489,7 @@ def _bantoggle(steamid):
         return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
 
 
-@mod.route('/kickplayer/<steamid>/<instance>')
+@app.route('/kickplayer/<steamid>/<instance>')
 @login_required
 def _kickplayer(steamid, instance):
     kickplayer(instance, steamid)
@@ -496,7 +497,7 @@ def _kickplayer(steamid, instance):
     return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
 
 
-@mod.route('/server/restart/<instance>')
+@app.route('/server/restart/<instance>')
 @login_required
 def _restartinstance(instance):
     restartinstance(instance, cancel=False)
@@ -504,7 +505,7 @@ def _restartinstance(instance):
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
 
 
-@mod.route('/server/cancelrestart/<instance>')
+@app.route('/server/cancelrestart/<instance>')
 @login_required
 def _cancelrestartinstance(instance):
     restartinstance(instance, cancel=True)
@@ -512,7 +513,7 @@ def _cancelrestartinstance(instance):
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
 
 
-@mod.route('/server/chatlog/<instance>', methods=['POST', 'GET'])
+@app.route('/server/chatlog/<instance>', methods=['POST', 'GET'])
 @login_required
 def _chatlog(instance):
     if request.method == 'POST':
