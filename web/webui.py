@@ -1,53 +1,44 @@
-import sys
-from database import db_session, init_db
-from models import User, Role
-from datetime import datetime, timedelta
-from flask import Flask, Blueprint, render_template, Response, request, redirect, url_for, flash
-# from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_wtf import FlaskForm
+from active_alchemy import ActiveAlchemy
 from itertools import chain
+import pandas as pd
+import psycopg2
+from datetime import datetime, timedelta
+from flask import Flask, render_template, Response, request, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, IntegerField
+from wtforms.validators import InputRequired, Email, Length
+import sys
 sys.path.append('/home/ark/pyark')
-from lottery import isinlottery, getlotteryplayers, getlotteryendtime
+from modules.configreader import webserver_ip, webserver_port, psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto
-sys.path.append('/home/ark/pyark/web')
-from wtforms import StringField, PasswordField, BooleanField, IntegerField
-from wtforms.validators import InputRequired, Length
+from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 import json
-import pandas as pd
-import psycopg2
-
-from flask_security import Security, SQLAlchemyUserDatastore, login_required, logout_user, current_user
-
+sys.path.append('/home/ark/pyark/webui')
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '669v445Xyrzqkt@4N*%!74XkerrHQmz5^86eaKS^Cr4nF3a6KW5gUQTXZPRTmQm7'
-app.config['SECURITY_PASSWORD_SALT'] = '8465Gk6562x2'
+app.config['SECRET_KEY'] = '4CZywb8pQMxNCwB25TCpxYay'
 
-# app.= Blueprint('webui', __name__, template_folder='templates')
-# app.register_blueprint(app. url_prefix='/')
+db = ActiveAlchemy(f"postgresql+pg8000://{psql_user}:{psql_pw}@{psql_host}:{psql_port}/{psql_db}", app=app)
 
-# login_manager = LoginManager()
-# login_manager.init_app(app)
-# login_manager.login_view = 'login'
-
-user_datastore = SQLAlchemyUserDatastore(db_session, User, Role)
-security = Security(app, user_datastore)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 
-@app.before_first_request
-def create_user():
-    init_db()
-    #user_datastore.create_user(username='shithead', password='gofuckyourself')
-    #db_session.commit()
+class users(UserMixin, db.Model):
+    username = db.Column(db.String(15), unique=True)
+    password = db.Column(db.String(80))
+    email = db.Column(db.String(50))
 
+#db.create_all()
+#users.create(username='shithead', password='gofuckyourself')
 
-#create_user()
-
-#@login_manager.user_loader
-#def load_user(user_id):
-#    return users.get(int(user_id))
+@login_manager.user_loader
+def load_user(user_id):
+    return users.get(int(user_id))
 
 
 class LoginForm(FlaskForm):
@@ -226,22 +217,17 @@ def _lastactive():
 @app.context_processor
 def _statpull():
     def ui_last24avg(inst, dtype):
-        if dtype == 'chart1':
-            hours = 2
-            rate = '10T'
-            tstr = '%I:%M%p'
-        elif dtype == 'chart2':
+        if dtype == 1:
+            hours = 1
+            tstr = ':%M'
+        elif dtype == 2:
             hours = 24
             rate = 'H'
             tstr = '%-I%p'
-        elif dtype == 'chart4':
+        elif dtype == 3:
             hours = 192
             rate = 'D'
             tstr = '%a'
-        elif dtype == 'chart3':
-            hours = 720
-            rate = 'D'
-            tstr = '%b %-d'
         conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         if inst == 'all':
             avglist = []
@@ -253,8 +239,8 @@ def _statpull():
                 c.execute("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(each[0], datetime.now() - timedelta(hours=hours)))
                 nlist = c.fetchall()
                 for y in nlist:
-                    slist.app.nd(y[1])
-                    dlist.app.nd(y[0])
+                    slist.append(y[1])
+                    dlist.append(y[0])
                 if avglist == []:
                     avglist = slist
                 else:
@@ -266,14 +252,15 @@ def _statpull():
             df = pd.DataFrame.from_records(ret, columns=['date', 'value'])
             df = df.set_index(pd.DatetimeIndex(df['date']))
         else:
-            df = pd.read_sql("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(inst, datetime.now() - timedelta(hours=hours)), conn, parse_dates=['date'], index_col='date')
+            df = pd.read_sql("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(inst, datetime.now() - timedelta(days=days)), conn, parse_dates=['date'], index_col='date')
             conn.close()
         df = df.tz_localize(tz='UTC')
         df = df.tz_convert(tz='US/Eastern')
-        df = df.resample(rate).mean()
+        if dtype != 1:
+            df = df.resample(rate).mean()
         datelist = []
         for each in df.index:
-            datelist.app.nd(each.strftime(tstr))
+            datelist.append(each.strftime(tstr))
         return (datelist, list(chain.from_iterable(df.values.round(1).tolist())))
     return dict(ui_last24avg=ui_last24avg)
 
@@ -378,38 +365,25 @@ def manifest():
         "scope": "/",
         "theme_color": "#000000"
     })
-    return Response(data, mimetype='app.ication/x-web-app.manifest+json')
-
-@app.errorhandler(403)
-def forbidden(error):
-    return render_template('error/403.html', title='Forbidden'), 403
-
-@app.errorhandler(404)
-def page_not_found(error):
-    return render_template('error/404.html', title='Page Not Found'), 404
-
-@app.errorhandler(500)
-def internal_server_error(error):
-    db.session.rollback()
-    return render_template('error/500.html', title='Server Error'), 500
-
-#@app.route('/', methods=['POST', 'GET'])
-#def login():
-#    form = LoginForm()
-#    if form.validate_on_submit():
-#        user = User.query.filter_by(username=form.username.data).first()
-#        if user:
-#            if form.password.data == user.password:
-#                # flash(f'{user.password}', 'info')
-#                #login_user(user, remember=form.remember.data)
-#                return redirect(url_for('dashboard'))
-#        flash(u'Invalid Login', 'error')
-#        return redirect(url_for('login'))
-#
-#    return render_template('login.html', form=form)
+    return Response(data, mimetype='application/x-web-app-manifest+json')
 
 
 @app.route('/', methods=['POST', 'GET'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = users.query().filter_by(username=form.username.data).first()
+        flash(f'{user}', 'error')
+        if user:
+            if form.password.data == user.password:
+                login_user(user, remember=form.remember.data)
+                return redirect(url_for('dashboard'))
+        return redirect(url_for('login'))
+
+    return render_template('login.html', form=form)
+
+
+@app.route('/dashboard', methods=['POST', 'GET'])
 @login_required
 def dashboard():
     if request.method == 'POST':
@@ -491,10 +465,10 @@ def _lottery():
     return render_template('lotteryinfo.html', lastlottery=getlastlottery(), currentlottery=getcurrentlottery())
 
 
-@app.route('/stats/<inst>')
+@app.route('/stats')
 @login_required
-def _stats(inst):
-    return render_template('stats.html', inst=inst)
+def _stats():
+    return render_template('stats.html')
 
 
 @app.route('/bantoggle/<steamid>')
@@ -543,3 +517,7 @@ def _chatlog(instance):
         return redirect(url_for('_chatlog', instance=instance))
     chatlog = getlog(instance, 'chat')
     return render_template('serverchatlog.html', serverinfo=instanceinfo(instance), chatlog=chatlog[::-1])
+
+
+if __name__ == '__main__':
+    app.run(host=webserver_ip, port=51501, debug=True)
