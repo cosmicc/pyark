@@ -13,7 +13,7 @@
             <form action="/playersearch" method="POST">
                 <div class="field has-addons">
                     <div class="control">
-                        <div class="select is-medium" id="player">
+                        <div class="select is-rounded is-success is-medium" id="player">
                             <select name="player">
                             <option value="">Select Player</option>
                             {% for player in players %}
@@ -32,60 +32,6 @@
                 </div>
             </div>
         </div>
-        <div class='container top-pad-15 is-mobile'>
-            <div class='container top-pad-15'>
-            <div class="columns is-centered is-mobile">
-                <div class="column is-8 is-mobile">
-            <b>&nbsp;Banned Players ({{ ui_len(bannedplayers) }}):</b>
-            <form action="/playersearch" method="POST">
-                <div class="field has-addons">
-                    <div class="control">
-                        <div class="select is-medium" id="player">
-                            <select name="player">
-                            <option value="">Select Player</option>
-                            {% for player in bannedplayers %}
-                            <option value="{{ player }}">{{ player.title() }}</option>
-                            {% endfor %}
-                            </select>
-                        </div> 
-                    </div>
-                    <div class="control">
-                        <button class="button is-medium" type="submit">
-                            <i class="fas fa-lg fa-search"i></i>
-                        </button>
-                    </div>
-                </div>
-            </form>
-            </div>
-            </div>
-        </div>
-         <div class='container top-pad-15 is-mobile'>
-             <div class='container top-pad-15'>
-                 <div class="columns is-centered is-mobile">
-                     <div class="column is-8 is-mobile">
-             <b>&nbsp;Expired Players ({{ ui_len(expiredplayers) }}):</b>:
-            <form action="/playersearch" method="POST">
-                <div class="field has-addons">
-                    <div class="control">
-                        <div class="select is-medium" id="player">
-                            <select name="player">
-                            <option value="">Select Player</option>
-                            {% for player in expiredplayers %}
-                            <option value="{{ player }}">{{ player.title() }}</option>
-                            {% endfor %}
-                            </select>
-                        </div> 
-                    </div>
-                    <div class="control">
-                        <button class="button is-medium" type="submit">
-                            <i class="fas fa-lg fa-search"i></i>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-                 </div>
-             </div>
           <div class='container top-pad-15 is-mobile'>
               <div class='container top-pad-15'>
                   <div class="columns is-centered is-mobile">
@@ -94,7 +40,7 @@
             <form action="/playersearch" method="POST">
                 <div class="field has-addons">
                     <div class="control">
-                        <div class="select is-medium" id="player">
+                        <div class="select is-rounded is-info is-medium" id="player">
                             <select name="player">
                             <option value="">Select Player</option>
                             {% for player in newplayers %}
@@ -114,4 +60,60 @@
                   </div>
               </div>
     </div>
-    {% endblock %}
+ 
+          <div class='container top-pad-15 is-mobile'>
+             <div class='container top-pad-15'>
+                 <div class="columns is-centered is-mobile">
+                     <div class="column is-8 is-mobile">
+             <b>&nbsp;Expired Players ({{ ui_len(expiredplayers) }}):</b>:
+            <form action="/playersearch" method="POST">
+                <div class="field has-addons">
+                    <div class="control">
+                        <div class="select is-rounded is-medium" id="player">
+                            <select name="player">
+                            <option value="">Select Player</option>
+                            {% for player in expiredplayers %}
+                            <option value="{{ player }}">{{ player.title() }}</option>
+                            {% endfor %}
+                            </select>
+                        </div> 
+                    </div>
+                    <div class="control">
+                        <button class="button is-medium" type="submit">
+                            <i class="fas fa-lg fa-search"i></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+                 </div>
+             </div>
+       
+        <div class='container top-pad-15 is-mobile'>
+            <div class='container top-pad-15'>
+            <div class="columns is-centered is-mobile">
+                <div class="column is-8 is-mobile">
+            <b>&nbsp;Banned Players ({{ ui_len(bannedplayers) }}):</b>
+            <form action="/playersearch" method="POST">
+                <div class="field has-addons">
+                    <div class="control">
+                        <div class="select is-rounded is-danger is-medium" id="player">
+                            <select name="player">
+                            <option value="">Select Player</option>
+                            {% for player in bannedplayers %}
+                            <option value="{{ player }}">{{ player.title() }}</option>
+                            {% endfor %}
+                            </select>
+                        </div> 
+                    </div>
+                    <div class="control">
+                        <button class="button is-medium" type="submit">
+                            <i class="fas fa-lg fa-search"i></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            </div>
+            </div>
+        </div>
+   {% endblock %}

@@ -17,6 +17,7 @@
         <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>&nbsp;{{ ui_getplayersonline(serverinfo['name'], fmt='string') }} </h2>
     </div>
 </div>
+{% if current_user.has_role('admin') %}
         <div class='container top-pad-15 is-centered is-mobile left-pad right-pad'>
             <form action="/server/sendbroadcast" method="POST">
                 <div class="field has-addons bottom-pad-10">
@@ -41,7 +42,7 @@
                 </div>
             </form>
         </div>
-
+{% endif %}
 
 <div class='container top-pad-5 is-mobile left-pad right-pad'>
     <div id="chatlog">

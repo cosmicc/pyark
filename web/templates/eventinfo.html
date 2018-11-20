@@ -42,14 +42,16 @@
                 {% endif %}
             </div>
         </div>
+        {% if current_user.has_role('admin') %}
         <div class='container top-pad-10 bottom-pad-10 right-pad left-pad'>
             <div>
                 {% if not futureevent %}
                 <a class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="/startevent">Schedule an Event</a>
                 {% else %}
-                <a disabled class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="#">Schedule an     Event</a>
+                <a disabled class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="#">Schedule an Event</a>
                 {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 {% endblock %}
