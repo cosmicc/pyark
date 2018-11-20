@@ -714,10 +714,8 @@ to send to all servers" @%s""" % (minst), shell=True)
                         try:
                             if nmsg[0].startswith('"'):
                                 dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
-                                dto = dto - tzfix
                             else:
                                 dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
-                                dto = dto - tzfix
                             tstamp = dto.strftime('%m-%d %I:%M%p')
                             writechat(inst, whoname, cmsg, tstamp)
                             writechatlog(inst, whoname, cmsg, tstamp)
