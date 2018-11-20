@@ -42,23 +42,43 @@
         <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active: {{ ui_playerlastactive(playerinfo['lastseen']) }}</h2>
     </div>
 </div>
-
+{% if current_user.has_role('admin') %}
 <div id="buttons" class='container left-pad-extra right-pad-extra'>
     <div class='columns left-pad right-pad top-pad-10 is-mobile is-centered'>
         <div class='column is-mobile has-text-centered'>
+            <span class='tooltip' title='Ban Player from Cluster'>
             <a class="button is-centered" href="/bantoggle/{{ playerinfo['steamid'] }}">
-            <i class="fas fa-lg fa-ban"></i></a>
+                <i class="fas fa-lg fa-ban"></i></a></span>
         </div>
+{% endif %}
+{% if current_user.has_role('admin') or current_user.steamid == playerinfo['steamid'] %}
         {% if ui_isplayeronline(steamid=playerinfo['steamid']) %}
         <div class='column is-mobile has-text-centered'>
+            <span class='tooltip' title='Kick Player from {{ playerinfo['server'].title() }}'>
             <a class="button" href="/kickplayer/{{ playerinfo['steamid'] }}/{{ playerinfo['server'] }}">
-            <i class="far fa-lg fa-times-circle"></i></a>
+                <i class="far fa-lg fa-times-circle"></i></a></span>
         </div>
         {% endif %}
+        {% if haswebaccount(playerinfo['steamid']) %}
+         <div class='column is-mobile has-text-centered'>
+            <span class='tooltip' title='Web Account'>
+                <a class="button" href="/webinfo/{{ playerinfo['steamid'] }}">
+                <i class="fas fa-lg fa-key"></i></a></span>
         </div>
+        {% endif %}
+{% endif %}
+{% if current_user.has_role('admin') %}
+        {% if not haswebaccount(playerinfo['steamid']) %}
+         <div class='column is-mobile has-text-centered'>
+            <span class='tooltip' title='Create Web Account'>
+                <a class="button" href="/webcreate/{{ playerinfo['steamid'] }}">
+                <i class="fas fa-lg fa-user"></i></a></span>
+        </div>
+        {% endif %}
+{% endif %}
     </div>
 </div>
-
+{% if current_user.has_role('admin') %}
 <div id="chatbar">
     {% if ui_isplayeronline(playerinfo['steamid']) %}
     <div class='container top-pad-10 is-mobile left-pad right-pad bottom-pad-0'>
@@ -77,8 +97,8 @@
     </div>
     {% endif %}
 </div>
-
-<div class='container is-mobile left-pad right-pad'>
+{% endif %}
+<div class='container is-mobile top-pad-10 left-pad right-pad'>
     <div id="playerinfo">
         <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
         <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>

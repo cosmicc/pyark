@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <script>
+    setInterval(function(){ 
+            $("#playertitle").load(" #playertitle"); 
+            $("#chatbar").load(" #chatbar"); 
+            $("#buttons").load(" #buttons");
+            $("#playerinfo").load(" #playerinfo");
+        }, 60000);
+        </script>
+
+
+{% endblock %}
+
+{% block content %}
+    {% if alertmessage %}
+    <script>
+    bulmaToast.toast(  {
+        message: "<h1 class='subtitle is-uppercase'>{{ playerinfo['playername'].title() }} {{ alertmessage }}</h1>",
+    duration: 10000,
+    type: "is-danger",
+    position: "center",
+    closeOnClick: true,
+    opacity: 0.9
+  })
+    </script>
+    {% endif %}
+
+<div id="playertitle">
+    {% if ui_isbanned(playerinfo['steamid']) %}
+    <div class='container is-mobile has-background-danger bottom-pad-10'>
+    {% elif ui_isplayeronline(playerinfo['steamid']) %}
+    <div class='container is-mobile has-background-success bottom-pad-10'>
+    {% elif ui_isplayerold(playerinfo['steamid']) %}
+    <div class='container is-mobile has-background-black bottom-pad-10'>
+    {% else %}
+    <div class='container is-mobile has-background-grey bottom-pad-10'>
+    {% endif %}
+    <div>
+        <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ playerinfo['playername'].title() }}</h1>
+        <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active: {{ ui_playerlastactive(playerinfo['lastseen']) }}</h2>
+    </div>
+</div>
+<div class='container is-mobile top-pad-10 left-pad right-pad'>
+    <div id="playerinfo">
+    <form action="/webinfo/{{ playerinfo['steamid'] }}" method="POST">
+        <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
+        <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>
+        <p class='is-2'>Account Active: <b>{{ webuser.active }}</b></p>
+        <p class='is-2'>Email Address: <b>{{ webuser.email }}</b></p>
+        <p class='is-2'>Current Login: <b>{{ ui_utctolocal(webuser.current_login_at) }}</b></p>
+        <p class='is-2'>Last Login: <b>{{ ui_utctolocal(webuser.last_login_at) }}</b></p>
+        <p class='is-2'>Login Count: <b>{{ webuser.login_count }}</b></p>
+        <p class='is-2'>Current IP: <b>{{ webuser.current_login_ip }}</b></p>
+        <p class='is-2'>Last IP: <b>{{ webuser.last_login_ip }}</b></p>
+                <div class="control">
+                    Timezone:
+                    <div class="select">
+                        <select name="timezone">
+                        {% for each in ui_gettimezones() %}
+                        {% if each == webuser.timezone %}
+                        <option selected="selected" value="{{ each }}">{{ each }}</option>
+                        {% else %}
+                        <option value="{{ each }}">{{ each }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="container top-pad-10">
+                    <div class="control">
+                        <center><button class="button is-info" type="submit">Update
+                            </button></center>
+                    </div>
+                </div>
+    </div>
+    </form>
+
+    </div>
+</div>
+{% endblock %}
+

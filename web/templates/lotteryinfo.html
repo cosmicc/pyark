@@ -82,7 +82,7 @@
 
     {% endif %}
             </div>
-
+            {% if current_user.has_role('admin') %}
         <div class='container top-pad-10 bottom-pad-10 right-pad left-pad'>
             <div>
                 {% if not currentlottery %}
@@ -92,5 +92,6 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 {% endblock %}

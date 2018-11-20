@@ -56,6 +56,7 @@
             </div>
         </div>
     </div>
+        {% if current_user.has_role('admin') %}
         <div class='container top-pad-5 is-centered is-mobile left-pad right-pad bottom-pad-5'>
             <p>&nbsp;&nbsp;Cluster Login Announcement:</p>
             <form action="/dashboard" method="POST">
@@ -69,7 +70,7 @@
                 </div>
             </form>
         </div>
-
+        {% endif %}
 
 <div class="container is-mobile is-centered top-pad-5 left-pad right-pad">
     <div id="events">
@@ -93,7 +94,7 @@
         <p class= 'subtitle top-pad-dbl is-size-5 has-text-weight-bold has-text-centered '>Last 5 Players Online:</p>
     </div>
     {% for player in ui_getlastplayersonline('all', 'list') %}
-    <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}
+    <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }} ago
     </a>
     {% endfor %}
     </div>

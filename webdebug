@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
-from views import app
-sys.path.append('/home/ark/pyark')
+from web.views import app
 from modules.configreader import webserver_ip
+
 
 if __name__ == '__main__':
     app.run(host=webserver_ip, port=51501, debug=True)

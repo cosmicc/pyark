@@ -16,9 +16,12 @@ discord = "*"
 "psycopg2-binary" = "*"
 flask-login = "*"
 sqlalchemy = "*"
-active-alchemy = "*"
 wtforms = "*"
 flask-wtf = "*"
+flask-security = "*"
+bcrypt = "*"
+active-alchemy = "*"
+flask-sqlalchemy = "*"
 
 [dev-packages]
 

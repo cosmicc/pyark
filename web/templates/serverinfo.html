@@ -33,38 +33,52 @@
 
     <div class='container top-pad-10 bottom-pad-5'>
         <div class='columns is-gapless left-pad-extra right-pad is-mobile'>
+        {% if current_user.has_role('admin') %}
         <div class='column'>
-            <div class="tooltip" title"Dino Wipe">
+            <span class="tooltip" title="Wild Dino Wipe">
             <a class="button" href="/server/dinowipe/{{ serverinfo['name'] }}">
-                            <i class="fas fa-lg fa-brush"></i>
-                        </a>
-                </div>
+            <i class="fas fa-lg fa-brush"></i>
+            </a>
+            </span>
         </div>
         <div class='column'>
+            <span class="tooltip" title="Restart Server Instance">
             <a class="button" href="/server/restart/{{ serverinfo['name'] }}">
                             <i class="fas fa-lg fa-sync"></i>
                         </a>
+            </span>
         </div>
         <div class='column'>
+            <span class="tooltip" title="Cancel Restart">
             <a class="button" href="/server/cancelrestart/{{ serverinfo['name'] }}">
                             <i class="fas fa-lg fa-minus-circle"></i>
                         </a>
+            </span>
         </div>
+        {% endif %}
         <div class='column'>
+            <span class="tooltip" title="Server Chat">
             <a class="button" href="/server/chatlog/{{ serverinfo['name'] }}">
                             <i class="far fa-lg fa-comment"></i>
                         </a>
+            </span>
         </div>
         <div class='column'>
+            <span class="tooltip" title="Server Statistics">
             <a class="button" href="/stats/{{ serverinfo['name'] }}">
                             <i class="far fa-lg fa-chart-bar"></i>
                         </a>
+            </span>
         </div>
+        {% if current_user.has_role('admin') %}
         <div class='column'>
+            <span class="tooltip" title="Server Game Log">
             <a class="button" href="/server/gamelog/{{ serverinfo['name'] }}">
                             <i class="far fa-lg fa-file-alt"></i>
                         </a>
+            </span>
         </div>
+        {% endif %}
         </div>
     </div>
 
@@ -72,7 +86,9 @@
     <div class='section is-mobile left-pad top-pad-5 bottom-pad-0'>
         <div id="svrinfo">
         <p class='is-2'>Ark Game Version: <b>v{{ serverinfo['arkversion'] }}</b></p>
+        {% if current_user.has_role('admin') %}
         <p class='is-2'>Config Version: <b>v{{ serverinfo['cfgver'] }}</b></p>
+        {% endif %}
         <p class='is-2'>Last Server Restart: <b>{{ ui_elapsedTime(serverinfo['lastrestart']) }}</b></p>
         <p class='is-2'>Restart Reason: <b>{{ serverinfo['restartreason'].title() }}</b></p>
         <p class='is-2'>Last Dino Wipe: <b>{{ ui_elapsedTime(serverinfo['lastdinowipe']) }}</b></p>
@@ -81,8 +97,10 @@
         <p class='is-2'>Is Listening: <b>{{ serverinfo['islistening'] }}</b></p>
         <p class='is-2'>Is Online: <b>{{ serverinfo['isup'] }}</b></p>
         <p class='is-2'>Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
+        {% if current_user.has_role('admin') %}
         <p class='is-2'>Active Memory: <b>{{ serverinfo['actmem'] }} gigs</b></p>
         <p class='is-2'>Total Memory: <b>{{ serverinfo['totmem'] }} gigs</b></p>
+        {% endif %}
         <p class='is-2'>Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
         <p class='is-2'>Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>
         <p class='is-2'>Server in Event: <b>{{ serverinfo['inevent'] }}</b></p>
