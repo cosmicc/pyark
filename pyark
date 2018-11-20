@@ -15,6 +15,7 @@ from onlinemonitor import onlineupdate
 from statcollector import oscollect
 from sys import exit
 from time import sleep
+from web.views import app
 import argparse
 import logging
 import lottery
