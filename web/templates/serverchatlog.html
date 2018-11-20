@@ -49,7 +49,7 @@
         {% for message in ui_getlog(serverinfo['name'], 'chat') %}
             <article class="message is-small is-marginless bottom-pad-5 has-text-weight-bold">
             <div class="message-header">
-                <p class="is-size-6">{{ message['dtime'] }} - {{ message['pname'].title() }}</p>
+                <p class="is-size-6">{{ ui_utctolocal(ui_str2time(message['dtime']), short=True) }} - {{ message['pname'].title() }}</p>
             </div>
             <div class="message-body has-background-grey-lighter">
                 <p class="is-size-7">{{ message['msg'] }}</p>

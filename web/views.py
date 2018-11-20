@@ -108,13 +108,23 @@ def _gettimezones():
 
 @app.context_processor
 def _utctolocal():
-    def ui_utctolocal(utc_dt):
-        if utc_dt == None:
+    def ui_utctolocal(utc_dt, short=False):
+        if utc_dt is None:
             return 'Never'
         local_tz = pytz.timezone(current_user.timezone)
         local_dt = utc_dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
-        return local_tz.normalize(local_dt).strftime('%m/%d/%Y %-I:%M %p')
+        if short == False:
+            return local_tz.normalize(local_dt).strftime('%m-%d-%Y %-I:%M %p')
+        else:
+            return local_tz.normalize(local_dt).strftime('%m-%d %-I:%M %p')
     return dict(ui_utctolocal=ui_utctolocal)
+
+
+@app.context_processor
+def _str2time():
+    def ui_str2time(strtime):
+        return datetime.strptime(strtime, '%m-%d %I:%M%p')
+    return dict(ui_str2time=ui_str2time)
 
 
 @app.context_processor
