@@ -7,6 +7,7 @@
             $("#svrinfo").load(" #svrinfo"); 
             $("#currentplayers").load(" #currentplayers");
             $("#lastfive").load(" #lastfive");
+            starttimer();
         }, 60000);
         </script>
 {% endblock %}
@@ -128,7 +129,6 @@
     <a class='button has-background-grey has-text-white is-centered is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}</a>
     {% endfor %}
     </div>
-</div>
 </div>
 {% endblock %}
 

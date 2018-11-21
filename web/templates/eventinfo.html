@@ -1,12 +1,18 @@
 {% extends "base.html" %}
 {% block head %}
     {{ super() }}
+    <script>
+        var pageLoader = setInterval(function(){
+            $("#event").load(" #event");
+            starttimer();
+        }, 60000);
+    </script>
 {% endblock %}
 
 {% block content %}
     <div class='container is-mobile'>
         {% if not currentevent %}
-        <div class='container top-pad-10 left-pad bottom-pad-10 is-mobile has-background-warning'>
+        <div id="event" class='container top-pad-10 left-pad bottom-pad-10 is-mobile has-background-warning'>
             <div>
                 <h1 class="title">&nbsp;No Current Events</h1>
                 <h2 class="subtitle">&nbsp;Last Event was {{ ui_elapsedTime(lastevent['endtime']) }} ago</h2>

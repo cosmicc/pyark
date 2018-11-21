@@ -112,12 +112,20 @@ def _utctolocal():
         if utc_dt is None:
             return 'Never'
         local_tz = pytz.timezone(current_user.timezone)
-        local_dt = utc_dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
-        if short == False:
-            return local_tz.normalize(local_dt).strftime('%m-%d-%Y %-I:%M %p')
+        #utc_dt.replace(tzinfo=local_tz)
+        newdt = pytz.utc.localize(utc_dt).astimezone(local_tz)
+        if not short:
+            return newdt.strftime('%m-%d-%Y %-I:%M %p')
         else:
-            return local_tz.normalize(local_dt).strftime('%m-%d %-I:%M %p')
+            return newdt.strftime('%m-%d %-I:%M %p')
     return dict(ui_utctolocal=ui_utctolocal)
+
+
+@app.context_processor
+def _Now():
+    def Now():
+        return datetime.now()
+    return dict(Now=Now)
 
 
 @app.context_processor

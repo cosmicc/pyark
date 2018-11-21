@@ -7,6 +7,7 @@
             $("#chatbar").load(" #chatbar"); 
             $("#buttons").load(" #buttons");
             $("#playerinfo").load(" #playerinfo");
+            starttimer();
         }, 60000);
         </script>
 
@@ -42,10 +43,10 @@
         <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active: {{ ui_playerlastactive(playerinfo['lastseen']) }}</h2>
     </div>
 </div>
-    </div>
-{% if current_user.has_role('admin') %}
+</div>
 <div id="buttons" class='container left-pad-extra right-pad-extra'>
     <div class='columns left-pad right-pad top-pad-10 is-mobile is-centered'>
+{% if current_user.has_role('admin') %}
         <div class='column is-mobile has-text-centered'>
             <span class='tooltip' title='Ban Player from Cluster'>
             <a class="button is-centered" href="/bantoggle/{{ playerinfo['steamid'] }}">
@@ -85,7 +86,7 @@
     <div class='container top-pad-10 is-mobile left-pad right-pad bottom-pad-0'>
         <div>
             <form action="/playerinfo/{{ playerinfo['playername'].lower() }}" method="POST">
-                <div class="field has-addons bottom-pad-10">
+                <div class="field has-addons">
                     <input class="input is-rounded" type="text" name="message" placeholder="Send To {{ playerinfo['playername'].title() }} on {{ playerinfo['server'].capitalize() }}"> 
                     <div class="control">
                         <button class="button" type="submit">
@@ -96,10 +97,10 @@
             </form>
         </div>
     </div>
-    {% endif %}
 </div>
+    {% endif %}
 {% endif %}
-<div class='container is-mobile top-pad-10 left-pad right-pad'>
+<div class='container is-mobile top-pad-15 left-pad right-pad'>
     <div id="playerinfo">
         <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
         <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>

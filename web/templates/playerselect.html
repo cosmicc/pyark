@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block head %}
     {{ super() }}
+    <script>
+        $( document ).ready(function() {
+            $("#refreshtimer").hide();
+        });
+    </script>
 {% endblock %}
 
 {% block content %}

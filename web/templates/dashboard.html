@@ -2,13 +2,15 @@
 {% block head %}
     {{ super() }}
     <script>
-        setInterval(function(){
+        var pageLoader = setInterval(function(){
             $("#livebar").load(" #livebar");
-            $("#servers").load(" #servers"); 
+            $("#servers").load(" #servers");
+            $("#announcement").load(" #announcement");
             $("#currentplayers").load(" #currentplayers"); 
             $("#events").load(" #events");
             $("#lottery").load(" #lottery");
             $("#lastfive").load(" #lastfive");
+            starttimer();
         }, 60000);
     </script>
 {% endblock %}
@@ -43,36 +45,14 @@
         {% endif %}
         {% endfor %}
     </div>
-        <div class="container is-mobile is-centered left-pad right-pad">
-            <div id="currentplayers">
-                <div>
-                    <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Total Players Online: {{ui_getplayersonline('all', 'count')}}</p>
-                </div>
-                {% for player in ui_getplayersonline('all', 'list') %}
-                <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
-                        {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
-                </a>
-                {% endfor %}
-            </div>
+        <div id="announcement" class="container bottom-pad-0 top-pad-5 left-pad right-pad">
+            {% if ui_getannouncement() != "None" %}
+            <center><p class="is-size-6 has-text-weight-semibold">{{ ui_getannouncement() }}</p></center>
+            {% else %}
+            <center><p class="is-size-6 has-text-weight-semibold">No Login Announcement</p></center>
+            {% endif %}
         </div>
-    </div>
-        {% if current_user.has_role('admin') %}
-        <div class='container top-pad-5 is-centered is-mobile left-pad right-pad bottom-pad-5'>
-            <p>&nbsp;&nbsp;Cluster Login Announcement:</p>
-            <form action="/dashboard" method="POST">
-                <div class="field has-addons">
-                    <input class="input is-rounded" name="message" type="text" placeholder="{{ ui_getannouncement() }}"> 
-                    <div class="control">
-                        <button class="button" type="submit">
-                            <i class="fas fa-lg fa-share"></i>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        {% endif %}
-
-<div class="container is-mobile is-centered top-pad-5 left-pad right-pad">
+ <div class="container is-mobile is-centered top-pad-5 left-pad right-pad">
     <div id="events">
         <a class="button has-background-warning is-medium is-centered is-rounded is-fullwidth" href="/events">No Active Cluster Events</a>
     </div>
@@ -87,6 +67,37 @@
         {% endif %}
     </div>
 </div>
+
+   
+    
+        <div class="container is-mobile is-centered left-pad right-pad">
+            <div id="currentplayers">
+                <div>
+                    <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Total Players Online: {{ui_getplayersonline('all', 'count')}}</p>
+                </div>
+                {% for player in ui_getplayersonline('all', 'list') %}
+                <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
+                        {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% if current_user.has_role('admin') %}
+        <div class='container top-pad-5 is-centered is-mobile left-pad right-pad bottom-pad-5'>
+            <center><small><p>&nbsp;&nbsp;Cluster Login Announcement:</p></small></center>
+            <form action="/" method="POST">
+                <div class="field has-addons">
+                    <input class="input is-rounded" name="message" type="text" placeholder="{{ ui_getannouncement() }}"> 
+                    <div class="control">
+                        <button class="button" type="submit">
+                            <i class="fas fa-lg fa-share"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endif %}
 
 <div class="container is-mobile is-centered top-pad-10 left-pad right-pad">
     <div id="lastfive">

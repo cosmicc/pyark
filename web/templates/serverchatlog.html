@@ -3,9 +3,13 @@
 {% block head %}
     {{ super() }}
     <script>
+    $( document ).ready(function() {
+        $("#refreshtimer").hide();
+    });
     setInterval(function(){ 
             $("#servertitle").load(" #servertitle"); 
-            $("#chatlog").load(" #chatlog"); 
+            $("#chatlog").load(" #chatlog");
+            starttimer();
         }, 15000);
         </script>
 {% endblock %}
@@ -30,7 +34,6 @@
             </form>
         </div>
 
-
         <div class='container top-pad-0 is-centered is-mobile left-pad right-pad'>
             <form action="/server/chatlog/{{ serverinfo['name'] }}" method="POST">
                 <div class="field has-addons bottom-pad-10">
@@ -43,6 +46,7 @@
             </form>
         </div>
 {% endif %}
+<center><small><p class="has-text-7 top-pad-0 bottom-pad-0 has-text-grey">Auto refresh <span id="seconds"></span> seconds ago</p></small></center>
 
 <div class='container top-pad-5 is-mobile left-pad right-pad'>
     <div id="chatlog">

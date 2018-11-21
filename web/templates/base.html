@@ -54,13 +54,30 @@
                 var windowHeight = $(window).height() - 90;
                 $notifyContainer.css("margin-top", windowHeight / 3);
                 }
-            });
+            })
             </script>
             {% endfor %}
           {% endif %}
         {% endwith %}
         <script>
+        function starttimer() {
+            var sec, pTimer = null;
+
+            starttimer = function() {
+                sec = 0;
+                clearInterval(pTimer);
+                pTimer = setInterval( function(){
+                    $("#seconds").html(++sec);
+                    if (sec == -1) {
+                        clearInterval(pTimer);
+                    }
+                }, 1000);
+            };
+
+            starttimer();
+        }
             $(document).ready(function() {
+            starttimer()
                 $('.tooltip').tooltipster({
                 theme: 'tooltipster-punk'
                 });
@@ -133,6 +150,7 @@
             <main>
             {% block content %}
             {% endblock %}
+            <div id="refreshtimer" class="top-pad-0 bottom-pad-0"><center><small><p class="has-text-7 top-pad-5 has-text-grey">Auto refresh <span id="seconds"></span> seconds ago</p></small></center></div>
             </main>
         </div>
     </body>

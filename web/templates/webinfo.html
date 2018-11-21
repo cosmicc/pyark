@@ -4,9 +4,8 @@
     <script>
     setInterval(function(){ 
             $("#playertitle").load(" #playertitle"); 
-            $("#chatbar").load(" #chatbar"); 
-            $("#buttons").load(" #buttons");
             $("#playerinfo").load(" #playerinfo");
+            starttimer()
         }, 60000);
         </script>
 
@@ -54,6 +53,7 @@
         <p class='is-2'>Login Count: <b>{{ webuser.login_count }}</b></p>
         <p class='is-2'>Current IP: <b>{{ webuser.current_login_ip }}</b></p>
         <p class='is-2'>Last IP: <b>{{ webuser.last_login_ip }}</b></p>
+        <p class='is-2'>User Local Time: <b>{{ ui_utctolocal(Now()) }}</b></p>
                 <div class="control">
                     Timezone:
                     <div class="select">
@@ -68,7 +68,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="container top-pad-10">
+                <div class="container top-pad-15">
                     <div class="columns is-mobile">
                         <div class="column">
                             <div class="control">
@@ -97,6 +97,7 @@
 
     </div>
 </div>
+<div class="container top-pad-5"></div>
 {% endif %}
 {% endblock %}
 
