@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from flask import Flask, render_template, Response, request, redirect, url_for, flash
 from flask_security import Security, SQLAlchemyUserDatastore, login_required, logout_user, current_user, UserMixin, RoleMixin, LoginForm, roles_required, url_for_security, RegisterForm
+from flask_security.utils import hash_password
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from itertools import chain
@@ -75,7 +76,7 @@ security = Security(app, user_datastore)
 
 #if not user_datastore.get_user('shithead'):
 #user_datastore.create_user(email='admin', password='Ifa6wasa9', steamid='76561198408657294', timezone='US/Eastern')
-#user_datastore.create_user(email='rykker', password='Ifa6wasa9', steamid='76561198388849736', timezone='US/Eastern')
+#user_datastore.delete_user('lemonkey1988@gmail.com')
 #    if not user_datastore.get_user('admin@example.com'):
 #        user_datastore.create_user(email='admin@example.com', password=encrypted_password)
     # User.query.filter_by(email='admin').update(dict(steamid='76561198408657294'))
@@ -138,8 +139,11 @@ def _str2time():
 
 @app.context_processor
 def _getmessages():
-    def ui_getmessages(steamid, fmt):
-        return dbquery("SELECT * FROM messages WHERE to_player = '%s'" % (steamid,), fmt=fmt)
+    def ui_getmessages(steamid, fmt, sent=False):
+        if not sent:
+            return dbquery("SELECT * FROM messages WHERE to_player = '%s'" % (steamid,), fmt=fmt)
+        else:
+            return dbquery("SELECT * FROM messages WHERE from_player = '%s'" % (steamid,), fmt=fmt)
     return dict(ui_getmessages=ui_getmessages)
 
 
@@ -588,7 +592,7 @@ def messages():
 @roles_required('admin')
 def webcreate(steamid):
     if request.method == 'POST':
-        user_datastore.create_user(email=request.form['email'], password=request.form['password'], steamid=request.form['steamid'], timezone=request.form['timezone'])
+        user_datastore.create_user(email=request.form['email'], password=hash_password(request.form['password']), steamid=request.form['steamid'], timezone=request.form['timezone'])
         db.session.commit()
         flash(f'Web User Created', 'info')
         webuser = User.query.filter_by(steamid=steamid).first()

@@ -126,7 +126,7 @@
         <p class='subtitle has-text-weight-bold top-pad-dbl is-size-5 has-text-centered '>Last 5 Players Online:</p>
     </div>
     {% for player in ui_getlastplayersonline(serverinfo['name'], 'list') %}
-    <a class='button has-background-grey has-text-white is-centered is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }}</a>
+    <a class='button has-background-grey has-text-white is-centered is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }} ago</a>
     {% endfor %}
     </div>
 </div>

@@ -115,6 +115,11 @@
         <p class='is-2'>Pending Transfer Points: <b>{{ playerinfo['transferpoints'] }} points</b></p>
         <p class='is-2'>Lottery Wins: <b>{{ playerinfo['lottowins'] }} wins</b></p>
         <p class='is-2'>Total Lottery Winnings: <b>{{ playerinfo['lotterywinnings'] }} points</b></p>
+        <p class='is-2'>Linked to Discord: <b></b></p>
+        {% if current_user.has_role('admin') or current_user.steamid == playerinfo['steamid'] %}
+        <p class='is-2'>Unread Messages: <b>{{ ui_getmessages(playerinfo['steamid'], fmt='count') }}</b></p>
+        <p class='is-2'>Waiting Sent Messages: <b>{{ ui_getmessages(playerinfo['steamid'], sent=True, fmt='count') }}</b></p>
+        {% endif %}
         <p class='is-2'>Total Auctions: <b>{{ playerinfo['totalauctions'] }} auctions</b></p>
         <p class='is-2'>Item Auctions: <b>{{ playerinfo['itemauctions'] }} auctions</b></p>
         <p class='is-2'>Dino Auctions: <b>{{ playerinfo['dinoauctions'] }} auctions</b></p>

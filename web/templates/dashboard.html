@@ -16,22 +16,23 @@
 {% endblock %}
 
 {% block content %}
-<div class="container is-mobile is-centered left-pad right-pad top-pad-5 bottom-pad-5">
-        <div id="livebar">
-        <nav class="level is-mobile is-marginless is-paddingless">
-                {% for instance in instances %}
-                <div class="level-item is-mobile">
-                    <a href="/serverinfo/{{ instance }}">
-                    <div>
-                    <p class='subtitle is-size-6 has-text-centered is-capitalized'>{{ instance }}</p>
-                    <p class='title is-size-3 has-text-centered'>{{ ui_getplayersonline(instance, 'count') }}</p>
-                    </div>
-                </div></a>
-                {% endfor %}
-        </nav>
+<div class="container is-mobile" id="livebar">
+    <div class="level is-mobile is-marginless is-paddingless">
+    {% for instance in instances %}
+        <div class="level-item is-mobile">
+            <a href="/serverinfo/{{ instance }}">
+            <div>
+                <p class='heading has-text-centered is-size-6 is-capitalized'>{{ instance }}</p>
+                <p class='title has-text-centered is-size-3'>{{ ui_getplayersonline(instance, 'count') }}</p>
+            </div>
+            </a>
         </div>
+    {% endfor %}
     </div>
-     <div class="container is-mobile is-centered left-pad right-pad">
+</div>
+
+    
+    <div class="container is-mobile is-centered left-pad right-pad">
         <div id="servers">
          {% for instance in instances %}
          {% if not ui_isinstanceup(instance) %}

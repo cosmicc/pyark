@@ -7,10 +7,9 @@
         <link rel="manifest" href="/manifest.json">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltipster.bundle.min.css') }}"/>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}"/>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/toastr.min.css') }}"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.min.css') }}"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}"/>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/galaxybulma.min.css') }}?v=1.2"/>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v=1.0"/>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltipster-sideTip-punk.min.css') }}"/>
         <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
@@ -62,7 +61,6 @@
         <script>
         function starttimer() {
             var sec, pTimer = null;
-
             starttimer = function() {
                 sec = 0;
                 clearInterval(pTimer);
@@ -73,9 +71,8 @@
                     }
                 }, 1000);
             };
-
             starttimer();
-        }
+            }
             $(document).ready(function() {
                 mcount = setInterval( function(){
                    $("#mcount").load(" #mcount"); 
@@ -86,71 +83,45 @@
                 });
             });
         </script>
-        <style>
-            html { background-color:#ffffff; }
-        </style>
     </head>
-    </body>
-    <div class="container is-mobile" id="navheader">
-    <nav class="level is-mobile has-background-black">
+<body>
+<div class="container is-mobile">
+    <div class="level has-background-primary is-mobile is-hd is-widescreen">
         <div class="level-left">
-            <div class="container left-pad right-pad top-pad-10 bottom-pad-5">
-            <a class="level-item has-text-white left-pad-extra right-pad" href="/" style="font-weight:bold;">
-            <span class="tooltip" title="Dashboard">
-                <i class="fas fa-lg fa-home"></i></span>
+            <a class="level-item is-mobile has-text-white left-pad-extra right-pad" href="/" style="font-weight:bold;">
+            <span class="tooltip" title="Dashboard"><i class="fas fa-lg fa-home"></i></span>
             </a>
-            </div>
-            <div class="container top-pad-10 bottom-pad-5 right-pad">
-            <a class="level-item has-text-white right-pad left-pad" href="/playerinfo" style="font-weight:bold;">
-            <span class="tooltip" title="Players">
-                <i class="fas fa-lg fa-users"></i></span>
+            <a class="level-item is-mobile has-text-white right-pad left-pad" href="/playerinfo" style="font-weight:bold;">
+            <span class="tooltip" title="Players"><i class="fas fa-lg fa-users"></i></span>
             </a>
-            </div>
-            <div class="container top-pad-10 bottom-pad-5 right-pad">
-            <a class="level-item has-text-white right-pad left-pad" href="/events" style="font-weight:bold;">
-            <span class="tooltip" title="Events">
-                <i class="fas fa-lg fa-calendar-alt"></i></span>
+            <a class="level-item is-mobile has-text-white right-pad left-pad" href="/events" style="font-weight:bold;">
+            <span class="tooltip" title="Events"><i class="fas fa-lg fa-calendar-alt"></i></span>
             </a>
-            </div>
-            <div class="container top-pad-10 bottom-pad-5 right-pad">
             <a class="level-item has-text-white right-pad left-pad" href="/lottery" style="font-weight:bold;">
-            <span class="tooltip" title="Lottery">
-                <i class="fas fa-lg fa-coins"></i></span>
+            <span class="tooltip" title="Lottery"><i class="fas fa-lg fa-coins"></i></span>
             </a>
-            </div>
-            <div class="container top-pad-10 bottom-pad-5 right-pad">
             <a class="level-item has-text-white right-pad left-pad" href="/stats/all" style="font-weight:bold;">
-            <span class="tooltip" title="Statistics">
-                <i class="fas fa-lg fa-chart-bar"></i></span>
+            <span class="tooltip" title="Statistics"><i class="fas fa-lg fa-chart-bar"></i></span>
             </a>
-            </div>
         </div>
         <div class="level-right">
-            <div class="container right-pad">
-                <a class="level-item has-text-white right-pad-extra top-pad-5 left-pad" href="/messages" style="font-weight:bold;">
+                <a class="level-item is-mobile has-text-white right-pad-extra left-pad" href="/messages" style="font-weight:bold;">
                     <span class="tooltip" title="Messages">
                         <div id="mcount">
                         <p class="is-size-4" style="font-weight:bold;" >{{ ui_getmessages(current_user.steamid, fmt="count") }}</p>
                         </div>
                     </span>
                 </a>
-            </div>
-            <div class="container top-pad-10 bottom-pad-5 right-pad">
-            <a class="level-item has-text-white right-pad left-pad" href="/webinfo/{{ current_user.steamid }}" style="font-weight:bold;">
-                <span class="tooltip" title="Web Settings">
-                    <i class="fas fa-lg fa-key"></i></span>
-            </a>
-            </div>
-            <div class="container top-pad-10 bottom-pad-5 left-pad right-pad">
-            <a class="level-item has-text-white right-pad-extra" href="/logout" style="font-weight:bold;">
+            <a class="level-item is-mobile has-text-white right-pad left-pad" href="/playerinfo/{{ ui_getplayer(current_user.steamid, steamid=True)['playername'] }}" style="font-weight:bold;">
+                <span class="tooltip" title="{{ ui_getplayer(current_user.steamid, steamid=True)['playername'].title() }}">
+                    <i class="fas fa-lg fa-user"></i></span></a>
+            <a class="level-item is-mobile has-text-white right-pad-extra" href="/logout" style="font-weight:bold;">
                 <span class="tooltip" title="Logout">
-                    <i class="fas fa-lg fa-sign-out-alt"></i></span>
-            </a>
-            </div>
+                    <i class="fas fa-lg fa-sign-out-alt"></i></span></a>
         </div>
-    </nav>
     </div>
-    {% endblock %}
+</div>
+{% endblock %}
         <div id="content is-mobile">
             <main>
             {% block content %}
