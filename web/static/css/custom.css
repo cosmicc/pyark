@@ -4,8 +4,14 @@
 .bottom-pad-0 {
      padding-bottom: 0px;
   }
+.top-pad-3 {
+     padding-top: 3px;
+  }
 .bottom-pad-5 {
      padding-bottom: 5px;
+  }
+.bottom-pad-7 {
+     padding-bottom: 7px;
   }
 .top-pad-5 {
      padding-top: 5px;

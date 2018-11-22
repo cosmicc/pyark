@@ -1,0 +1,68 @@
+{% from "wtf.html" import text_form_field %}
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <script>
+    setInterval(function(){ 
+            $("#messagelog").load(" #messagelog");
+            starttimer();
+        }, 15000);
+        </script>
+{% endblock %}
+
+{% block content %}
+<div class='container is-mobile has-background-link bottom-pad-10'>
+    <div id='servertitle'>
+    </div>
+</div>
+<div class='container top-pad-5 is-mobile left-pad right-pad'>
+    <center><b><p class="title">Send A Message:</p></b></center>
+    <div id="sendmessage">
+    <form action="/messages" method="POST">
+        <div class="control">
+            <div class="field has-addons">
+           <p>To:</p>
+            <div class="select is-rounded" id="player">
+                            <select name="player">
+                            <option value="">Select Player</option>
+                            {% for player in players %}
+                            <option value="{{ player }}">{{ player.title() }}</option>
+                            {% endfor %}
+                            </select>
+                        </div> 
+            </div>
+        </div>
+        <div class="control">
+        <input class="input is-mobile" name="message" type="text" placeholder="Message to send"></textarea>
+        </div>
+        <div class="control">
+        <center><button class="button is-success" type="submit">Send Message
+        </div>
+    </form>
+    </div>
+</div>
+
+<div class='container top-pad-5 is-mobile left-pad right-pad'>
+        <center><b><p class="title">Your Messages:</p></b></center>
+        <div id="messagelog">
+        {% if ui_getmessages(current_user.steamid, fmt='count') == 0 %}
+        <center><b><p class="subtitle top-pad-10 bottom-pad-10">No New Messages</p></b></center>
+        {% else %}
+        {% for message in ui_getmessages(current_user.steamid, fmt='dict') %}
+            <article class="message is-small is-link is-marginless bottom-pad-5 has-text-weight-bold">
+            <div class="message-header">
+                <p class="is-size-6">From: {{ ui_getplayer(message['from_player'],steamid=True)['playername'].title() }} on {{ ui_utctolocal(message['timestamp'], short=True) }} </p>
+                <form action="/messages/delete/{{ message['id'] }}" method="POST">
+                    <button class="delete" type="submit" aria-label="delete"></button>
+                </form>
+            </div>
+            <div class="message-body has-background-grey-lighter">
+                <p class="is-size-7">{{ message['message'] }}</p>
+            </div>
+            </article>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

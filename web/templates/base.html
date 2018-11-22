@@ -77,8 +77,11 @@
             starttimer();
         }
             $(document).ready(function() {
+                mcount = setInterval( function(){
+                   $("#mcount").load(" #mcount"); 
+                }, 60000);
             starttimer()
-                $('.tooltip').tooltipster({
+            $('.tooltip').tooltipster({
                 theme: 'tooltipster-punk'
                 });
             });
@@ -124,9 +127,11 @@
         </div>
         <div class="level-right">
             <div class="container right-pad">
-                <a class="level-item has-text-white right-pad-extra left-pad" href="#" style="font-weight:bold;">
+                <a class="level-item has-text-white right-pad-extra top-pad-5 left-pad" href="/messages" style="font-weight:bold;">
                     <span class="tooltip" title="Messages">
-                        <p class="is-size-4" style="font-weight:bold;" >0</p>
+                        <div id="mcount">
+                        <p class="is-size-4" style="font-weight:bold;" >{{ ui_getmessages(current_user.steamid, fmt="count") }}</p>
+                        </div>
                     </span>
                 </a>
             </div>

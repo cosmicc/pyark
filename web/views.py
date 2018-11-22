@@ -8,6 +8,7 @@ from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat
+from modules.messages import validatelastsent, validatenumsent, getmessages
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto
 from wtforms import StringField, IntegerField
@@ -136,6 +137,13 @@ def _str2time():
 
 
 @app.context_processor
+def _getmessages():
+    def ui_getmessages(steamid, fmt):
+        return dbquery("SELECT * FROM messages WHERE to_player = '%s'" % (steamid,), fmt=fmt)
+    return dict(ui_getmessages=ui_getmessages)
+
+
+@app.context_processor
 def database_processor():
     def ui_getplayersonline(instance, fmt):
         return getplayersonline(instance, fmt=fmt, case='title')
@@ -165,8 +173,11 @@ def database_processor4():
 
 @app.context_processor
 def _getplayer():
-    def ui_getplayer(playername):
-        return dbquery("SELECT * FROM players WHERE playername = '%s'" % (playername,), fmt='dict', fetch='one')
+    def ui_getplayer(playername, steamid=False):
+        if not steamid:
+            return dbquery("SELECT * FROM players WHERE playername = '%s'" % (playername,), fmt='dict', fetch='one')
+        else:
+            return dbquery("SELECT * FROM players WHERE steamid = '%s'" % (playername,), fmt='dict', fetch='one')
     return dict(ui_getplayer=ui_getplayer)
 
 
@@ -539,6 +550,37 @@ def playerinfo(player):
         flash(f'Message Sent', 'info')
         return redirect(url_for('playerinfo', player=player))
     return render_template('playerinfo.html', playerinfo=getplayer(playername=player.lower(), fmt='dict'))
+
+
+@app.route('/messages/delete/<messageid>', methods=['POST'])
+@login_required
+def deletemessage(messageid):
+    if request.method == 'POST':
+        miq = dbquery("SELECT * FROM messages WHERE id = '%s'" % (messageid,), fmt='dict', fetch='one')
+        if miq['to_player'] == current_user.steamid:
+            dbupdate("DELETE FROM messages WHERE id = '%s'" % (miq['id'],))
+        else:
+            flash(f'Access Denied', 'error')
+        return render_template('messages.html', players=getplayernames())
+
+
+@app.route('/messages', methods=['POST', 'GET'])
+@login_required
+def messages():
+    if request.method == 'POST':
+        if request.form['player'] == getplayer(steamid=current_user.steamid, fmt='dict')['playername']:
+            flash(f'You cannot send a message to yourself', 'error')
+        elif request.form['message'] == '':
+            flash(f'You cannot send a blank message', 'error')
+        elif not validatelastsent(current_user.steamid):
+            flash(f'You must wait before sending another message', 'error')
+        elif not validatenumsent(current_user.steamid):
+            flash(f"You cannot send more then 5 messages that haven't been read yet", 'error')
+        else:
+            dbupdate("INSERT INTO messages (timestamp, from_player, to_player, message, read) VALUES (NOW(), '%s', '%s', '%s', False)" % (current_user.steamid, getplayer(playername=request.form['player'], fmt='dict')['steamid'], request.form['message']))
+            flash(f'Message Sent to {request.form["player"].title()}', 'info')
+        return render_template('messages.html', players=getplayernames())
+    return render_template('messages.html', players=getplayernames())
 
 
 @app.route('/webcreate/<steamid>', methods=['POST', 'GET'])
