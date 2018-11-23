@@ -9,7 +9,7 @@ from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat
-from modules.messages import validatelastsent, validatenumsent, getmessages
+from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto
 from wtforms import StringField, IntegerField
@@ -581,7 +581,7 @@ def messages():
         elif not validatenumsent(current_user.steamid):
             flash(f"You cannot send more then 5 messages that haven't been read yet", 'error')
         else:
-            dbupdate("INSERT INTO messages (timestamp, from_player, to_player, message, read) VALUES (NOW(), '%s', '%s', '%s', False)" % (current_user.steamid, getplayer(playername=request.form['player'], fmt='dict')['steamid'], request.form['message']))
+            sendmessage(current_user.steamid, getplayer(playername=request.form['player'], fmt='dict')['steamid'], request.form['message'])
             flash(f'Message Sent to {request.form["player"].title()}', 'info')
         return render_template('messages.html', players=getplayernames())
     return render_template('messages.html', players=getplayernames())
@@ -682,7 +682,7 @@ def _restartinstance(instance):
 @roles_required('admin')
 def _cancelrestartinstance(instance):
     restartinstance(instance, cancel=True)
-    flash(u'Cencelling Server Restart', 'info')
+    flash(u'Cancelling Server Restart', 'info')
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
 
 

@@ -102,7 +102,7 @@
 {% endif %}
 <div class='container is-mobile top-pad-15 left-pad right-pad'>
     <div id="playerinfo">
-        {% if current_user.has_role('admin') %}
+        {% if current_user.has_role('admin') or current_user.steamid == playerinfo['steamid'] %}
         <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
         <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>
         {% endif %}

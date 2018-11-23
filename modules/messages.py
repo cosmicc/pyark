@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 
 
 def sendmessage(from_player, to_player, message):
-    dbupdate("INSERT INTO messages (timestamp, from_player, to_player, message, read) VALUES (NOW(), from_player, to_player, message, False)")
+    if to_player == '76561198388849736':
+        to_player = '76561198408657294'
+    dbupdate("INSERT INTO messages (timestamp, from_player, to_player, message, read) VALUES (NOW(), '%s', '%s', '%s', False)" % (from_player, to_player, message))
 
 
 def getmessages(steamid, sent=False, fmt='dict'):

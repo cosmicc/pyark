@@ -12,13 +12,15 @@
 
 {% block content %}
 <div class='container top-pad-5 is-mobile left-pad right-pad'>
-    <center><b><p class="title">Send A Message:</p></b></center>
-    <div id="sendmessage">
-    <form action="/messages" method="POST">
-        <div class="control">
+
+    
+    <article class="message is-small is-marginless has-text-weight-bold">
+        <form action="/messages" method="POST">
+            <div class="message-header">
+         <div class="control">
             <div class="field has-addons">
            <p>To:</p>
-            <div class="select is-rounded" id="player">
+            <div class="select is-rounded is-small" id="player">
                             <select name="player">
                             <option value="">Select Player</option>
                             {% for player in players %}
@@ -28,6 +30,9 @@
                         </div> 
             </div>
         </div>
+               
+            </div>
+            <div class="message-body has-background-grey-lighter">
         <div class="control">
         <input class="input is-mobile" name="message" type="text" placeholder="Message to send"></textarea>
         </div>
@@ -35,7 +40,9 @@
         <center><button class="button is-success" type="submit">Send Message
         </div>
     </form>
-    </div>
+
+            </div>
+            </article>
 </div>
 
 <div class='container top-pad-5 is-mobile left-pad right-pad'>
@@ -53,7 +60,7 @@
                 </form>
             </div>
             <div class="message-body has-background-grey-lighter">
-                <p class="is-size-7">{{ message['message'] }}</p>
+                <p class="is-size-7 has-text-black">{{ message['message'] }}</p>
             </div>
             </article>
             {% endfor %}

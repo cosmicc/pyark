@@ -13,15 +13,15 @@
 {% endblock %}
 
 {% block content %}
-<div id='servertitle'>
+<div id='servertitle' class='container right-pad left-pad'>
     {% if not ui_isinstanceup(serverinfo['name']) %}
-    <div class='container is-mobile has-background-danger bottom-pad-10'>
+    <div class='container is-mobile has-background-danger bottom-pad-10 right-pad'>
     {% elif ui_isinrestart(serverinfo['name']) %}
-    <div class='container is-mobile has-background-info bottom-pad-10'>
+    <div class='container is-mobile has-background-info bottom-pad-10 right-pad'>
     {% elif not ui_iscurrentconfig(serverinfo['name']) %}
-    <div class='container is-mobile has-background-primary bottom-pad-10'>
+    <div class='container is-mobile has-background-primary bottom-pad-10 right-pad'>
     {% else %}
-    <div class='container is-mobile has-background-success bottom-pad-10'>
+    <div class='container is-mobile has-background-success bottom-pad-10 right-pad'>
     {% endif %}
     <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50</h1>
     {% if ui_isinrestart(serverinfo['name']) %}
@@ -83,7 +83,7 @@
         </div>
     </div>
 
-<div class='container is-mobile is-centered left-pad right-pad'>
+<div class='container is-mobile is-centered left-pad-extra right-pad'>
     <div class='section is-mobile left-pad top-pad-5 bottom-pad-0'>
         <div id="svrinfo">
         <p class='is-2'>Ark Game Version: <b>v{{ serverinfo['arkversion'] }}</b></p>
