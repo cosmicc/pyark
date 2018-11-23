@@ -104,23 +104,22 @@ def isplayerbanned(steamid='', playername=''):
         return False
 
 
-def banunbanplayer(steamid='', playername='', discordid='', ban=False):
-    if steamid != '':
-        if ban:
+def banunbanplayer(steamid, ban=False):
+    if ban:
+        try:
             dbupdate("UPDATE players SET banned = True WHERE steamid = '%s'" % (steamid,))
-            return True
-        else:
-            dbupdate("UPDATE players SET banned = NULL WHERE steamid = '%s'" % (steamid,))
-            return True
-    elif playername != '':
-        if ban:
-            dbupdate("UPDATE players SET banned = True WHERE playername = '%s'" % (playername.lower(),))
-            return True
-        else:
-            dbupdate("UPDATE players SET banned = True NULL playername = '%s'" % (playername.lower(),))
-            return True
+            dbupdate("DELETE FROM messages WHERE from_player = '%s' or to_player = '%s'" % (steamid, steamid))
+            dbupdate("UPDATE web_users SET active = False WHERE steamid = '%s'" % (steamid,))
+        except:
+            return False
+        return True
     else:
-        return False
+        try:
+            dbupdate("UPDATE players SET banned = NULL WHERE steamid = '%s'" % (steamid,))
+            dbupdate("UPDATE web_users SET active = True WHERE steamid = '%s'" % (steamid,))
+        except:
+            return False
+        return True
 
 
 def getnewestplayers(inst, fmt='list', case='normal', last=5):

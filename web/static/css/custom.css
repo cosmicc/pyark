@@ -44,6 +44,16 @@
      padding-right: 15px;
   }
 
+#is-text-middle {
+    vertical-align: middle;
+}
+
+#is-text-bottom {
+    vertical-align: bottom;
+}
+
+
+
 body {
 	margin: 0;
 	padding: 0;
@@ -56,11 +66,10 @@ html {
     overflow: hidden;
 }
 
-#navheader {
+#navbar {
     position: absolute;
 	top: 0;
 	left: 0;
-	width: 100%;
 	height: 35px; 
 	overflow: hidden; 
     }

@@ -9,47 +9,33 @@
             $("#playerinfo").load(" #playerinfo");
             starttimer();
         }, 60000);
-        </script>
-
-
+    </script>
 {% endblock %}
 
 {% block content %}
-    {% if alertmessage %}
-    <script>
-    bulmaToast.toast(  {
-        message: "<h1 class='subtitle is-uppercase'>{{ playerinfo['playername'].title() }} {{ alertmessage }}</h1>",
-    duration: 10000,
-    type: "is-danger",
-    position: "center",
-    closeOnClick: true,
-    opacity: 0.9
-  })
-    </script>
-    {% endif %}
-
 <div id="playertitle">
     {% if ui_isbanned(playerinfo['steamid']) %}
-    <div class='container is-mobile has-background-danger bottom-pad-10'>
+    <div class='container has-background-danger bottom-pad-10'>
     {% elif ui_isplayeronline(playerinfo['steamid']) %}
-    <div class='container is-mobile has-background-success bottom-pad-10'>
+    <div class='container has-background-success bottom-pad-10'>
     {% elif ui_isplayerold(playerinfo['steamid']) %}
-    <div class='container is-mobile has-background-black bottom-pad-10'>
+    <div class='container has-background-black bottom-pad-10'>
     {% else %}
-    <div class='container is-mobile has-background-grey bottom-pad-10'>
+    <div class='container has-background-grey bottom-pad-10'>
     {% endif %}
     <div>
         <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ playerinfo['playername'].title() }}</h1>
         <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active: {{ ui_playerlastactive(playerinfo['lastseen']) }}</h2>
     </div>
+    </div>
 </div>
-</div>
-<div id="buttons" class='container left-pad-extra right-pad-extra'>
-    <div class='columns left-pad right-pad top-pad-10 is-mobile is-centered'>
-{% if current_user.has_role('admin') %}
+
+<div id="buttons" class='container top-pad-10 left-pad-extra right-pad-extra'>
+    <div class='columns left-pad right-pad is-mobile is-centered'>
+{% if current_user.has_role('admin') and playerinfo['steamid'] != '76561198408657294' %}
         <div class='column is-mobile has-text-centered'>
             <span class='tooltip' title='Ban Player from Cluster'>
-            <a class="button is-centered" href="/bantoggle/{{ playerinfo['steamid'] }}">
+            <a class="button is-info" href="/bantoggle/{{ playerinfo['steamid'] }}">
                 <i class="fas fa-lg fa-ban"></i></a></span>
         </div>
 {% endif %}
@@ -57,14 +43,14 @@
         {% if ui_isplayeronline(steamid=playerinfo['steamid']) %}
         <div class='column is-mobile has-text-centered'>
             <span class='tooltip' title='Kick Player from {{ playerinfo['server'].title() }}'>
-            <a class="button" href="/kickplayer/{{ playerinfo['steamid'] }}/{{ playerinfo['server'] }}">
+            <a class="button is-info" href="/kickplayer/{{ playerinfo['steamid'] }}/{{ playerinfo['server'] }}">
                 <i class="far fa-lg fa-times-circle"></i></a></span>
         </div>
         {% endif %}
         {% if haswebaccount(playerinfo['steamid']) %}
          <div class='column is-mobile has-text-centered'>
             <span class='tooltip' title='Web Account'>
-                <a class="button" href="/webinfo/{{ playerinfo['steamid'] }}">
+                <a class="button is-info" href="/webinfo/{{ playerinfo['steamid'] }}">
                 <i class="fas fa-lg fa-key"></i></a></span>
         </div>
         {% endif %}
@@ -73,7 +59,7 @@
         {% if not haswebaccount(playerinfo['steamid']) %}
          <div class='column is-mobile has-text-centered'>
             <span class='tooltip' title='Create Web Account'>
-                <a class="button" href="/webcreate/{{ playerinfo['steamid'] }}">
+                <a class="button is-info" href="/webcreate/{{ playerinfo['steamid'] }}">
                 <i class="fas fa-lg fa-user"></i></a></span>
         </div>
         {% endif %}
@@ -83,13 +69,13 @@
 {% if current_user.has_role('admin') %}
 <div id="chatbar">
     {% if ui_isplayeronline(playerinfo['steamid']) %}
-    <div class='container top-pad-10 is-mobile left-pad right-pad bottom-pad-0'>
+    <div class='container top-pad-10 is-mobile left-pad-extra right-pad-extra'>
         <div>
             <form action="/playerinfo/{{ playerinfo['playername'].lower() }}" method="POST">
                 <div class="field has-addons">
                     <input class="input is-rounded" type="text" name="message" placeholder="Send To {{ playerinfo['playername'].title() }} on {{ playerinfo['server'].capitalize() }}"> 
                     <div class="control">
-                        <button class="button" type="submit">
+                        <button class="button is-info" type="submit">
                             <i class="fas fa-lg fa-share"></i>
                         </button>
                     </div>
@@ -100,8 +86,9 @@
 </div>
     {% endif %}
 {% endif %}
-<div class='container is-mobile top-pad-15 left-pad right-pad'>
-    <div id="playerinfo">
+<div class='container top-pad-10 left-pad-extra right-pad-extra'>
+    <div class="box left-pad-extra top-pad-5 bottom-pad-5 right-pad-extra">
+    <div id="playerinfo" class="container">
         {% if current_user.has_role('admin') or current_user.steamid == playerinfo['steamid'] %}
         <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
         <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>
@@ -125,6 +112,7 @@
         <p class='is-2'>Dino Auctions: <b>{{ playerinfo['dinoauctions'] }} auctions</b></p>
         <p class='is-2'>On Since Restart: <b>{{ playerinfo['restartbit'] }}</b></p>
         <p class='is-2'>Primordial Warning: <b>{{ playerinfo['primordialbit'] }}</b></p>
+    </div>
     </div>
 </div>
 {% endblock %}

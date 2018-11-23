@@ -18,40 +18,22 @@
         <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active: {{ ui_playerlastactive(playerinfo['lastseen']) }}</h2>
     </div>
 </div>
-<div class='container top-pad-10 left-pad-extra right-pad-extra'>
-    <div class="box left-pad-extra top-pad-5 bottom-pad-5 right-pad-extra">
-        <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
-        <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>
-    </div>
-</div>
 
 <div class='container top-pad-10 left-pad-extra right-pad-extra'>
-    <form action="/webcreate/{{ playerinfo['steamid'] }}" method="POST">
-                <div class="control">
-                    <input class="input is-rounded" type="text" name="email" placeholder="email address">
+    <center><p class="title">Change Password</p></center>
+    <form action="/changepass/{{ playerinfo['steamid'] }}" method="POST">
+                <div class="control top-pad-10">
+                    <input class="input is-rounded" type="text" name="password" placeholder="new password">
                 </div>
-                <div class="control">
-                    <input class="input is-rounded" type="text" name="password" placeholder="password">
-                </div>
-                <div class="control">
-                    <input class="input is-rounded" type="text" name="password_confirm" placeholder="re-type password">
+                <div class="control top-pad-5">
+                    <input class="input is-rounded" type="text" name="password_confirm" placeholder="re-type new password">
                 </div>
                 <div class="control">
                     <input class="input is-rounded" type="hidden" name="steamid" value="{{ playerinfo['steamid'] }}">
                 </div>
-                <p>Timezone:</p>
-                <div class="control">
-                    <div class="select">
-                        <select name="timezone">
-                        {% for each in ui_gettimezones() %}
-                        <option>{{ each }}</option>
-                        {% endfor %}
-                        </select>
-                    </div>
-                </div>
                 <div class="container top-pad-10">
                     <div class="control">
-                        <center><button class="button is-info" type="submit" name="Create User" label="Create User">Create User
+                        <center><button class="button is-danger" type="submit" name="Change Password" label="Change Password">Change Password
                             </button></center>
                     </div>
                 </div>

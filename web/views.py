@@ -600,13 +600,43 @@ def webcreate(steamid):
     return render_template('webcreate.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
 
 
+@app.route('/changepass/<steamid>', methods=['POST', 'GET'])
+@login_required
+def changepass(steamid):
+    if request.method == 'POST':
+        if current_user.has_role('admin') or current_user.steamid == steamid:
+            if request.form['password'] == "" or request.form['password_confirm'] == "":
+                flash(f'Password cannot be blank', 'error')
+                return redirect(url_for('changepass', steamid=steamid))
+            elif len(request.form['password']) < 7:
+                flash(f'Password must be at least 7 characters long', 'error')
+                return redirect(url_for('changepass', steamid=steamid))
+            elif request.form['password'] != request.form['password_confirm']:
+                flash(f'Passwords do not match', 'error')
+                return redirect(url_for('changepass', steamid=steamid))
+            elif request.form['password'] == request.form['password_confirm']:
+                dbupdate("UPDATE web_users SET password = '%s' WHERE steamid = '%s'" % (hash_password(request.form['password']), steamid))
+                flash(f'Password changed', 'success')
+                webuser = User.query.filter_by(steamid=steamid).first()
+                return render_template('webinfo.html', webuser=webuser, playerinfo=getplayer(steamid=steamid, fmt='dict'))
+    if current_user.has_role('admin') or current_user.steamid == steamid:
+        return render_template('changepass.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
+
+
 @app.route('/webinfo/<steamid>', methods=['POST', 'GET'])
 @login_required
 def webinfo(steamid):
     if request.method == 'POST':
-        User.query.filter_by(steamid=steamid).update(dict(timezone=request.form["timezone"]))
-        db.session.commit()
-        flash(f'Web Settings Updated', 'info')
+        if request.form['btype'] == 'Update Settings':
+            User.query.filter_by(steamid=steamid).update(dict(timezone=request.form["timezone"]))
+            db.session.commit()
+            flash(f'Settings Updated', 'success')
+        elif request.form['btype'] == 'Toggle Active':
+            user_datastore.activate_user(User.query.filter_by(email=request.form['email']).first())
+            db.session.commit()
+            flash(f'Toggled Account Access', 'success')
+        elif request.form['btype'] == 'Change Password':
+            return redirect(url_for('changepass', steamid=steamid))
         webuser = User.query.filter_by(steamid=steamid).first()
         return render_template('webinfo.html', webuser=webuser, playerinfo=getplayer(steamid=steamid, fmt='dict'))
     webuser = User.query.filter_by(steamid=steamid).first()

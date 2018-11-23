@@ -3,9 +3,6 @@
 {% block head %}
     {{ super() }}
     <script>
-    $( document ).ready(function() {
-        $("#refreshtimer").hide();
-    });
     setInterval(function(){ 
             $("#servertitle").load(" #servertitle"); 
             $("#chatlog").load(" #chatlog");
@@ -15,43 +12,45 @@
 {% endblock %}
 
 {% block content %}
-<div class='container is-mobile has-background-success bottom-pad-10'>
+<div class='container has-background-success bottom-pad-10'>
     <div id='servertitle'>
         <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50</h1>
         <h2 class='subtitle is-mobile left-pad top-pad-5 has-text-white'>&nbsp;{{ ui_getplayersonline(serverinfo['name'], fmt='string') }} </h2>
     </div>
 </div>
-{% if current_user.has_role('admin') %}
-        <div class='container top-pad-15 is-centered is-mobile left-pad right-pad'>
-            <form action="/server/sendbroadcast" method="POST">
-                <div class="field has-addons bottom-pad-10">
-                    <input class="input is-rounded" type="text" placeholder="Broadcast To {{ serverinfo['name'].capitalize() }} Server"> 
-                    <div class="control">
-                        <button class="button" type="submit">
-                        <i class="fas fa-lg fa-share"></i></button>
-                    </div>
-                </div>
-            </form>
-        </div>
 
-        <div class='container top-pad-0 is-centered is-mobile left-pad right-pad'>
-            <form action="/server/chatlog/{{ serverinfo['name'] }}" method="POST">
-                <div class="field has-addons bottom-pad-10">
-                    <input class="input is-rounded" type="text" name="message" placeholder="Chat To {{ serverinfo['name'].capitalize() }} Server">
-                    <div class="control">
-                        <button class="button" type="submit"> 
-                            <i class="fas fa-lg fa-share"></i></button>
-                    </div>
-                </div>
-            </form>
+{% if current_user.has_role('admin') %}
+<div class='container top-pad-15 is-centered left-pad-extra right-pad-extra'>
+    <form action="/server/sendbroadcast" method="POST">
+        <div class="field has-addons bottom-pad-10">
+            <input class="input is-rounded" type="text" placeholder="Broadcast To {{ serverinfo['name'].capitalize() }} Server"> 
+            <div class="control">
+                <button class="button is-info" type="submit">
+                <i class="fas fa-lg fa-share"></i></button>
+            </div>
         </div>
+    </form>
+</div>
+
+<div class='container is-centered left-pad-extra right-pad-extra'>
+    <form action="/server/chatlog/{{ serverinfo['name'] }}" method="POST">
+        <div class="field has-addons bottom-pad-10">
+            <input class="input is-rounded" type="text" name="message" placeholder="Chat To {{ serverinfo['name'].capitalize() }} Server">
+            <div class="control">
+                <button class="button is-info" type="submit"> 
+                    <i class="fas fa-lg fa-share"></i></button>
+            </div>
+        </div>
+    </form>
+</div>
 {% endif %}
+
 <center><small><p class="has-text-7 top-pad-0 bottom-pad-0 has-text-grey">Auto refresh <span id="seconds"></span> seconds ago</p></small></center>
 
-<div class='container top-pad-5 is-mobile left-pad right-pad'>
+<div class='container top-pad-5 left-pad-extra right-pad-extra'>
     <div id="chatlog">
         {% for message in ui_getlog(serverinfo['name'], 'chat') %}
-            <article class="message is-small is-marginless bottom-pad-5 has-text-weight-bold">
+            <article class="message is-link is-small is-marginless bottom-pad-5 has-text-weight-bold">
             <div class="message-header">
                 <p class="is-size-6">{{ ui_utctolocal(ui_str2time(message['dtime']), short=True) }} - {{ message['pname'].title() }}</p>
             </div>
@@ -63,4 +62,4 @@
     </div>
 </div>
 {% endblock %}
-
+{% block refreshtimer %}{% endblock %}

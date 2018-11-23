@@ -11,48 +11,47 @@
 {% endblock %}
 
 {% block content %}
-<div class='container top-pad-5 is-mobile left-pad right-pad'>
-
-    
-    <article class="message is-small is-marginless has-text-weight-bold">
+<div class='container top-pad-10 left-pad-extra right-pad-extra'>
+    <center><b><p class="title">Send A Message:</p></b></center>
+    <article class="message is-link is-marginless is-paddingless has-text-weight-bold">
         <form action="/messages" method="POST">
             <div class="message-header">
-         <div class="control">
-            <div class="field has-addons">
-           <p>To:</p>
-            <div class="select is-rounded is-small" id="player">
+                <div class="control">
+                    <div class="field has-addons is-text-bottom">
+                        <p class="is-size-5">To:&nbsp;&nbsp;&nbsp;</p>
+                        <div class="select is-rounded is-small" id="player">
                             <select name="player">
                             <option value="">Select Player</option>
                             {% for player in players %}
                             <option value="{{ player }}">{{ player.title() }}</option>
                             {% endfor %}
                             </select>
-                        </div> 
-            </div>
-        </div>
-               
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="message-body has-background-grey-lighter">
-        <div class="control">
-        <input class="input is-mobile" name="message" type="text" placeholder="Message to send"></textarea>
-        </div>
-        <div class="control">
-        <center><button class="button is-success" type="submit">Send Message
-        </div>
-    </form>
-
+                <div class="control">
+                    <input class="input is-mobile" name="message" type="text" placeholder="Message to send"></textarea>
+                </div>
+                <div class="container top-pad-10 has-text-centered">
+                </div>
+                <div class="control">
+                    <center><button class="button is-info" type="submit">Send Message</button></center>
+                </div>
             </div>
-            </article>
+        </form>
+    </article>
 </div>
 
-<div class='container top-pad-5 is-mobile left-pad right-pad'>
+<div class='container top-pad-15 is-mobile left-pad right-pad'>
         <center><b><p class="title">Your Messages:</p></b></center>
         <div id="messagelog">
         {% if ui_getmessages(current_user.steamid, fmt='count') == 0 %}
-        <center><b><p class="subtitle top-pad-10 bottom-pad-10">No New Messages</p></b></center>
+        <center><b><p class="subtitle top-pad-10">No New Messages</p></b></center>
         {% else %}
         {% for message in ui_getmessages(current_user.steamid, fmt='dict') %}
-            <article class="message is-small is-link is-marginless bottom-pad-5 has-text-weight-bold">
+            <article class="message is-small is-link is-marginless has-text-weight-bold">
             <div class="message-header">
                 <p class="is-size-6">From: {{ ui_getplayer(message['from_player'],steamid=True)['playername'].title() }} on {{ ui_utctolocal(message['timestamp'], short=True) }} </p>
                 <form action="/messages/delete/{{ message['id'] }}" method="POST">

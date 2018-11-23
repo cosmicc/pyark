@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container is-mobile" id="livebar">
+<div class="container left-pad right-pad" id="livebar">
     <div class="level is-mobile is-marginless is-paddingless">
     {% for instance in instances %}
         <div class="level-item is-mobile">
@@ -30,10 +30,9 @@
     {% endfor %}
     </div>
 </div>
-
     
-    <div class="container is-mobile is-centered left-pad right-pad">
-        <div id="servers">
+<div class="container left-pad-extra right-pad-extra">
+    <div id="servers">
          {% for instance in instances %}
          {% if not ui_isinstanceup(instance) %}
          <a class="button has-background-danger is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href=    "/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
@@ -46,20 +45,25 @@
         {% endif %}
         {% endfor %}
     </div>
-        <div id="announcement" class="container bottom-pad-0 top-pad-5 left-pad right-pad">
+</div>
+
+<div class="container left-pad-extra right-pad-extra top-pad-10 bottom-pad-5">
+    <div id="announcement">
             {% if ui_getannouncement() != "None" %}
-            <center><p class="is-size-6 has-text-weight-semibold">{{ ui_getannouncement() }}</p></center>
+            <center><p class="is-size-6 has-text-weight-bold">{{ ui_getannouncement() }}</p></center>
             {% else %}
-            <center><p class="is-size-6 has-text-weight-semibold">No Login Announcement</p></center>
+            <center><p class="is-size-6 has-text-weight-bold">No Login Announcement</p></center>
             {% endif %}
-        </div>
- <div class="container is-mobile is-centered top-pad-5 left-pad right-pad">
+    </div>
+</div>
+    
+<div class="container top-pad-5 left-pad-extra right-pad-extra">
     <div id="events">
         <a class="button has-background-warning is-medium is-centered is-rounded is-fullwidth" href="/events">No Active Cluster Events</a>
     </div>
 </div>
 
-<div class="container is-mobile is-centered top-pad-5 left-pad right-pad">
+<div class="container left-pad-extra right-pad-extra">
     <div id="lottery">
         {% if ui_isinlottery() %}
         <a class="button has-background-success is-medium is-rounded is-centered has-text-white is-fullwidth" href="/lottery">Lottery Active with {{ ui_getlotteryplayers(fmt='count') }} Players</a>
@@ -69,51 +73,44 @@
     </div>
 </div>
 
-   
+<div class="container left-pad-extra right-pad-extra">
+    <div id="currentplayers">
+        <div>
+            <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Total Players Online: {{ui_getplayersonline('all', 'count')}}</p>
+        </div>
+        {% for player in ui_getplayersonline('all', 'list') %}
+        <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
+        {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
     
-        <div class="container is-mobile is-centered left-pad right-pad">
-            <div id="currentplayers">
-                <div>
-                    <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Total Players Online: {{ui_getplayersonline('all', 'count')}}</p>
-                </div>
-                {% for player in ui_getplayersonline('all', 'list') %}
-                <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
-                        {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
-                </a>
-                {% endfor %}
+{% if current_user.has_role('admin') %}
+<div class='container top-pad-10 left-pad-extra right-pad-extra'>
+    <center><small><p>&nbsp;&nbsp;Cluster Login Announcement:</p></small></center>
+    <form action="/" method="POST">
+        <div class="field has-addons">
+            <input class="input is-rounded" name="message" type="text" placeholder="{{ ui_getannouncement() }}"> 
+            <div class="control">
+                <button class="button is-info" type="submit">
+                    <i class="fas fa-lg fa-share"></i>
+                </button>
             </div>
         </div>
-    </div>
-    {% if current_user.has_role('admin') %}
-        <div class='container top-pad-5 is-centered is-mobile left-pad right-pad bottom-pad-5'>
-            <center><small><p>&nbsp;&nbsp;Cluster Login Announcement:</p></small></center>
-            <form action="/" method="POST">
-                <div class="field has-addons">
-                    <input class="input is-rounded" name="message" type="text" placeholder="{{ ui_getannouncement() }}"> 
-                    <div class="control">
-                        <button class="button" type="submit">
-                            <i class="fas fa-lg fa-share"></i>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        {% endif %}
+    </form>
+</div>
+{% endif %}
 
-<div class="container is-mobile is-centered top-pad-10 left-pad right-pad">
+<div class="container top-pad-10 left-pad-extra right-pad-extra">
     <div id="lastfive">
-    <div>
-        <p class= 'subtitle top-pad-dbl is-size-5 has-text-weight-bold has-text-centered '>Last 5 Players Online:</p>
-    </div>
-    {% for player in ui_getlastplayersonline('all', 'list') %}
-    <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }} ago
-    </a>
-    {% endfor %}
+        <div>
+            <p class= 'subtitle top-pad-dbl is-size-5 has-text-weight-bold has-text-centered '>Last 5 Players Online:</p>
+        </div>
+        {% for player in ui_getlastplayersonline('all', 'list') %}
+        <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }} ago
+        </a>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
-
-
-
-
-

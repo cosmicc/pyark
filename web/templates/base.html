@@ -1,138 +1,138 @@
 <!doctype html>
 <html>
-    <head>
-        {% block head %}
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="manifest" href="/manifest.json">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltipster.bundle.min.css') }}"/>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/toastr.min.css') }}"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/galaxybulma.min.css') }}?v=1.9"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v=1.0"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltipster-sideTip-punk.min.css') }}"/>
-        <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/tooltipster.bundle.min.js') }}"></script>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-             <script>
-            $(function () {
-                toastr.options = {
-                  "closeButton": false,
-                  "debug": false,
-                  "newestOnTop": false,
-                  "progressBar": false,
-                  "positionClass": "toast-top-center",
-                  "preventDuplicates": false,
-                  "onclick": null,
-                  "showDuration": "300",
-                  "hideDuration": "1000",
-                  "timeOut": "5000",
-                  "extendedTimeOut": "1000",
-                  "showEasing": "swing",
-                  "hideEasing": "linear",
-                  "showMethod": "fadeIn",
-                  "hideMethod": "fadeOut"
-                    }
-                });
-                $(function () {
-            {% for category, message in messages %}
-            {% if category == "success" %}
-                toastr.success("{{ message }}");
-            {% elif category == "warning" %}
-                toastr.warning("{{ message }}");
-            {% elif category == "error" %}
-                toastr.error("{{ message }}");
-            {% else %}
-                toastr.info("{{ message }}");
-            {% endif %}
-                var $notifyContainer = $('#toast-container').closest('.toast-top-center');
-                if ($notifyContainer) {
-                // align center
-                var windowHeight = $(window).height() - 90;
-                $notifyContainer.css("margin-top", windowHeight / 3);
+<head>
+    {% block head %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltipster.bundle.min.css') }}"/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/toastr.min.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/galaxybulma.min.css') }}?v=1.9"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v=1.9"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltipster-sideTip-punk.min.css') }}"/>
+    <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tooltipster.bundle.min.js') }}"></script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+         <script>
+        $(function () {
+            toastr.options = {
+              "closeButton": false,
+              "debug": false,
+              "newestOnTop": false,
+              "progressBar": false,
+              "positionClass": "toast-top-center",
+              "preventDuplicates": false,
+              "onclick": null,
+              "showDuration": "300",
+              "hideDuration": "1000",
+              "timeOut": "5000",
+              "extendedTimeOut": "1000",
+              "showEasing": "swing",
+              "hideEasing": "linear",
+              "showMethod": "fadeIn",
+              "hideMethod": "fadeOut"
                 }
-            })
-            </script>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-        <script>
-        function starttimer() {
-            var sec, pTimer = null;
-            starttimer = function() {
-                sec = 0;
-                clearInterval(pTimer);
-                pTimer = setInterval( function(){
-                    $("#seconds").html(++sec);
-                    if (sec == -1) {
-                        clearInterval(pTimer);
-                    }
-                }, 1000);
-            };
-            starttimer();
-            }
-            $(document).ready(function() {
-                mcount = setInterval( function(){
-                   $("#mcount").load(" #mcount"); 
-                }, 60000);
-            starttimer()
-            $('.tooltip').tooltipster({
-                theme: 'tooltipster-punk'
-                });
             });
+            $(function () {
+        {% for category, message in messages %}
+        {% if category == "success" %}
+            toastr.success("{{ message }}");
+        {% elif category == "warning" %}
+            toastr.warning("{{ message }}");
+        {% elif category == "error" %}
+            toastr.error("{{ message }}");
+        {% else %}
+            toastr.info("{{ message }}");
+        {% endif %}
+            var $notifyContainer = $('#toast-container').closest('.toast-top-center');
+            if ($notifyContainer) {
+            // align center
+            var windowHeight = $(window).height() - 90;
+            $notifyContainer.css("margin-top", windowHeight / 3);
+            }
+        })
         </script>
-        {% endblock %}
-    </head>
-<body>
-{% block navbar %}
-<div class="container is-mobile right-pad">
-    <div class="level has-background-primary is-mobile is-hd is-widescreen">
-        <div class="level-left">
-            <a class="level-item is-mobile has-text-white left-pad-extra right-pad" href="/" style="font-weight:bold;">
-            <span class="tooltip" title="Dashboard"><i class="fas fa-lg fa-home"></i></span>
-            </a>
-            <a class="level-item is-mobile has-text-white right-pad left-pad" href="/playerinfo" style="font-weight:bold;">
-            <span class="tooltip" title="Players"><i class="fas fa-lg fa-users"></i></span>
-            </a>
-            <a class="level-item is-mobile has-text-white right-pad left-pad" href="/events" style="font-weight:bold;">
-            <span class="tooltip" title="Events"><i class="fas fa-lg fa-calendar-alt"></i></span>
-            </a>
-            <a class="level-item has-text-white right-pad left-pad" href="/lottery" style="font-weight:bold;">
-            <span class="tooltip" title="Lottery"><i class="fas fa-lg fa-coins"></i></span>
-            </a>
-            <a class="level-item has-text-white right-pad left-pad" href="/stats/all" style="font-weight:bold;">
-            <span class="tooltip" title="Statistics"><i class="fas fa-lg fa-chart-bar"></i></span>
-            </a>
-        </div>
-        <div class="level-right">
-                <a class="level-item is-mobile has-text-white right-pad-extra left-pad" href="/messages" style="font-weight:bold;">
-                    <span class="tooltip" title="Messages">
-                        <div id="mcount">
-                        <p class="is-size-4" style="font-weight:bold;" >{{ ui_getmessages(current_user.steamid, fmt="count") }}</p>
-                        </div>
-                    </span>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <script>
+    function starttimer() {
+        var sec, pTimer = null;
+        starttimer = function() {
+            sec = 0;
+            clearInterval(pTimer);
+            pTimer = setInterval( function(){
+                $("#seconds").html(++sec);
+                if (sec == -1) {
+                    clearInterval(pTimer);
+                }
+            }, 1000);
+        };
+        starttimer();
+        }
+        $(document).ready(function() {
+            mcount = setInterval( function(){
+               $("#mcount").load(" #mcount"); 
+            }, 60000);
+        starttimer()
+        $('.tooltip').tooltipster({
+            theme: 'tooltipster-punk'
+            });
+        });
+    </script>
+    {% endblock %}
+</head>
+<div class="container">
+    {% block navbar %}
+    <div class="container has-background-primary">
+        <div class="level is-mobile">
+            <div class="level-left">
+                <a class="level-item is-mobile has-text-white left-pad-extra right-pad" href="/" style="font-weight:bold;">
+                <span class="tooltip" title="Dashboard"><i class="fas fa-lg fa-home"></i></span>
                 </a>
-            <a class="level-item is-mobile has-text-white right-pad left-pad" href="/playerinfo/{{ ui_getplayer(current_user.steamid, steamid=True)['playername'] }}" style="font-weight:bold;">
-                <span class="tooltip" title="{{ ui_getplayer(current_user.steamid, steamid=True)['playername'].title() }}">
-                    <i class="fas fa-lg fa-user"></i></span></a>
-            <a class="level-item is-mobile has-text-white right-pad-extra" href="/logout" style="font-weight:bold;">
-                <span class="tooltip" title="Logout">
-                    <i class="fas fa-lg fa-sign-out-alt"></i></span></a>
+                <a class="level-item is-mobile has-text-white right-pad left-pad" href="/playerinfo" style="font-weight:bold;">
+                <span class="tooltip" title="Players"><i class="fas fa-lg fa-users"></i></span>
+                </a>
+                <a class="level-item is-mobile has-text-white right-pad left-pad" href="/events" style="font-weight:bold;">
+                <span class="tooltip" title="Events"><i class="fas fa-lg fa-calendar-alt"></i></span>
+                </a>
+                <a class="level-item has-text-white right-pad left-pad" href="/lottery" style="font-weight:bold;">
+                <span class="tooltip" title="Lottery"><i class="fas fa-lg fa-coins"></i></span>
+                </a>
+                <a class="level-item has-text-white right-pad left-pad" href="/stats/all" style="font-weight:bold;">
+                <span class="tooltip" title="Statistics"><i class="fas fa-lg fa-chart-bar"></i></span>
+                </a>
+            </div>
+            <div class="level-right">
+                    <a class="level-item is-mobile has-text-white right-pad-extra left-pad" href="/messages" style="font-weight:bold;">
+                        <span class="tooltip" title="Messages">
+                            <div id="mcount">
+                            <p class="is-size-4" style="font-weight:bold;" >{{ ui_getmessages(current_user.steamid, fmt="count") }}</p>
+                            </div>
+                        </span>
+                    </a>
+                <a class="level-item is-mobile has-text-white right-pad left-pad" href="/playerinfo/{{ ui_getplayer(current_user.steamid, steamid=True)['playername'] }}" style="font-weight:bold;">
+                    <span class="tooltip" title="{{ ui_getplayer(current_user.steamid, steamid=True)['playername'].title() }}">
+                        <i class="fas fa-lg fa-user"></i></span></a>
+                <a class="level-item is-mobile has-text-white right-pad-extra" href="/logout" style="font-weight:bold;">
+                    <span class="tooltip" title="Logout">
+                        <i class="fas fa-lg fa-sign-out-alt"></i></span></a>
+            </div>
         </div>
     </div>
-</div>
-{% endblock %}
-        <div id="content is-mobile">
-            <main>
-                {% block content %}
-                {% endblock %}
-                <div id="refreshtimer" class="top-pad-0 bottom-pad-0"><center><small><p class="has-text-7 top-pad-5 has-text-grey">Auto refresh <span id="seconds"></span> seconds ago</p></small></center></div>
-            </main>
+        {% endblock %}
+        <main>
+        <body>
+        {% block content %}
+        {% endblock %}
+        {% block refreshtimer %}
+        <div id="refreshtimer" class="top-pad-0 bottom-pad-0"><center><small><p class="has-text-7 top-pad-5 has-text-grey">Auto refresh <span id="seconds"></span> seconds ago</p></small></center>
         </div>
-    </body>
+        {% endblock %}
+        </main>
+</div>
+</body>
 </html>
-
-
-
