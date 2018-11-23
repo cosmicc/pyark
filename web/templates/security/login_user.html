@@ -1,64 +1,9 @@
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="manifest" href="/manifest.json">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltipster.bundle.min.css') }}"/>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/toastr.min.css') }}"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/galaxybulma.min.css') }}?v1.9"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.min.css') }}?v1.0"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/tooltipster-sideTip-punk.min.css') }}"/>
-        <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/tooltipster.bundle.min.js') }}"></script>
-        {% with msgs = get_flashed_messages(with_categories=true) %}
-          {% if msgs %}
-             <script>
-            $(function () {
-                toastr.options = {
-                  "closeButton": false,
-                  "debug": false,
-                  "newestOnTop": false,
-                  "progressBar": false,
-                  "positionClass": "toast-top-center",
-                  "preventDuplicates": false,
-                  "onclick": null,
-                  "showDuration": "300",
-                  "hideDuration": "1000",
-                  "timeOut": "5000",
-                  "extendedTimeOut": "1000",
-                  "showEasing": "swing",
-                  "hideEasing": "linear",
-                  "showMethod": "fadeIn",
-                  "hideMethod": "fadeOut"
-                    }
-                });
-            </script>
-            <script>
-                $(function () {
-                {% if msgs.category == "success" %}
-                    toastr.success("{{ msgs.message }}");
-                {% elif msgs.category == "warning" %}
-                    toastr.warning("{{ msgs.message }}");
-                {% elif msgs.category == "error" %}
-                    toastr.error("{{ msgs.message }}");
-                {% else %}
-                    toastr.info("{{ msgs.message }}");
-                {% endif %}
-                var $notifyContainer = $('#toast-container').closest('.toast-top-center');
-                if ($notifyContainer) {
-                    // align center
-                    var windowHeight = $(window).height() - 90;
-                    $notifyContainer.css("margin-top", windowHeight / 5);
-                }
-            });
-            </script>
-        {% endif %}
-    {% endwith %}
-    </head>
-<body>
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block navbar %}{% endblock %}
+{% block content %}
 <div class='container'>
 <div class="section">
     <div id="login">
@@ -98,5 +43,4 @@
   </div>
 </div>
 </div>
-</body>
-</html>
+{% endblock %}

@@ -83,8 +83,10 @@
                 });
             });
         </script>
+        {% endblock %}
     </head>
 <body>
+{% block navbar %}
 <div class="container is-mobile right-pad">
     <div class="level has-background-primary is-mobile is-hd is-widescreen">
         <div class="level-left">
@@ -124,9 +126,9 @@
 {% endblock %}
         <div id="content is-mobile">
             <main>
-            {% block content %}
-            {% endblock %}
-            <div id="refreshtimer" class="top-pad-0 bottom-pad-0"><center><small><p class="has-text-7 top-pad-5 has-text-grey">Auto refresh <span id="seconds"></span> seconds ago</p></small></center></div>
+                {% block content %}
+                {% endblock %}
+                <div id="refreshtimer" class="top-pad-0 bottom-pad-0"><center><small><p class="has-text-7 top-pad-5 has-text-grey">Auto refresh <span id="seconds"></span> seconds ago</p></small></center></div>
             </main>
         </div>
     </body>
