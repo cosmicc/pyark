@@ -51,6 +51,7 @@ webserver_enabled = config.get('webserver', 'enabled')
 webserver_ip = config.get('webserver', 'ip')
 webserver_port = config.get('webserver', 'port')
 secsalt = config.get('webserver', 'security_salt')
+testing_seckey = config.get('webserver', 'debug_testkey')
 
 numinstances = int(config.get('general', 'instances'))
 instance = [dict() for x in range(numinstances)]

@@ -426,6 +426,25 @@ class PlayersOnline(Resource):
         return {'players': pcnt, 'names': nap}
 
 
+@api.route('/servers/status')
+class ServerStatus(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    def get(self):
+        nap = []
+        insts = dbquery("SELECT * FROM instances", fmt='dict')
+        for inst in insts:
+            if inst['isup'] == 1:
+                if inst['needsrestart'] == 1:
+                    status = 'restarting'
+                else:
+                    status = "online"
+            else:
+                status = "offline"
+            nap.append(status)
+        return nap
+
+
 @api.route('/players')
 class Players(Resource):
     @api.doc(security='apikey')

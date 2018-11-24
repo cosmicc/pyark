@@ -1,10 +1,10 @@
 import os
-from modules.configreader import psql_db, psql_host, psql_port, psql_user, psql_pw, secsalt
+from modules.configreader import psql_db, psql_host, psql_port, psql_user, psql_pw, secsalt, testing_seckey
 
 
 class BaseConfig(object):
     DEBUG = False
-    SECRET_KEY = os.urandom(32)
+    SECRET_KEY = testing_seckey
     SQLALCHEMY_ECHO = False
     SWAGGER_UI_JSONEDITOR = True
     SECURITY_PASSWORD_SALT = secsalt
@@ -17,3 +17,4 @@ class BaseConfig(object):
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_ECHO = True
+    SECRET_KEY = testing_seckey
