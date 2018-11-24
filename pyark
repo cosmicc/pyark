@@ -15,7 +15,7 @@ from onlinemonitor import onlineupdate
 from statcollector import oscollect
 from sys import exit
 from time import sleep
-from web.views import app
+from web import create_app
 import argparse
 import logging
 import lottery
@@ -132,7 +132,8 @@ def main():
         if webserver_enabled == "True":
             log.info(f'Starting Web Server on IP: {webserver_ip} PORT: {webserver_port}')
         try:
-            webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port})
+            app = create_app('config.BaseConfig')
+            webserver = threading.Thread(name='webserver', target=app.run, args={'host': webserver_ip, 'port': webserver_port})
             webserver.start()
         except:
             log.critical(f'Web Server failed to start.', exc_info=True)

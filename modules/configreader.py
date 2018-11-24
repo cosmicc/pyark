@@ -25,6 +25,7 @@ is_discordbot = config.get('general', 'is_discordbot')
 is_statscollector = config.get('general', 'is_statscollector')
 is_lotterymanager = config.get('general', 'is_lotterymanager')
 
+# RestAPI
 apilogfile = config.get('restapi', 'logfile')
 
 # Postgresql
@@ -45,14 +46,11 @@ discordtoken = config.get('discord', 'token')
 po_userkey = config.get('pushover', 'userkey')
 po_appkey = config.get('pushover', 'appkey')
 
-# RestAPI
-restapi_enabled = config.get('restapi', 'enabled')
-restapi_token = config.get('restapi', 'token')
-
 # Webserver
 webserver_enabled = config.get('webserver', 'enabled')
 webserver_ip = config.get('webserver', 'ip')
 webserver_port = config.get('webserver', 'port')
+secsalt = config.get('webserver', 'security_salt')
 
 numinstances = int(config.get('general', 'instances'))
 instance = [dict() for x in range(numinstances)]

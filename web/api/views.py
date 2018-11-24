@@ -1,20 +1,15 @@
 from clusterevents import getcurrenteventinfo, iseventtime
 from datetime import datetime
-from flask import Flask, request, Blueprint
+from flask import request, Blueprint
 from flask_restplus import Api, Resource, fields
 from functools import wraps
-from modules.configreader import restapi_ip, restapi_port, restapi_debug, apilogfile
 from modules.dbhelper import dbquery, dbupdate
-from modules.timehelper import estshift, elapsedTime, playedTime
+from modules.timehelper import estshift, elapsedTime, playedTime, Now
+from modules.configreader import apilogfile
 from numpy import mean
 from secrets import token_urlsafe
-import logging
-import socket
 import time
-
-hstname = socket.gethostname()
-
-app = Flask(__name__)
+import logging
 
 apilog = logging.getLogger('werkzeug')
 log_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(message)s')
@@ -22,7 +17,7 @@ log_file = logging.FileHandler(apilogfile)
 log_file.setLevel(logging.DEBUG)
 log_file.setFormatter(log_format)
 apilog.addHandler(log_file)
-app.logger.addHandler(log_file)
+# app.logger.addHandler(log_file)
 
 authorizations = {
     'apikey': {
@@ -32,12 +27,9 @@ authorizations = {
     }
 }
 
-blueprint = Blueprint('api', __name__, url_prefix='/api')
-api = Api(blueprint, title='Galaxy Cluster RestAPI', version='1.0', doc='/docs', authorizations=authorizations)  # doc=False
+webapi = Blueprint('api', __name__)
+api = Api(webapi, title='Galaxy Cluster RestAPI', version='1.0', doc='/', authorizations=authorizations)  # doc=False
 
-app.register_blueprint(blueprint)
-
-app.config['SWAGGER_UI_JSONEDITOR'] = True
 
 playerquery = api.model('PlayerQuery', {'playername': fields.String('Player Name'), 'steamid': fields.Integer('Steam ID')})
 lotteryquery = api.model('LottoQuery', {'buyinpoints': fields.Integer('Buy-in Points'), 'length': fields.Integer('Length in Hours')})
@@ -384,18 +376,19 @@ def token_required(f):
         if not token:
             apilog.warning(f'API request without a token')
             return {'message': 'Not Authorized'}, 401
-        pkeys = dbquery("SELECT playername, apikey, email, banned FROM players WHERE apikey = '%s'" % (token,))
+        pkeys = dbquery("SELECT * FROM players WHERE apikey = '%s'" % (token,), fmt='dict', fetch='one')
         if pkeys is None:
             apilog.warning(f'API request invalid token: {token}')
             return {'message': 'Invalid Token'}, 401
-        if pkeys[3] == 'True':
+        if pkeys['banned'] == 'True':
             apilog.warning(f'API request from banned player: {pkeys[0]} token: {token}')
-        apilog.info(f'API request granted for player: {pkeys[0]} email: {pkeys[2]} token: {token}')
+            return {'message': 'You are Banned'}, 401
+        apilog.info(f'API request granted for player: {pkeys["playername"]} steamid: {pkeys["steamid"]}')
         return f(*args, **kwargs)
     return decorated
 
 
-@api.route('/admin/broadcast')
+@webapi.route('/admin/broadcast')
 class Broadcast(Resource):
     @api.doc(security='apikey')
     @token_required
@@ -403,7 +396,7 @@ class Broadcast(Resource):
         pass
 
 
-@api.route('/admin/servermessage')
+@webapi.route('/admin/servermessage')
 class Message(Resource):
     @api.doc(security='apikey')
     @token_required
@@ -411,12 +404,26 @@ class Message(Resource):
         pass
 
 
-@api.route('/admin/playermessage')
+@webapi.route('/admin/playermessage')
 class DirectMessage(Resource):
     @api.doc(security='apikey')
     @token_required
     def post(self):
         pass
+
+
+@api.route('/players/online')
+class PlayersOnline(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    def get(self):
+        nap = []
+        pcnt = 0
+        pps = dbquery("SELECT playername FROM players WHERE lastseen > %s ORDER BY lastseen" % (Now(fmt='epoch') - 40,))
+        for each in pps:
+            pcnt += 1
+            nap.append(each[0])
+        return {'players': pcnt, 'names': nap}
 
 
 @api.route('/players')
@@ -598,66 +605,59 @@ class PlayerInfo(Resource):
 
 @api.route('/players/newest')
 class NewPlayers(Resource):
-    @api.doc(security='apikey')
-    @token_required
-    @api.marshal_with(m_fullplayerinfo)
+    # @api.doc(security='apikey')
+    # @token_required
+    # @api.marshal_with(m_fullplayerinfo)
     def get(self):
-        newnap = []
+        nap = []
         try:
-            q_player = dbquery("SELECT * FROM players ORDER BY firstseen DESC LIMIT 10")
+            q_player = dbquery("SELECT playername FROM players ORDER BY firstseen DESC LIMIT 10")
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
-        try:
-            for each in q_player:
-                nap = {}
-                nap.update(zip(listcolums('players'), each))
-                newnap.append(nap)
-        except:
-            apilog.critical(f'error in calculating api request', exc_info=True)
-        return newnap
+        for each in q_player:
+            nap.append(each[0])
+        return {'names': nap}
 
 
 @api.route('/players/topplaytime')
 class TopPlayers(Resource):
-    @api.doc(security='apikey')
-    @token_required
-    @api.marshal_with(m_minplayerinfo)
+    # @api.doc(security='apikey')
+    # @token_required
+    # @api.marshal_with(m_minplayerinfo)
     def get(self):
-        newnap = []
+        nap = []
         try:
-            q_player = dbquery("SELECT * FROM players ORDER BY playedtime DESC LIMIT 10")
+            q_player = dbquery("SELECT playername FROM players ORDER BY playedtime DESC LIMIT 10")
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         try:
             for each in q_player:
-                nap = {}
-                nap.update(zip(listcolums('players'), each))
-                newnap.append(nap)
+                nap.append(each[0])
         except:
             apilog.critical(f'error in calculating api request', exc_info=True)
-        return newnap
+        return {'names': nap}
 
 
 @api.route('/players/hitandruns')
 class HNRPlayers(Resource):
-    @api.doc(security='apikey')
-    @token_required
-    @api.marshal_with(m_fullplayerinfo)
+    # @api.doc(security='apikey')
+    # @token_required
+    # @api.marshal_with(m_fullplayerinfo)
     def get(self):
-        newnap = []
+        nap = []
+        cnt = 0
         try:
-            q_player = dbquery("SELECT * FROM players WHERE playedtime < 3600 ORDER BY playedtime")
+            q_player = dbquery("SELECT * FROM players WHERE playedtime < 3600 ORDER BY playedtime DESC", fmt='dict')
         except:
             apilog.critical(f'error in retreiving info from db for api request', exc_info=True)
         try:
             for each in q_player:
-                nap = {}
-                if time.time() - each[2] > 259200:
-                    nap.update(zip(listcolums('players'), each))
-                    newnap.append(nap)
+                if time.time() - int(each['lastseen']) > 259200:
+                    cnt += 1
+                    nap.append(each['playername'])
         except:
             apilog.critical(f'error in calculating api request', exc_info=True)
-        return newnap
+        return {'players': cnt, 'names': nap}
 
 
 @api.route('/cluster/lottery/current')
@@ -723,7 +723,7 @@ class LotteryHistory(Resource):
         return newnap
 
 
-@api.route('/cluster/lottery/start')
+@webapi.route('/cluster/lottery/start')
 class StartLottery(Resource):
     @api.doc(security='apikey')
     @api.expect(lotteryquery)
@@ -761,7 +761,3 @@ class ExpiredPlayers(Resource):
         except:
             apilog.critical(f'error in calculating api request', exc_info=True)
         return newnap
-
-
-if __name__ == '__main__':
-    app.run(host=restapi_ip, port=restapi_port, debug=restapi_debug)

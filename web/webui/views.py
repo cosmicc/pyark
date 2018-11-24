@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
-from flask import Flask, render_template, Response, request, redirect, url_for, flash
-from flask_security import Security, SQLAlchemyUserDatastore, login_required, logout_user, current_user, UserMixin, RoleMixin, LoginForm, roles_required, url_for_security, RegisterForm
+from flask import render_template, Response, request, redirect, url_for, flash, Blueprint
+from flask_security import login_required, logout_user, current_user, roles_required, RegisterForm, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
-from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from itertools import chain
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
-from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
+from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, psql_port
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
@@ -14,82 +13,29 @@ from modules.players import getplayersonline, getlastplayersonline, isplayerbann
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto
 from wtforms import StringField, IntegerField
 from wtforms.validators import InputRequired, Length
+from ..models import User, Role
+from ..database import db
 import json
 import pandas as pd
 import psycopg2
 import pytz
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = '669v445Xyrzqkt@4N*%!74XkerrHQmz5^86eaKS^Cr4nF3a6KW5gUQTXZPRTmQm7'
-app.config['SECURITY_PASSWORD_SALT'] = '8465Gk6562x2'
-app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{psql_user}:{psql_pw}@{psql_host}:{psql_port}/{psql_db}"
-app.config['SECURITY_TRACKABLE'] = True
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECURITY_REGISTERABLE'] = False
+webui = Blueprint('webui', __name__)
 
-
-# app.= Blueprint('webui', __name__, template_folder='templates')
-# app.register_blueprint(app. url_prefix='/')
-
-db = SQLAlchemy(app)
-
-roles_users = db.Table('roles_users', db.Column('user_id', db.Integer(), db.ForeignKey('web_users.id')), db.Column('role_id', db.Integer(), db.ForeignKey('web_roles.id')))
-
-
-class Role(db.Model, RoleMixin):
-    __tablename__ = 'web_roles'
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
-
-
-class User(db.Model, UserMixin):
-    __tablename__ = 'web_users'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
-    last_login_at = db.Column(db.DateTime())
-    current_login_at = db.Column(db.DateTime())
-    last_login_ip = db.Column(db.String(100))
-    current_login_ip = db.Column(db.String(100))
-    login_count = db.Column(db.Integer)
-    active = db.Column(db.Boolean())
-    confirmed_at = db.Column(db.DateTime())
-    timezone = db.Column(db.String(25))
-    steamid = db.Column(db.String(17), unique=True)
-    roles = db.relationship('Role', secondary=roles_users,
-                            backref=db.backref('users', lazy='dynamic'))
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 
 
 class ExtendedRegisterForm(RegisterForm):
     timezone = StringField('Time Zone')
 
 
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore)
-
-#@app.before_first_request
-#def initdb():
-#db.create_all()
-#user_datastore.find_or_create_role(name='admin', description='Administrator')
-#user_datastore.find_or_create_role(name='player', description='Player')
-
-#if not user_datastore.get_user('shithead'):
-#user_datastore.create_user(email='admin', password='Ifa6wasa9', steamid='76561198408657294', timezone='US/Eastern')
-#user_datastore.delete_user('lemonkey1988@gmail.com')
-#    if not user_datastore.get_user('admin@example.com'):
-#        user_datastore.create_user(email='admin@example.com', password=encrypted_password)
-    # User.query.filter_by(email='admin').update(dict(steamid='76561198408657294'))
-
-    # Commit any database changes; the User and Roles must exist before we can add a Role to the User
-#db.session.commit()
-
-    # Give one User has the "end-user" role, while the other has the "admin" role. (This will have no effect if the
-    # Users already have these Roles.) Again, commit any database changes.
-#    user_datastore.add_role_to_user('someone@example.com', 'end-user')
-#user_datastore.add_role_to_user('admin', 'admin')
-#user_datastore.remove_role_from_user('shithead', 'admin')
-#db.session.commit()
+# @app.before_first_request
+# def initdb():
+# db.create_all()
+# user_datastore.find_or_create_role(name='admin', description='Administrator')
+# user_datastore.find_or_create_role(name='player', description='Player')
+# user_datastore.add_role_to_user('admin', 'admin')
+# db.session.commit()
 
 
 class LotteryForm(FlaskForm):
@@ -101,20 +47,19 @@ class MessageForm(FlaskForm):
     message = StringField('message', validators=[InputRequired(), Length(min=1, max=30)])
 
 
-@app.context_processor
+@webui.context_processor
 def _gettimezones():
     def ui_gettimezones():
         return pytz.common_timezones
     return dict(ui_gettimezones=ui_gettimezones)
 
 
-@app.context_processor
+@webui.context_processor
 def _utctolocal():
     def ui_utctolocal(utc_dt, short=False):
         if utc_dt is None:
             return 'Never'
         local_tz = pytz.timezone(current_user.timezone)
-        #utc_dt.replace(tzinfo=local_tz)
         newdt = pytz.utc.localize(utc_dt).astimezone(local_tz)
         if not short:
             return newdt.strftime('%m-%d-%Y %-I:%M %p')
@@ -123,21 +68,21 @@ def _utctolocal():
     return dict(ui_utctolocal=ui_utctolocal)
 
 
-@app.context_processor
+@webui.context_processor
 def _Now():
     def Now():
         return datetime.now()
     return dict(Now=Now)
 
 
-@app.context_processor
+@webui.context_processor
 def _str2time():
     def ui_str2time(strtime):
         return datetime.strptime(strtime, '%m-%d %I:%M%p')
     return dict(ui_str2time=ui_str2time)
 
 
-@app.context_processor
+@webui.context_processor
 def _getmessages():
     def ui_getmessages(steamid, fmt, sent=False):
         if not sent:
@@ -147,35 +92,35 @@ def _getmessages():
     return dict(ui_getmessages=ui_getmessages)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor():
     def ui_getplayersonline(instance, fmt):
         return getplayersonline(instance, fmt=fmt, case='title')
     return dict(ui_getplayersonline=ui_getplayersonline)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor2():
     def ui_getlastplayersonline(instance, fmt):
         return getlastplayersonline(instance, fmt=fmt, case='title')
     return dict(ui_getlastplayersonline=ui_getlastplayersonline)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor3():
     def ui_getplayerserver(player):
         return dbquery("SELECT server FROM players WHERE playername = '%s'" % (player.lower(),), fmt='string', fetch='one')
     return dict(ui_getplayerserver=ui_getplayerserver)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor4():
     def ui_getplayerlasttime(player):
         return elapsedTime(Now(), int(dbquery("SELECT lastseen FROM players WHERE playername = '%s'" % (player.lower(),), fmt='string', fetch='one')))
     return dict(ui_getplayerlasttime=ui_getplayerlasttime)
 
 
-@app.context_processor
+@webui.context_processor
 def _getplayer():
     def ui_getplayer(playername, steamid=False):
         if not steamid:
@@ -185,119 +130,119 @@ def _getplayer():
     return dict(ui_getplayer=ui_getplayer)
 
 
-@app.context_processor
+@webui.context_processor
 def _getlotteryplayers():
     def ui_getlotteryplayers(fmt='list'):
         return dbquery("SELECT playername FROM lotteryplayers", fmt=fmt, fetch='all', single=True)
     return dict(ui_getlotteryplayers=ui_getlotteryplayers)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor5():
     def ui_getinstver(inst):
         return dbquery("SELECT arkversion FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='string', fetch='one')
     return dict(ui_getinstver=ui_getinstver)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor6():
     def ui_getrestartleft(inst):
         return dbquery("SELECT restartcountdown FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='string', fetch='one')
     return dict(ui_getrestartleft=ui_getrestartleft)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor7():
     def ui_isinlottery():
         return isinlottery()
     return dict(ui_isinlottery=ui_isinlottery)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor8():
     def ui_getlotteryplayers(fmt):
         return getlotteryplayers(fmt=fmt)
     return dict(ui_getlotteryplayers=ui_getlotteryplayers)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor9():
     def ui_getlotteryendtime():
         return getlotteryendtime()
     return dict(ui_getlotteryendtime=ui_getlotteryendtime)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor10():
     def ui_isinstanceup(inst):
         return isinstanceup(inst)
     return dict(ui_isinstanceup=ui_isinstanceup)
 
 
-@app.context_processor
+@webui.context_processor
 def database_processor11():
     def ui_isinrestart(inst):
         return isinrestart(inst)
     return dict(ui_isinrestart=ui_isinrestart)
 
 
-@app.context_processor
+@webui.context_processor
 def _iscurrentconfig():
     def ui_iscurrentconfig(inst):
         return iscurrentconfig(inst)
     return dict(ui_iscurrentconfig=ui_iscurrentconfig)
 
 
-@app.context_processor
+@webui.context_processor
 def _elapsedTime():
     def ui_elapsedTime(etime):
         return elapsedTime(Now(), int(etime))
     return dict(ui_elapsedTime=ui_elapsedTime)
 
 
-@app.context_processor
+@webui.context_processor
 def _playedTime():
     def ui_playedTime(etime):
         return playedTime(int(etime))
     return dict(ui_playedTime=ui_playedTime)
 
 
-@app.context_processor
+@webui.context_processor
 def _epochto():
     def ui_epochto(epoch, fmt=''):
         return epochto(int(epoch))
     return dict(ui_epochto=ui_epochto)
 
 
-@app.context_processor
+@webui.context_processor
 def _isbanned():
     def ui_isbanned(steamid):
         return isplayerbanned(steamid=steamid)
     return dict(ui_isbanned=ui_isbanned)
 
 
-@app.context_processor
+@webui.context_processor
 def _isplayeronline():
     def ui_isplayeronline(steamid):
         return isplayeronline(steamid=steamid)
     return dict(ui_isplayeronline=ui_isplayeronline)
 
 
-@app.context_processor
+@webui.context_processor
 def _isplayerold():
     def ui_isplayerold(steamid):
         return isplayerold(steamid=steamid)
     return dict(ui_isplayerold=ui_isplayerold)
 
 
-@app.context_processor
+@webui.context_processor
 def _length():
     def ui_len(alist):
         return len(alist)
     return dict(ui_len=ui_len)
 
 
-@app.context_processor
+@webui.context_processor
 def _lastactive():
     def ui_lastactive(inst):
         retime = dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), db='statsdb', fetch='one')[0]
@@ -308,7 +253,7 @@ def _lastactive():
     return dict(ui_lastactive=ui_lastactive)
 
 
-@app.context_processor
+@webui.context_processor
 def _statpull():
     def ui_last24avg(inst, dtype):
         if dtype == 'chart1':
@@ -363,7 +308,7 @@ def _statpull():
     return dict(ui_last24avg=ui_last24avg)
 
 
-@app.context_processor
+@webui.context_processor
 def _playerlastactive():
     def ui_playerlastactive(lastseen):
         if Now() - lastseen > 40:
@@ -373,14 +318,14 @@ def _playerlastactive():
     return dict(ui_playerlastactive=ui_playerlastactive)
 
 
-@app.context_processor
+@webui.context_processor
 def _getannouncement():
     def ui_getannouncement():
         return dbquery("SELECT announce FROM general ", fmt='string', fetch='one')
     return dict(ui_getannouncement=ui_getannouncement)
 
 
-@app.context_processor
+@webui.context_processor
 def _haswebaccount():
     def haswebaccount(steamid):
         webuser = User.query.filter_by(steamid=steamid).first()
@@ -448,7 +393,7 @@ def startthelottery(buyin, length):
     dbupdate("INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner,announced) VALUES ('%s','%s','%s','%s','%s',0,'Incomplete',False)" % ('points', litm, Now(), buyin, length))
 
 
-@app.context_processor
+@webui.context_processor
 def _getlog():
     def ui_getlog(instance, wlog):
         chatlog = getlog(instance, wlog)
@@ -456,7 +401,7 @@ def _getlog():
     return dict(ui_getlog=ui_getlog)
 
 
-@app.route('/manifest.json')
+@webui.route('/manifest.json')
 def manifest():
     data = json.dumps({
         "short_name": "Galaxy",
@@ -476,21 +421,21 @@ def manifest():
     })
     return Response(data, mimetype='app.ication/x-web-app.manifest+json')
 
-#@app.errorhandler(403)
-#def forbidden(error):
+# @webui.errorhandler(403)
+# def forbidden(error):
 #    return render_template('error/403.html', title='Forbidden'), 403
 
-#@app.errorhandler(404)
-#def page_not_found(error):
+# @webui.errorhandler(404)
+# def page_not_found(error):
 #    return render_template('error/404.html', title='Page Not Found'), 404
 
-#@app.errorhandler(500)
-#def internal_server_error(error):
+# @webui.errorhandler(500)
+# def internal_server_error(error):
 #    db.session.rollback()
 #    return render_template('error/500.html', title='Server Error'), 500
 
 
-@app.route('/', methods=['POST', 'GET'])
+@webui.route('/', methods=['POST', 'GET'])
 @login_required
 def dashboard():
     if request.method == 'POST':
@@ -500,7 +445,7 @@ def dashboard():
     return render_template('dashboard.html', loginname=current_user.email, instances=instancelist())
 
 
-@app.route('/logout')
+@webui.route('/logout')
 @login_required
 def logout():
     logout_user()
@@ -508,20 +453,20 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/serverinfo/<instance>')
+@webui.route('/serverinfo/<instance>')
 @login_required
 def serverinfo(instance):
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
 
 
-@app.route('/playersearch', methods=['POST', 'GET'])
+@webui.route('/playersearch', methods=['POST', 'GET'])
 @login_required
 def result():
     if request.method == 'POST':
         return render_template("playerinfo.html", playerinfo=getplayer(playername=request.form['player'].lower(), fmt='dict'))
 
 
-@app.route('/startlottery', methods=['POST', 'GET'])
+@webui.route('/startlottery', methods=['POST', 'GET'])
 @login_required
 @roles_required('admin')
 def startlottery():
@@ -533,7 +478,7 @@ def startlottery():
     return render_template('startlottery.html', form=form)
 
 
-@app.route('/server/sendchat/<server>', methods=['POST'])
+@webui.route('/server/sendchat/<server>', methods=['POST'])
 @login_required
 @roles_required('admin')
 def sendchat(server):
@@ -546,7 +491,7 @@ def sendchat(server):
     return redirect(url_for('_chatlog', instance=server))
 
 
-@app.route('/playerinfo/<player>', methods=['POST', 'GET'])
+@webui.route('/playerinfo/<player>', methods=['POST', 'GET'])
 @login_required
 def playerinfo(player):
     if request.method == 'POST':
@@ -556,7 +501,7 @@ def playerinfo(player):
     return render_template('playerinfo.html', playerinfo=getplayer(playername=player.lower(), fmt='dict'))
 
 
-@app.route('/messages/delete/<messageid>', methods=['POST'])
+@webui.route('/messages/delete/<messageid>', methods=['POST'])
 @login_required
 def deletemessage(messageid):
     if request.method == 'POST':
@@ -568,7 +513,7 @@ def deletemessage(messageid):
         return render_template('messages.html', players=getplayernames())
 
 
-@app.route('/messages', methods=['POST', 'GET'])
+@webui.route('/messages', methods=['POST', 'GET'])
 @login_required
 def messages():
     if request.method == 'POST':
@@ -587,7 +532,7 @@ def messages():
     return render_template('messages.html', players=getplayernames())
 
 
-@app.route('/webcreate/<steamid>', methods=['POST', 'GET'])
+@webui.route('/webcreate/<steamid>', methods=['POST', 'GET'])
 @login_required
 @roles_required('admin')
 def webcreate(steamid):
@@ -600,7 +545,7 @@ def webcreate(steamid):
     return render_template('webcreate.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
 
 
-@app.route('/changepass/<steamid>', methods=['POST', 'GET'])
+@webui.route('/changepass/<steamid>', methods=['POST', 'GET'])
 @login_required
 def changepass(steamid):
     if request.method == 'POST':
@@ -623,7 +568,7 @@ def changepass(steamid):
         return render_template('changepass.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
 
 
-@app.route('/webinfo/<steamid>', methods=['POST', 'GET'])
+@webui.route('/webinfo/<steamid>', methods=['POST', 'GET'])
 @login_required
 def webinfo(steamid):
     if request.method == 'POST':
@@ -651,31 +596,31 @@ def webinfo(steamid):
             return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
 
 
-@app.route('/playerinfo')
+@webui.route('/playerinfo')
 @login_required
 def _players():
     return render_template('playerselect.html', players=getplayernames(), bannedplayers=getbannedplayers(), expiredplayers=getexpiredplayers(), newplayers=getnewplayers('week'))
 
 
-@app.route('/events')
+@webui.route('/events')
 @login_required
 def _events():
     return render_template('eventinfo.html', lastevent=getlastevent(), currentevent=getcurrentevent(), futureevent=getfutureevent())
 
 
-@app.route('/lottery')
+@webui.route('/lottery')
 @login_required
 def _lottery():
     return render_template('lotteryinfo.html', lastlottery=getlastlottery(), currentlottery=getcurrentlottery())
 
 
-@app.route('/stats/<inst>')
+@webui.route('/stats/<inst>')
 @login_required
 def _stats(inst):
     return render_template('stats.html', inst=inst)
 
 
-@app.route('/bantoggle/<steamid>')
+@webui.route('/bantoggle/<steamid>')
 @login_required
 @roles_required('admin')
 def _bantoggle(steamid):
@@ -689,7 +634,7 @@ def _bantoggle(steamid):
         return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
 
 
-@app.route('/kickplayer/<steamid>/<instance>')
+@webui.route('/kickplayer/<steamid>/<instance>')
 @login_required
 @roles_required('admin')
 def _kickplayer(steamid, instance):
@@ -698,7 +643,7 @@ def _kickplayer(steamid, instance):
     return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'))
 
 
-@app.route('/server/restart/<instance>')
+@webui.route('/server/restart/<instance>')
 @login_required
 @roles_required('admin')
 def _restartinstance(instance):
@@ -707,7 +652,7 @@ def _restartinstance(instance):
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
 
 
-@app.route('/server/cancelrestart/<instance>')
+@webui.route('/server/cancelrestart/<instance>')
 @login_required
 @roles_required('admin')
 def _cancelrestartinstance(instance):
@@ -716,7 +661,7 @@ def _cancelrestartinstance(instance):
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
 
 
-@app.route('/server/chatlog/<instance>', methods=['POST', 'GET'])
+@webui.route('/server/chatlog/<instance>', methods=['POST', 'GET'])
 @login_required
 def _chatlog(instance):
     if request.method == 'POST':
