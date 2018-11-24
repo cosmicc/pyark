@@ -133,7 +133,7 @@ def main():
             log.info(f'Starting Web Server on IP: {webserver_ip} PORT: {webserver_port}')
         try:
             app = create_app('config.BaseConfig')
-            webserver = threading.Thread(name='webserver', target=app.run, args={'host': webserver_ip, 'port': webserver_port})
+            webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port})
             webserver.start()
         except:
             log.critical(f'Web Server failed to start.', exc_info=True)
