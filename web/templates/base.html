@@ -74,6 +74,7 @@
         starttimer();
         }
         $(document).ready(function() {
+            document.forms[0].reset();
             mcount = setInterval( function(){
                $("#mcount").load(" #mcount"); 
             }, 60000);

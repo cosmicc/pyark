@@ -581,7 +581,7 @@ def webinfo(steamid):
             db.session.commit()
             flash(f'Toggled Account Access', 'success')
         elif request.form['btype'] == 'Change Password':
-            return redirect(url_for('changepass', steamid=steamid))
+            return redirect(url_for('webui.changepass', steamid=steamid))
         webuser = User.query.filter_by(steamid=steamid).first()
         return render_template('webinfo.html', webuser=webuser, playerinfo=getplayer(steamid=steamid, fmt='dict'))
     webuser = User.query.filter_by(steamid=steamid).first()

@@ -1,11 +1,12 @@
 import urllib.request, json
-from configreader import restapi_ip, restapi_port
+from modules.configreader import webserver_ip, webserver_port
 
-apiurl = f'http://{restapi_ip}:{restapi_port}'
+apiurl = f'http://{webserver_ip}:{webserver_port}/api'
 
 
 def getapidata(apipath):
     url = f'{apiurl}/{apipath}'
+    print(f'Request: {url}')
     try:
         response = urllib.request.urlopen(url)
         apiresponse = json.loads(response.read().decode("utf-8"))
@@ -15,5 +16,8 @@ def getapidata(apipath):
         return None
 
 
-clusterinfo = getapidata('clusterinfo')
-print(clusterinfo['players'])
+clusterinfo = getapidata('players/online')
+if clusterinfo is None:
+    print('None')
+else:
+    print(clusterinfo['players'])
