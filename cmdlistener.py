@@ -355,6 +355,7 @@ def startvoter(inst, whoasked):
 
 
 def getnamefromchat(chat):
+    log.warning(chat)
     rawline = chat.split('(')
     if len(rawline) > 1:
         rawname = rawline[1].split(')')

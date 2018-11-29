@@ -56,7 +56,7 @@ def discordbot():
                             await asyncio.sleep(2)
                     dbupdate("DELETE FROM chatbuffer")
                 now = Now()
-                cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 40, now - 45))
+                cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 50, now - 60))
                 if cbuffr:
                     for reach in cbuffr:
                         log.info(f'{reach[1]} has left the server {reach[3]}')
@@ -498,7 +498,7 @@ in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
             user = message.author
             log.info(f'responding to link account request on discord from {whofor}')
             sw = message.content.split(' ')
-            dplayer = dbquery("SELECT * FROM players WHERE discordid == '%s'" % (whofor,), fetch='one')
+            dplayer = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
             if dplayer:
                 log.info(f'link account request on discord from {whofor} denied, already linked')
                 msg = f'Your discord account is already linked to your game account'
@@ -506,7 +506,7 @@ in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
             else:
                 if len(sw) > 1:
                     rcode = sw[1]
-                    reqs = dbquery("SELECT * FROM linkrequests WHERE reqcode == '%s'" % (rcode,), fetch='one')
+                    reqs = dbquery("SELECT * FROM linkrequests WHERE reqcode = '%s'" % (rcode,), fetch='one')
                     if reqs:
                         log.info(f'link account request on discord from {whofor} accepted. \
 {reqs[1]} {whofor} {reqs[0]}')
