@@ -435,7 +435,7 @@ class ServerStatus(Resource):
         insts = dbquery("SELECT * FROM instances", fmt='dict')
         for inst in insts:
             if inst['isup'] == 1:
-                if inst['needsrestart'] == 1:
+                if inst['needsrestart'] == "True":
                     status = 'restarting'
                 else:
                     status = "online"
