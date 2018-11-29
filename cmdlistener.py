@@ -361,10 +361,9 @@ def getnamefromchat(chat):
     rawline2 = rawline[1].split('(')
     for each in rawline2:
         rawline3 = rawline3 + each
+        rawline3 = rawline3[:-1]
     log.warning(rawline3)
-    if len(rawline) > 1:
-        rawname = rawline[1].split(')')
-        return rawname[0].lower()
+    return rawline3
 
 
 def isserver(line):
