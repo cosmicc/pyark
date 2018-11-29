@@ -380,7 +380,7 @@ def linker(minst, whoasked):
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
             log.info(f'generated code {rcode} for link request from {dplayer[1]} on {minst}')
             dbupdate("DELETE from linkrequests WHERE steamid = '%s'" % (dplayer[0],))
-            dbupdate("INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('%s', '%s', %s)" % (dplayer[0], dplayer[1], str(rcode)))
+            dbupdate("INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('%s', '%s', '%s')" % (dplayer[0], dplayer[1], str(rcode)))
             msg = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0], msg, minst), shell=True)
         else:
