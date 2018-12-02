@@ -56,7 +56,7 @@ def discordbot():
                             await asyncio.sleep(2)
                     dbupdate("DELETE FROM chatbuffer")
                 now = Now()
-                cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 50, now - 60))
+                cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 40, now - 44))
                 if cbuffr:
                     for reach in cbuffr:
                         log.info(f'{reach[1]} has left the server {reach[3]}')
