@@ -356,14 +356,11 @@ def startvoter(inst, whoasked):
 
 def getnamefromchat(chat):
     log.warning(chat)
-    rawline3 = ''
     rawline = chat.split(':')
-    rawline2 = rawline[1].split('(')
-    for each in rawline2:
-        rawline3 = rawline3 + each
-    rawline3 = rawline3[:-1]
-    log.warning(rawline3)
-    return rawline3.lower()
+    rawline = rawline[1].split('(')
+    rawline = rawline[:-1]
+    log.warning(rawline)
+    return rawline.lower()
 
 
 def isserver(line):
