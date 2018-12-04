@@ -1,14 +1,21 @@
 from modules.dbhelper import dbupdate
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 import json
 
 
 def fetchauctiondata(steamid):
     try:
-        data = urlopen(f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}").read()
-        data = data.decode()[:-20].encode()
+        url = f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}"
+        print(url)
+        req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        data = urlopen(req).read()
+        print(data)
+        data = data.decode().encode()
+        print(data)
         adata = json.loads(data)
+        print(adata)
         auctions = adata['Auctions']
+        print(auctions)
         if auctions:
             return auctions
         else:

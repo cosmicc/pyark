@@ -135,9 +135,7 @@ def playergreet(steamid, inst):
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                        firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                        primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
-                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
-                     (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0,
-                      0, 0, inst, 0, Now(), 0))
+                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0))
             if not iswelcoming(steamid):
                 welcom = threading.Thread(name='welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid, inst))
                 welcomthreads.append({'steamid': steamid, 'sthread': welcom})
