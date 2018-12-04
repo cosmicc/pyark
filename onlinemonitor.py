@@ -152,7 +152,7 @@ def playergreet(steamid, inst):
                 log.info(f'transferring {xferpoints} non home server points into account for \
 {oplayer[1]} on {inst}')
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
-                subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
+                subprocess.run("""arkmanager rconcmd 'ScriptCommand tcsar addarctotal "%s" %s' @%s""" %
                                (steamid, xferpoints, inst), shell=True)
             if int(oplayer[2]) + 300 > Now():
                 if oplayer[3] != inst:

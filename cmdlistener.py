@@ -358,7 +358,7 @@ def getnamefromchat(chat):
     log.warning(chat)
     rawline = chat.split(':')
     rawline = rawline[1].split('(')
-    rawline = rawline[:-1]
+    rawline = rawline[1][:-1].strip()
     log.warning(rawline)
     return rawline.lower()
 
