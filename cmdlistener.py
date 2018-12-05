@@ -32,7 +32,7 @@ def writechat(inst, whos, msg, tstamp):
 
 
 def getsteamid(whoasked):
-    sid = dbquery("SELECT steamid FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
+    sid = dbquery("SELECT steamid FROM players WHERE (playername = '%s') or (alias = '%s')" % (whoasked, whoasked), fetch='one')
     if sid is None:
         log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
         return 0
