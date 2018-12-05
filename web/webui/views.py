@@ -441,7 +441,7 @@ def dashboard():
     if request.method == 'POST':
         setannouncement(request.form["message"])
         flash(f'Login Announcement Set', 'info')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('webui.dashboard'))
     return render_template('dashboard.html', loginname=current_user.email, instances=instancelist())
 
 
@@ -474,7 +474,7 @@ def startlottery():
     if form.validate_on_submit():
         startthelottery(form.buyinpoints.data, form.length.data)
         flash(u'New Lottery has been Started', 'info')
-        return redirect(url_for('_lottery'))
+        return redirect(url_for('webui._lottery'))
     return render_template('startlottery.html', form=form)
 
 
@@ -486,9 +486,9 @@ def sendchat(server):
     if form.validate_on_submit():
 
         flash(f'Message sent to {server.title()}', 'info')
-        return redirect(url_for('_chatlog', instance=server))
+        return redirect(url_for('webui._chatlog', instance=server))
     flash(f'Message failed to {server.title()}', 'error')
-    return redirect(url_for('_chatlog', instance=server))
+    return redirect(url_for('webui._chatlog', instance=server))
 
 
 @webui.route('/playerinfo/<player>', methods=['POST', 'GET'])
@@ -497,7 +497,7 @@ def playerinfo(player):
     if request.method == 'POST':
         serverchat(request.form["message"], whosent=player.lower(), inst=getplayer(playername=player.lower(), fmt='dict')['server'], private=True)
         flash(f'Message Sent', 'info')
-        return redirect(url_for('playerinfo', player=player))
+        return redirect(url_for('webui.playerinfo', player=player))
     return render_template('playerinfo.html', playerinfo=getplayer(playername=player.lower(), fmt='dict'))
 
 
@@ -667,6 +667,6 @@ def _chatlog(instance):
     if request.method == 'POST':
         serverchat(request.form["message"], inst=instance)
         flash(f'Message Sent to {instance.title()}', 'info')
-        return redirect(url_for('_chatlog', instance=instance))
+        return redirect(url_for('webui._chatlog', instance=instance))
     chatlog = getlog(instance, 'chat')
     return render_template('serverchatlog.html', serverinfo=instanceinfo(instance), chatlog=chatlog[::-1])

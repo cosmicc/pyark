@@ -1,5 +1,5 @@
-first_file = '/home/ark/shared/config/GameUserSettings.ini'
-second_file = '/home/ark/shared/config/GameUserSettings-hellonark.ini'
+first_file = '/home/ark/shared/config/Game.ini'
+second_file = '/home/ark/shared/config/Game-extinction.ini'
 
 
 def filecompare(first_file, second_file, diff=True):

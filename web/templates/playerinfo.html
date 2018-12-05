@@ -93,6 +93,9 @@
         <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
         <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>
         {% endif %}
+        {% if playerinfo['alias'] %}
+        <p class='is-2'>Playername Alias: <b>{{ playerinfo['alias'].title() }}</b></p>
+        {% endif %}
         <p class='is-2'>Last Seen on: <b>{{ playerinfo['server'].title() }}</b></p>
         <p class='is-2'>Home Server: <b>{{ playerinfo['homeserver'].title() }}</b></p>
         <p class='is-2'>Total Played Time: <b>{{ ui_playedTime(playerinfo['playedtime']) }}</b></p>

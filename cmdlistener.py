@@ -32,7 +32,7 @@ def writechat(inst, whos, msg, tstamp):
 
 
 def getsteamid(whoasked):
-    sid = dbquery("SELECT steamid FROM players WHERE playername = '%s'" % (whoasked,), fetch='one')
+    sid = dbquery("SELECT steamid FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
     if sid is None:
         log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
         return 0
@@ -182,7 +182,7 @@ def castedvote(inst, whoasked, myvote):
     if not isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat No vote is taking place now" @%s' % (inst), shell=True)
     else:
-        pdata = dbquery("SELECT * FROM players WHERE playername = '%s'" % (whoasked,))
+        pdata = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked))
         if getvote(whoasked) == 99:
             mtxt = 'Sorry, you are not eligible to vote in this round'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
@@ -355,11 +355,11 @@ def startvoter(inst, whoasked):
 
 
 def getnamefromchat(chat):
-    log.warning(chat)
+    # log.warning(chat)
     rawline = chat.split(':')
     rawline = rawline[1].split(' (')
     rawline = rawline[1][:-1].strip()
-    log.warning(rawline)
+    # log.warning(rawline)
     return rawline.lower()
 
 
@@ -507,7 +507,7 @@ def sendlotteryinfo(linfo, lpinfo, inst):
 
 def lotteryquery(whoasked, lchoice, inst):
     linfo = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
-    lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s'" % (whoasked,), fetch='one')
+    lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
     if linfo:
         if lchoice == 'join' or lchoice == 'enter':
             lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
