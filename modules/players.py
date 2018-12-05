@@ -6,7 +6,7 @@ def getplayer(steamid='', discordid='', playername='', fmt='tuple'):
     if steamid != '':
         dbdata = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     elif playername != '':
-        dbdata = dbquery("SELECT * FROM players WHERE playername = '%s'" % (playername,), fetch='one')
+        dbdata = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (playername, playername), fetch='one')
     elif discordid != '':
         dbdata = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (discordid,), fetch='one')
     return formatdbdata(dbdata, 'players', qtype=fmt, single=True)
