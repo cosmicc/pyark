@@ -455,7 +455,7 @@ def homeserver(inst, whoasked, ext):
     steamid = getsteamid(whoasked)
     pinfo = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     if ext != '':
-        tservers = ['ragnarok', 'island', 'volcano']
+        tservers = ['ragnarok', 'island', 'crystal']
         if ext in tservers:
             if ext != pinfo[15]:
                 if inst == pinfo[15]:

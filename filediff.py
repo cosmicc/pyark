@@ -1,5 +1,5 @@
-first_file = '/home/ark/shared/config/Game.ini'
-second_file = '/home/ark/shared/config/Game-extinction.ini'
+first_file = '/home/ark/shared/config/GameUserSettings-hellonark.ini'
+second_file = '/home/ark/shared/config/GameUserSettings-base.ini'
 
 
 def filecompare(first_file, second_file, diff=True):
@@ -9,7 +9,7 @@ def filecompare(first_file, second_file, diff=True):
                 output = set(file1).difference(file2)
             else:
                 output = set(file1).intersection(file2)
-    #output.discard('\n')
+    output.discard('\n')
     return output
 #    with open('diff.txt', 'w') as file_out:
 #        for line in output:
