@@ -131,7 +131,7 @@ def startlottery(lottoinfo):
         lottotype = 'Item'
         litm = lottoinfo[2]
     lottoend = estshift(datetime.fromtimestamp(float(lottoinfo[3]) + (Secs['hour'] * int(lottoinfo[5])))).strftime('%a, %b %d %I:%M%p')
-    if lottoinfo[8] == 0 or lottoinfo[8] is None:
+    if lottoinfo[8] is None or lottoinfo[8] is False:
         log.info(f'A lottery has started. Type: {lottotype} Payout: {lottoinfo[2]} Buyin: {lottoinfo[4]} \
 Length: {lottoinfo[5]} Hours, Ends: {lottoend}')
         msg = f'A new {lottotype} lottery has started! {lottoinfo[4]} ARc Points to enter\nWinning prize: \

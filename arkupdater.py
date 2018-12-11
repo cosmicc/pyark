@@ -125,7 +125,7 @@ def restartinstnow(inst):
     log.info(f'server {inst} instance has stopped')
     subprocess.run('arkmanager backup @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.debug(f'server {inst} instance has backed up world data')
-    if inst != 'extinction':
+    if inst != 'extinction' or inst != 'crystal' or inst != 'island':
         subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath, arkroot),
                        stdout=subprocess.DEVNULL, shell=True)
         subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath, arkroot),

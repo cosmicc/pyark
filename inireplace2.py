@@ -1,15 +1,20 @@
 import configparser as ConfigParser
 
 basefile = '/home/ark/shared/config/GameUserSettings-base.ini'
+custfile = '/home/ark/shared/config/GameUserSettings-extinction.ini'
+newfile = '/home/ark/shared/config/GameUserSettings-extinction.rdy'
+
 
 config = ConfigParser.RawConfigParser()
 config.optionxform = str
 config.read(basefile)
-mojo = ("StructuresPlus", "DisableDinoScanDetails", "true")
-mojo = ("ServerSettings", "XPMultiplier", "2.50000")
-mojo = ("TCsAR", "BonusAmount", "50")
-mojo = ("ServerSettings", "HarvestAmountMultiplier", "5.000000")
-HarvestAmountMultiplier
-config.set(mojo[0], mojo[1], mojo[2])
-with open(basefile, 'w') as configfile:
+
+with open(custfile, 'r') as f:
+    lines = f.readlines()
+    for each in lines:
+        each = each.strip().split(',')
+        config.set(each[0], each[1], each[2])
+
+
+with open(newfile, 'w') as configfile:
     config.write(configfile)
