@@ -4,6 +4,7 @@ import logging
 import socket
 from sys import exit
 import psycopg2
+from time import sleep
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -87,6 +88,9 @@ def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
             conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         c = conn.cursor()
         c.execute(query)
+    except psycopg2.OperationalError:
+        log.critical('ERROR CONNECTING TO DATABASE SERVER')
+        sleep(60)
     except:
         log.error(f'Error in database init: {db} - {query} - {fetch}')
         c.close()

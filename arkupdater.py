@@ -351,24 +351,25 @@ def checkifalreadyrestarting(inst):
 
 def checkupdates():
     global ugennotify
-    try:
-        ustate, curver, avlver = isnewarkver(instance[0]['name'])
-        if not ustate and Now() - updgennotify > Secs['hour']:
-            log.debug('ark update check found no ark updates available')
-        else:
-            if is_arkupdater:
-                log.info(f'ark update found ({curver}>{avlver}) downloading update.')
-                subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']),
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                log.debug('ark update downloaded to staging area')
-                msg = f'Ark update has been released. Servers will start a reboot countdown now.\n\
-https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-283112-server-283112/'
-                writediscord(msg, Now())
-                pushover('Ark Update', msg)
-            for each in range(numinstances):
-                instancerestart(instance[each]['name'], 'ark game update')
-    except:
-        log.error(f'error in determining ark version')
+    if len(instance) != 0:
+        try:
+            ustate, curver, avlver = isnewarkver(instance[0]['name'])
+            if not ustate and Now() - updgennotify > Secs['hour']:
+                log.debug('ark update check found no ark updates available')
+            else:
+                if is_arkupdater:
+                    log.info(f'ark update found ({curver}>{avlver}) downloading update.')
+                    subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']),
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    log.debug('ark update downloaded to staging area')
+                    msg = f'Ark update has been released. Servers will start a reboot countdown now.\n\
+    https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-283112-server-283112/'
+                    writediscord(msg, Now())
+                    pushover('Ark Update', msg)
+                for each in range(numinstances):
+                    instancerestart(instance[each]['name'], 'ark game update')
+        except:
+            log.error(f'error in determining ark version')
 
     for each in range(numinstances):
         if not isrebooting(instance[each]['name']):
