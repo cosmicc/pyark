@@ -16,12 +16,15 @@ from statcollector import oscollect
 from sys import exit
 from time import sleep
 from web import create_app
+from os.path import ismount
+from os import stat
 import argparse
 import logging
 import lottery
 import socket
 import subprocess
 import threading
+import shutil
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -139,6 +142,24 @@ def main():
             log.critical(f'Web Server failed to start.', exc_info=True)
 
     while True:
+        try:
+            if shutil.disk_usage('/').free < 2000000000:
+                log.critical('Root Disk under 2Gig. Shutting instance and script down')
+                subprocess.run('arkmanager stop --warn @all', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                subprocess.run('/home/ark/pyark/pyarlcli stop', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                exit()
+        except:
+            log.critical('unable to determine root freespace')
+            sleep(60)
+            exit()
+        try:
+            if stat('/home/ark/shared/logs/pyark/pyark.log').st_size > 1000000000:
+                log.critical('Pyark log over 1Gig. Shutting script down')
+                subprocess.run('/home/ark/pyark/pyarkcli stop', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                exit()
+        except:
+            log.critical('unable to determine pyark log filesize')
+            sleep(60)
         try:
             if checkgit == 0:
                 gitupdatecheck()
