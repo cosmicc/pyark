@@ -6,16 +6,16 @@ import json
 def fetchauctiondata(steamid):
     try:
         url = f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}"
-        print(url)
+        #print(url)
         req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         data = urlopen(req).read()
-        print(data)
+        #print(data)
         data = data.decode().encode()
-        print(data)
+        #print(data)
         adata = json.loads(data)
-        print(adata)
+        #print(adata)
         auctions = adata['Auctions']
-        print(auctions)
+        #print(auctions)
         if auctions:
             return auctions
         else:

@@ -35,6 +35,18 @@ def getlotteryplayers(fmt):
     return linfo
 
 
+def totallotterydeposits(steamid):
+    linfo = dbquery("SELECT points, givetake FROM lotterydeposits where steamid = '%s'" % (steamid, ))
+    tps = 0
+    if linfo is not None:
+        for each in linfo:
+            if each[1] == 1:
+                tps += each[0]
+            elif each[1] == 0:
+                tps -= each[0]
+    return tps
+
+
 def getlotteryendtime():
     linfo = dbquery("SELECT timestamp, lengthdays from lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
     endtime = float(linfo[0]) + (3600 * linfo[1])
