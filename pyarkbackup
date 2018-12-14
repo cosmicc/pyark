@@ -1,7 +1,13 @@
+#!/bin/bash
+
+nowtime=`date '+%Y-%m-%d-%H-%M'`;
+
 rsync -arq /home/ark/shared/ark-backups /mnt/backup/ark_backup/
-rsync -arq /home/ark/ARK/ShooterGame/Saved/clusters /mnt/backup/ark_backup/
 rsync -arq /home/ark/shared/config /mnt/backup/ark_backup/
 rsync -arq /home/ark/shared/db /mnt/backup/ark_backup/
 rsync -arq /home/ark/shared/logs /mnt/backup/ark_backup/
 rsync -arq /etc/arkmanager /mnt/backup/ark_backup/
+rsync -arq /home/ark/shared/cluster-backups /mnt/backup/ark_backup/
+#tar -cJf /home/ark/ishared/cluster-backups/clusters-$nowtime.tar.bz2 -C /home/ark/ARK/ShooterGame/Saved ./clusters
 find /home/ark/shared/ark-backups/* -type d -ctime +30 | xargs rm -rf
+find /home/ark/shared/cluster-backups/* -type d -ctime +4 | xargs rm -rf

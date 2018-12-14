@@ -64,7 +64,7 @@ def getlastseen(seenname):
 def respmyinfo(inst, whoasked):
     pinfo = getplayer(playername=whoasked)
     ptime = playedTime(pinfo[4])
-    mtxt = f"Your current reward points: {pinfo[5]}.\nYour total play time is {ptime}\nYour home server is {pinfo[15].capitalize()}"
+    mtxt = f"Your current reward points: {pinfo[5] + pinfo[16]}.\nYour total play time is {ptime}\nYour home server is {pinfo[15].capitalize()}"
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 

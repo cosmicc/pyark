@@ -314,7 +314,7 @@ to change home servers'
                     writeauctionstats(kuser[0], au1, au2, au3)
                     ptime = playedTime(int(kuser[4]))
                     ptr = elapsedTime(Now(), int(kuser[2]))
-                    msg = f'Your current ARc reward points: {kuser[5]}\nLast played on {kuser[3].capitalize()} {ptr} ago.\n'
+                    msg = f'Your current ARc reward points: {kuser[5] + kuser[16]}\nLast played on {kuser[3].capitalize()} {ptr} ago.\n'
                     msg = msg + f'Your home server is: {kuser[15].capitalize()}\nYour total play time is {ptime}\n'
                     msg = msg + f'You have {au1} current auctions: {au2} Items, {au3} Dinos\n'
                     tpwins, twpoints = getlottowinnings(kuser[1])
