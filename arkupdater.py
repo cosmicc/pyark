@@ -4,7 +4,7 @@ from datetime import time as dt
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
 from modules.players import getplayersonline
-from modules.instances import getlastwipe
+from modules.instances import getlastwipe, instancelist
 from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
 from time import sleep
@@ -351,23 +351,22 @@ def checkifalreadyrestarting(inst):
 
 def checkupdates():
     global ugennotify
-    if len(instance) != 0:
+    if is_arkupdater and Now() - updgennotify > Secs['hour']:
         try:
-            ustate, curver, avlver = isnewarkver(instance[0]['name'])
-            if not ustate and Now() - updgennotify > Secs['hour']:
+            ustate, curver, avlver = isnewarkver('all')
+            if not ustate:
                 log.debug('ark update check found no ark updates available')
             else:
-                if is_arkupdater:
-                    log.info(f'ark update found ({curver}>{avlver}) downloading update.')
-                    subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[0]['name']),
-                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                    log.debug('ark update downloaded to staging area')
-                    msg = f'Ark update has been released. Servers will start a reboot countdown now.\n\
-    https://survivetheark.com/index.php?/forums/topic/166421-pc-patch-notes-client-283112-server-283112/'
-                    writediscord(msg, Now())
-                    pushover('Ark Update', msg)
-                for each in range(numinstances):
-                    instancerestart(instance[each]['name'], 'ark game update')
+                log.info(f'ark update found ({curver}>{avlver}) downloading update.')
+                subprocess.run('arkmanager update --downloadonly @%s' % (instance[0]['name']),
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                log.debug('ark update downloaded to staging area')
+                msg = f'Ark update has been released. Servers will begin restart countdown now.\n\
+https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
+                writediscord(msg, Now())
+                pushover('Ark Update', msg)
+                log.info(f'ark update download complete. update staged. notifying servers')
+                dbupdate(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
         except:
             log.error(f'error in determining ark version')
 
