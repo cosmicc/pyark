@@ -1,5 +1,5 @@
 from modules.configreader import sharedpath, arkroot, numinstances, instance, instr, is_arkupdater
-from configparser import ConfigParser
+import configparser
 from datetime import datetime
 from datetime import time as dt
 from modules.dbhelper import dbquery, dbupdate
@@ -254,7 +254,7 @@ def buildconfig(inst, event=None):
         servercfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini'
         newcfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.tmp'
         stgcfgfile = f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini'
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.optionxform = str
         config.read(basecfgfile)
 
