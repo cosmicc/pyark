@@ -128,16 +128,11 @@ def restartinstnow(inst):
                    stderr=subprocess.DEVNULL, shell=True)
     log.info(f'server {inst} instance has stopped')
     subprocess.run('arkmanager backup @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-    log.debug(f'server {inst} instance has backed up world data')
+    log.debug(f'server {inst} instance has backed up world datai, building config')
     buildconfig(inst)
-    fname = f'{sharedpath}/config/Game-{inst}.ini'
-    if os.path.isfile(fname):
-        subprocess.run('cp %s/config/Game-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (inst, sharedpath, arkroot), stdout=subprocess.DEVNULL, shell=True)
-    else:
-        subprocess.run('cp %s/config/Game-base.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, arkroot), stdout=subprocess.DEVNULL, shell=True)
+    subprocess.run('cp %s/stagedconfig/Game-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (inst, sharedpath, arkroot), stdout=subprocess.DEVNULL, shell=True)
     subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
-    subprocess.run('cp %s/stagedconfig/GameUserSettings-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini' % (sharedpath, inst.lower(), arkroot),
-                       stdout=subprocess.DEVNULL, shell=True)
+    subprocess.run('cp %s/stagedconfig/GameUserSettings-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini' % (sharedpath, inst.lower(), arkroot), stdout=subprocess.DEVNULL, shell=True)
     log.debug(f'server {inst} built and updated config files')
     log.info(f'server {inst} is updating from staging directory')
     subprocess.run('arkmanager update --no-download --update-mods --no-autostart @%s' % (inst),
@@ -258,6 +253,7 @@ def buildconfig(inst, event=None):
         servercfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini'
         newcfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.tmp'
         stgcfgfile = f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini'
+        stggamefile = f'{sharedpath}/stagedconfig/Game-{inst.lower()}.ini'
         config = configparser.RawConfigParser()
         config.optionxform = str
         config.read(basecfgfile)
@@ -280,9 +276,17 @@ def buildconfig(inst, event=None):
         with open(newcfgfile, 'w') as configfile:
             config.write(configfile)
 
-        if compareconfigs(newcfgfile, stgcfgfile):
+        fname = f'{sharedpath}/stagedconfig/Game-{inst}.ini'
+        if os.path.isfile(fname):
+            gamebasefile = f'{sharedpath}/config/Game-{inst}.ini'
+        else:
+            gamebasefile = f'{sharedpath}/config/Game-base.ini'
+
+        if compareconfigs(newcfgfile, stgcfgfile) or compareconfigs(gamebasefile, fname):
             subprocess.run('mv "%s" "%s"' % (newcfgfile, stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('cp "%s" "%s"' % (gamebasefile, fname), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             subprocess.run('chown ark.ark "%s"' % (stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('chown ark.ark "%s"' % (fname), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             return True
         else:
             subprocess.run('rm -f "%s"' % (newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
