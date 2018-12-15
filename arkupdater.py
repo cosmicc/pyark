@@ -130,10 +130,11 @@ def restartinstnow(inst):
     subprocess.run('arkmanager backup @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.debug(f'server {inst} instance has backed up world data')
     buildconfig(inst)
-    if inst == 'extinction':
-        subprocess.run('cp %s/config/Game-extinction.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, arkroot), stdout=subprocess.DEVNULL, shell=True)
+    fname = f'{sharedpath}/config/Game-{inst}.ini'
+    if os.path.isfile(fname):
+        subprocess.run('cp %s/config/Game-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (inst, sharedpath, arkroot), stdout=subprocess.DEVNULL, shell=True)
     else:
-        subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, arkroot), stdout=subprocess.DEVNULL, shell=True)
+        subprocess.run('cp %s/config/Game-base.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, arkroot), stdout=subprocess.DEVNULL, shell=True)
     subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
     subprocess.run('cp %s/stagedconfig/GameUserSettings-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini' % (sharedpath, inst.lower(), arkroot),
                        stdout=subprocess.DEVNULL, shell=True)
