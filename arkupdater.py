@@ -282,7 +282,7 @@ def buildconfig(inst, event=None):
             #subprocess.run('rm -f "%s"' % (newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             return False
     except:
-        log.critical(f'Problem building config for inst {inst}')
+        log.critical(f'Problem building config for inst {inst}', exc_info=True)
         return False
 
 
