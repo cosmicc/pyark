@@ -130,8 +130,10 @@ def restartinstnow(inst):
     subprocess.run('arkmanager backup @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.debug(f'server {inst} instance has backed up world data')
     buildconfig(inst)
-    subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, arkroot),
-                       stdout=subprocess.DEVNULL, shell=True)
+    if inst == 'extinction':
+        subprocess.run('cp %s/config/Game-extinction.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, arkroot), stdout=subprocess.DEVNULL, shell=True)
+    else:
+        subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, arkroot), stdout=subprocess.DEVNULL, shell=True)
     subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
     subprocess.run('cp %s/stagedconfig/GameUserSettings-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini' % (sharedpath, inst.lower(), arkroot),
                        stdout=subprocess.DEVNULL, shell=True)
@@ -294,6 +296,7 @@ def checkconfig():
         inst = instance[each]['name']
         if not isrebooting(inst):
             if buildconfig(inst):
+                log.info(f'config update detected for instance {inst}')
                 har = int(getcfgver(inst))
                 setpendingcfgver(inst, har+1)
             lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
