@@ -276,17 +276,18 @@ def buildconfig(inst, event=None):
         with open(newcfgfile, 'w') as configfile:
             config.write(configfile)
 
-        fname = f'{sharedpath}/stagedconfig/Game-{inst}.ini'
+        fname = f'{sharedpath}/config/Game-{inst}.ini'
+        stggamefile = f'{sharedpath}/stagedconfig/Game-{inst}.ini'
         if os.path.isfile(fname):
             gamebasefile = f'{sharedpath}/config/Game-{inst}.ini'
         else:
             gamebasefile = f'{sharedpath}/config/Game-base.ini'
 
-        if compareconfigs(newcfgfile, stgcfgfile) or compareconfigs(gamebasefile, fname):
+        if compareconfigs(newcfgfile, stgcfgfile) or compareconfigs(gamebasefile, stggamefile):
             subprocess.run('mv "%s" "%s"' % (newcfgfile, stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            subprocess.run('cp "%s" "%s"' % (gamebasefile, fname), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('cp "%s" "%s"' % (gamebasefile, stggamefile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             subprocess.run('chown ark.ark "%s"' % (stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            subprocess.run('chown ark.ark "%s"' % (fname), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('chown ark.ark "%s"' % (stggamefile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             return True
         else:
             subprocess.run('rm -f "%s"' % (newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
