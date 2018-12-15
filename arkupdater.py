@@ -249,6 +249,7 @@ def compareconfigs(config1, config2):
 
 def buildconfig(inst, event=None):
     try:
+        basecfgfile  = f'{sharedpath}/config/GameUserSettings-base.ini'
         servercfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini'
         newcfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.tmp'
         stgcfgfile = f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini'
@@ -274,12 +275,11 @@ def buildconfig(inst, event=None):
         with open(newcfgfile, 'w') as configfile:
             config.write(configfile)
 
-        if compareconfigs(newcfgfile, servercfgfile):
-            subprocess.run('cp "%s" "%s"' % (newcfgfile, servercfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        if compareconfigs(newcfgfile, stgcfgfile):
             subprocess.run('mv "%s" "%s"' % (newcfgfile, stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             return True
         else:
-            subprocess.run('rm -f "%s"' % (newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            #subprocess.run('rm -f "%s"' % (newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             return False
     except:
         log.critical(f'Problem building config for inst {inst}')
