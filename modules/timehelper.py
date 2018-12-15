@@ -28,6 +28,11 @@ def Now(fmt='epoch', est=False):
             return estshift(datetime.now())
         else:
             return datetime.now()
+    elif fmt == 'dtd':
+        if est:
+            return estshift(datetime.now()).date()
+        else:
+            return datetime.now().date()
     elif fmt == 'epoch':
         return int(datetime.now().timestamp())
     elif fmt == 'string':

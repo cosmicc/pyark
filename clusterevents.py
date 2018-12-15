@@ -1,6 +1,7 @@
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now, Secs
 from time import sleep
+from datetime import datetime
 import logging
 import socket
 import subprocess
@@ -17,7 +18,7 @@ def setmotd(inst, motd=None, cancel=False):
 
 
 def iseventtime():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(),))
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(fmt='dtd'),))
     if inevent:
         return True
     else:
@@ -25,12 +26,12 @@ def iseventtime():
 
 
 def getcurrenteventid():
-    inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(),), fetch='one')
+    inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(fmt='dtd'),), fetch='one')
     return inevent[0]
 
 
 def getcurrenteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(),), fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(fmt='dtd'),), fetch='one')
     return inevent
 
 
@@ -40,7 +41,7 @@ def getlasteventinfo():
 
 
 def getnexteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s'" % (Now(),), fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s'" % (Now(fmt='dtd'),), fetch='one')
     return inevent
 
 
