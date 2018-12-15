@@ -40,21 +40,21 @@ def updatetimer(inst, ctime):
 
 
 def setcfgver(inst, cver):
-    dbupdate("UPDATE instances SET cfgver = %s WHERE name = '%s'" % (cver, inst))
+    dbupdate("UPDATE instances SET cfgver = %s WHERE name = '%s'" % (int(cver), inst))
 
 
 def setpendingcfgver(inst, cver):
-    dbupdate("UPDATE instances SET pendingcfg = %s WHERE name = '%s'" % (cver, inst))
+    dbupdate("UPDATE instances SET pendingcfg = %s WHERE name = '%s'" % (int(cver), inst))
 
 
 def getcfgver(inst):
     lastwipe = dbquery("SELECT cfgver FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    return ''.join(lastwipe[0])
+    return int(lastwipe[0])
 
 
 def getpendingcfgver(inst):
     lastwipe = dbquery("SELECT pendingcfg FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    return ''.join(lastwipe[0])
+    return int(lastwipe[0])
 
 
 def resetlastwipe(inst):
