@@ -1,4 +1,5 @@
 from modules.configreader import sharedpath, arkroot, numinstances, instance, instr, is_arkupdater
+from configparser import ConfigParser
 from datetime import datetime
 from datetime import time as dt
 from modules.dbhelper import dbquery, dbupdate
