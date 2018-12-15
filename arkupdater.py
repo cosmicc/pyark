@@ -40,17 +40,20 @@ def updatetimer(inst, ctime):
 
 
 def setcfgver(inst, cver):
-    if inst == 'general':
-        dbupdate("UPDATE general SET cfgver = '%s'" % (cver,))
-    else:
-        dbupdate("UPDATE instances SET cfgver = '%s' WHERE name = '%s'" % (cver, inst))
+    dbupdate("UPDATE instances SET cfgver = %s WHERE name = '%s'" % (cver, inst))
+
+
+def setpendingcfgver(inst, cver):
+    dbupdate("UPDATE instances SET pendingcfg = %s WHERE name = '%s'" % (cver, inst))
 
 
 def getcfgver(inst):
-    if inst == 'general':
-        lastwipe = dbquery("SELECT cfgver FROM general", fetch='one')
-    else:
-        lastwipe = dbquery("SELECT cfgver FROM instances WHERE name = '%s'" % (inst,), fetch='one')
+    lastwipe = dbquery("SELECT cfgver FROM instances WHERE name = '%s'" % (inst,), fetch='one')
+    return ''.join(lastwipe[0])
+
+
+def getpendingcfgver(inst):
+    lastwipe = dbquery("SELECT pendingcfg FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     return ''.join(lastwipe[0])
 
 
@@ -61,7 +64,7 @@ def resetlastwipe(inst):
 def resetlastrestart(inst):
     dbupdate("UPDATE instances SET lastrestart = '%s' WHERE name = '%s'" % (Now(), inst))
     dbupdate("UPDATE instances SET needsrestart = 'False' WHERE name = '%s'" % (inst, ))
-    dbupdate("UPDATE instances SET cfgver = '%s' WHERE name = '%s'" % (getcfgver('general'), inst))
+    dbupdate("UPDATE instances SET cfgver = %s WHERE name = '%s'" % (getpendingcfgver(inst), inst))
     dbupdate("UPDATE instances SET restartcountdown = 30")
 
 
@@ -125,12 +128,12 @@ def restartinstnow(inst):
     log.info(f'server {inst} instance has stopped')
     subprocess.run('arkmanager backup @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.debug(f'server {inst} instance has backed up world data')
-    if inst != 'extinction' or inst != 'crystal' or inst != 'island':
-        subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath, arkroot),
+    buildconfig(inst)
+    subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, arkroot),
                        stdout=subprocess.DEVNULL, shell=True)
-        subprocess.run('cp %s/config/GameUserSettings.ini %s/ShooterGame/Saved/Config/LinuxServer' % (sharedpath, arkroot),
+    subprocess.run('cp %s/stagedconfig/GameUserSettings-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini' % (sharedpath, inst.lower(), arkroot),
                        stdout=subprocess.DEVNULL, shell=True)
-    log.debug(f'server {inst} updated config files')
+    log.debug(f'server {inst} built and updated config files')
     log.info(f'server {inst} is updating from staging directory')
     subprocess.run('arkmanager update --no-download --update-mods --no-autostart @%s' % (inst),
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -227,85 +230,78 @@ def instancerestart(inst, reason):
 
 
 def compareconfigs(config1, config2):
-    f1 = open(config1)
-    text1Lines = f1.readlines()
-    f2 = open(config2)
-    text2Lines = f2.readlines()
-    set1 = set(text1Lines)
-    set2 = set(text2Lines)
-    diffList = (set1 | set2) - (set1 & set2)
-    if diffList:
-        return True
-    else:
+    try:
+        f1 = open(config1)
+        text1Lines = f1.readlines()
+        f2 = open(config2)
+        text2Lines = f2.readlines()
+        set1 = set(text1Lines)
+        set2 = set(text2Lines)
+        diffList = (set1 | set2) - (set1 & set2)
+        if diffList:
+            return True
+        else:
+            return False
+    except:
+        log.critical('Problem comparing configs for build')
         return False
 
 
 def buildconfig(inst, event=None):
-    servercfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini'
-    newcfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.rdy'
-    config = ConfigParser.RawConfigParser()
-    config.optionxform = str
-    config.read(basecfgfile)
+    try:
+        servercfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini'
+        newcfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.tmp'
+        stgcfgfile = f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini'
+        config = ConfigParser.RawConfigParser()
+        config.optionxform = str
+        config.read(basecfgfile)
 
-    if os.path.isfile(servercfgfile):
-        with open(servercfgfile, 'r') as f:
-            lines = f.readlines()
-            for each in lines:
-                each = each.strip().split(',')
-                config.set(each[0], each[1], each[2])
+        if os.path.isfile(servercfgfile):
+            with open(servercfgfile, 'r') as f:
+                lines = f.readlines()
+                for each in lines:
+                    each = each.strip().split(',')
+                    config.set(each[0], each[1], each[2])
 
-    if event is not None:
-        eventcfgfile = f'{sharedpath}/config/GameUserSettings-{event.lower()}.ini'
-        with open(eventcfgfile, 'r') as f:
-            lines = f.readlines()
-            for each in lines:
-                each = each.strip().split(',')
-                config.set(each[0], each[1], each[2])
+        if event is not None:
+            eventcfgfile = f'{sharedpath}/config/GameUserSettings-{event.lower()}.ini'
+            with open(eventcfgfile, 'r') as f:
+                lines = f.readlines()
+                for each in lines:
+                    each = each.strip().split(',')
+                    config.set(each[0], each[1], each[2])
 
-    with open(newcfgfile, 'w') as configfile:
-        config.write(configfile)
+        with open(newcfgfile, 'w') as configfile:
+            config.write(configfile)
 
-    if compareconfigs(basecfgfile, basecfgfile):
-        subprocess.run('mv %s/config/%s %s/stagedconfig' % (sharedpath, newcfgfile, sharedpath), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        return True
-    else:
-        subprocess.run('rm -f %s/config/%s' % (sharedpath, newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        if compareconfigs(newcfgfile, servercfgfile):
+            subprocess.run('cp "%s" "%s"' % (newcfgfile, servercfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('mv "%s" "%s"' % (newcfgfile, stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            return True
+        else:
+            subprocess.run('rm -f "%s"' % (newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            return False
+    except:
+        log.critical(f'Problem building config for inst {inst}')
         return False
 
 
 def checkconfig():
-    if is_arkupdater == "True":
-        newcfg1 = f'{sharedpath}/config/Game.ini'
-        oldcfg1 = f'{sharedpath}/stagedconfig/Game.ini'
-        newcfg2 = f'{sharedpath}/config/GameUserSettings.ini'
-        oldcfg2 = f'{sharedpath}/stagedconfig/GameUserSettings.ini'
-
-        if not filecmp.cmp(newcfg1, oldcfg1) or not filecmp.cmp(newcfg2, oldcfg2):
-            log.info('config file update detected. staging config files.')
-            message = 'new configuration detected. signaling servers for update.'
-            oldver = int(getcfgver('general'))
-            setcfgver('general', str(oldver + 1))
-            subprocess.run('cp %s/config/Game.ini %s/stagedconfig' % (sharedpath, sharedpath),
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            subprocess.run('cp %s/config/GameUserSettings.ini %s/stagedconfig' % (sharedpath, sharedpath),
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            subprocess.run('arkmanager notify "%s" @%s' % (message, instance[0]['name']), stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL, shell=True)
-        else:
-            log.debug('no config file updates detected')
     for each in range(numinstances):
         inst = instance[each]['name']
         if not isrebooting(inst):
+            if buildconfig(inst):
+                har = int(getcfgver(inst))
+                setpendingcfgver(inst, har+1)
             lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
             t, s, e = datetime.now(), dt(11, 0), dt(11, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
             inmaint = is_time_between(t, s, e)
             if Now() - float(lstsv[0]) > 432000 and inmaint:
                 maintrest = "maintenance restart"
-            else:
+                instancerestart(inst, maintrest)
+            elif getcfgver(inst) < getpendingcfgver(inst):
                 maintrest = "configuration update"
-            if (int(getcfgver('general')) > int(getcfgver(inst)) or maintrest == 'maintenance restart'):
-                if not isrebooting(inst):
-                    instancerestart(inst, maintrest)
+                instancerestart(inst, maintrest)
             else:
                 log.debug(f'no config changes detected for instance {inst}')
 
@@ -350,6 +346,7 @@ def checkifalreadyrestarting(inst):
 
 
 def checkupdates():
+    global updgennotify
     global ugennotify
     if is_arkupdater and Now() - updgennotify > Secs['hour']:
         try:
@@ -357,6 +354,7 @@ def checkupdates():
             if not ustate:
                 log.debug('ark update check found no ark updates available')
             else:
+                updgennotify = Now()
                 log.info(f'ark update found ({curver}>{avlver}) downloading update.')
                 subprocess.run('arkmanager update --downloadonly @%s' % (instance[0]['name']),
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -391,8 +389,8 @@ https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
                 aname = f'{modname} mod update'
-                if instance[each]["name"] == 'volcano':
-                    msg = f'Mod {modname} has been updated. Servers will start a reboot countdown now.\n\
+                if instance[each]["name"] == 'ragnarok' or instance[each]["name"] == 'extinction':
+                    msg = f'Mod {modname} has been updated. Servers will begin restart countdowns now.\n\
 https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
                     writediscord(msg, Now())
                     pushover('Mod Update', msg)
