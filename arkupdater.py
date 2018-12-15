@@ -132,6 +132,7 @@ def restartinstnow(inst):
     buildconfig(inst)
     subprocess.run('cp %s/config/Game.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, arkroot),
                        stdout=subprocess.DEVNULL, shell=True)
+    subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
     subprocess.run('cp %s/stagedconfig/GameUserSettings-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini' % (sharedpath, inst.lower(), arkroot),
                        stdout=subprocess.DEVNULL, shell=True)
     log.debug(f'server {inst} built and updated config files')
@@ -278,6 +279,7 @@ def buildconfig(inst, event=None):
 
         if compareconfigs(newcfgfile, stgcfgfile):
             subprocess.run('mv "%s" "%s"' % (newcfgfile, stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            subprocess.run('chown ark.ark "%s"' % (stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             return True
         else:
             subprocess.run('rm -f "%s"' % (newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)

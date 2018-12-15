@@ -10,7 +10,7 @@ log = logging.getLogger(name=hstname)
 
 
 def iscurrentconfig(inst):
-    gcfg = dbquery("SELECT cfgver FROM general", fetch='one')
+    gcfg = dbquery("SELECT pendingcfg FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     dbdata = dbquery("SELECT cfgver FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     if dbdata[0] == gcfg[0]:
         return True
