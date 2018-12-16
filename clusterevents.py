@@ -18,7 +18,7 @@ def setmotd(inst, motd=None, cancel=False):
 
 
 def iseventtime():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime =< '%s'" % (Now(fmt='dtd'),))
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')))
     if inevent:
         tme = time(11, 0)
         etime = datetime.combine(inevent, tme)
