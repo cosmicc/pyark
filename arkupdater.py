@@ -157,7 +157,6 @@ def restartinstnow(inst, ext='restart'):
 
 def restartloop(inst, ext='restart'):
     log.debug(f'{inst} restart loop has started')
-    setrestartbit(inst)
     timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
     timeleft = int(timeleftraw[0])
     reason = timeleftraw[1]
@@ -166,14 +165,16 @@ def restartloop(inst, ext='restart'):
         restartinstnow(inst, ext=ext)
     else:
         if getplayersonline(inst, fmt='count') == 0:
-                log.info(f'server {inst} is empty and restarting now for a {reason}')
-                writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
-                message = f'server {inst.capitalize()} is restarting now for a {reason}'
-                subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
-                               stderr=subprocess.DEVNULL, shell=True)
-                pushover('Instance Restart', message)
-                restartinstnow(inst, ext=ext)
+             setrestartbit(inst)
+             log.info(f'server {inst} is empty and restarting now for a {reason}')
+             writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
+             message = f'server {inst.capitalize()} is restarting now for a {reason}'
+             subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL, shell=True)
+             pushover('Instance Restart', message)
+             restartinstnow(inst, ext=ext)
         elif reason != 'configuration update':
+                setrestartbit(inst)
                 if timeleft == 30:
                     log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
                     writechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}',
