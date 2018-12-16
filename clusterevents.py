@@ -76,7 +76,7 @@ def startserverevent(inst):
     emsg = f'{eventinfo[4]} Event is currently active!'
     dbupdate("UPDATE general SET announce = '%s'" % (emsg,))
     log.info(f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
-    msg = f"\n\n                      {eventinfo[4]} Event is Starting Soon!\n\n                   {eventinfo[5]}"
+    msg = f"\n\n                      {eventinfo[4]} Event is Starting Soon!\n\n                        {eventinfo[5]}"
     subprocess.run("""arkmanager rconcmd "broadcast '%s' " @%s""" % (msg, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 def stopserverevent(inst):
