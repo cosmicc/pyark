@@ -33,20 +33,20 @@ def iseventtime():
 
 def getcurrenteventid():
     if iseventtime():
-        inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND starttime =< '%s'" % (Now(fmt='dtd'),), fetch='one')
+        inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
         return inevent[0]
     else:
         return None
 
 
 def getcurrenteventext():
-    inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND starttime =< '%s'" % (Now(fmt='dtd'),), fetch='one')
+    inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
     return inevent[6]
 
 
 def getcurrenteventinfo():
     if iseventtime():
-        inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime =< '%s'" % (Now(fmt='dtd'),), fetch='one')
+        inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime =< '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
         return inevent
     else:
         return None
