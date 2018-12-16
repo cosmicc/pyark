@@ -34,12 +34,12 @@ def iseventtime():
 
 def getcurrenteventext():
     inevent = dbquery("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
-    return inevent[6]
+    return inevent[0]
 
 
 def getcurrenteventtitle():
     inevent = dbquery("SELECT title FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
-    return inevent[4]
+    return inevent[0]
 
 
 def getcurrenteventinfo():
