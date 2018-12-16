@@ -63,7 +63,7 @@ def currentserverevent(inst):
 
 
 def startserverevent(inst):
-    dbupdate("UPDATE instances SET inevent = '%s' WHERE name = '%s'" % (getcurrenteventid(), inst))
+    dbupdate("UPDATE instances SET inevent = '%s' WHERE name = '%s'" % (getcurrenteventext(), inst))
     eventinfo = getcurrenteventinfo()
     log.info(f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
     msg = f"\n\n                      {eventinfo[4]} Event is Active!\n\n                   {eventinfo[5]}"
