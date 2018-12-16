@@ -1,0 +1,68 @@
+{% from "wtf.html" import text_form_field %}
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-calendar.min.css') }}"/>
+        <script src="{{ url_for('static', filename='js/bulma-calendar.min.js') }}"></script>
+       <script>
+        setInterval(function(){ 
+            $("#titlebar").load(" #titlebar"); 
+        }, 60000);
+        </script>
+{% endblock %}
+
+{% block content %}
+<div class='container is-mobile top-pad-15'>
+<div class="section">
+    <div id="startevent">
+        <article class="message">
+  <div class="message-header has-background-success has-text-centered">
+    <p>Start an Event</p>
+  </div>
+    <script>
+        var cdate;
+        function returndates() {
+        document.getElementById('startdate').value = cdate.start;
+        document.getElementById('enddate').value = cdate.end;
+        }
+    </script>
+  <div class="message-body">
+      <form method="POST" action="/startevent">
+          <div class="field">
+                    <div class="control">
+                        <center>
+                        <div class="select is-rounded is-info is-medium" id="event">
+                            <select name="eventname">
+                            <option value="">Select Event</option>
+                            {% for event in autoevents %}
+                            <option value="{{event}}">{{event}}</option>
+                            {% endfor %}
+                            </select>
+                        </div>
+                        </center>
+                    </div>
+                </div>
+            <input type="hidden" name="startdate" id="startdate" value="">
+            <input type="hidden" name="enddate" id="enddate" value="">
+        <div class="control">
+        <input type="date" data-display-mode="inline" data-is-range="true" data-today-button="false" data-clear-button="false">
+        <script>  
+        var calendars = bulmaCalendar.attach('[type="date"]'); 
+        for(var i = 0; i < calendars.length; i++) {
+    	calendars[i].on('endDate:selected', date => {
+        cdate = date
+    	});
+        }
+        </script>
+  </div>
+        <div class="control top-pad-10">
+            <center><input class="button is-info" onclick="returndates()" type="submit"></center>
+        </div>
+      </form>
+    </div>
+        </article>
+  </div>
+</div>
+</div>
+{% endblock %}
+

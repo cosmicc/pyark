@@ -17,7 +17,7 @@
     {% if not ui_isinstanceup(serverinfo['name']) %}
     <div class='container has-background-danger bottom-pad-10'>
     {% elif ui_isinrestart(serverinfo['name']) %}
-    <div class='container has-background-primary bottom-pad-10'>
+    <div class='container has-background-warning bottom-pad-10'>
     {% elif not ui_iscurrentconfig(serverinfo['name']) %}
     <div class='container has-background-info bottom-pad-10'>
     {% else %}

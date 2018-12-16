@@ -13,6 +13,7 @@ from modules.players import getplayersonline, getlastplayersonline, isplayerbann
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto
 from wtforms import StringField, IntegerField
 from wtforms.validators import InputRequired, Length
+from clusterevents import getcurrenteventtitle, iseventtime
 from ..models import User, Role
 from ..database import db
 import json
@@ -39,6 +40,10 @@ class ExtendedRegisterForm(RegisterForm):
 
 
 class LotteryForm(FlaskForm):
+    buyinpoints = IntegerField('buyinpoints', validators=[InputRequired()])
+    length = IntegerField('length', validators=[InputRequired()])
+
+class EventForm(FlaskForm):
     buyinpoints = IntegerField('buyinpoints', validators=[InputRequired()])
     length = IntegerField('length', validators=[InputRequired()])
 
@@ -156,6 +161,13 @@ def database_processor7():
     def ui_isinlottery():
         return isinlottery()
     return dict(ui_isinlottery=ui_isinlottery)
+
+
+@webui.context_processor
+def _isinevent():
+    def ui_isinevent():
+        return iseventtime()
+    return dict(ui_isinevent=ui_isinevent)
 
 
 @webui.context_processor
@@ -331,6 +343,12 @@ def _getannouncement():
         return dbquery("SELECT announce FROM general ", fmt='string', fetch='one')
     return dict(ui_getannouncement=ui_getannouncement)
 
+@webui.context_processor
+def _currenteventtitle():
+    def ui_currenteventtitle():
+        return getcurrenteventtitle()
+    return dict(ui_currenteventtitle=ui_currenteventtitle)
+
 
 @webui.context_processor
 def _haswebaccount():
@@ -353,6 +371,10 @@ def instanceinfo(inst):
 
 def getplayernames():
     return dbquery("SELECT playername FROM players ORDER BY playername ASC", fmt='list', single=True)
+
+
+def getautoevents():
+    return dbquery("SELECT title FROM autoevents", fmt='list', single=True)
 
 
 def getbannedplayers():
@@ -483,6 +505,22 @@ def startlottery():
         flash(u'New Lottery has been Started', 'info')
         return redirect(url_for('webui._lottery'))
     return render_template('startlottery.html', form=form)
+
+@webui.route('/startevent', methods=['POST', 'GET'])
+@login_required
+@roles_required('admin')
+def startevent():
+    if request.method == 'POST':
+        eventname = request.form['eventname']
+        startdate = request.form['startdate'].split(' GMT')[0]
+        enddate = request.form['enddate'].split(' GMT')[0]
+        edate = datetime.strptime(enddate, '%a %b %d %Y %H:%M:%S').date()
+        sdate = datetime.strptime(startdate, '%a %b %d %Y %H:%M:%S').date()
+        einfo = dbquery("SELECT * FROM autoevents WHERE title = '%s'" % (eventname,), fmt='dict', fetch='one')
+        dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix) VALUES (0, '%s', '%s', '%s', '%s', '%s')" % (sdate, edate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
+        flash('New Event Added')
+        return redirect(url_for('webui._events'))
+    return render_template('startevent.html', autoevents=getautoevents())
 
 
 @webui.route('/server/sendchat/<server>', methods=['POST'])

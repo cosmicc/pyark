@@ -21,9 +21,10 @@ def iseventtime():
     inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')))
     if inevent:
         tme = time(11, 0)
-        etime = datetime.combine(inevent, tme)
+        stime = datetime.combine(inevent[2], tme)
+        etime = datetime.combine(inevent[3], tme)
         now = Now(fmt='dt')
-        if etime < now:
+        if now > stime and now < etime:
             return True
         else:
             return False
@@ -31,34 +32,28 @@ def iseventtime():
         return False
 
 
-def getcurrenteventid():
-    if iseventtime():
-        inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
-        return inevent[0]
-    else:
-        return None
-
-
 def getcurrenteventext():
-    inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
+    inevent = dbquery("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
     return inevent[6]
 
 
+def getcurrenteventtitle():
+    inevent = dbquery("SELECT title FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
+    return inevent[4]
+
+
 def getcurrenteventinfo():
-    if iseventtime():
-        inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime =< '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
-        return inevent
-    else:
-        return None
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime =< '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
+    return inevent
 
 
 def getlasteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY id DESC", fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY endtime DESC", fetch='one')
     return inevent
 
 
 def getnexteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' ORDER BY id DESC" % (Now(fmt='dtd'),), fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 ORDER BY starttime ASC" % (Now(fmt='dtd'),), fetch='one')
     return inevent
 
 
@@ -82,9 +77,9 @@ def stopserverevent(inst):
 
 
 def checkifeventover():
-    curevent = getcurrenteventinfo()
-    if curevent or curevent is not None:
-        if curevent[3] < Now():
+    if not iseventtime():
+        curevent = getcurrenteventinfo()
+        if curevent:
             log.info(f'Event {curevent[5]} has passed end time. Ending Event')
             dbupdate("UPDATE events SET completed = 1 WHERE id = '%s'" % (curevent[0],))
 

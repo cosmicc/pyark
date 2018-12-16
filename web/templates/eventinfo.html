@@ -19,7 +19,7 @@
             </div>
         </div>
         {% else %}
-        <div class='container top-pad-5 left-pad bottom-pad-10 is-mobile has-background-success'>
+        <div class='container top-pad-5 left-pad bottom-pad-10 is-mobile text-is-white has-background-success'>
             <div>
                 <h1 class="title">{{ currentevent['title'] }}</h1>
                 <h2 class="subtitle">{{ currentevent['description'] }}</h2>
@@ -29,8 +29,8 @@
         <div class='container top-pad-5 bottom-pad-5 left-pad right-pad'>
             <div class='box has-background-grey-lighter top-pad-5 bottom-pad-5 left-pad right-pad'>
                 <p class='is-2'>Last Event: </p>
-                <p class='is-2'><b>{{ lastevent['title'].title() }}</p>
-                <p class='is-2'>{{ lastevent['description'].title() }}</p>
+                <p class='is-2'><b>{{ lastevent['title'] }}</p>
+                <p class='is-2'>{{ lastevent['description'] }}</p>
                 <p class='is-2'>Ended {{ ui_elapsedTime(lastevent['endtime']) }} ago</b></p>
             </div>
         </div>
@@ -40,11 +40,10 @@
                 {% if not futureevent %}
                 <p class='is-2'><b>Not Yet Scheduled</b></p>
                 {% else %}
-                <p class='is-2'>Next Event: </p>
-                <p class='is-2'><b>{{ futureevent['title'].title() }}</p>
-                <p class='is-2'>{{ futureevent['description'].title() }}</p>
+                <p class='is-2'><b>{{ futureevent['title'] }}</p>
+                <p class='is-2'>{{ futureevent['description'] }}</p>
 
-                <p class='is-2'>Ends {{ ui_elapsedTime(futureevent['endtime']) }} ago</b></p>
+                <p class='is-2'>Starts in {{ ui_elapsedTime(futureevent['starttime']) }}</b></p>
                 {% endif %}
             </div>
         </div>

@@ -37,7 +37,7 @@
          {% if not ui_isinstanceup(instance) %}
          <a class="button has-background-danger is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href=    "/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
         {% elif ui_isinrestart(instance) %}
-        <a class="button has-background-primary is-mobile is-medium is-centered has-text-white is-rounded is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}&nbsp;-&nbsp;{{ ui_getplayersonline(instance, fmt='count') }}/50&nbsp;-&nbsp;{{ ui_getrestartleft(instance) }}&nbsp;min</a>
+        <a class="button has-background-warning is-mobile is-medium is-centered has-text-black is-rounded is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}&nbsp;-&nbsp;{{ ui_getplayersonline(instance, fmt='count') }}/50&nbsp;-&nbsp;{{ ui_getrestartleft(instance) }}&nbsp;min</a>
         {% elif not ui_iscurrentconfig(instance) %}
         <a class="button has-background-info is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href    ="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
         {% else %}
@@ -59,7 +59,11 @@
     
 <div class="container top-pad-5 left-pad-extra right-pad-extra">
     <div id="events">
+        {% if ui_isinevent() %}
+        <a class="button has-background-success is-medium is-rounded is-centered has-text-white is-fullwidth" href="/events">{{ ui_currenteventtitle()}} Event is Active</a>
+        {% else %}
         <a class="button has-background-warning is-medium is-centered is-rounded is-fullwidth" href="/events">No Active Cluster Events</a>
+        {% endif %}
     </div>
 </div>
 
