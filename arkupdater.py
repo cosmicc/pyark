@@ -172,7 +172,7 @@ def restartloop(inst, ext='restart'):
                             stderr=subprocess.DEVNULL, shell=True)
              pushover('Instance Restart', message)
              restartinstnow(inst, ext=ext)
-        elif reason != 'configuration update':
+        elif reason != 'configuration update' or inmaint:
                 setrestartbit(inst)
                 if timeleft == 30:
                     log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
@@ -229,8 +229,10 @@ def instancerestart(inst, reason, ext='restart'):
                 sleep(3)
                 if os.path.isfile('/var/run/reboot-required'):
                     log.warning(f'{inst} physical server needs a hardware reboot after package updates')
-    if not isrebooting(inst):
+                dbupdate("UPDATE instances SET restartreason = 'maintenance restart' WHERE name = '%s'" % (inst,))
+    else:
         dbupdate("UPDATE instances SET restartreason = '%s' WHERE name = '%s'" % (reason, inst))
+    if not isrebooting(inst):
         for each in range(numinstances):
             instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, ext))
             instance[each]['restartthread'].start()
