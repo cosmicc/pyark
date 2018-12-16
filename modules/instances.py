@@ -9,6 +9,14 @@ hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 
+def enableinstance(inst):
+    dbupdate("UPDATE instances SET enabled = True WHERE name = '%s'" % (inst,))
+
+
+def disableinstance(inst):
+    dbupdate("UPDATE instances SET enabled = False WHERE name = '%s'" % (inst,))
+
+
 def iscurrentconfig(inst):
     gcfg = dbquery("SELECT pendingcfg FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     dbdata = dbquery("SELECT cfgver FROM instances WHERE name = '%s'" % (inst,), fetch='one')
@@ -21,6 +29,14 @@ def iscurrentconfig(inst):
 def isinrestart(inst):
     dbdata = dbquery("SELECT needsrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     if dbdata[0] == 'True':
+        return True
+    else:
+        return False
+
+
+def isinstancerunning(inst):
+    dbdata = dbquery("SELECT isrunning FROM instances WHERE name = '%s'" % (inst,), fetch='one')
+    if dbdata[0] == 1:
         return True
     else:
         return False

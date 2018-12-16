@@ -1,7 +1,7 @@
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now, Secs
 from time import sleep
-from datetime import datetime
+from datetime import datetime, time
 import logging
 import socket
 import subprocess
@@ -18,30 +18,47 @@ def setmotd(inst, motd=None, cancel=False):
 
 
 def iseventtime():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(fmt='dtd'),))
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime =< '%s'" % (Now(fmt='dtd'),))
     if inevent:
-        return True
+        tme = time(11, 0)
+        etime = datetime.combine(inevent, tme)
+        now = Now(fmt='dt')
+        if etime < now:
+            return True
+        else:
+            return False
     else:
         return False
 
 
 def getcurrenteventid():
-    inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(fmt='dtd'),), fetch='one')
-    return inevent[0]
+    if iseventtime():
+        inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND starttime =< '%s'" % (Now(fmt='dtd'),), fetch='one')
+        return inevent[0]
+    else:
+        return None
+
+
+def getcurrenteventext():
+    inevent = dbquery("SELECT id FROM events WHERE completed = 0 AND starttime =< '%s'" % (Now(fmt='dtd'),), fetch='one')
+    return inevent[6]
 
 
 def getcurrenteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime < '%s'" % (Now(fmt='dtd'),), fetch='one')
-    return inevent
+    if iseventtime():
+        inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime =< '%s'" % (Now(fmt='dtd'),), fetch='one')
+        return inevent
+    else:
+        return None
 
 
 def getlasteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY id DESC LIMIT 1", fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY id DESC", fetch='one')
     return inevent
 
 
 def getnexteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s'" % (Now(fmt='dtd'),), fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' ORDER BY id DESC" % (Now(fmt='dtd'),), fetch='one')
     return inevent
 
 

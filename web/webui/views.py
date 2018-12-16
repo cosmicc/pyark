@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time, date
 from flask import render_template, Response, request, redirect, url_for, flash, Blueprint
 from flask_security import login_required, logout_user, current_user, roles_required, RegisterForm, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
@@ -196,7 +196,14 @@ def _iscurrentconfig():
 @webui.context_processor
 def _elapsedTime():
     def ui_elapsedTime(etime):
-        return elapsedTime(Now(), int(etime))
+        if isinstance(etime, int):
+            return elapsedTime(Now(), etime)
+        elif isinstance(etime, str):
+            return elapsedTime(Now(), int(etime))
+        elif isinstance(etime, date):
+            ftime = datetime.combine(etime, time.min)
+            gtime = datetimeto(ftime, fmt='epoch')
+            return elapsedTime(Now(), int(gtime))
     return dict(ui_elapsedTime=ui_elapsedTime)
 
 
@@ -380,11 +387,11 @@ def getcurrentlottery():
 
 
 def getcurrentevent():
-    return dbquery("SELECT * FROM events WHERE completed = 0 AND startime < '%s' ORDER BY endtime DESC" % (Now(),), fmt='dict', fetch='one')
+    return dbquery("SELECT * FROM events WHERE completed = 0 AND starttime <= '%s'" % (Now(fmt='dtd'),), fmt='dict', fetch='one')
 
 
 def getfutureevent():
-    return dbquery("SELECT * FROM events WHERE completed = 0 AND startime > '%s' ORDER BY endtime DESC" % (Now(),), fmt='dict', fetch='one')
+    return dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' order by endtime DESC" % (Now(fmt='dtd'),), fmt='dict', fetch='one')
 
 
 def startthelottery(buyin, length):
