@@ -20,7 +20,7 @@ def setmotd(inst, motd=None, cancel=False):
 def iseventtime():
     inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fmt='dict', fetch='one')
     if inevent:
-        tme = time(11, 0)
+        tme = time(10, 59)
         stime = datetime.combine(inevent['starttime'], tme)
         etime = datetime.combine(inevent['endtime'], tme)
         now = Now(fmt='dt')
@@ -34,17 +34,20 @@ def iseventtime():
 
 def getcurrenteventext():
     inevent = dbquery("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
-    return inevent[0]
+    if inevent:
+        return inevent[0]
 
 
 def getcurrenteventtitle():
     inevent = dbquery("SELECT title FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
-    return inevent[0]
+    if inevent:
+        return inevent[0]
 
 
 def getcurrenteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime =< '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
-    return inevent
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
+    if inevent:
+        return inevent
 
 
 def getlasteventinfo():
