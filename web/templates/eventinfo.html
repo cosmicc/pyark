@@ -26,6 +26,16 @@
             </div>
         </div>
         {% endif %}
+        {% if currentevent %}
+         <div class='container top-pad-5 bottom-pad-5 left-pad right-pad'>
+            <div class='box has-background-light top-pad-5 bottom-pad-5 left-pad right-pad'>
+                <p class='is-2'>Current Event: </p>
+                <p class='is-2'><b>{{ currentevent['title'] }}</p>
+                <p class='is-2'>{{ currentevent['description'] }}</p>
+                <p class='is-2'>Ends in {{ ui_elapsedTime(currentevent['endtime']) }}</b></p>
+            </div>
+        </div>
+        {% endif %}
         <div class='container top-pad-5 bottom-pad-5 left-pad right-pad'>
             <div class='box has-background-grey-lighter top-pad-5 bottom-pad-5 left-pad right-pad'>
                 <p class='is-2'>Last Event: </p>

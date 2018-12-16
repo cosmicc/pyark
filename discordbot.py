@@ -4,8 +4,9 @@ from modules.configreader import discord_channel, discord_serverchat, discordtok
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, getlastwipe, getlastrestart, writechat, writeglobal
 from modules.players import getplayer, getplayerlastserver, getplayersonline, getlastplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers
-from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs
+from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs, datetimeto
 from time import sleep
+from datetime import time
 from lottery import totallotterydeposits
 import asyncio
 import discord
@@ -185,17 +186,20 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             currentevent = getcurrenteventinfo()
             nextevent = getnexteventinfo()
             msg = ''
-            if lastevent and lastevent is not None:
-                msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(lastevent[3], Now())} ago\n'
-            if currentevent and currentevent is not None:
-                msg = msg + f'Current Event is: {currentevent[4]} - {currentevent[5]}\nCurrent Event ends {epochto(currentevent[3], "string")} EST in {elapsedTime(currentevent[3], Now())}\n'
-            else:
-                msg = msg + f'There is no Event currently running\n'
-            if nextevent and nextevent is not None:
-                msg = msg + f'Next Event is: {nextevent[4]} and starts {epochto(nextevent[2], "string")} EST in {elapsedTime(nextevent[2], Now())}\n'
-            else:
-                msg = msg + f'Next Event is not scheduled yet.\n'
-            await client.send_message(message.channel, msg)
+            try:
+                if lastevent is not None:
+                    msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(lastevent[3], Now())} ago\n'
+                if currentevent is not None:
+                    msg = msg + f'Current Event is: {currentevent[4]} - {currentevent[5]}\nCurrent Event ends {currentevent[3]} {elapsedTime(datetimeto(currentevent[3], "epoch"), Now())}\n'
+                else:
+                    msg = msg + f'There is no Event currently running\n'
+                if nextevent is not None:
+                    msg = msg + f'Next Event is: {nextevent[4]} and starts {nextevent[2]} {elapsedTime(datetimeto(nextevent[2], "epoch"), Now())}\n'
+                else:
+                    msg = msg + f'Next Event is not scheduled yet.\n'
+                await client.send_message(message.channel, msg)
+            except:
+                log.critical(f'Error calculating events', exc_info=True)
 
         elif message.content.startswith('!decay') or message.content.startswith('!expire'):
             whofor = str(message.author).lower()

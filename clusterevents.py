@@ -56,7 +56,7 @@ def getlasteventinfo():
 
 
 def getnexteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 ORDER BY starttime ASC" % (Now(fmt='dtd'),), fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND endtime < '%s' ORDER BY starttime ASC" % (Now(fmt='dtd'),), fetch='one')
     return inevent
 
 
@@ -84,7 +84,7 @@ def checkifeventover():
         curevent = getcurrenteventinfo()
         if curevent:
             log.info(f'Event {curevent[5]} has passed end time. Ending Event')
-            dbupdate("UPDATE events SET completed = 1 WHERE id = '%s'" % (curevent[0],))
+            dbupdate("UPDATE events SET completed = 1 WHERE endtime = '%s'" % (curevent[3],))
 
 
 def eventwatcher(inst):
