@@ -77,14 +77,14 @@ def startserverevent(inst):
     dbupdate("UPDATE general SET announce = '%s'" % (emsg,))
     log.info(f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
     msg = f"\n\n                      {eventinfo[4]} Event is Starting Soon!\n\n                   {eventinfo[5]}"
-    setmotd(inst, motd=msg)
-
+    subprocess.run("""arkmanager rconcmd "broadcast '%s' " @%s""" % (msg, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 def stopserverevent(inst):
     dbupdate("UPDATE instances SET inevent = 0 WHERE name = '%s'" % (inst,))
     dbupdate("UPDATE general SET announce = NULL")
     log.info(f'Ending event on instance {inst.capitalize()}')
-    setmotd(inst, cancel=True)
+    msg = f"\n\n                      {eventinfo[4]} Event is Ending Soon!"
+    subprocess.run("""arkmanager rconcmd "broadcast '%s' " @%s""" % (msg, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 
 def checkifeventover():
