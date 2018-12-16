@@ -434,7 +434,7 @@ new player to cluster.')
             if int(pexist[16]) != int(rewardpoints):
                 if int(rewardpoints) != 0:
                     if Now() - float(pexist[17]) > 60:
-                        log.info(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for \
+                        log.debug(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for \
 {playername} on {inst}')
                         dbupdate("UPDATE players SET transferpoints = '%s', lastpointtimestamp = '%s' WHERE steamid = '%s'" %
                                  (int(rewardpoints) + int(pexist[16]), str(Now()), str(steamid)))
