@@ -413,7 +413,7 @@ def getcurrentevent():
 
 
 def getfutureevent():
-    return dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' order by endtime DESC" % (Now(fmt='dtd'),), fmt='dict', fetch='one')
+    return dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime > '%s' OR starttime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'),Now(fmt='dtd')), fmt='dict', fetch='one')
 
 
 def startthelottery(buyin, length):
