@@ -73,13 +73,16 @@ def currentserverevent(inst):
 def startserverevent(inst):
     dbupdate("UPDATE instances SET inevent = '%s' WHERE name = '%s'" % (getcurrenteventext(), inst))
     eventinfo = getcurrenteventinfo()
+    emsg = f'{eventinfo[4]} Event is currently active!'
+    dbupdate("UPDATE general SET announce = '%s'" % (emsg,))
     log.info(f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
-    msg = f"\n\n                      {eventinfo[4]} Event is Active!\n\n                   {eventinfo[5]}"
+    msg = f"\n\n                      {eventinfo[4]} Event is Starting Soon!\n\n                   {eventinfo[5]}"
     setmotd(inst, motd=msg)
 
 
 def stopserverevent(inst):
     dbupdate("UPDATE instances SET inevent = 0 WHERE name = '%s'" % (inst,))
+    dbupdate("UPDATE general SET announce = NULL")
     log.info(f'Ending event on instance {inst.capitalize()}')
     setmotd(inst, cancel=True)
 
