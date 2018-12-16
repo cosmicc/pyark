@@ -92,9 +92,9 @@ def eventwatcher(inst):
     while True:
         checkifeventover()
         try:
-            if iseventtime() and currentserverevent(inst) == 0:
+            if iseventtime() and currentserverevent(inst) == '0':
                 startserverevent(inst)
-            elif not iseventtime() and currentserverevent(inst) != 0:
+            elif not iseventtime() and currentserverevent(inst) != '0':
                 stopserverevent(inst)
         except:
             log.critical(f'Critical error in event coordinator', exc_info=True)
