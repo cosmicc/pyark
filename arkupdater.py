@@ -361,7 +361,7 @@ def checkbackup():
 def checkifenabled(inst):
     lastwipe = dbquery("SELECT enabled, isrunning FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
     if lastwipe[0] and lastwipe[1] == 0:
-        restartinstnow(inst, 'admin start', ext='start')
+        restartinstnow(inst, ext='start')
     elif not lastwipe[0] and lastwipe[1] == 1:
         instancerestart(inst, 'admin restart', ext='stop')
 
