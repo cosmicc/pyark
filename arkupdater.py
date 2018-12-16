@@ -160,7 +160,6 @@ def restartloop(inst, ext='restart'):
     timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
     timeleft = int(timeleftraw[0])
     reason = timeleftraw[1]
-    log.warning(reason)
     if ext == 'start':
         restartinstnow(inst, ext=ext)
     else:
