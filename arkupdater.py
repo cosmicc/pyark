@@ -172,7 +172,7 @@ def restartloop(inst, ext='restart'):
                             stderr=subprocess.DEVNULL, shell=True)
              pushover('Instance Restart', message)
              restartinstnow(inst, ext=ext)
-        elif reason != 'configuration update' or inmaint:
+        elif reason != 'configuration update':
                 setrestartbit(inst)
                 if timeleft == 30:
                     log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
