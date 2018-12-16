@@ -161,6 +161,7 @@ def restartloop(inst, ext='restart'):
     timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
     timeleft = int(timeleftraw[0])
     reason = timeleftraw[1]
+    log.warning(reason)
     if ext == 'start':
         restartinstnow(inst, ext=ext)
     else:
@@ -361,8 +362,10 @@ def checkbackup():
 def checkifenabled(inst):
     lastwipe = dbquery("SELECT enabled, isrunning FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
     if lastwipe[0] and lastwipe[1] == 0:
+        log.warning(f'instance {inst} is set to start (enabled). starting server')
         restartinstnow(inst, ext='start')
     elif not lastwipe[0] and lastwipe[1] == 1:
+        log.warning(f'instance {inst} is set to stop (disabled). stopping server')
         instancerestart(inst, 'admin restart', ext='stop')
 
 
@@ -371,7 +374,7 @@ def checkifalreadyrestarting(inst):
     ded = lastwipe[0]
     if ded == "True":
         if not isrebooting(inst):
-            log.info(f'restart flag set for instance {inst}, starting restart loop')
+            log.debug(f'restart flag set for instance {inst}, starting restart loop')
             restartloop(inst)
 
 
