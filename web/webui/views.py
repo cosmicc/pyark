@@ -7,7 +7,7 @@ from itertools import chain
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, psql_port
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat
+from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto
@@ -656,6 +656,24 @@ def _kickplayer(steamid, instance):
 def _restartinstance(instance):
     restartinstance(instance, cancel=False)
     flash(u'Restarting Server', 'info')
+    return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
+
+
+@webui.route('/server/start/<instance>')
+@login_required
+@roles_required('admin')
+def _startinstance(instance):
+    enableinstance(instance)
+    flash(u'Starting Server', 'info')
+    return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
+
+
+@webui.route('/server/stop/<instance>')
+@login_required
+@roles_required('admin')
+def _stopinstance(instance):
+    disableinstance(instance)
+    flash(u'Sending Server Shutdown', 'info')
     return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
 
 

@@ -172,7 +172,7 @@ def restartloop(inst, ext='restart'):
                                stderr=subprocess.DEVNULL, shell=True)
                 pushover('Instance Restart', message)
                 restartinstnow(inst, ext=ext)
-        else:
+        elif reason != 'configuration update':
                 if timeleft == 30:
                     log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
                     writechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}',
@@ -228,19 +228,10 @@ def instancerestart(inst, reason, ext='restart'):
                 sleep(3)
                 if os.path.isfile('/var/run/reboot-required'):
                     log.warning(f'{inst} physical server needs a hardware reboot after package updates')
-    if (inmaint and reason == "configuration update") \
-       or (inmaint and reason == "maintenance restart") \
-       or (reason != "configuration update" and reason != "maintenance restart"):
+    if not isrebooting(inst):
         dbupdate("UPDATE instances SET restartreason = '%s' WHERE name = '%s'" % (reason, inst))
-        if not isrebooting(inst):
-            for each in range(numinstances):
-                if instance[each]['name'] == inst:
-                    instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, ext))
-                    instance[each]['restartthread'].start()
-        else:
-            log.warning(f'instance {inst} is already running the restart thread')
-    else:
-        log.debug(f'instance restart posponed becuase not in maintenance window')
+        instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, ext))
+        instance[each]['restartthread'].start()
 
 
 def compareconfigs(config1, config2):
