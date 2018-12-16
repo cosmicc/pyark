@@ -87,7 +87,6 @@ def stopserverevent(inst):
 def checkifeventover():
     if not iseventtime():
         curevent = getcurrenteventinfo()
-        log.warning(curevent)
         if curevent:
             log.info(f'Event {curevent[5]} has passed end time. Ending Event')
             dbupdate("UPDATE events SET completed = 1 WHERE endtime = '%s'" % (curevent[3],))
