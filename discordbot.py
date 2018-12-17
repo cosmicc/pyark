@@ -186,13 +186,13 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             nextevent = getnexteventinfo()
             msg = ''
             try:
-                if lastevent is not None:
+                if lastevent and lastevent is not None:
                     msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(datetimeto(d2dt_maint(lastevent[3]), fmt="epoch"), Now())} ago\n'
-                if currentevent is not None:
+                if currentevent and currentevent is not None:
                     msg = msg + f'Current Event is: {currentevent[4]} {currentevent[5]}\nCurrent Event ends in {elapsedTime(datetimeto(d2dt_maint(currentevent[3]), fmt="epoch"), Now())}\n'
                 else:
                     msg = msg + f'There is no Event currently running\n'
-                if nextevent is not None:
+                if nextevent and nextevent is not None:
                     msg = msg + f'Next Event is: {nextevent[4]} and starts in {elapsedTime(datetimeto(d2dt_maint(nextevent[2]), fmt="epoch"), Now())}\n'
                 else:
                     msg = msg + f'Next Event is not scheduled yet.\n'
