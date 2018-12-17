@@ -11,6 +11,9 @@ intervals = (
     ('minutes', 60),
     ('seconds', 1),)
 
+def d2dt_maint(dtme):
+     tme = time(10, 59)
+     return datetime.combine(dtme, tme)
 
 def datetimeto(dt, fmt, est=False):
     if fmt == 'epoch':

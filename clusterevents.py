@@ -1,10 +1,10 @@
-from modules.dbhelper import dbquery, dbupdate
-from modules.timehelper import Now, Secs
+from datetime import datetime
 from time import sleep
-from datetime import datetime, time
 import logging
 import socket
 import subprocess
+from modules.dbhelper import dbquery, dbupdate
+from modules.timehelper import Now, Secs, d2dt_maint
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
@@ -18,11 +18,10 @@ def setmotd(inst, motd=None, cancel=False):
 
 
 def iseventtime():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fmt='dict', fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fmt='dict', fetch='one')
     if inevent:
-        tme = time(10, 59)
-        stime = datetime.combine(inevent['starttime'], tme)
-        etime = datetime.combine(inevent['endtime'], tme)
+        stime = d2dt_maint(inevent['starttime'])
+        etime = d2dt_maint(inevent['endtime'])
         now = Now(fmt='dt')
         if now > stime and now < etime:
             return True
@@ -33,20 +32,20 @@ def iseventtime():
 
 
 def getcurrenteventext():
-    inevent = dbquery("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
+    inevent = dbquery("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
     if inevent:
         return inevent[0]
 
 
 def getcurrenteventtitle():
-    inevent = dbquery("SELECT title FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
+    inevent = dbquery("SELECT title FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
     if inevent:
         return inevent[0]
 
 
 def getcurrenteventinfo():
     if iseventtime():
-        inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'),Now(fmt='dtd')), fetch='one')
+        inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
         if inevent:
             return inevent
         else:
@@ -73,16 +72,15 @@ def currentserverevent(inst):
 def startserverevent(inst):
     dbupdate("UPDATE instances SET inevent = '%s' WHERE name = '%s'" % (getcurrenteventext(), inst))
     eventinfo = getcurrenteventinfo()
-    emsg = f'{eventinfo[4]} Event is currently active!'
-    #dbupdate("UPDATE general SET announce = '%s'" % (emsg,))
     log.info(f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
     msg = f"\n\n                      {eventinfo[4]} Event is Starting Soon!\n\n                        {eventinfo[5]}"
     subprocess.run("""arkmanager rconcmd "broadcast '%s' " @%s""" % (msg, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
+
 def stopserverevent(inst):
     dbupdate("UPDATE instances SET inevent = 0 WHERE name = '%s'" % (inst,))
-    #dbupdate("UPDATE general SET announce = NULL")
     log.info(f'Ending event on instance {inst.capitalize()}')
+    eventinfo = getcurrenteventinfo()
     msg = f"\n\n                      {eventinfo[4]} Event is Ending Soon!"
     subprocess.run("""arkmanager rconcmd "broadcast '%s' " @%s""" % (msg, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
