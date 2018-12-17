@@ -150,16 +150,16 @@ def playergreet(steamid, inst):
                 log.info(f'transferring {xferpoints} non home server points into account for \
 {oplayer[1]} on {inst}')
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
-                subprocess.run("""arkmanager rconcmd 'ScriptCommand tcsar addarctotal "%s" %s' @%s""" %
+                subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, xferpoints, inst), shell=True)
             if int(oplayer[2]) + 300 > Now():
                 if oplayer[3] != inst:
                     pass
-                    # gogo = 1
-                    # mtxt = f'{oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
-                    # subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
-                    # writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
-                    # log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
+                    gogo = 1
+                    mtxt = f'{oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
+                    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+                    writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
+                    log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
                 log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
             else:
