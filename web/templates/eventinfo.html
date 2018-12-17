@@ -21,18 +21,18 @@
         {% else %}
         <div class='container top-pad-5 left-pad bottom-pad-10 is-mobile text-is-white has-background-success'>
             <div>
-                <h1 class="title">{{ currentevent['title'] }}</h1>
-                <h2 class="subtitle">{{ currentevent['description'] }}</h2>
+                <h1 class="title has-text-white">{{ currentevent['title'] }}</h1>
+                <h2 class="subtitle has-text-white">{{ currentevent['description'] }}</h2>
             </div>
         </div>
         {% endif %}
         {% if currentevent %}
          <div class='container top-pad-5 bottom-pad-5 left-pad right-pad'>
-            <div class='box has-background-light top-pad-5 bottom-pad-5 left-pad right-pad'>
-                <p class='is-2'>Current Event: </p>
-                <p class='is-2'><b>{{ currentevent['title'] }}</p>
-                <p class='is-2'>{{ currentevent['description'] }}</p>
-                <p class='is-2'>Ends in {{ ui_elapsedTime(currentevent['endtime']) }}</b></p>
+            <div class='box has-background-success top-pad-5 bottom-pad-5 left-pad right-pad'>
+                <p class='is-2 has-text-white'>Current Event: </p>
+                <p class='is-2 has-text-white'><b>{{ currentevent['title'] }}</p>
+                <p class='is-2 has-text-white'>{{ currentevent['description'] }}</p>
+                <p class='is-2 has-text-white'>Ends in {{ ui_elapsedTime(currentevent['endtime']) }}</b></p>
             </div>
         </div>
         {% endif %}
@@ -45,15 +45,15 @@
             </div>
         </div>
         <div class='container top-pad-5 bottom-pad-5 left-pad right-pad'>
-            <div class='box has-background-light top-pad-5 bottom-pad-5 left-pad right-pad'>
-                <p class='is-2'>Next Event:</p>
+            <div class='box has-background-grey top-pad-5 bottom-pad-5 left-pad right-pad'>
+                <p class='is-2 has-text-white'>Next Event:</p>
                 {% if not futureevent %}
-                <p class='is-2'><b>Not Yet Scheduled</b></p>
+                <p class='is-2 has-text-white'><b>Not Yet Scheduled</b></p>
                 {% else %}
-                <p class='is-2'><b>{{ futureevent['title'] }}</p>
-                <p class='is-2'>{{ futureevent['description'] }}</p>
+                <p class='is-2 has-text-white'><b>{{ futureevent['title'] }}</p>
+                <p class='is-2 has-text-white'>{{ futureevent['description'] }}</p>
 
-                <p class='is-2'>Starts in {{ ui_elapsedTime(futureevent['starttime']) }}</b></p>
+                <p class='is-2 has-text-white'>Starts in {{ ui_elapsedTime(futureevent['starttime']) }}</b></p>
                 {% endif %}
             </div>
         </div>

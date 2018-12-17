@@ -4,7 +4,7 @@ from modules.configreader import discord_channel, discord_serverchat, discordtok
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, getlastwipe, getlastrestart, writechat, writeglobal
 from modules.players import getplayer, getplayerlastserver, getplayersonline, getlastplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers
-from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs, datetimeto
+from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs, datetimeto, d2dt_maint
 from time import sleep
 from datetime import time
 from lottery import totallotterydeposits
@@ -188,13 +188,13 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
             msg = ''
             try:
                 if lastevent is not None:
-                    msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(lastevent[3], Now())} ago\n'
+                    msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(datetimeto(d2dt_maint(lastevent[3]), fmt="epoch"), Now())} ago\n'
                 if currentevent is not None:
-                    msg = msg + f'Current Event is: {currentevent[4]} - {currentevent[5]}\nCurrent Event ends {currentevent[3]} {elapsedTime(datetimeto(currentevent[3], "epoch"), Now())}\n'
+                    msg = msg + f'Current Event is: {currentevent[4]} {currentevent[5]}\nCurrent Event ends in {elapsedTime(datetimeto(d2dt_maint(currentevent[3]), fmt="epoch"), Now())}\n'
                 else:
                     msg = msg + f'There is no Event currently running\n'
                 if nextevent is not None:
-                    msg = msg + f'Next Event is: {nextevent[4]} and starts {nextevent[2]} {elapsedTime(datetimeto(nextevent[2], "epoch"), Now())}\n'
+                    msg = msg + f'Next Event is: {nextevent[4]} and starts in {elapsedTime(datetimeto(d2dt_maint(nextevent[2]), fmt="epoch"), Now())}\n'
                 else:
                     msg = msg + f'Next Event is not scheduled yet.\n'
                 await client.send_message(message.channel, msg)
@@ -455,7 +455,7 @@ discord.\nType !linkme in game'
                                      ('%s', '%s', '%s', '%s')" % (lpinfo[0], lpinfo[1], Now(), 0))
                             if linfo[1] == 'points':
                                 dbupdate("UPDATE lotteryinfo SET payoutitem = '%s' WHERE winner = 'Incomplete'" %
-                                         (str(int(linfo[2]) + int(linfo[4])), ))
+                                         (str(int(linfo[2]) + (int(linfo[4]))*2), ))
                             dbupdate("UPDATE lotteryinfo SET players = '%s' WHERE id = '%s'" % (int(linfo[6]) + 1, linfo[0]))
                             msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen on {ltime} \
 in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}. Good Luck!'

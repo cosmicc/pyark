@@ -60,7 +60,7 @@ def getlasteventinfo():
 
 
 def getnexteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND endtime < '%s' ORDER BY starttime ASC" % (Now(fmt='dtd'),), fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' ORDER BY starttime ASC" % (Now(fmt='dtd'),), fetch='one')
     return inevent
 
 

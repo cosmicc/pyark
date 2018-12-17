@@ -520,7 +520,7 @@ def lotteryquery(whoasked, lchoice, inst):
                          (lpinfo[0], lpinfo[1], Now(), 0))
                 if linfo[1] == 'points':
                     dbupdate("UPDATE lotteryinfo SET payoutitem = '%s' WHERE winner = 'Incomplete'" %
-                             (str(int(linfo[2]) + int(linfo[4])), ))
+                             (str(int(linfo[2]) + (int(linfo[4])*2)), ))
                 dbupdate("UPDATE lotteryinfo SET players = '%s' WHERE id = '%s'" % (int(linfo[6]) + 1, linfo[0]))
                 msg = f'You have been added to the {lfo} lottery! A winner will be choosen on {ltime} in \
 {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}. Good Luck!'
