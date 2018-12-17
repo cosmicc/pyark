@@ -417,7 +417,7 @@ def getfutureevent():
 
 
 def startthelottery(buyin, length):
-    litm = str(buyin * 10)
+    litm = str(buyin * 20)
     # lottostart = datetime.fromtimestamp(Now() + (3600 * int(length))).strftime('%a, %b %d %I:%M%p')
     dbupdate("INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner,announced) VALUES ('%s','%s','%s','%s','%s',0,'Incomplete',False)" % ('points', litm, Now(), buyin, length))
 

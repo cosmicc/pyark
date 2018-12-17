@@ -80,15 +80,14 @@ def startserverevent(inst):
 def stopserverevent(inst):
     dbupdate("UPDATE instances SET inevent = 0 WHERE name = '%s'" % (inst,))
     log.info(f'Ending event on instance {inst.capitalize()}')
-    eventinfo = getcurrenteventinfo()
+    eventinfo = getlasteventinfo()
     msg = f"\n\n                      {eventinfo[4]} Event is Ending Soon!"
     subprocess.run("""arkmanager rconcmd "broadcast '%s' " @%s""" % (msg, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 
 def checkifeventover():
-    if not iseventtime():
-        curevent = getcurrenteventinfo()
-        if curevent:
+    curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND endtime > '%s' ORDER BY endtime ASC" % (Now(fmt='dtd'),), fetch='one')
+    if curevent and not iseventtime:
             log.info(f'Event {curevent[5]} has passed end time. Ending Event')
             dbupdate("UPDATE events SET completed = 1 WHERE endtime = '%s'" % (curevent[3],))
 

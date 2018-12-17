@@ -357,10 +357,13 @@ def startvoter(inst, whoasked):
 def getnamefromchat(chat):
     # log.warning(chat)
     rawline = chat.split(':')
-    rawline = rawline[1].split(' (')
-    rawline = rawline[1][:-1].strip()
+    if len(rawline) > 1:
+        rawline = rawline[1].split(' (')
+        rawline = rawline[1][:-1].strip()
     # log.warning(rawline)
-    return rawline.lower()
+        return rawline.lower()
+    else:
+        return None
 
 
 def isserver(line):

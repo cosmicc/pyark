@@ -437,7 +437,12 @@ https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
 
 def arkupd():
     log.debug('arkupdater thread started')
-    log.info(f'found {numinstances} ark server instances: {instr}')
+    if numinstances > 0:
+        log.info(f'found {numinstances} ark server instances: {instr}')
+    elif is_arkupdater:
+        log.info(f'No Ark game instances found, but is Master Game Updater')
+    else:
+        log.warning(f'No Ark game instances found, also NOT master updater, THIS ISNT RIGHT')
     while True:
         try:
             for each in range(numinstances):
