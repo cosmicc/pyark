@@ -1,0 +1,6 @@
+#!/bin/bash
+
+nowtime=`date '+%Y-%m-%d-%H-%M'`;
+
+tar -cJf /home/ark/shared/cluster-backups/clusters-$nowtime.tar.bz2 -C /home/ark/shared ./clusters
+find /home/ark/shared/cluster-backups/* -type d -ctime +30 | xargs rm -rf

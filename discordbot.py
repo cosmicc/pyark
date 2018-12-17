@@ -6,7 +6,6 @@ from modules.instances import instancelist, getlastwipe, getlastrestart, writech
 from modules.players import getplayer, getplayerlastserver, getplayersonline, getlastplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers
 from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs, datetimeto, d2dt_maint
 from time import sleep
-from datetime import time
 from lottery import totallotterydeposits
 import asyncio
 import discord
@@ -542,3 +541,4 @@ to link your account'
             client.run(discordtoken)
         except:
             log.critical('Critical Error in Discord Bot Routine!', exc_info=True)
+            sleep(60)

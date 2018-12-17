@@ -123,7 +123,7 @@ def lotteryloop(linfo):
     inlottery = True
     log.info('lottery loop has begun, waiting for lottery entries')
     while inlottery:
-        sleep(Secs['1min'])
+        sleep(Secs['5min'])
         try:
             tdy = linfo[3] + (Secs['hour'] * int(linfo[5]))
         # tdy = float(linfo[3])+300*int(linfo[5]) ## quick 5 min for testing
