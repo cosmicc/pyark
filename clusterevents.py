@@ -49,9 +49,9 @@ def getcurrenteventinfo():
         if inevent:
             return inevent
         else:
-            return False
+            return None
     else:
-        return False
+        return None
 
 
 def getlasteventinfo():
@@ -86,11 +86,11 @@ def stopserverevent(inst):
 
 
 def checkifeventover():
-    curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (endtime < '%s' OR endtime = '%s') ORDER BY endtime ASC" % ( Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
-   # curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (endtime < '%s' OR endtime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'),), fetch='one')
-    if curevent and not iseventtime:
-            log.info(f'Event {curevent[5]} has passed end time. Ending Event')
-            dbupdate("UPDATE events SET completed = 1 WHERE endtime = '%s'" % (curevent[3],))
+    curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (endtime < '%s' OR endtime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+    #  curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (endtime < '%s' OR endtime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'),), fetch='one')
+    if curevent and not iseventtime():
+        log.info(f'Event {curevent[5]} has passed end time. Ending Event')
+        dbupdate("UPDATE events SET completed = 1 WHERE endtime = '%s'" % (curevent[3],))
 
 
 def eventwatcher(inst):
