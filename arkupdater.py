@@ -10,6 +10,7 @@ from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
 from time import sleep
 from clusterevents import iseventtime, getcurrenteventext
+from discordbot import writediscord
 import filecmp
 import logging
 import os
@@ -23,10 +24,6 @@ log = logging.getLogger(name=hstname)
 confupdtimer = 0
 dwtimer = 0
 updgennotify = Now() - Secs['hour']
-
-
-def writediscord(msg, tstamp):
-    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % ('generalchat', 'ALERT', msg, tstamp))
 
 
 def writechat(inst, whos, msg, tstamp):
@@ -383,7 +380,6 @@ def checkifalreadyrestarting(inst):
 def checkupdates():
     global updgennotify
     global ugennotify
-    log.warning(f'is_arkupdater: {is_arkupdater} type: {type(is_arkupdater)}')
     if is_arkupdater == "True" and Now() - updgennotify > Secs['hour']:
         try:
             ustate, curver, avlver = isnewarkver('all')

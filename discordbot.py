@@ -21,6 +21,10 @@ channel = discord.Object(id=discord_serverchat)
 channel2 = discord.Object(id=discord_channel)
 
 
+def writediscord(msg, tstamp):
+    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % ('generalchat', 'ALERT', msg, tstamp))
+
+
 def getlottowinnings(pname):
     pwins = dbquery("SELECT type, payoutitem FROM lotteryinfo WHERE winner = '%s'" % (pname,))
     totpoints = 0
