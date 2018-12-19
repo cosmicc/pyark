@@ -4,13 +4,15 @@ from modules.timehelper import estshift, Secs, Now
 from numpy import argmax
 from numpy.random import seed, shuffle, randint
 from time import sleep
-from discordbot import writediscord
 import logging
 import socket
 
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
+
+def writediscord(msg, tstamp):
+    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % ('generalchat', 'ALERT', msg, tstamp))
 
 
 def writeglobal(inst, whos, msg):

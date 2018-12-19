@@ -1,14 +1,15 @@
-from datetime import datetime
 from time import sleep
 import logging
 import socket
 import subprocess
-from discordbot import writediscord
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now, Secs, d2dt_maint
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
+
+def writediscord(msg, tstamp):
+    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % ('generalchat', 'ALERT', msg, tstamp))
 
 
 def setmotd(inst, motd=None, cancel=False):
@@ -91,7 +92,7 @@ def checkifeventover():
     #  curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (endtime < '%s' OR endtime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'),), fetch='one')
     if curevent and not iseventtime():
         log.info(f'Event {curevent[5]} has passed end time. Ending Event')
-        msg = f"{eventinfo[4]} Event is Ending"
+        msg = f"{curevent[4]} Event is Ending"
         writediscord(msg, Now())
         dbupdate("UPDATE events SET completed = 1 WHERE endtime = '%s'" % (curevent[3],))
 
