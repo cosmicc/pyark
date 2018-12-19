@@ -139,7 +139,7 @@ def restartinstnow(inst, ext='restart'):
         subprocess.run('cp %s/stagedconfig/GameUserSettings-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini' % (sharedpath, inst.lower(), arkroot), stdout=subprocess.DEVNULL, shell=True)
         log.debug(f'server {inst} built and updated config files')
         log.info(f'server {inst} is updating from staging directory')
-        subprocess.run('arkmanager update --no-download --update-mods --no-autostart @%s' % (inst),
+        subprocess.run('arkmanager update --force --no-download --update-mods --no-autostart @%s' % (inst),
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         log.info(f'server {inst} instance is starting')
         subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -258,7 +258,7 @@ def compareconfigs(config1, config2):
 
 def buildconfig(inst):
     try:
-        basecfgfile  = f'{sharedpath}/config/GameUserSettings-base.ini'
+        basecfgfile = f'{sharedpath}/config/GameUserSettings-base.ini'
         servercfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini'
         newcfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.tmp'
         stgcfgfile = f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini'
@@ -383,7 +383,8 @@ def checkifalreadyrestarting(inst):
 def checkupdates():
     global updgennotify
     global ugennotify
-    if is_arkupdater and Now() - updgennotify > Secs['hour']:
+    log.warning(f'is_arkupdater: {is_arkupdater} type: {type(is_arkupdater)}')
+    if is_arkupdater == "True" and Now() - updgennotify > Secs['hour']:
         try:
             ustate, curver, avlver = isnewarkver('all')
             if not ustate:
