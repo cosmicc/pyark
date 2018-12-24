@@ -1,3 +1,4 @@
+from datetime import timedelta
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from modules.configreader import discord_channel, discord_serverchat, discordtoken
@@ -26,12 +27,11 @@ def writediscord(msg, tstamp):
 
 
 def getlottowinnings(pname):
-    pwins = dbquery("SELECT type, payoutitem FROM lotteryinfo WHERE winner = '%s'" % (pname,))
+    pwins = dbquery("SELECT payout FROM lotteryinfo WHERE winner = '%s'" % (pname,))
     totpoints = 0
     twins = 0
     for weach in pwins:
-        if weach[0] == 'points':
-            totpoints = totpoints + int(weach[1])
+        totpoints = totpoints + int(weach[0])
         twins += 1
     return twins, totpoints
 
@@ -289,7 +289,7 @@ to change home servers'
         elif message.content.startswith('!winners') or message.content.startswith('!lottowinners'):
             whofor = str(message.author).lower()
             log.info(f'lotto winners request from {whofor} on discord')
-            last5 = dbquery("SELECT * FROM lotteryinfo WHERE winner != 'Incomplete' AND winner != 'None' ORDER BY id DESC LIMIT 5")
+            last5 = dbquery("SELECT * FROM lotteryinfo WHERE completed = True AND winner != 'None' ORDER BY id DESC LIMIT 5")
             top5 = dbquery("SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5")
             msg = 'Last 5 Lottery Winners:\n'
             now = Now()
@@ -419,24 +419,18 @@ to change home servers'
 
         elif message.content.startswith('!lastlotto') or message.content.startswith('!lastlottery'):
             whofor = str(message.author).lower()
-            linfo = dbquery("SELECT * FROM lotteryinfo WHERE winner != 'Incomplete' ORDER BY id DESC", fetch='one')
-            if linfo[1] == 'item':
-                msg = f'Last lottery was {linfo[2]} won by {linfo[7].capitalize()}. \
-{elapsedTime(Now(),linfo[3])} ago'
-                await client.send_message(message.channel, msg)
-            elif linfo[1] == 'points':
-                if linfo[7] == 'None':
-                    msg = f'Last lottery was {linfo[2]} Arc reward points not won because lack of players. \
-{elapsedTime(Now(),linfo[3])} ago'
-                else:
-                    msg = f'Last lottery was {linfo[2]} Arc reward points won by {linfo[7].capitalize()}. \
-{elapsedTime(Now(),linfo[3])} ago'
-                await client.send_message(message.channel, msg)
+            linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False ORDER BY id DESC", fetch='one', fmt='dict')
+            if linfo["winner"] == 'None':
+                msg = f'Last lottery was {linfo["payout"]} Arc reward points not won because lack of players. {elapsedTime(Now(),datetimeto(linfo["startdate"], fmt="epoch"))} ago'
+            else:
+                msg = f'Last lottery was {linfo["payout"]} Arc reward points won by {linfo["winner"].capitalize()}. \
+{elapsedTime(Now(),datetimeto(linfo["startdate"], fmt="epoch"))} ago'
+            await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!lotto') or message.content.startswith('!lottery'):
             whofor = str(message.author).lower()
             newname = message.content.split(' ')
-            linfo = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
+            linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
             if len(newname) > 1:
                 if newname[1] == 'enter' or newname[1] == 'join':
                     lpinfo = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
@@ -448,39 +442,20 @@ discord.\nType !linkme in game'
                     else:
                         whofor = lpinfo[1]
                         lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
-                        if linfo[1] == 'points':
-                            lfo = 'ARc Rewards Points'
-                        else:
-                            lfo = linfo[2]
-                        ltime = epochto(float(linfo[3]) + (Secs['hour'] * int(linfo[5])), 'string', est=True)
+                        lfo = 'ARc Rewards Points'
+                        # ltime = epochto(float(linfo[3]) + (Secs['hour'] * int(linfo[5])), 'string', est=True)
                         if lpcheck is None:
-                            dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES \
-                                     ('%s', '%s', '%s', '%s')" % (lpinfo[0], lpinfo[1], Now(), 0))
-                            if linfo[1] == 'points':
-                                dbupdate("UPDATE lotteryinfo SET payoutitem = '%s' WHERE winner = 'Incomplete'" %
-                                         (str(int(linfo[2]) + (int(linfo[4]))*2), ))
-                            dbupdate("UPDATE lotteryinfo SET players = '%s' WHERE id = '%s'" % (int(linfo[6]) + 1, linfo[0]))
-                            msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen on {ltime} \
-in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}. Good Luck!'
+                            dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('%s', '%s', '%s', '%s')" % (lpinfo[0], lpinfo[1], Now(fmt='dt'), 0))
+                            dbupdate("UPDATE lotteryinfo SET payout = '%s', players = '%s' WHERE id = %s" % (linfo["payout"] + linfo["buyin"] * 2, linfo["players"] + 1, linfo["id"]))
+                            msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"]), fmt="epoch"),Now())}. Good Luck!'
                             await client.send_message(message.channel, msg)
                             log.info(f'player {whofor} has joined the current active lottery.')
                         else:
-                            msg = f'You are already participating in this lottery for {lfo}.\nLottery ends {ltime} \
-in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
+                            msg = f'You are already participating in this lottery for {lfo}.\nLottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"]), fmt="epoch"),Now())}'
                             await client.send_message(message.channel, msg)
             else:
                 if linfo:
-                    if linfo[1] == 'points':
-                        msg = f'Current lottery is up to {linfo[2]} ARc reward points.'
-                    else:
-                        msg = f'Current lottery is for a {linfo[2]}.'
-                    await client.send_message(message.channel, msg)
-                    msg = f'{linfo[6]} players have entered into this lottery so far.'
-                    await client.send_message(message.channel, msg)
-                    ltime = epochto(float(linfo[3]) + (Secs["hour"] * int(linfo[5])), 'string', est=True)
-                    msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(Secs["hour"] * int(linfo[5])),Now())}'
-                    await client.send_message(message.channel, msg)
-                    msg = f'Type !lotto enter to join the lottery'
+                    msg = f'Current lottery is up to {linfo["payout"]} ARc reward points.\n{linfo["players"]} players have entered into this lottery so far.\nLottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"]), fmt="epoch"),Now())}\nType !lotto enter to join the lottery'
                     await client.send_message(message.channel, msg)
                 else:
                     msg = 'There are no lotterys currently underway.'

@@ -401,11 +401,11 @@ def setannouncement(msg):
 
 
 def getlastlottery():
-    return dbquery("SELECT * FROM lotteryinfo WHERE winner != 'Incomplete' ORDER BY timestamp DESC", fmt='dict', fetch='one')
+    return dbquery("SELECT * FROM lotteryinfo WHERE completed = True ORDER BY startdate DESC", fmt='dict', fetch='one')
 
 
 def getcurrentlottery():
-    return dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fmt='dict', fetch='one')
+    return dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fmt='dict', fetch='one')
 
 
 def getcurrentevent():
@@ -417,9 +417,8 @@ def getfutureevent():
 
 
 def startthelottery(buyin, length):
-    litm = str(buyin * 20)
-    # lottostart = datetime.fromtimestamp(Now() + (3600 * int(length))).strftime('%a, %b %d %I:%M%p')
-    dbupdate("INSERT INTO lotteryinfo (type,payoutitem,timestamp,buyinpoints,lengthdays,players,winner,announced) VALUES ('%s','%s','%s','%s','%s',0,'Incomplete',False)" % ('points', litm, Now(), buyin, length))
+    litm = buyin * 20
+    dbupdate("INSERT INTO lotteryinfo (payout,startdate,buyin,days,players,winner,announced,completed) VALUES ('%s','%s','%s','%s',0,'Incomplete',False,False)" % (litm, Now(fmt="dt"), buyin, length))
 
 
 @webui.context_processor

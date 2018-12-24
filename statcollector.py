@@ -10,7 +10,7 @@ log = logging.getLogger(name=hstname)
 
 
 def checkiftableexists(inst):
-    dbupdate("CREATE TABLE IF NOT EXISTS %s (date INT, value SMALLINT)" % (inst,), db='statsdb')
+    dbupdate("CREATE TABLE IF NOT EXISTS %s (date timestamp, value smallint)" % (inst,), db='statsdb')
 
 
 def addvalue(inst, value):

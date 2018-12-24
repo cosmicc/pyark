@@ -18,14 +18,14 @@
         <div class='container top-pad-10 left-pad bottom-pad-10 is-mobile has-background-warning'>
             <div>
                 <h1 class="title">&nbsp;No Current Lottery</h1>
-                <h2 class="subtitle">Last Lottery was {{ ui_elapsedTime(lastlottery['timestamp'] + (3600 * lastlottery['lengthdays'])) }} ago</h2>
+                <h2 class="subtitle">Last Lottery was {{ ui_elapsedTime(lastlottery['startdate']) }} ago</h2>
             </div>
         </div>
         {% else %}
         <div class='container top-pad-5 left-pad bottom-pad-10 is-mobile has-background-success'>
             <div>
-                <h1 class="title has-text-white">Lottery is at {{ currentlottery['payoutitem'] }} Points</h1>
-                <h2 class="subtitle has-text-white">Lottery Ends in {{ ui_elapsedTime(currentlottery['timestamp'] + (3600 * currentlottery['lengthdays'])) }}</h2>
+                <h1 class="title has-text-white">Lottery is at {{ currentlottery['payout'] }} Points</h1>
+                <h2 class="subtitle has-text-white">Lottery Ends in {{ ui_elapsedTime(currentlottery['startdate']) }}</h2>
             </div>
         </div>
         {% endif %}

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from modules.configreader import instance, numinstances
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
@@ -456,7 +456,7 @@ def homeserver(inst, whoasked, ext):
     steamid = getsteamid(whoasked)
     pinfo = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     if ext != '':
-        tservers = ['ragnarok', 'island', 'crystal', 'extinction']
+        tservers = ['ragnarok', 'island', 'extinction']
         if ext in tservers:
             if ext != pinfo[15]:
                 if inst == pinfo[15]:
@@ -488,50 +488,37 @@ with {pinfo[5]} points')
 
 
 def sendlotteryinfo(linfo, lpinfo, inst):
-    if linfo[1] == 'points':
-        msg = f'Current lottery is up to {linfo[2]} ARc reward points.'
-    else:
-        msg = f'Current lottery is for a {linfo[2]}.'
+    msg = f'Current lottery is up to {linfo["payout"]} ARc reward points.'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
-    msg = f'{linfo[6]} players have entered into this lottery so far'
+    msg = f'{linfo["players"]} players have entered into this lottery so far'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
-    ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
-    msg = f'Lottery ends {ltime} EST in {elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
+    msg = f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"], fmt="epoch"),Now()))}'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
     amiin = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
     if amiin:
         msg = f'You are enterted into this lottery. Good Luck!'
     else:
-        msg = f'Type !lotto join to spend {linfo[4]} points and enter into this lottery'
+        msg = f'Type !lotto join to spend {linfo["buyin"]} points and enter into this lottery'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
 
 
 def lotteryquery(whoasked, lchoice, inst):
-    linfo = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
+    linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
     lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
     if linfo:
         if lchoice == 'join' or lchoice == 'enter':
             lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
-            if linfo[1] == 'points':
-                lfo = 'ARc Rewards Points'
-            else:
-                lfo = linfo[2]
-            ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] *
-                                                                       int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
+            lfo = 'ARc Rewards Points'
+            # ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
             if lpcheck is None:
                 dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('%s', '%s', '%s', '%s')" %
-                         (lpinfo[0], lpinfo[1], Now(), 0))
-                if linfo[1] == 'points':
-                    dbupdate("UPDATE lotteryinfo SET payoutitem = '%s' WHERE winner = 'Incomplete'" %
-                             (str(int(linfo[2]) + (int(linfo[4])*2)), ))
-                dbupdate("UPDATE lotteryinfo SET players = '%s' WHERE id = '%s'" % (int(linfo[6]) + 1, linfo[0]))
-                msg = f'You have been added to the {lfo} lottery! A winner will be choosen on {ltime} in \
-{elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}. Good Luck!'
+                         (lpinfo[0], lpinfo[1], Now(fmt='dt'), 0))
+                dbupdate("UPDATE lotteryinfo SET payout = '%s', players = '%s' WHERE completed = False" % (linfo['payout'] + linfo['buyin']*2,linfo('players')+1))
+                msg = f'You have been added to the {lfo} lottery! A winner will be choosen in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"])),Now())}. Good Luck!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
                 log.info(f'player {whoasked} has joined the current active lottery.')
             else:
-                msg = f'You are already participating in this lottery for {lfo}.  Lottery ends {ltime} in \
-{elapsedTime(float(linfo[3])+(3600*int(linfo[5])),Now())}'
+                msg = f'You are already participating in this lottery for {lfo}.  Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"])),Now())}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
         else:
             sendlotteryinfo(linfo, lpinfo, inst)
