@@ -3,7 +3,7 @@ from modules.configreader import instance, numinstances
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.instances import getlastwipe, getlastrestart
-from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, estshift, Secs, Now
+from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from time import sleep
 import logging
 import random
