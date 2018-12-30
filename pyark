@@ -110,33 +110,33 @@ def main():
     dbupdate('DELETE FROM globalbuffer')
     for each in range(numinstances):
         inst = instance[each]['name']
-        instance[each]['kickthread'] = threading.Thread(name='%s-kicker' % inst, target=kicker, args=(inst,))
+        instance[each]['kickthread'] = threading.Thread(name='%s-kicker' % inst, target=kicker, args=(inst,), daemon = True)
         instance[each]['kickthread'].start()
-        instance[each]['cmdthread'] = threading.Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst,))
+        instance[each]['cmdthread'] = threading.Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst,), daemon = True)
         instance[each]['cmdthread'].start()
-        instance[each]['gchatthread'] = threading.Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst,))
+        instance[each]['gchatthread'] = threading.Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst,), daemon = True)
         instance[each]['gchatthread'].start()
-        instance[each]['onlinethread'] = threading.Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst,))
+        instance[each]['onlinethread'] = threading.Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst,), daemon = True)
         instance[each]['onlinethread'].start()
-        instance[each]['eventthread'] = threading.Thread(name='%s-events' % inst, target=eventwatcher, args=(inst,))
+        instance[each]['eventthread'] = threading.Thread(name='%s-events' % inst, target=eventwatcher, args=(inst,), daemon = True)
         instance[each]['eventthread'].start()
     if is_asdatapuller == "True":
-        arkserversnt = threading.Thread(name='arksvrnet-datapuller', target=arkserversnet)
+        arkserversnt = threading.Thread(name='arksvrnet-datapuller', target=arkserversnet, daemon = True)
         arkserversnt.start()
     if is_discordbot == "True":
-        discordt = threading.Thread(name='discord-bot', target=discordbot)
+        discordt = threading.Thread(name='discord-bot', target=discordbot, daemon = True)
         discordt.start()
     if is_lotterymanager == "True":
-        lotteryt = threading.Thread(name='lottery-watcher', target=lottery.lotterywatcher)
+        lotteryt = threading.Thread(name='lottery-watcher', target=lottery.lotterywatcher,daemon = True)
         lotteryt.start()
     if is_statscollector == "True":
-        ostat = threading.Thread(name='stat-collector', target=oscollect)
+        ostat = threading.Thread(name='stat-collector', target=oscollect, daemon = True)
         ostat.start()
     if webserver_enabled == "True":
         log.info(f'Starting Web Server on IP: {webserver_ip} PORT: {webserver_port}')
     try:
         app = create_app('config.BaseConfig')
-        webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port})
+        webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port}, daemon = True)
         webserver.start()
     except:
         log.critical(f'Web Server failed to start.', exc_info=True)

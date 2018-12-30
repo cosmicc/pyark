@@ -78,9 +78,9 @@ def determinewinner(linfo):
             winnersid = winners[winneridx]
             lwinner = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (winnersid,), fetch='one')
             dbupdate("UPDATE lotteryinfo SET winner = '%s', completed = True WHERE id = '%s'" % (lwinner[1], linfo['id']))
-            log.info(f'Lottery winner is: {lwinner[1]}')
+            log.info(f'Lottery winner is: {lwinner[1]} with a winning number of: ')
             winners.remove(winnersid)
-            log.info(f'queuing up lottery deposits for {winners}')
+            log.debug(f'queuing up lottery deposits for {winners}')
             for ueach in winners:
                 kk = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (ueach,), fetch='one')
                 dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
@@ -90,7 +90,11 @@ def determinewinner(linfo):
             writeglobal('ALERT', 'ALERT', msg)
             dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
                        ('%s', '%s', '%s', '%s', '%s')" % (lwinner[0], lwinner[1], Now(), linfo['payout'], 1))
-            nlw = int(lwinner[19]) + int(linfo['payout'])
+            if lwinner[19] is None:
+                lwin = 0
+            else:
+                lwin = int(lwinner[19])
+            nlw = lwin + int(linfo['payout'])
             dbupdate("UPDATE players SET lottowins = '%s', lotterywinnings = '%s' WHERE steamid = '%s'" % (int(lwinner[18]) + 1, nlw, lwinner[0]))
         except:
             log.critical('Critical Error Lottery Winner determination!', exc_info=True)
