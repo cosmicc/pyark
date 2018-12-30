@@ -492,7 +492,7 @@ def sendlotteryinfo(linfo, lpinfo, inst):
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
     msg = f'{linfo["players"]} players have entered into this lottery so far'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
-    msg = f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"], fmt="epoch"),Now()))}'
+    msg = f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"]), fmt="epoch"),Now())}'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
     amiin = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
     if amiin:
