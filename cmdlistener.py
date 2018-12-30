@@ -518,7 +518,7 @@ def lotteryquery(whoasked, lchoice, inst):
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
                 log.info(f'player {whoasked} has joined the current active lottery.')
             else:
-                msg = f'You are already participating in this lottery for {lfo}.  Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"])),Now())}'
+                msg = f'You are already participating in this lottery for {lfo}.  Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"]), fmt="epoch"),Now())}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
         else:
             sendlotteryinfo(linfo, lpinfo, inst)
