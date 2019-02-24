@@ -519,5 +519,5 @@ to link your account'
         try:
             client.run(discordtoken)
         except:
-            log.critical('Critical Error in Discord Bot Routine!', exc_info=True)
+            log.critical('Critical Error in Discord Bot Routine.')
             sleep(60)

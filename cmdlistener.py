@@ -277,7 +277,9 @@ def wipeit(inst):
 Wiping wild dinos now.', wcstamp())
     sleep(3)
     subprocess.run('arkmanager rconcmd "ServerChat Wild dino wipe commencing in 10 seconds" @%s' % (inst), shell=True)
-    sleep(10)
+    sleep(7)
+    subprocess.run('arkmanager rconcmd Destroyall beehive_c', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    sleep(3)
     subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' %
                    (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     resetlastwipe(inst)

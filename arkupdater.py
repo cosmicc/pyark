@@ -86,6 +86,8 @@ def checkwipe(inst):
         if getplayersonline(inst, fmt='count') == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
             writechat(inst, 'ALERT', f'### Empty server is over 24 hours since wild dino wipe. Wiping now.', wcstamp())
+            subprocess.run('arkmanager rconcmd Destroyall beehive_c', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            sleep(3)
             subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL, shell=True)
             dwtimer = 0
