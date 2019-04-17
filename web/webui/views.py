@@ -429,6 +429,15 @@ def _getlog():
     return dict(ui_getlog=ui_getlog)
 
 
+@webui.route('/WBUI.json')
+def WBUI():
+    with open('/home/ark/shared/WBUI.json') as json_file:
+        rdata = json.load(json_file)
+    data = json.dumps(rdata)
+    return Response(data)
+
+
+
 @webui.route('/manifest.json')
 def manifest():
     data = json.dumps({
@@ -447,7 +456,7 @@ def manifest():
         "scope": "/",
         "theme_color": "#000000"
     })
-    return Response(data, mimetype='app.ication/x-web-app.manifest+json')
+    return Response(data, mimetype='application/x-web-app.manifest+json')
 
 # @webui.errorhandler(403)
 # def forbidden(error):
