@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3.6
+
 
 from modules.configreader import webserver_ip
 from web import create_app

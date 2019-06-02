@@ -487,7 +487,7 @@ def dashboard():
 def logout():
     logout_user()
     flash(u'You have been logged out', 'info')
-    return redirect(url_for('login'))
+    return redirect(url_for('security.login'))
 
 
 @webui.route('/serverinfo/<instance>')
@@ -605,13 +605,13 @@ def changepass(steamid):
         if current_user.has_role('admin') or current_user.steamid == steamid:
             if request.form['password'] == "" or request.form['password_confirm'] == "":
                 flash(f'Password cannot be blank', 'error')
-                return redirect(url_for('changepass', steamid=steamid))
+                return redirect(url_for('webui.changepass', steamid=steamid))
             elif len(request.form['password']) < 7:
                 flash(f'Password must be at least 7 characters long', 'error')
-                return redirect(url_for('changepass', steamid=steamid))
+                return redirect(url_for('webui.changepass', steamid=steamid))
             elif request.form['password'] != request.form['password_confirm']:
                 flash(f'Passwords do not match', 'error')
-                return redirect(url_for('changepass', steamid=steamid))
+                return redirect(url_for('webui.changepass', steamid=steamid))
             elif request.form['password'] == request.form['password_confirm']:
                 dbupdate("UPDATE web_users SET password = '%s' WHERE steamid = '%s'" % (hash_password(request.form['password']), steamid))
                 flash(f'Password changed', 'success')
