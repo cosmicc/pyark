@@ -429,9 +429,17 @@ def _getlog():
     return dict(ui_getlog=ui_getlog)
 
 
-@webui.route('/WBUI.json')
-def WBUI():
-    with open('/home/ark/shared/WBUI.json') as json_file:
+@webui.route('/WBUI-standard.json')
+def WBUI_standard():
+    with open('/home/ark/shared/config/WBUI-standard.json') as json_file:
+        rdata = json.load(json_file)
+    data = json.dumps(rdata)
+    return Response(data)
+
+
+@webui.route('/WBUI-coliseum.json')
+def WBUI_alt():
+    with open('/home/ark/shared/config/WBUI-coliseum.json') as json_file:
         rdata = json.load(json_file)
     data = json.dumps(rdata)
     return Response(data)

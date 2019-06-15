@@ -8,6 +8,7 @@ from modules.players import getplayer, getplayerlastserver, getplayersonline, ge
 from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs, datetimeto, d2dt_maint
 from time import sleep
 from lottery import totallotterydeposits
+from os import system
 import asyncio
 import discord
 import logging
@@ -521,3 +522,4 @@ to link your account'
         except:
             log.critical('Critical Error in Discord Bot Routine.')
             sleep(60)
+            system('ark restart')
