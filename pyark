@@ -9,7 +9,7 @@ from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
 from modules.configreader import logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port
-from modules.dbhelper import dbupdate
+from modules.dbhelper import dbupdate, dbquery
 from modules.processlock import plock
 from onlinemonitor import onlineupdate
 from statcollector import oscollect
