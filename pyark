@@ -100,7 +100,7 @@ def main():
        chkinst = dbquery("SELECT * FROM instances WHERE name = '%s'" % (instance[ins]['name'],))
        if not chkinst:
            log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
-           dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote, restartreason, cfgver, restartcountdown) VALUES ('%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now(), 'admin restart', 0, 30))
+           dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote, restartreason, cfgver, restartcountdown) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now(), 'admin restart', 0, 30))
        else:
            log.debug(f'found server {instance[ins]["name"]} in server table')
     log.debug('database initilization complete')
