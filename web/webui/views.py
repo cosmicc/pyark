@@ -3,7 +3,7 @@ from flask import render_template, Response, request, redirect, url_for, flash, 
 from flask_security import login_required, logout_user, current_user, roles_required, RegisterForm, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
 from flask_wtf import FlaskForm
-from itertools import chain
+from itertools import chain, zip_longest
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, psql_port
 from modules.dbhelper import dbquery, dbupdate
@@ -276,42 +276,41 @@ def _lastactive():
 def _statpull():
     def ui_last24avg(inst, dtype):
         if dtype == 'chart1':
-            hours = 2
-            rate = '10T'
-            tstr = '%I:%M%p'
-        elif dtype == 'chart2':
             hours = 24
             rate = 'H'
             tstr = '%-I%p'
-        elif dtype == 'chart4':
-            hours = 192
-            rate = 'D'
-            tstr = '%a'
-        elif dtype == 'chart3':
+        elif dtype == 'chart2':
             hours = 720
             rate = 'D'
             tstr = '%b %-d'
+        elif dtype == 'chart3':
+            hours = 4320
+            rate = 'W'
+            tstr = '%b %-d'
         conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         if inst == 'all':
-            avglist = []
-            for each in instances():
-                slist = []
+            statavglist = []
+            print(instancelist())
+            for each in instancelist():
+                print('processing instance: {}'.format(each))
+                statlist = []
                 navglist = []
-                dlist = []
+                datelist = []
                 c = conn.cursor()
-                c.execute("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(each[0], datetime.now() - timedelta(hours=hours)))
-                nlist = c.fetchall()
-                for y in nlist:
-                    slist.append(y[1])
-                    dlist.append(y[0])
-                if avglist == []:
-                    avglist = slist
+                c.execute("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(each, datetime.now() - timedelta(hours=hours)))
+                alllist = c.fetchall()
+                for y in alllist:
+                    statlist.append(y[1])
+                    datelist.append(y[0])
+                if statavglist == []:
+                    statavglist = statlist
                 else:
-                    navglist = [sum(pair) for pair in zip(slist, avglist)]
-                    avglist = navglist
+                    navglist = [sum(pair) for pair in zip_longest(statlist, statavglist, fillvalue=0)]
+                    statavglist = navglist
             c.close()
             conn.close()
-            ret = list(zip(dlist, avglist))
+            ret = list(zip_longest(datelist, statavglist))
+            print(ret)
             df = pd.DataFrame.from_records(ret, columns=['date', 'value'])
             df = df.set_index(pd.DatetimeIndex(df['date']))
         else:
@@ -320,10 +319,11 @@ def _statpull():
         df = df.tz_localize(tz='UTC')
         df = df.tz_convert(tz=current_user.timezone)
         df = df.resample(rate).mean()
-        datelist = []
+        ndatelist = []
+        print(df.to_string())
         for each in df.index:
-            datelist.append(each.strftime(tstr))
-        return (datelist, list(chain.from_iterable(df.values.round(1).tolist())))
+            ndatelist.append(each.strftime(tstr))
+        return (ndatelist, list(chain.from_iterable(df.values.round(1).tolist())))
     return dict(ui_last24avg=ui_last24avg)
 
 
