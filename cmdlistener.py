@@ -242,7 +242,7 @@ def enoughvotes():
         tvoters += 1
         if each[2] == 1 or each[2] == 2:
             vcnt += 1
-    if vcnt >= tvoters - 1:
+    if vcnt >= tvoters/2:
         return True
     else:
         return False
