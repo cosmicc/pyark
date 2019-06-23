@@ -55,6 +55,11 @@ def instancelist():
     return dbdata
 
 
+def homeablelist():
+    dbdata = dbquery('SELECT name FROM instances ORDER BY name where homeable = true', fmt='list', single=True)
+    return dbdata
+
+
 def getlastwipe(inst):
     dbdata = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='string', fetch='one')
     if dbdata:

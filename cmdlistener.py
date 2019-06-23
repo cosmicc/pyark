@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from modules.configreader import instance, numinstances
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
-from modules.instances import getlastwipe, getlastrestart
+from modules.instances import homeablelist, getlastwipe, getlastrestart
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from time import sleep
 import logging
@@ -458,7 +458,8 @@ def homeserver(inst, whoasked, ext):
     steamid = getsteamid(whoasked)
     pinfo = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     if ext != '':
-        tservers = ['ragnarok', 'island', 'olympus', 'valguero']
+        tservers = homeablelist()
+        ext = ext.lower()
         if ext in tservers:
             if ext != pinfo[15]:
                 if inst == pinfo[15]:

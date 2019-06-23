@@ -370,6 +370,13 @@ to change home servers'
                 msg = msg + f'{lsplayer[1].title()} on {lsplayer[3].capitalize()} {lspago} ago\n'
             await client.send_message(message.channel, msg)
 
+        #elif message.content.find('join the server') or message.content.find('how do i join'):
+        #    message.content = ""
+        #    log.info(f'responding to join server chat in discord')
+        #    msg = f'#join-server'
+        #    await client.send_message(message.channel, msg)
+
+
         elif message.content.startswith('!topplayed') or message.content.startswith('!topplayers'):
             log.info(f'responding to topplayed request on discord')
             lsplayer = gettopplayedplayers('all', last=10)

@@ -290,9 +290,8 @@ def _statpull():
         conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         if inst == 'all':
             statavglist = []
-            print(instancelist())
             for each in instancelist():
-                print('processing instance: {}'.format(each))
+                #print('processing instance: {}'.format(each))
                 statlist = []
                 navglist = []
                 datelist = []
@@ -309,8 +308,9 @@ def _statpull():
                     statavglist = navglist
             c.close()
             conn.close()
+            print('datelist: {}'.format(datelist))
+            print('statavglist: {}'.format(statavglist))
             ret = list(zip_longest(datelist, statavglist))
-            print(ret)
             df = pd.DataFrame.from_records(ret, columns=['date', 'value'])
             df = df.set_index(pd.DatetimeIndex(df['date']))
         else:
