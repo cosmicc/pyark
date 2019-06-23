@@ -56,7 +56,7 @@ def instancelist():
 
 
 def homeablelist():
-    dbdata = dbquery('SELECT name FROM instances ORDER BY name where homeable = true', fmt='list', single=True)
+    dbdata = dbquery('SELECT name FROM instances WHERE homeable = true', fmt='list', single=True)
     return dbdata
 
 

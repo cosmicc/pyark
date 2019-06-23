@@ -458,6 +458,7 @@ def homeserver(inst, whoasked, ext):
     steamid = getsteamid(whoasked)
     pinfo = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     if ext != '':
+        tservers = []
         tservers = homeablelist()
         ext = ext.lower()
         if ext in tservers:
