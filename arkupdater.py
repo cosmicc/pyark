@@ -238,6 +238,8 @@ def instancerestart(inst, reason, ext='restart'):
 
 
 def compareconfigs(config1, config2):
+    if not os.path.isfile(config2):
+       subprocess.run('touch "%s"' % (config2), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True) 
     try:
         f1 = open(config1)
         text1Lines = f1.readlines()
