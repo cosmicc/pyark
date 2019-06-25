@@ -43,7 +43,7 @@ or find a rewards vault, free starter items.'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         sleep(3)
         mtxt = 'You get all your items back when you die automatically, The engram menu is laggy, sorry. Admins and \
-help in discord. Press F1 at anytime for help. Have Fun!'
+help in discord. PRESS F1 AT ANYTIME FOR HELP. Have Fun!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
         sleep(3)
         mtxt = 'Everyone welcome a new player to the cluster!'
@@ -156,10 +156,12 @@ def playergreet(steamid, inst):
                 if oplayer[3] != inst:
                     pass
                     gogo = 1
-                    #mtxt = f'{oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
-                    #subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
-                    #writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
-                    #log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
+                    #############################
+                    mtxt = f'{oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
+                    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+                    writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
+                    log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
+                    #############################
                 log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
             else:

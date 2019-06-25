@@ -21,7 +21,7 @@ def gchatrelay(inst):
                     if each['broadcast'] is None:
                         each['broadcast'] = False
                     if (each['server'] == 'ALERT' or each['server'] == inst) and each['name'] == 'ALERT' and not each['private'] and not each['broadcast'] and float(each['timestamp']) > Now() - 3:
-                        subprocess.run('arkmanager rconcmd "ServerChat Admin: %s" @%s' % (each['message'], inst), shell=True)
+                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (each['message'], inst), shell=True)
                     elif each['server'] != inst and each['name'] != 'ALERT' and float(each['timestamp']) > Now() - 3:
                         subprocess.run('arkmanager rconcmd "ServerChat %s@%s: %s" @%s' % (each['name'].title(), each['server'].capitalize(), each['message'], inst), shell=True)
                     elif each['private'] and not each['broadcast'] and each['name'] != 'ALERT' and float(each['timestamp']) > Now() - 3:

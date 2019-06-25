@@ -223,7 +223,7 @@ def instancerestart(inst, reason, ext='restart'):
     if inmaint:
                 log.info(f'maintenance window reached, running server os maintenance')
                 subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                subprocess.run('apt full-upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                subprocess.run('apt upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 subprocess.run('apt autoremove -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 sleep(3)
                 if os.path.isfile('/var/run/reboot-required'):
@@ -318,9 +318,9 @@ def checkconfig():
             if buildconfig(inst):
                 log.info(f'config update detected for instance {inst}')
                 har = int(getcfgver(inst))
-                setpendingcfgver(inst, har+1)
+                setpendingcfgver(inst, har + 1)
             lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-            t, s, e = datetime.now(), dt(11, 0), dt(11, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
+            t, s, e = datetime.now(), dt(9, 0), dt(9, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
             inmaint = is_time_between(t, s, e)
             if Now() - float(lstsv[0]) > 432000 and inmaint:
                 maintrest = "maintenance restart"
