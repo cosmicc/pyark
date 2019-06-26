@@ -141,7 +141,7 @@ def playergreet(steamid, inst):
                 welcomthreads.append({'steamid': steamid, 'sthread': welcom})
                 welcom.start()
             else:
-                log.debug(f'welcome message thread already running for new player {steamid}')
+                log.warning(f'welcome message thread already running for new player {steamid}')
             writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
         else:
         # elif len(oplayer) > 2:
@@ -152,9 +152,8 @@ def playergreet(steamid, inst):
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, xferpoints, inst), shell=True)
-            if int(oplayer[2]) + 300 > Now():
+            if int(oplayer[2]) + 600 > Now():
                 if oplayer[3] != inst:
-                    pass
                     gogo = 1
                     #############################
                     mtxt = f'{oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'

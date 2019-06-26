@@ -218,7 +218,7 @@ def instancerestart(inst, reason, ext='restart'):
     log.debug(f'instance restart verification starting for {inst}')
     global instance
     global confupdtimer
-    t, s, e = Now(fmt='dt'), dt(11, 0), dt(11, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
+    t, s, e = Now(fmt='dt'), dt(9, 0), dt(9, 30)  # Maintenance reboot 9:00-9:30am GMT (5:00AM EST)
     inmaint = is_time_between(t, s, e)
     if inmaint:
                 log.info(f'maintenance window reached, running server os maintenance')
