@@ -29,7 +29,7 @@ def plock():
             log.exception('General error trying to lock process to file {}. exiting.'.format(lockfile))
             exit(1)
         else:
-            log.info('Process has been locked to file {} with PID [{}]'.format(lockfile, ppid))
+            log.debug('Process has been locked to file {} with PID [{}]'.format(lockfile, ppid))
             return True
     if aquireLock():
         # lock_handle = open(lockfile, 'w')
