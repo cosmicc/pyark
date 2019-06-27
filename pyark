@@ -8,7 +8,7 @@ from discordbot import discordbot
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port
+from modules.configreader import logfile, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
@@ -17,7 +17,6 @@ from statcollector import oscollect
 from sys import exit
 from time import sleep
 from web import create_app
-from os.path import ismount
 from os import stat
 import argparse
 import logging
@@ -39,6 +38,7 @@ __detaildesc__ = ""
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
+clog = logging.getLogger(name='currency')
 
 parser = argparse.ArgumentParser(prog=__progname__)
 parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
@@ -52,22 +52,24 @@ log.setLevel(logging.DEBUG)
 #    log.setLevel(logging.INFO)
 console_format = logging.Formatter('%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] %(threadName)s : %(message)s', '%Y-%m-%d %H:%M:%S')
 log_format = logging.Formatter('%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] %(threadName)s : %(message)s', '%Y-%m-%d %H:%M:%S')
+clog_format = logging.Formatter('%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] : %(message)s', '%Y-%m-%d %H:%M:%S')
 
 if args.quiet is False:
     log_console = logging.StreamHandler()
     log_console.setLevel(logging.DEBUG)
     log.addHandler(log_console)
     log_console.setFormatter(console_format)
+
 log_fileh = logging.FileHandler(logfile)
 log_fileh.setLevel(logging.INFO)
 log_fileh.setFormatter(log_format)
 
-# log_filej = logging.FileHandler('/home/ark/shared/logs/pyark/pyarkdebug.log')
-# log_filej.setFormatter(log_format)
-# log_filej.setLevel(logging.DEBUG)
+clog_fileh = logging.FileHandler('/home/ark/shared/logs/pyark/currency.log')
+clog_fileh.setLevel(logging.INFO)
+clog_fileh.setFormatter(clog_format)
 
 log.addHandler(log_fileh)
-# log.addHandler(log_filej)
+clog.addHandler(clog_fileh)
 
 plock()
 
@@ -97,12 +99,12 @@ def main():
     # dbupdate('CREATE TABLE IF NOT EXISTS players(steamid TEXT, playername TEXT, lastseen TEXT, server TEXT, \
     #          playedtime TEXT, rewardpoints INTEGER, firstseen TEXT, connects INTEGER)')
     for ins in range(numinstances):
-       chkinst = dbquery("SELECT * FROM instances WHERE name = '%s'" % (instance[ins]['name'],))
-       if not chkinst:
-           log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
-           dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote, restartreason, cfgver, restartcountdown) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now(), 'admin restart', 0, 30))
-       else:
-           log.debug(f'found server {instance[ins]["name"]} in server table')
+        chkinst = dbquery("SELECT * FROM instances WHERE name = '%s'" % (instance[ins]['name'],))
+        if not chkinst:
+            log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
+            dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote, restartreason, cfgver, restartcountdown) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now(), 'admin restart', 0, 30))
+        else:
+            log.debug(f'found server {instance[ins]["name"]} in server table')
     log.debug('database initilization complete')
     checkgit = 0
     arkupdt = threading.Thread(name='arkupdater', target=arkupd)
@@ -111,33 +113,33 @@ def main():
     dbupdate('DELETE FROM globalbuffer')
     for each in range(numinstances):
         inst = instance[each]['name']
-        instance[each]['kickthread'] = threading.Thread(name='%s-kicker' % inst, target=kicker, args=(inst,), daemon = True)
+        instance[each]['kickthread'] = threading.Thread(name='%s-kicker' % inst, target=kicker, args=(inst,), daemon=True)
         instance[each]['kickthread'].start()
-        instance[each]['cmdthread'] = threading.Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst,), daemon = True)
+        instance[each]['cmdthread'] = threading.Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst,), daemon=True)
         instance[each]['cmdthread'].start()
-        instance[each]['gchatthread'] = threading.Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst,), daemon = True)
+        instance[each]['gchatthread'] = threading.Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst,), daemon=True)
         instance[each]['gchatthread'].start()
-        instance[each]['onlinethread'] = threading.Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst,), daemon = True)
+        instance[each]['onlinethread'] = threading.Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst,), daemon=True)
         instance[each]['onlinethread'].start()
-        instance[each]['eventthread'] = threading.Thread(name='%s-events' % inst, target=eventwatcher, args=(inst,), daemon = True)
+        instance[each]['eventthread'] = threading.Thread(name='%s-events' % inst, target=eventwatcher, args=(inst,), daemon=True)
         instance[each]['eventthread'].start()
     if is_asdatapuller == "True":
-        arkserversnt = threading.Thread(name='arksvrnet-datapuller', target=arkserversnet, daemon = True)
+        arkserversnt = threading.Thread(name='arksvrnet-datapuller', target=arkserversnet, daemon=True)
         arkserversnt.start()
     if is_discordbot == "True":
-        discordt = threading.Thread(name='discord-bot', target=discordbot, daemon = True)
+        discordt = threading.Thread(name='discord-bot', target=discordbot, daemon=True)
         discordt.start()
     if is_lotterymanager == "True":
-        lotteryt = threading.Thread(name='lottery-watcher', target=lottery.lotterywatcher,daemon = True)
+        lotteryt = threading.Thread(name='lottery-watcher', target=lottery.lotterywatcher, daemon=True)
         lotteryt.start()
     if is_statscollector == "True":
-        ostat = threading.Thread(name='stat-collector', target=oscollect, daemon = True)
+        ostat = threading.Thread(name='stat-collector', target=oscollect, daemon=True)
         ostat.start()
     if webserver_enabled == "True":
         log.info(f'Starting Web Server on IP: {webserver_ip} PORT: {webserver_port}')
     try:
         app = create_app('config.BaseConfig')
-        webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port}, daemon = True)
+        webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port}, daemon=True)
         webserver.start()
     except:
         log.critical(f'Web Server failed to start.', exc_info=True)

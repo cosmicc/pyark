@@ -270,7 +270,7 @@ def howmanyvotes():
 
 def wipeit(inst):
     yesvoters, totvoters = howmanyvotes()
-    log.info(f'voting yes has won ({yesvoters}/{totvoters}), wild dino wipe incoming for {inst}')
+    log.info(f'voting yes has won ({yesvoters}/{totvoters}), wild dinos are wiping on {inst} in 15 seconds')
     subprocess.run('arkmanager rconcmd "ServerChat Voting has finished. YES has won (%s of %s)" @%s' %
                    (yesvoters, totvoters, inst), shell=True)
     writechat(inst, 'ALERT', f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). \
@@ -324,11 +324,11 @@ def voting(inst, whoasked):
 cast your vote !yes or !no in global chat" @%s' % (inst), shell=True)
         sltimer += 5
     # log.info(f'final votertable for vote on {inst}')
-    log.info(votertable)
+    log.debug(votertable)
     votertable = []
     lastvoter = Now()
     resetlastvote(inst)
-    log.info(f'voting thread has ended on {inst}')
+    log.debug(f'voting thread has ended on {inst}')
 
 
 def startvoter(inst, whoasked):
@@ -663,7 +663,7 @@ to send to all servers" @%s""" % (minst), shell=True)
             startvoter(minst, whoasked)
         elif line.find('!agree') != -1 or line.find('!yes') != -1:
             whoasked = getnamefromchat(line)
-            log.info(f'responding to YES vote on {minst} from {whoasked}')
+            log.debug(f'responding to YES vote on {minst} from {whoasked}')
             castedvote(minst, whoasked, True)
         elif line.find('!disagree') != -1 or line.find('!no') != -1:
             whoasked = getnamefromchat(line)
