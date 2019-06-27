@@ -11,7 +11,7 @@ from time import sleep
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
-log = logging.getLogger(name='currency')
+clog = logging.getLogger(name='currency')
 
 welcomthreads = []
 greetthreads = []
