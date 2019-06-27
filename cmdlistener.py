@@ -659,7 +659,7 @@ to send to all servers" @%s""" % (minst), shell=True)
             homeserver(minst, whoasked, ninst)
         elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!votestart') != -1:
             whoasked = getnamefromchat(line)
-            log.info(f'responding to a dino wipe vote request on {minst} from {whoasked}')
+            log.debug(f'responding to a dino wipe vote request on {minst} from {whoasked}')
             startvoter(minst, whoasked)
         elif line.find('!agree') != -1 or line.find('!yes') != -1:
             whoasked = getnamefromchat(line)

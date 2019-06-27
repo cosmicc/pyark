@@ -1,0 +1,3 @@
+select * from players T1, players T2 WHERE T1.ctid < T2.ctid AND T1.steamid = T2.steamid;
+
+delete from players T1 USING players T2 WHERE T1.ctid < T2.ctid AND T1.steamid = T2.steamid;
