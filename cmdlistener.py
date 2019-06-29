@@ -278,12 +278,11 @@ Wiping wild dinos now.', wcstamp())
     sleep(3)
     subprocess.run('arkmanager rconcmd "ServerChat Wild dino wipe commencing in 10 seconds" @%s' % (inst), shell=True)
     sleep(7)
-    subprocess.run('arkmanager rconcmd Destroyall beehive_c', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     sleep(3)
-    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' %
-                   (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     resetlastwipe(inst)
-    log.debug(f'voted wild dino wipe complete for {inst}')
+    log.info(f'all wild dinos have been wiped from {inst}')
 
 
 def voting(inst, whoasked):
@@ -361,9 +360,7 @@ def getnamefromchat(chat):
     rawline = chat.split(':')
     if len(rawline) > 1:
         rawline = rawline[1].split(' (')
-        log.warning(rawline)
         rawline = rawline[1][:-1].strip()
-    # log.warning(rawline)
         return rawline.lower()
     else:
         return None

@@ -79,19 +79,30 @@ def restartbit(inst):
     dbupdate("UPDATE players SET restartbit = 1 WHERE server = '%s'" % (inst, ))
 
 
-def checkwipe(inst):
+def wipeit(inst):
+    subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    sleep(3)
+    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    resetlastwipe(inst)
+
+
+def checkwipe(inst, force=False):
     global dwtimer
     lastwipe = getlastwipe(inst)
     if Now() - lastwipe > Secs['day']:
         if getplayersonline(inst, fmt='count') == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
             writechat(inst, 'ALERT', f'### Empty server is over 24 hours since wild dino wipe. Wiping now.', wcstamp())
-            subprocess.run('arkmanager rconcmd Destroyall beehive_c', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            sleep(3)
-            subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL, shell=True)
+            wipeit(inst)
             dwtimer = 0
-            resetlastwipe(inst)
+        elif force:
+            log.info(f'dino wipe needed for {inst}, players online but forced, wiping now')
+            message = 'Its been over 24 hours since a wild dino wipe. Maintenance wild dino wipe in 10 seconds'
+            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
+            sleep(10)
+            writechat(inst, 'ALERT', f'### Empty server is over 24 hours since wild dino wipe. Wiping now.', wcstamp())
+            wipeit(inst)
+            dwtimer = 0
         else:
             if dwtimer == 0:
                 log.info(f'dino wipe needed for {inst}, but players are online. waiting')
@@ -125,8 +136,7 @@ def stillneedsrestart(inst):
 
 def restartinstnow(inst, ext='restart'):
     if ext == 'restart':
-        subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL,
-                   stderr=subprocess.DEVNULL, shell=True)
+        subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         log.info(f'server {inst} instance has stopped')
         dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
     subprocess.run('arkmanager backup @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -214,23 +224,59 @@ def restartloop(inst, ext='restart'):
                     writechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
 
 
+def checkmaintenance():
+    t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # Maintenance reboot 9:00am GMT (5:00AM EST)
+    inmaint = is_time_between(t, s, e)
+    if inmaint:
+        log.info(f'maintenance: daily maintenance window has opened for {hstname}...')
+        for each in range(numinstances):
+            inst = instance[each]['name']
+            message = 'Server maintenance has started. All dino mating will be temporarily stopped.  All unclaimed dinos will be cleared, and server will also be performing updates and backups.'
+            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
+
+        log.info('maintenance: running server os maintenance on {hstname}...')
+        log.debug('os update started for {hstname}')
+        subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        log.debug('os upgrade started for {hstname}')
+        subprocess.run('apt upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        log.debug('os autoremove started for {hstname}')
+        subprocess.run('apt autoremove -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        for each in range(numinstances):
+            inst = instance[each]['name']
+            try:
+                log.info(f'maintenance: performing a world data save...')
+                subprocess.run('arkmanager saveworld @%s' % (inst,), shell=True)
+                log.info(f'maintenance: backing up server instance...')
+                subprocess.run('arkmanager backup @%s' % (inst,), shell=True)
+                log.info(f'maintenance: archiving player and tribe data older then 90 days...')
+                os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
+                sleep(5)
+                log.info(f'maintenance: shutting down dino mating...')
+                subprocess.run('arkmanager rconcmd "ScriptCommand MatingOff_DS" @%s' % (inst,), shell=True)
+                sleep(1)
+                log.info(f'maintenance: clearing all unclaimed dinos...')
+                subprocess.run('arkmanager rconcmd "ScriptCommand DestroyUnclaimed_DS" @%s' % (inst,), shell=True)
+                sleep(3)
+                checkwipe(inst, force=True)
+                lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
+                if Now() - float(lstsv[0]) > 432000 or getcfgver(inst) < getpendingcfgver(inst):
+                    maintrest = "maintenance restart"
+                    instancerestart(inst, maintrest)
+                else:
+                    message = 'Server maintenance has ended. If you had dinos mating right now you will need to turn it back on.'
+                    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
+            except:
+                log.critical(f'Error during {inst} instance maintenance')
+        if os.path.isfile('/var/run/reboot-required'):
+            log.warning(f'maintenance: {inst} physical server needs a hardware reboot after package updates')
+        log.info(f'maintenance: daily maintenance has ended for {hstname}')
+
+
 def instancerestart(inst, reason, ext='restart'):
     log.debug(f'instance restart verification starting for {inst}')
     global instance
     global confupdtimer
-    t, s, e = Now(fmt='dt'), dt(9, 0), dt(9, 30)  # Maintenance reboot 9:00-9:30am GMT (5:00AM EST)
-    inmaint = is_time_between(t, s, e)
-    if inmaint:
-                log.info(f'maintenance window reached, running server os maintenance')
-                subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                subprocess.run('apt upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                subprocess.run('apt autoremove -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                sleep(3)
-                if os.path.isfile('/var/run/reboot-required'):
-                    log.warning(f'{inst} physical server needs a hardware reboot after package updates')
-                dbupdate("UPDATE instances SET restartreason = 'maintenance restart' WHERE name = '%s'" % (inst,))
-    else:
-        dbupdate("UPDATE instances SET restartreason = '%s' WHERE name = '%s'" % (reason, inst))
+    dbupdate("UPDATE instances SET restartreason = '%s' WHERE name = '%s'" % (reason, inst))
     if not isrebooting(inst):
         for each in range(numinstances):
             instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, ext))
@@ -239,7 +285,7 @@ def instancerestart(inst, reason, ext='restart'):
 
 def compareconfigs(config1, config2):
     if not os.path.isfile(config2):
-       subprocess.run('touch "%s"' % (config2), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True) 
+        subprocess.run('touch "%s"' % (config2), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     try:
         f1 = open(config1)
         text1Lines = f1.readlines()
@@ -319,13 +365,7 @@ def checkconfig():
                 log.info(f'config update detected for instance {inst}')
                 har = int(getcfgver(inst))
                 setpendingcfgver(inst, har + 1)
-            lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-            t, s, e = datetime.now(), dt(9, 0), dt(9, 30)  # Maintenance reboot 11:00-11:30am GMT (7:00AM EST)
-            inmaint = is_time_between(t, s, e)
-            if Now() - float(lstsv[0]) > 432000 and inmaint:
-                maintrest = "maintenance restart"
-                instancerestart(inst, maintrest)
-            elif getcfgver(inst) < getpendingcfgver(inst):
+            if getcfgver(inst) < getpendingcfgver(inst):
                 maintrest = "configuration update"
                 instancerestart(inst, maintrest)
             else:
@@ -350,6 +390,11 @@ def isnewarkver(inst):
         return True, curver, avlver
 
 
+def performbackup(inst):
+    log.info(f'performing a world data backup on {inst}')
+    subprocess.run('arkmanager backup @%s' % (inst, ), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+
+
 def checkbackup():
     for seach in range(numinstances):
         sinst = instance[seach]['name']
@@ -357,9 +402,7 @@ def checkbackup():
             lastrestr = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (sinst, ))
             lt = Now() - float(lastrestr[0][0])
             if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
-                log.info(f'performing a world data backup on {sinst}')
-                subprocess.run('arkmanager backup @%s' % (sinst, ), stdout=subprocess.DEVNULL,
-                               stderr=subprocess.DEVNULL, shell=True)
+                performbackup(sinst)
 
 
 def checkifenabled(inst):
@@ -450,9 +493,10 @@ def arkupd():
                 checkifenabled(instance[each]['name'])
                 if not isrebooting(instance[each]['name']):
                     checkifalreadyrestarting(instance[each]['name'])
-            checkbackup()
-            checkupdates()
             checkconfig()
+            checkupdates()
+            checkmaintenance()
+            checkbackup()
             sleep(Secs['5min'])
             for each in range(numinstances):
                 if not isrebooting(instance[each]['name']):
