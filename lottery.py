@@ -1,4 +1,7 @@
-from datetime import timedelta
+from random import choice
+from datetime import timedelta, datetime
+from datetime import time as dt
+from timebetween import is_time_between
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import estshift, Secs, Now, datetimeto, elapsedTime
 from numpy import argmax
@@ -114,7 +117,7 @@ def lotteryloop(linfo):
     log.info('lottery loop has begun, waiting for lottery entries')
     while inlottery:
         sleep(Secs['5min'])
-        tdy = linfo['startdate'] + timedelta(days=linfo['days'])
+        tdy = linfo['startdate'] + timedelta(hours=linfo['days'])
         # tdy = linfo['startdate'] + timedelta(minutes=5)  # quick 5 min for testing
         if Now(fmt='dt') >= tdy:
             determinewinner(linfo)
@@ -136,6 +139,17 @@ def startlottery(lottoinfo):
     lotteryloop(lottoinfo)
 
 
+def generatelottery():
+    t, s, e = datetime.now(), dt(0, 0), dt(0, 5)  # Automatic Lottery 12:00am GMT (8:00PM EST)
+    lottotime = is_time_between(t, s, e)
+    if lottotime:
+        buyins = [20, 25, 30]
+        length = 22
+        buyin = choice(buyins)
+        litm = buyin * 20
+        dbupdate("INSERT INTO lotteryinfo (payout,startdate,buyin,days,players,winner,announced,completed) VALUES ('%s','%s','%s','%s',0,'Incomplete',False,False)" % (litm, Now(fmt="dt"), buyin, length))
+
+
 def checkfornewlottery():
     lottoinfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
     if lottoinfo:
@@ -145,8 +159,9 @@ def checkfornewlottery():
 def lotterywatcher():
     while True:
         try:
+            generatelottery()
             checkfornewlottery()
-            sleep(Secs['3min'])
+            sleep(Secs['5min'])
         except:
             log.critical('Critical Error Lottery Watcher!', exc_info=True)
             sleep(Secs['5min'])

@@ -82,15 +82,4 @@
                 </div>
 
     {% endif %}
-            {% if current_user.has_role('admin') %}
-        <div class='container top-pad-10 bottom-pad-10 right-pad left-pad'>
-            <div>
-                {% if not currentlottery %}
-                <a class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="/startlottery">Start a Lottery</a>
-                {% else %}
-                <a disabled class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="#">Start a L    ottery</a>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
 {% endblock %}
