@@ -463,7 +463,7 @@ discord.\nType !linkme in game'
                             await client.send_message(message.channel, msg)
             else:
                 if linfo:
-                    msg = f'Current lottery is up to {linfo["payout"]} ARc reward points.\n{linfo["players"]} players have entered into this lottery so far.\nLottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"]), fmt="epoch"),Now())}\nType !lotto enter to join the lottery'
+                    msg = f'Current lottery is up to {linfo["payout"]} ARc reward points.\n{linfo["players"]} players have entered into this lottery so far.\nLottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}\nType !lotto enter to join the lottery'
                     await client.send_message(message.channel, msg)
                 else:
                     msg = 'There are no lotterys currently underway.'

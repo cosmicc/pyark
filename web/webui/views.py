@@ -10,7 +10,7 @@ from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
-from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto
+from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto, joinedTime
 from wtforms import StringField, IntegerField
 from wtforms.validators import InputRequired, Length
 from clusterevents import getcurrenteventtitle, iseventtime
@@ -224,6 +224,13 @@ def _playedTime():
     def ui_playedTime(etime):
         return playedTime(int(etime))
     return dict(ui_playedTime=ui_playedTime)
+
+
+@webui.context_processor
+def _joinedTime():
+    def ui_joinedTime(etime):
+        return joinedTime(Now() - int(etime))
+    return dict(ui_joinedTime=ui_joinedTime)
 
 
 @webui.context_processor

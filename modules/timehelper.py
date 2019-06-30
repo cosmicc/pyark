@@ -5,7 +5,9 @@ tzfix = timedelta(hours=4)
 Secs = {'minute': 60, '1min': 60, '2min': 120, '3min': 180, '4min': 240, '5min': 300, '10min': 600, '15min': 900, '20min': 1200, '30min': 1800, 'halfhour': 1800, '60min': 3600, 'hour': 3600, '2hour': 7200, '4hour': 14400, '8hour': 28800, '12hour': 43200, 'day': 86400, '1day': 86400, 'week': 604800, 'month': 2592000}
 
 intervals = (
-    ('weeks', 604800),  # 60 * 60 * 24 * 7
+    ('years', 31536000),
+    ('months', 2592000),
+    #('weeks', 604800),  # 60 * 60 * 24 * 7
     ('days', 86400),    # 60 * 60 * 24
     ('hours', 3600),    # 60 * 60
     ('minutes', 60),
@@ -93,6 +95,23 @@ def elapsedTime(start_time, stop_time, nowifmin=True):
         return 'now'
     else:
         return ', '.join(result[:granularity])
+
+
+def joinedTime(seconds):
+    result = []
+    seconds = int(seconds)
+    if seconds < Secs['hour']:
+        granularity = 1
+    else:
+        granularity = 2
+    for name, count in intervals:
+        value = seconds // count
+        if value:
+            seconds -= value * count
+            if value == 1:
+                name = name.rstrip('s')
+            result.append("{} {}".format(int(value), name))
+    return ', '.join(result[:granularity])
 
 
 def playedTime(seconds):

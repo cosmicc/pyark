@@ -99,7 +99,7 @@
         <p class='is-2'>Last Seen on: <b>{{ playerinfo['server'].title() }}</b></p>
         <p class='is-2'>Home Server: <b>{{ playerinfo['homeserver'].title() }}</b></p>
         <p class='is-2'>Total Played Time: <b>{{ ui_playedTime(playerinfo['playedtime']) }}</b></p>
-        <p class='is-2'>Joined: <b>{{ ui_elapsedTime(playerinfo['firstseen']) }} ago</b></p>
+        <p class='is-2'>Joined: <b>{{ ui_joinedTime(playerinfo['firstseen']) }} ago</b></p>
         <p class='is-2'>Total Connections: <b>{{ playerinfo['connects'] }}</b></p>
         <p class='is-2'>Total Reward Points: <b>{{ playerinfo['rewardpoints'] }} points</b></p>
         <p class='is-2'>Pending Transfer Points: <b>{{ playerinfo['transferpoints'] }} points</b></p>

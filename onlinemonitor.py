@@ -137,8 +137,8 @@ def playergreet(steamid, inst):
             log.info(f'steamid {steamid} was not found. adding new player to cluster!')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                        firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
-                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0))
+                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, lotterywinnings) VALUES \
+                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, 0))
             if not iswelcoming(steamid):
                 welcom = threading.Thread(name='welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid, inst))
                 welcomthreads.append({'steamid': steamid, 'sthread': welcom})
@@ -168,8 +168,7 @@ def playergreet(steamid, inst):
                 log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
             else:
-                log.info(f"player {oplayer[1].title()} has joined {inst}, total player's connections {int(oplayer[7])+1}. \
-updating info.")
+                log.info(f"player {oplayer[1].title()} has joined {inst}, total player's connections {int(oplayer[7])+1}")
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s' WHERE steamid = '%s'" %
                          (Now(), inst, int(oplayer[7]) + 1, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
