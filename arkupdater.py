@@ -11,7 +11,7 @@ from modules.timehelper import wcstamp, Secs, Now
 from time import sleep
 from clusterevents import iseventtime, getcurrenteventext
 from discordbot import writediscord
-import filecmp
+#import filecmp
 import logging
 import os
 import socket
@@ -75,7 +75,7 @@ def unsetstartbit(inst):
     dbupdate("UPDATE instances SET needsrestart = 'False' WHERE name = '%s'" % (inst, ))
 
 
-def restartbit(inst):
+def playerrestartbit(inst):
     dbupdate("UPDATE players SET restartbit = 1 WHERE server = '%s'" % (inst, ))
 
 
@@ -149,11 +149,12 @@ def restartinstnow(inst, ext='restart'):
         log.debug(f'server {inst} built and updated config files')
         log.info(f'server {inst} is updating from staging directory')
         subprocess.run('arkmanager update --force --no-download --update-mods --no-autostart @%s' % (inst),
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         log.info(f'server {inst} instance is starting')
         subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         resetlastrestart(inst)
         unsetstartbit(inst)
+        playerrestartbit(inst)
         dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
         subprocess.run('systemctl start arkwatchdog', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     else:
@@ -173,14 +174,14 @@ def restartloop(inst, ext='restart'):
         restartinstnow(inst, ext=ext)
     else:
         if getplayersonline(inst, fmt='count') == 0:
-             setrestartbit(inst)
-             log.info(f'server {inst} is empty and restarting now for a {reason}')
-             writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
-             message = f'server {inst.capitalize()} is restarting now for a {reason}'
-             subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL, shell=True)
-             pushover('Instance Restart', message)
-             restartinstnow(inst, ext=ext)
+            setrestartbit(inst)
+            log.info(f'server {inst} is empty and restarting now for a {reason}')
+            writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
+            message = f'server {inst.capitalize()} is restarting now for a {reason}'
+            subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, shell=True)
+            pushover('Instance Restart', message)
+            restartinstnow(inst, ext=ext)
         elif reason != 'configuration update':
                 setrestartbit(inst)
                 if timeleft == 30:
@@ -234,27 +235,27 @@ def checkmaintenance():
             message = 'Server maintenance has started. All dino mating will be temporarily stopped.  All unclaimed dinos will be cleared, and server will also be performing updates and backups.'
             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
 
-        log.info('maintenance: running server os maintenance on {hstname}...')
-        log.debug('os update started for {hstname}')
+        log.info(f'maintenance: running server os maintenance on {hstname}...')
+        log.debug(f'os update started for {hstname}')
         subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        log.debug('os upgrade started for {hstname}')
+        log.debug(f'os upgrade started for {hstname}')
         subprocess.run('apt upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        log.debug('os autoremove started for {hstname}')
+        log.debug(f'os autoremove started for {hstname}')
         subprocess.run('apt autoremove -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         for each in range(numinstances):
             inst = instance[each]['name']
             try:
-                log.info(f'maintenance: performing a world data save...')
+                log.info(f'maintenance: performing a world data save on {inst}...')
                 subprocess.run('arkmanager saveworld @%s' % (inst,), shell=True)
-                log.info(f'maintenance: backing up server instance...')
+                log.info(f'maintenance: backing up server instance {inst}...')
                 subprocess.run('arkmanager backup @%s' % (inst,), shell=True)
-                log.info(f'maintenance: archiving player and tribe data older then 90 days...')
+                log.info(f'maintenance: archiving player and tribe data older then 90 days on {inst}...')
                 os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
                 sleep(5)
-                log.info(f'maintenance: shutting down dino mating...')
+                log.info(f'maintenance: shutting down dino mating on {inst}...')
                 subprocess.run('arkmanager rconcmd "ScriptCommand MatingOff_DS" @%s' % (inst,), shell=True)
                 sleep(1)
-                log.info(f'maintenance: clearing all unclaimed dinos...')
+                log.info(f'maintenance: clearing all unclaimed dinos on {inst}...')
                 subprocess.run('arkmanager rconcmd "ScriptCommand DestroyUnclaimed_DS" @%s' % (inst,), shell=True)
                 sleep(3)
                 checkwipe(inst, force=True)
@@ -266,9 +267,9 @@ def checkmaintenance():
                     message = 'Server maintenance has ended. If you had dinos mating right now you will need to turn it back on.'
                     subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
             except:
-                log.critical(f'Error during {inst} instance maintenance')
+                log.critical(f'Error during {inst} instance daily maintenance')
         if os.path.isfile('/var/run/reboot-required'):
-            log.warning(f'maintenance: {inst} physical server needs a hardware reboot after package updates')
+            log.warning(f'maintenance: {hstname} physical server needs a hardware reboot after package updates')
         log.info(f'maintenance: daily maintenance has ended for {hstname}')
 
 

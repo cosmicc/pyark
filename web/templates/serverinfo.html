@@ -88,9 +88,27 @@
         <p class='is-2'>Restart Reason: <b>{{ serverinfo['restartreason'].title() }}</b></p>
         <p class='is-2'>Last Dino Wipe: <b>{{ ui_elapsedTime(serverinfo['lastdinowipe']) }}</b></p>
         <p class='is-2'>Last Wipe Vote: <b>{{ ui_elapsedTime(serverinfo['lastvote']) }}</b></p>
-        <p class='is-2'>Is Running: <b>{{ serverinfo['isrunning'] }}</b></p>
-        <p class='is-2'>Is Listening: <b>{{ serverinfo['islistening'] }}</b></p>
-        <p class='is-2'>Is Online: <b>{{ serverinfo['isup'] }}</b></p>
+        <p class='is-2'>Server is Running: <b>
+        {% if serverinfo['isrunning'] == 1 %}
+        Yes
+        {% else %}
+        No
+        {% endif %}
+        </b></p>
+        <p class='is-2'>Server is Listening: <b>
+        {% if serverinfo['islistening'] == 1 %}
+        Yes
+        {% else %}
+        No
+        {% endif %}
+        </b></p>
+        <p class='is-2'>Server is Online: <b>
+        {% if serverinfo['isup'] == 1 %}
+        Yes
+        {% else %}
+        No
+        {% endif %}
+        </b></p>
         <p class='is-2'>Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
         {% if current_user.has_role('admin') %}
         <p class='is-2'>Active Memory: <b>{{ serverinfo['actmem'] }} gigs</b></p>
