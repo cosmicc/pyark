@@ -140,14 +140,16 @@ def startlottery(lottoinfo):
 
 
 def generatelottery():
-    t, s, e = datetime.now(), dt(0, 0), dt(0, 5)  # Automatic Lottery 12:00am GMT (8:00PM EST)
-    lottotime = is_time_between(t, s, e)
-    if lottotime:
-        buyins = [20, 25, 30]
-        length = 22
-        buyin = choice(buyins)
-        litm = buyin * 20
-        dbupdate("INSERT INTO lotteryinfo (payout,startdate,buyin,days,players,winner,announced,completed) VALUES ('%s','%s','%s','%s',0,'Incomplete',False,False)" % (litm, Now(fmt="dt"), buyin, length))
+    amiinalotto = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
+    if not amiinalotto:
+        t, s, e = datetime.now(), dt(0, 0), dt(0, 5)  # Automatic Lottery 12:00am GMT (8:00PM EST)
+        lottotime = is_time_between(t, s, e)
+        if lottotime:
+            buyins = [20, 25, 30]
+            length = 22
+            buyin = choice(buyins)
+            litm = buyin * 20
+            dbupdate("INSERT INTO lotteryinfo (payout,startdate,buyin,days,players,winner,announced,completed) VALUES ('%s','%s','%s','%s',0,'Incomplete',False,False)" % (litm, Now(fmt="dt"), buyin, length))
 
 
 def checkfornewlottery():
