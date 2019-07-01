@@ -34,4 +34,4 @@ def arkserversnet():
     log.debug(f'Starting ArkServersNet Data Puller')
     while True:
         fetcharkserverdata()
-        sleep(Secs['30min'])
+        sleep(Secs['15min'])
