@@ -455,11 +455,11 @@ discord.\nType !linkme in game'
                         if lpcheck is None:
                             dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('%s', '%s', '%s', '%s')" % (lpinfo[0], lpinfo[1], Now(fmt='dt'), 0))
                             dbupdate("UPDATE lotteryinfo SET payout = '%s', players = '%s' WHERE id = %s" % (linfo["payout"] + linfo["buyin"] * 2, linfo["players"] + 1, linfo["id"]))
-                            msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"]), fmt="epoch"),Now())}. Good Luck!'
+                            msg = f'You have been added to the {lfo} lottery!\nA winner will be choosen in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}. Good Luck!'
                             await client.send_message(message.channel, msg)
                             log.info(f'player {whofor} has joined the current active lottery.')
                         else:
-                            msg = f'You are already participating in this lottery for {lfo}.\nLottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(days=linfo["days"]), fmt="epoch"),Now())}'
+                            msg = f'You are already participating in this lottery for {lfo}.\nLottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}'
                             await client.send_message(message.channel, msg)
             else:
                 if linfo:
