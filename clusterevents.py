@@ -8,6 +8,7 @@ from modules.timehelper import Now, Secs, d2dt_maint
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
+
 def writediscord(msg, tstamp):
     dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % ('generalchat', 'ALERT', msg, tstamp))
 
@@ -57,12 +58,12 @@ def getcurrenteventinfo():
 
 
 def getlasteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY endtime DESC", fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY id DESC", fetch='one')
     return inevent
 
 
 def getnexteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' ORDER BY starttime ASC" % (Now(fmt='dtd'),), fetch='one')
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' ORDER BY id DESC" % (Now(fmt='dtd'),), fetch='one')
     return inevent
 
 

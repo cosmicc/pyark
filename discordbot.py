@@ -104,10 +104,10 @@ servers, !mods for a link to the mod collection, !help for everything else\nIf y
                 pcnt = getplayerstoday(each, fmt='count')
                 plist = getplayerstoday(each, fmt='string')
                 if pcnt != 0:
-                    msg = f'{each[0].capitalize()} has had {pcnt} players today: {plist}'
+                    msg = f'{each.capitalize()} has had {pcnt} players today: {plist}'
                     await client.send_message(message.channel, msg)
                 else:
-                    msg = f'{each[0].capitalize()} has had no players today.'
+                    msg = f'{each.capitalize()} has had no players today.'
                     await client.send_message(message.channel, msg)
 
         elif message.content.startswith('!who') or message.content.startswith('!whoson') \
@@ -296,7 +296,7 @@ to change home servers'
             now = Now()
             try:
                 for peach in last5:
-                    msg = msg + f'{peach[7].capitalize()} won {peach[2]} Points  {elapsedTime(now, int(peach[5])*3600 + float(peach[3]))} ago\n'
+                    msg = msg + f'{peach[6].capitalize()} won {peach[1]} Points  {elapsedTime(datetimeto(peach[2] + timedelta(hours=int(peach[5])), fmt="epoch"),Now())} ago\n'
                 msg = msg + '\nTop 5 All Time Lottery Winners:\n'
                 ccount = 0
                 newtop = top5.copy()
