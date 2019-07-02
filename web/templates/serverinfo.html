@@ -116,7 +116,13 @@
         {% endif %}
         <p class='is-2'>Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
         <p class='is-2'>Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>
-        <p class='is-2'>Server in Event: <b>{{ serverinfo['inevent'] }}</b></p>
+        <p class='is-2'>Server in Event: <b>
+        {% if serverinfo['inevent'] == 1 %}
+        No 
+        {% else %}
+        Yes ({{ serverinfo['inevent'] }})
+        {% endif %}
+        </b></p>
         </div>
     </div>
 </div>
