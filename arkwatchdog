@@ -107,9 +107,9 @@ def getrunning(inst):
         if (sttitle == 'Server version'):
             serverversion = stripansi(ea.split(':')[1]).strip()
         if (sttitle == 'ARKServers link'):
-            arkserverslink = stripansi(ea.split('   ')[1]).strip()
+            arkserverslink = stripansi(ea.split('  ')[1]).strip()
         if (sttitle == 'Steam connect link'):
-            steamlink = stripansi(ea.split('   ')[1]).strip()
+            steamlink = stripansi(ea.split('  ')[1]).strip()
 
     return (srunning, slistening, sonline, serverbuild, serverversion, steamlink, arkserverslink)
 
@@ -148,7 +148,7 @@ def main():
         totmem = 0
         try:
             for eachinst in instance:
-                isitrunning, isitlistening, isitonline, serverbuild, serverversion, steamlink, arkserverslink = getrunning(eachinst['name'])
+                isitrunning, isitlistening, isitonline, arkbuild, arkversion, steamlink, arkserverslink = getrunning(eachinst['name'])
                 if not isitrunning:
                     for neach in isrunning.copy():
                         if neach == eachinst['name']:
@@ -191,7 +191,7 @@ def main():
 
                 #log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
                 try:
-                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', serverbuild = '%s', serverversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, arkbuild, arkversion, steamlink, arkserverslink, Now(), actmem, totmem, eachinst['name']))
+                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, eachinst['name']))
                 except:
                     log.error('Error writing stats to database')
                 for feach in isrunning:
