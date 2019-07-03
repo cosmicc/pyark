@@ -148,7 +148,7 @@ def generatelottery():
             buyins = [20, 25, 30]
             length = 22
             buyin = choice(buyins)
-            litm = buyin * 20
+            litm = buyin * 25
             dbupdate("INSERT INTO lotteryinfo (payout,startdate,buyin,days,players,winner,announced,completed) VALUES ('%s','%s','%s','%s',0,'Incomplete',False,False)" % (litm, Now(fmt="dt"), buyin, length))
 
 
