@@ -82,7 +82,7 @@
         <p class='is-2'>Server Enabled: <b>{{ serverinfo['enabled'] }}</b></p>
         <p class='is-2'>Ark Game Version: <b>v{{ serverinfo['arkversion'] }}</b></p>
         {% if current_user.has_role('admin') %}
-        <p class='is-2'>Config Version: <b>v{{ serverinfo['cfgver'] }}</b></p>
+        <p class='is-2'>Ark Game Build: <b>{{ serverinfo['arkbuild'] }}</b></p>
         {% endif %}
         <p class='is-2'>Last Server Restart: <b>{{ ui_elapsedTime(serverinfo['lastrestart']) }}</b></p>
         <p class='is-2'>Restart Reason: <b>{{ serverinfo['restartreason'].title() }}</b></p>

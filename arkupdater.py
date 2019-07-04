@@ -165,64 +165,63 @@ def restartinstnow(inst, ext='restart'):
 
 
 def restartloop(inst, ext='restart'):
-    if not isrebooting(inst):
-        log.debug(f'{inst} restart loop has started')
-        timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
-        timeleft = int(timeleftraw[0])
-        reason = timeleftraw[1]
-        if ext == 'start':
+    log.debug(f'{inst} restart loop has started')
+    timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
+    timeleft = int(timeleftraw[0])
+    reason = timeleftraw[1]
+    if ext == 'start':
+        restartinstnow(inst, ext=ext)
+    else:
+        if getplayersonline(inst, fmt='count') == 0:
+            setrestartbit(inst)
+            log.info(f'server {inst} is empty and restarting now for a {reason}')
+            writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
+            message = f'server {inst.capitalize()} is restarting now for a {reason}'
+            subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, shell=True)
+            pushover('Instance Restart', message)
             restartinstnow(inst, ext=ext)
-        else:
-            if getplayersonline(inst, fmt='count') == 0:
+        elif reason != 'configuration update':
                 setrestartbit(inst)
-                log.info(f'server {inst} is empty and restarting now for a {reason}')
-                writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
-                message = f'server {inst.capitalize()} is restarting now for a {reason}'
-                subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
-                               stderr=subprocess.DEVNULL, shell=True)
-                pushover('Instance Restart', message)
-                restartinstnow(inst, ext=ext)
-            elif reason != 'configuration update':
-                    setrestartbit(inst)
-                    if timeleft == 30:
-                        log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
-                        writechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}',
-                                  wcstamp())
-                    else:
-                        log.info(f'resuming {timeleft} min retart countdown for instance {inst} for a {reason}')
-                    gotime = False
-                    snr = stillneedsrestart(inst)
-                    while snr and not gotime:
-                        if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
-                            log.info(f'{timeleft} broadcast message sent to {inst}')
-                            subprocess.run("""arkmanager rconcmd "broadcast
-                                           '\n\n\n          The server will be restarting in %s minutes for a %s'" @%s""" %
-                                           (timeleft, reason, inst), stdout=subprocess.DEVNULL,
-                                           stderr=subprocess.DEVNULL, shell=True)
-                        sleep(Secs['1min'])
-                        timeleft = timeleft - 1
-                        updatetimer(inst, timeleft)
-                        snr = stillneedsrestart(inst)
-                        if getplayersonline(inst, fmt='count') == 0 or timeleft == 0:
-                            gotime = True
-                    if stillneedsrestart(inst):
-                        log.info(f'server {inst} is restarting now for a {reason}')
-                        message = f'server {inst.capitalize()} is restarting now for a {reason}'
+                if timeleft == 30:
+                    log.info(f'starting 30 min restart countdown for instance {inst} for a {reason}')
+                    writechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}',
+                              wcstamp())
+                else:
+                    log.info(f'resuming {timeleft} min retart countdown for instance {inst} for a {reason}')
+                gotime = False
+                snr = stillneedsrestart(inst)
+                while snr and not gotime:
+                    if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
+                        log.info(f'{timeleft} broadcast message sent to {inst}')
                         subprocess.run("""arkmanager rconcmd "broadcast
-                                       '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason, inst),
-                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                        writechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
-                        subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
+                                       '\n\n\n          The server will be restarting in %s minutes for a %s'" @%s""" %
+                                       (timeleft, reason, inst), stdout=subprocess.DEVNULL,
                                        stderr=subprocess.DEVNULL, shell=True)
-                        pushover('Instance Restart', message)
-                        sleep(10)
-                        restartinstnow(inst, ext=ext)
-                    else:
-                        log.warning(f'server restart on {inst} has been canceled from forced cancel')
-                        subprocess.run("""arkmanager rconcmd "broadcast
-                                       '\n\n\n             The server restart for %s has been cancelled'" @%s""" %
-                                       (reason, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                        writechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
+                    sleep(Secs['1min'])
+                    timeleft = timeleft - 1
+                    updatetimer(inst, timeleft)
+                    snr = stillneedsrestart(inst)
+                    if getplayersonline(inst, fmt='count') == 0 or timeleft == 0:
+                        gotime = True
+                if stillneedsrestart(inst):
+                    log.info(f'server {inst} is restarting now for a {reason}')
+                    message = f'server {inst.capitalize()} is restarting now for a {reason}'
+                    subprocess.run("""arkmanager rconcmd "broadcast
+                                   '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason, inst),
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    writechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
+                    subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL, shell=True)
+                    pushover('Instance Restart', message)
+                    sleep(10)
+                    restartinstnow(inst, ext=ext)
+                else:
+                    log.warning(f'server restart on {inst} has been canceled from forced cancel')
+                    subprocess.run("""arkmanager rconcmd "broadcast
+                                   '\n\n\n             The server restart for %s has been cancelled'" @%s""" %
+                                   (reason, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                    writechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
 
 
 def checkmaintenance():

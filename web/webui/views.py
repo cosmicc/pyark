@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, time, date
 from flask import render_template, Response, request, redirect, url_for, flash, Blueprint
 from flask_security import login_required, logout_user, current_user, roles_required, RegisterForm, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
+from time import sleep
 from flask_wtf import FlaskForm
 from itertools import chain, zip_longest
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
@@ -43,6 +44,7 @@ class LotteryForm(FlaskForm):
     buyinpoints = IntegerField('buyinpoints', validators=[InputRequired()])
     length = IntegerField('length', validators=[InputRequired()])
 
+
 class EventForm(FlaskForm):
     buyinpoints = IntegerField('buyinpoints', validators=[InputRequired()])
     length = IntegerField('length', validators=[InputRequired()])
@@ -50,6 +52,64 @@ class EventForm(FlaskForm):
 
 class MessageForm(FlaskForm):
     message = StringField('message', validators=[InputRequired(), Length(min=1, max=30)])
+
+
+def follow(stream):
+    line = ''
+    try:
+        for block in iter(lambda: stream.read(1024), None):
+            if '\n' in block:
+                for line in (line + block).splitlines(True) + ['']:
+                    if line.endswith('\n'):
+                        yield line.strip()
+            elif not block:
+                # Wait for data.
+                sleep(1.0)
+    except KeyboardInterrupt:
+        print('Exited.')
+
+
+def getpyarklog():
+    logpath = f'/home/ark/shared/logs/pyark/pyark.log'
+    reslt = ''
+    with open(logpath, 'rt') as following:
+        following.seek(0, 0)
+        for each in follow(following):
+            if each.find('[CRITICAL]') != -1:
+                ar = 'has-text-danger'
+            elif each.find('[ERROR]') != -1:
+                ar = 'has-text-danger'
+            elif each.find('[WARNING]') != -1:
+                ar = f'has-text-warning'
+            elif each.find('[INFO]') != -1 or each.find('[DEBUG]'):
+                if each.find('vote') != -1:
+                    ar = ''
+                elif each.find('maintenance') != -1:
+                    ar = ''
+                elif each.find('arkupdater') != -1:
+                    ar = ''
+                elif each.find('lottery') != -1:
+                    ar = ''
+                elif each.find('points') != -1:
+                    ar = ''
+                elif each.find('-restart') != -1:
+                    ar = ''
+                elif each.find('new player') != -1:
+                    ar = ''
+                elif each.find('left the server') != -1:
+                    ar = 'has-text-link'
+                elif each.find('link') != -1:
+                    ar = ''
+                elif each.find('has joined') != -1 or each.find('transferred') != -1:
+                    ar = 'has-text-success'
+                elif each.find('responding') != -1:
+                    ar = ''
+                elif each.find('notifying') != -1:
+                    ar = ''
+                else:
+                    ar = ''
+            reslt = reslt + f"""<p class="is-size-7 {ar}">{each}</p><br>"""
+    return reslt
 
 
 @webui.context_processor
@@ -756,3 +816,10 @@ def _chatlog(instance):
         return redirect(url_for('webui._chatlog', instance=instance))
     chatlog = getlog(instance, 'chat')
     return render_template('serverchatlog.html', serverinfo=instanceinfo(instance), chatlog=chatlog[::-1])
+
+
+@webui.route('/pyarklog')
+@login_required
+def _pyarklog():
+    pyarklog = getpyarklog()
+    return render_template('pyarklog.html', pyarklog=pyarklog)
