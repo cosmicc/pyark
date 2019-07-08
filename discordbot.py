@@ -1,7 +1,7 @@
 from datetime import timedelta
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
-from modules.configreader import discord_channel, discord_serverchat, discordtoken, discord_botchannel
+from modules.configreader import discord_channel, discord_serverchat, discordtokenel
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, getlastwipe, getlastrestart, writechat, writeglobal, getlastrestartreason
 from modules.players import getplayer, getplayerlastserver, getplayersonline, getlastplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers
@@ -21,7 +21,6 @@ client = discord.Client()
 
 channel = discord.Object(id=discord_serverchat)
 channel2 = discord.Object(id=discord_channel)
-channel3 = discord.Object(id=discord_botchannel)
 
 SUCCESS_COLOR = 0x00ff00
 FAIL_COLOR = 0xff0000
