@@ -145,7 +145,7 @@ def generatelottery():
         t, s, e = datetime.now(), dt(0, 0), dt(0, 5)  # Automatic Lottery 12:00am GMT (8:00PM EST)
         lottotime = is_time_between(t, s, e)
         if lottotime:
-            buyins = [20, 25, 30]
+            buyins = [25, 30, 20, 35]
             length = 22
             buyin = choice(buyins)
             litm = buyin * 25

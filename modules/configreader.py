@@ -39,6 +39,7 @@ psql_statsdb = config.get('postgresql', 'statsdb')
 
 # Discord
 discord_channel = config.get('discord', 'general_channel')
+discord_botchannel = config.get('discord', 'bot_channel')
 discord_serverchat = config.get('discord', 'serverchat_channel')
 discordtoken = config.get('discord', 'token')
 

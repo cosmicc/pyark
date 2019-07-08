@@ -76,6 +76,14 @@ def getlastrestart(inst):
         return None
 
 
+def getlastrestartreason(inst):
+    dbdata = dbquery("SELECT restartreason FROM instances WHERE name = '%s'" % (inst.lower(),), fetch='one', single=True)
+    if dbdata:
+        return dbdata[0]
+    else:
+        return None
+
+
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
