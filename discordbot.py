@@ -1,7 +1,7 @@
 from datetime import timedelta
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
-from modules.configreader import discord_channel, discord_serverchat, discordtokenel
+from modules.configreader import discord_channel, discord_serverchat, discordtoken
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, getlastwipe, getlastrestart, writechat, writeglobal, getlastrestartreason
 from modules.players import getplayer, getplayerlastserver, getplayersonline, getlastplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers
