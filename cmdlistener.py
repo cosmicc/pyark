@@ -547,7 +547,7 @@ def checkcommands(minst):
     for line in iter(b.splitlines()):
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
-        elif line.startswith('AdminCmd:'):
+        elif line.find('AdminCmd:') != -1:
             with open(f"/home/ark/shared/logs/{minst}/gamelog/admin.log", "at") as f:
                lobber = line.replace('"', '').strip()
                if lobber != '':
