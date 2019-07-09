@@ -358,8 +358,8 @@ def startvoter(inst, whoasked):
 def getnamefromchat(chat):
     # log.warning(chat)
     try:
-        log.warning(len(chat))
-        log.warning(chat)
+        #log.warning(len(chat))
+        #log.warning(chat)
         rawlineorg = chat.split(':')
         if len(rawlineorg) > 1:
             #log.warning(rawlineorg)
@@ -369,7 +369,7 @@ def getnamefromchat(chat):
             #log.warning(rawline)
             return rawline.lower()
     except:
-        log.error('Potential colon (:) in steam name')
+        log.error('Potential colon (:) in steam namei {chat}')
         return None
 
 
@@ -546,10 +546,14 @@ def checkcommands(minst):
                                stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
-        if len(line) < 3 or line.find('released:') or line.find('trapped:'):
+        if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
-        elif line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
-            log.debug(f'chatline: {line}')
+        elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('joined this ARK!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:'):
+            with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
+                lobber = line.replace('"', '').strip()
+                if lobber != '':
+                    f.write(f"""{line.replace('"','').strip()}\n""")
+            f.close()
         elif line.find('[TCsAR]') != -1:
             dfg = line.split('||')
             dfh = dfg[1].split('|')
@@ -562,6 +566,7 @@ def checkcommands(minst):
                 processtcdata(minst, tcdata)
         else:
             whoasked = getnamefromchat(line)
+            log.debug(f'chatline who: {whoasked}')
             if whoasked is None:
                 getnamefromchaterror(minst)
             else:
@@ -694,6 +699,7 @@ def checkcommands(minst):
                             lchoice = False
                         lotteryquery(whoasked, lchoice, minst)
                 else:
+                    log.debug(f'chatline: {line}')
                     rawline = line.split('(')
                     if len(rawline) > 1:
                         rawname = rawline[1].split(')')
@@ -712,15 +718,6 @@ def checkcommands(minst):
                                     writechatlog(inst, whoname, cmsg, tstamp)
                                 except:
                                     log.critical('could not parse date from chat', exc_info=True)
-                if line.startswith('Running command') or line.startswith('Command processed') \
-                        or line.startswith('Error:') or isserver(line):
-                    pass
-                else:
-                    with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
-                        lobber = line.replace('"', '').strip()
-                        if lobber != '':
-                            f.write(f"""{line.replace('"','').strip()}\n""")
-                    f.close()
 
 
 def clisten(minst):
