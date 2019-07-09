@@ -547,7 +547,13 @@ def checkcommands(minst):
     for line in iter(b.splitlines()):
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
-        elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('joined this ARK!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:'):
+        elif line.startswith('AdminCmd:'):
+            with open(f"/home/ark/shared/logs/{minst}/gamelog/admin.log", "at") as f:
+               lobber = line.replace('"', '').strip()
+               if lobber != '':
+                   f.write(f"""{line.replace('"','').strip()}\n""")
+            f.close()
+        elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('joined this ARK!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('left this ARK!') != -1:
             with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
                 lobber = line.replace('"', '').strip()
                 if lobber != '':

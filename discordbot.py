@@ -71,13 +71,12 @@ def discordbot():
                         elif each[0] == 'LOTTOEND':
                             embed = discord.Embed(title=f"The current Lottery has ended", color=SUCCESS_COLOR)
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
-                            embed.add_field(name=f"Congratulations to... {each[2].upper()}", value=f"{each[2].title()} has won **{each[1]}** Reward Points!", inline=False)
-                            embed.set_footer(text='Next lottery will start in 1 hour, Type **`!points`** for more information')
+                            embed.add_field(name=f"Congratulations to {each[2].upper()} winning **{each[1]}** Points", value=f"Next lottery will start in 1 hour, Type **`!points`** for more information", inline=False)
                             await client.send_message(channel2, embed=embed)
                         elif each[0] == 'UPDATE':
                             embed = discord.Embed(title=f"A New Update has been released!", color=INFO_COLOR)
                             embed.set_author(name='ARK Updater for Galaxy Cluster Servers', icon_url='https://patchbot.io/images/games/ark_sm.png')
-                            embed.add_field(name=f"Reason: {msg}", value=f"{each[1]}\nAny applicable servers will begin restart countdown now", inline=False)
+                            embed.add_field(name=f"Reason: {msg}", value=f"{each[1]}\nAny applicable servers will begin a 30 min restart countdown now", inline=False)
                             await client.send_message(channel2, embed=embed)
                         else:
                             if each[1] == "ALERT":
