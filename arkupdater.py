@@ -440,8 +440,8 @@ def checkupdates():
                 log.debug('ark update downloaded to staging area')
                 msg = f'Ark update has been released. Servers will begin restart countdown now.\n\
 https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
-                writediscord(msg, Now())
-                pushover('Ark Update', msg)
+                writediscord('ARK Game Update', Now(), name='https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes', server='UPDATE')
+                #pushover('Ark Update', msg)
                 log.info(f'ark update download complete. update staged. notifying servers')
                 dbupdate(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
         except:
@@ -467,12 +467,11 @@ https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
                 subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']),
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
-                aname = f'{modname} mod update'
-                if instance[each]["name"] == 'ragnarok':
-                    msg = f'Mod {modname} has been updated. Servers will begin restart countdowns now.\n\
+                aname = f'{modname} Mod Update'
+                msg = f'Mod {modname} has been updated. Servers will begin restart countdowns now.\n\
 https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
-                    writediscord(msg, Now())
-                    pushover('Mod Update', msg)
+                writediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
+                #pushover('Mod Update', msg)
                 for neo in range(numinstances):
                         instancerestart(instance[neo]['name'], aname)
         else:

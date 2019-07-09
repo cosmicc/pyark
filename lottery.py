@@ -15,8 +15,8 @@ hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
 
 
-def writediscord(msg, tstamp):
-    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % ('generalchat', 'ALERT', msg, tstamp))
+def writediscord(msg, tstamp, server='generalchat', name='ALERT'):
+    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (server, name, msg, tstamp))
 
 
 def writeglobal(inst, whos, msg):
@@ -88,8 +88,8 @@ def determinewinner(linfo):
                 kk = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (ueach,), fetch='one')
                 dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
                            ('%s', '%s', '%s', '%s', '%s')" % (kk[0], kk[1], Now(), linfo['buyin'], 0))
-            msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!\n{lwinner[1].capitalize()} has won {linfo["payout"]} ARc Reward Points'
-            writediscord(msg, Now())
+            msg = f'The lottery has ended, and the winner is {lwinner[1].upper()}!\n{lwinner[1].capitalize()} has won {linfo["payout"]} Reward Points\nNext lottery begins in 1 hour.'
+            writediscord(f'{lwinner[1].title()}', Now(), name=f'{linfo["payout"]}', server='LOTTOEND')
             writeglobal('ALERT', 'ALERT', msg)
             dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
                        ('%s', '%s', '%s', '%s', '%s')" % (lwinner[0], lwinner[1], Now(), linfo['payout'], 1))
@@ -104,8 +104,8 @@ def determinewinner(linfo):
     else:
         log.info(f'Lottery has ended. Not enough players: ({len(lottoers)}/3)')
         dbupdate("UPDATE lotteryinfo SET winner = 'None', completed = True WHERE id = %s" % (linfo["id"],))
-        msg = f'Lottery has ended. Not enough players have participated.  Requires at least 3 players.\nNo points will be withdrawn from any participants.'
-        writediscord(msg, Now())
+        msg = f'Lottery has ended. Not enough players have participated.  Requires at least 3 players.\nNo points will be withdrawn from any participants.\nNext lottery begins in 1 hour.'
+        writediscord(f'NONE', Now(), name=f'{len(lottoers)}', server='LOTTOEND')
         writeglobal('ALERT', 'ALERT', msg)
 
 
@@ -133,7 +133,7 @@ def startlottery(lottoinfo):
         msg = f'A new lottery has started! {lottoinfo["buyin"]} points to enter in this lottery.\nStarting pot {lottoinfo["payout"]} points and grows as players enter. '
         msg = msg + f'Lottery Ends in {lend}\nType !lotto for more info or !lotto enter to join'
         writeglobal('ALERT', 'ALERT', msg)
-        writediscord(msg, Now())
+        writediscord(f'{lottoinfo["payout"]}', Now(), name=f'{lend}', server='LOTTOSTART')
         dbupdate("UPDATE lotteryinfo SET announced = True WHERE id = %s" % (lottoinfo["id"],))
         sleep(10)
     lotteryloop(lottoinfo)
@@ -142,11 +142,11 @@ def startlottery(lottoinfo):
 def generatelottery():
     amiinalotto = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
     if not amiinalotto:
-        t, s, e = datetime.now(), dt(0, 0), dt(0, 5)  # Automatic Lottery 12:00am GMT (8:00PM EST)
+        t, s, e = datetime.now(), dt(23, 0), dt(23, 5)  # Automatic Lottery 11:00pm GMT (7:00PM EST)
         lottotime = is_time_between(t, s, e)
         if lottotime:
             buyins = [25, 30, 20, 35]
-            length = 22
+            length = 23
             buyin = choice(buyins)
             litm = buyin * 25
             dbupdate("INSERT INTO lotteryinfo (payout,startdate,buyin,days,players,winner,announced,completed) VALUES ('%s','%s','%s','%s',0,'Incomplete',False,False)" % (litm, Now(fmt="dt"), buyin, length))
