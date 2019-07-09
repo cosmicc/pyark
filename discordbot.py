@@ -19,6 +19,8 @@ log = logging.getLogger(name=hstname)
 
 client = discord.Client()
 
+lastlottoannounce = Now()
+
 channel = discord.Object(id=discord_serverchat)
 channel2 = discord.Object(id=discord_channel)
 
@@ -64,14 +66,13 @@ def discordbot():
                             embed = discord.Embed(title=f"A new Lottery has started!", color=SUCCESS_COLOR)
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                             buyin = int(each[2])/25
-                            embed.add_field(name=f"Starting Pot: {each[2]} Points", value=f"**{int(buyin)} Points** to join this lottery, lottery winnings grow as more join\nLottery will end in **{each[1]}**", inline=False)
-                            embed.set_footer(text='Type !lotto enter to join this lottery, or !points for more information')
+                            embed.add_field(name=f"Starting Pot: {each[2]} Points", value=f"**{int(buyin)} Points** to join this lottery, lottery winnings grow as more join\nLottery will end in **{each[1]}**\n\nType **`!lotto enter`** to join this lottery, or **`!points`** for more information", inline=False)
                             await client.send_message(channel2, embed=embed)
                         elif each[0] == 'LOTTOEND':
                             embed = discord.Embed(title=f"The current Lottery has ended", color=SUCCESS_COLOR)
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                             embed.add_field(name=f"Congratulations to... {each[2].upper()}", value=f"{each[2].title()} has won **{each[1]}** Reward Points!", inline=False)
-                            embed.set_footer(text='Next lottery will start in 1 hour, !points for more information')
+                            embed.set_footer(text='Next lottery will start in 1 hour, Type **`!points`** for more information')
                             await client.send_message(channel2, embed=embed)
                         elif each[0] == 'UPDATE':
                             embed = discord.Embed(title=f"A New Update has been released!", color=INFO_COLOR)
@@ -98,7 +99,6 @@ def discordbot():
                 log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
             await asyncio.sleep(5)
 
-
     def savediscordtodb(author):
         didexists = dbquery("SELECT * FROM discordnames WHERE discordname = '%s'" % (str(author),), fetch='one')
         if not didexists:
@@ -110,7 +110,7 @@ def discordbot():
         fmt = 'If you are already a player on the servers, type !linkme in-game to link your discord account to your ark player.\n'
         fmt = fmt + 'Type !servers for links to the servers\nType !mods for a link to the mod collection\n!help for everything else\n\n'
         fmt = fmt + 'If you need any help look for pinned messages in #help'
-        embed=discord.Embed(title="Welcome to the Galaxy Cluster Ultimate Extinction core Server Discord", description=fmt, color=HELP_COLOR)
+        embed = discord.Embed(title="Welcome to the Galaxy Cluster Ultimate Extinction core Server Discord", description=fmt, color=HELP_COLOR)
         await client.send_message(member, embed=embed)
 
     @client.event
@@ -120,6 +120,7 @@ def discordbot():
 
     @client.event
     async def on_message(message):
+        global lastlottoannounce
         def checkcorrect(message, strict=False):
             if strict:
                 if str(message.channel) != 'bot-channel' and not message.channel.is_private:
@@ -208,10 +209,10 @@ def discordbot():
             msg = ''
             msg3 = '!event, !lasthour, !lastlotto, !timeleft'
             msg2 = '**Commands can be privately messaged directly to the bot or in the #bot-channel**'
-            msg = msg + "**!mods**  - Link to all the mods for this cluster\n"
-            msg = msg + "**!servers**  - Status and links to all the servers in the cluster\n"
-            msg = msg + "**!who**  - List all players currently online on all the servers\n"
-            msg = msg + "**!myinfo**  - Your in-game player information\n"
+            msg = msg + "**`!mods`**  - Link to all the mods for this cluster\n"
+            msg = msg + "**`!servers`**  - Status and links to all the servers in the cluster\n"
+            msg = msg + "**`!who`**  - List all players currently online on all the servers\n"
+            msg = msg + "**`!myinfo`**  - Your in-game player information\n"
             msg = msg + "**!expire**  - Your in-game experation timers and time left before dino/structure decay\n"
             msg = msg + "**!ec**  - Links to more Extinction Core Mod information\n"
             msg = msg + "**!points**  - More information about the Galaxy Cluster points system\n"
@@ -229,7 +230,7 @@ def discordbot():
             msg = msg + "**!lastlotto**  - List the last 5 lottery winners\n"
             msg = msg + "**!winners**  - List the 5 all-time lottery winners\n"
             msg = msg + "**!primordial**  - Warns you in-game if you haven't logged in since the server has restarted (so you can reset your primordial's buff bug)\n\n"
-            embed=discord.Embed(title="Galaxy Custom Bot Commands:", description=msg, color=HELP_COLOR)
+            embed = discord.Embed(title="Galaxy Custom Bot Commands:", description=msg, color=HELP_COLOR)
             embed.set_footer(text=msg2)
             await client.send_message(message.author, embed=embed)
             # await client.add_reaction(message, '597645497590874162')
@@ -260,17 +261,15 @@ def discordbot():
 
         elif message.content.lower().startswith('!test'):
             if checkcorrect(message):
-                embed = discord.Embed(title=f"The current Lottery has ended", color=INFO_COLOR)
+                embed = discord.Embed(title=f"A new lottery player has entered the lottery!", color=INFO_COLOR)
                 embed.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
-                embed.add_field(name=f"The Winner is... NAME", value=f"Name has won **1000** Reward Points!", inline=False)
-                embed.set_footer(text='```Next lottery will start in 1 hour```')
+                embed.add_field(name=f"Current lottery amount: **800 Points**", value=f"**4** Players have entered into this lottery so far\nLottery ends in **some time ago**\n\nType **`!lotto enter`** to join, or **`!points`** for more information", inline=True)
                 await client.send_message(message.channel, embed=embed)
             else:
                 embed = discord.Embed(description=rejectmsg, color=FAIL_COLOR)
                 await client.send_message(message.author, embed=embed)
                 if not message.channel.is_private:
                     await client.delete_message(message)
-
 
         elif message.content.lower().startswith('!who') or message.content.lower().startswith('!whoson') or message.content.lower().startswith('!whosonline'):
             if checkcorrect(message):
@@ -305,7 +304,6 @@ def discordbot():
                 await client.send_message(message.author, embed=embed)
                 if not message.channel.is_private:
                     await client.delete_message(message)
-
 
         elif message.content.lower().startswith('!lastseen'):
             if checkcorrect(message):
@@ -520,7 +518,6 @@ def discordbot():
                 last5 = dbquery("SELECT * FROM lotteryinfo WHERE completed = True AND winner != 'None' ORDER BY id DESC LIMIT 5")
                 top5 = dbquery("SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5")
                 msg2 = 'Last 5 Lottery Winners:'
-                now = Now()
                 msg = ''
                 try:
                     for peach in last5:
@@ -646,8 +643,6 @@ def discordbot():
                 if not message.channel.is_private:
                     await client.delete_message(message)
 
-
-
         elif message.content.lower().startswith('!mods'):
             if checkcorrect(message):
                 whofor = str(message.author).lower()
@@ -710,9 +705,7 @@ def discordbot():
                 if not message.channel.is_private:
                     await client.delete_message(message)
 
-
         elif message.content.lower().startswith('!lotto') or message.content.lower().startswith('!lottery'):
-            if checkcorrect(message, strict=True):
                 whofor = str(message.author).lower()
                 newname = message.content.split(' ')
                 linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
@@ -723,7 +716,7 @@ def discordbot():
                             log.info(f'lottery join request from {whofor} denied, account not linked')
                             msg = f'Your discord account must be linked to your in-game player account to join a lottery from discord.\nType !linkme in-game to do this'
                             embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                            await client.send_message(message.channel, embed=embed)
+                            await client.send_message(message.author, embed=embed)
                         else:
                             whofor = lpinfo[1]
                             lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
@@ -734,34 +727,35 @@ def discordbot():
                                 dbupdate("UPDATE lotteryinfo SET payout = '%s', players = '%s' WHERE id = %s" % (linfo["payout"] + linfo["buyin"] * 2, linfo["players"] + 1, linfo["id"]))
                                 msg = f'You have been added to the {lfo} lottery!\nThis lottery has now risen to **{linfo["payout"] + linfo["buyin"] * 2}** points.\nA winner will be choosen in **{elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}**. Good Luck!'
                                 embed = discord.Embed(description=msg, color=SUCCESS_COLOR)
-                                await client.send_message(message.channel, embed=embed)
+                                await client.send_message(message.author, embed=embed)
                                 log.info(f'player {whofor} has joined the current active lottery.')
+                                if lastlottoannounce-Now() > timedelta(hours=1):
+                                    #### ANNOUNCE GENERAL
+                                    lastlottoannounce
+                                else:
+                                    pass
                             elif not linfo:
                                 msg = 'There are no lotterys currently underway.'
                                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                                await client.send_message(message.channel, embed=embed)
+                                await client.send_message(message.author, embed=embed)
                             else:
                                 msg = f'You are already participating in the current lottery for {lfo}.\nThis lottery is currently at **{linfo["payout"]}** points.\nLottery ends in **{elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}**'
                                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                                await client.send_message(message.channel, embed=embed)
+                                await client.send_message(message.author, embed=embed)
                 else:
                     if linfo:
-                        msg = f'Type !lotto enter to join the lottery'
+                        msg = f'Type **`!lotto enter`** to join the lottery'
                         embed=discord.Embed(title=f"Current lottery is up to {linfo['payout']} reward points", description=f"{linfo['players']} players have entered into this lottery so far", color=SUCCESS_COLOR)
                         embed.add_field(name=f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}', value="\u200b", inline=False)
                         embed.set_footer(text=msg)
 
-                        await client.send_message(message.channel, embed=embed)
+                        await client.send_message(message.author, embed=embed)
                     else:
                         msg = 'There are no lotterys currently underway.'
                         embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                        await client.send_message(message.channel, embed=embed)
-            else:
-                embed = discord.Embed(description=rejectmsg, color=FAIL_COLOR)
-                await client.send_message(message.author, embed=embed)
+                        await client.send_message(message.author, embed=embed)
                 if not message.channel.is_private:
                     await client.delete_message(message)
-
 
         elif message.content.lower().startswith('!primordial'):
             if checkcorrect(message, strict=True):
