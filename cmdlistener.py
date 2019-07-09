@@ -546,8 +546,10 @@ def checkcommands(minst):
                                stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
-        if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
+        if len(line) < 3 or line.find('released:') or line.find('trapped:'):
             pass
+        elif line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
+            log.debug(f'chatline: {line}')
         elif line.find('[TCsAR]') != -1:
             dfg = line.split('||')
             dfh = dfg[1].split('|')
@@ -558,7 +560,7 @@ def checkcommands(minst):
                     tcdata.update({ee[0]: ee[1]})
             if 'SteamID' in tcdata:
                 processtcdata(minst, tcdata)
-        elif len(line) > 3 and not line.find('released:') and not line.find('trapped:'):
+        else:
             whoasked = getnamefromchat(line)
             if whoasked is None:
                 getnamefromchaterror(minst)
