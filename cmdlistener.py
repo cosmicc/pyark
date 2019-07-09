@@ -360,16 +360,16 @@ def getnamefromchat(chat):
     try:
         rawlineorg = chat.split(':')
         if len(rawlineorg) > 1:
-            log.warning(rawline)
-            rawline = rawline[1].split(' (')
-            log.warning(rawline)
+            #log.warning(rawline)
+            rawline = rawlineorg[1].split(' (')
+            #log.warning(rawline)
             rawline = rawline[1][:-1].strip()
-            log.warning(rawline)
+            #log.warning(rawline)
             return rawline.lower()
         else:
             return None
     except:
-        log.error(f'Potential colon (:) in steam name {rawlingorg}', exc_info=True)
+        log.error('Potential colon (:) in steam name')
         return None
 
 
@@ -550,8 +550,9 @@ def checkcommands(minst):
             pass
         else:
             whoasked = getnamefromchat(line)
-            if whoasked in None:
-                getnamefromchaterror(minst)
+            if whoasked is None:
+                #getnamefromchaterror(minst)
+                log.error('getnameerror')
             else:
                 if line.find('!help') != -1:
                     subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, \
