@@ -358,8 +358,8 @@ def startvoter(inst, whoasked):
 def getnamefromchat(chat):
     # log.warning(chat)
     try:
-        rawline = chat.split(':')
-        if len(rawline) > 1:
+        rawlineorg = chat.split(':')
+        if len(rawlineorg) > 1:
             log.warning(rawline)
             rawline = rawline[1].split(' (')
             log.warning(rawline)
@@ -369,7 +369,12 @@ def getnamefromchat(chat):
         else:
             return None
     except:
-        log.critical('error in getnamefrochat', exc_info=True)
+        log.error(f'Potential colon (:) in steam name {rawlingorg}', exc_info=True)
+        return None
+
+
+def getnamefromchaterror(inst):
+    subprocess.run('arkmanager rconcmd "ServerChat Someone has a colon : in their steam name. This makes me, the bot, have issues. This needs to be removed from your steam name please!" @%s' % (inst,), shell=True)
 
 
 def isserver(line):
@@ -541,193 +546,179 @@ def checkcommands(minst):
                                stderr=subprocess.PIPE, shell=True)
     b = cmdpipe.stdout.read().decode("utf-8")
     for line in iter(b.splitlines()):
-        whoasked = 'nobody'
-        if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') \
-           or isserver(line):
+        if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
             pass
-        elif line.find('!help') != -1:
+        else:
             whoasked = getnamefromchat(line)
-            subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, \
-!myinfo, !myhome, !lastwipe, !lastrestart, !vote, !lottery, !lastseen <playername>, !playtime <playername>" @%s' %
-                           (minst), shell=True)
-            log.info(f'responded to help request on {minst} from {whoasked}')
-        elif line.find('@all') != -1:
-            try:
-                whoasked = getnamefromchat(line)
-                rawline = line.split('(')
-                if len(rawline) > 1:
-                    rawname = rawline[1].split(')')
-                    whoname = rawname[0].lower()
-                    if len(rawname) > 1:
-                        cmsg = rawname[1].split('@all')[1].strip()
-                        if cmsg != '':
+            if whoasked in None:
+                getnamefromchaterror(minst)
+            else:
+                if line.find('!help') != -1:
+                    subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, \
+                    !myinfo, !myhome, !lastwipe, !lastrestart, !vote, !lottery, !lastseen <playername>, !playtime <playername>" @%s' %
+                                   (minst), shell=True)
+                    log.info(f'responded to help request on {minst} from {whoasked}')
+                elif line.find('@all') != -1:
+                    try:
+                        rawline = line.split('(')
+                        if len(rawline) > 1:
+                            rawname = rawline[1].split(')')
+                            whoname = rawname[0].lower()
+                            if len(rawname) > 1:
+                                cmsg = rawname[1].split('@all')[1].strip()
+                                if cmsg != '':
+                                    nmsg = line.split(': ')
+                                    if len(nmsg) > 2:
+                                        try:
+                                            if nmsg[0].startswith('"'):
+                                                dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
+                                                dto = dto - tzfix
+                                            else:
+                                                dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
+                                                dto = dto - tzfix
+                                            tstamp = dto.strftime('%m-%d %I:%M%p')
+                                            writeglobal(minst, whoname, cmsg)
+                                            writechat('Global', whoname, cmsg, tstamp)
+                                        except:
+                                            log.critical('could not parse date from chat', exc_info=True)
+                                else:
+                                    subprocess.run("""arkmanager rconcmd "ServerChat Commands: You didn't supply a message \
+        to send to all servers" @%s""" % (minst), shell=True)
+                    except:
+                        log.critical('Critical Error in global chat writer!', exc_info=True)
+
+                elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
+                    lastwipe = elapsedTime(Now(), getlastwipe(minst))
+                    subprocess.run('arkmanager rconcmd "ServerChat Last wild dino wipe was %s ago" @%s' %
+                                   (lastwipe, minst), shell=True)
+                    log.info(f'responded to a lastdinowipe query on {minst} from {whoasked}')
+
+                elif line.find('!lastrestart') != -1:
+                    lastrestart = elapsedTime(Now(), getlastrestart(minst))
+                    subprocess.run('arkmanager rconcmd "ServerChat Last server restart was %s ago" @%s' %
+                                   (lastrestart, minst), shell=True)
+                    log.info(f'responded to a lastrestart query on {minst} from {whoasked}')
+
+                elif line.find('!lastseen') != -1:
+                    rawseenname = line.split(':')
+                    orgname = rawseenname[1].strip()
+                    lsnname = rawseenname[2].split('!lastseen')
+                    if len(lsnname) > 1:
+                        seenname = lsnname[1].strip().lower()
+                        lsn = getlastseen(seenname)
+                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, minst), shell=True)
+                    else:
+                        subprocess.run('arkmanager rconcmd "ServerChat You must specify a player name to search" @%s' %
+                                       (minst), shell=True)
+                    log.info(f'responding to a lastseen request for {seenname} from {orgname}')
+
+                elif line.find('!playedtime') != -1:
+                    rawseenname = line.split(':')
+                    orgname = rawseenname[1].strip()
+                    lsnname = rawseenname[2].split('!playedtime')
+                    seenname = lsnname[1].strip().lower()
+                    if lsnname:
+                        lpt = gettimeplayed(seenname)
+                    else:
+                        lpt = gettimeplayed(whoasked)
+                    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, minst), shell=True)
+                    log.info(f'responding to a playedtime request for {whoasked}')
+                elif line.find('!recent') != -1 or line.find('!whorecent') != -1 or line.find('!lasthour') != -1:
+                    rawline = line.split(':')
+                    lastlline = rawline[2].strip().split(' ')
+                    if len(lastlline) == 2:
+                        ninst = lastlline[1]
+                    else:
+                        ninst = minst
+                    whoisonlinewrapper(ninst, minst, whoasked, 2)
+                elif line.find('!today') != -1 or line.find('!lastday') != -1:
+                    rawline = line.split(':')
+                    lastlline = rawline[2].strip().split(' ')
+                    if len(lastlline) == 2:
+                        ninst = lastlline[1]
+                    else:
+                        ninst = minst
+                    whoisonlinewrapper(ninst, minst, whoasked, 3)
+                elif line.find('!mypoints') != -1 or line.find('!myinfo') != -1:
+                    log.info(f'responding to a myinfo request on {minst} from {whoasked}')
+                    respmyinfo(minst, whoasked)
+                elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1:
+                    rawline = line.split(':')
+                    lastlline = rawline[2].strip().split(' ')
+                    if len(lastlline) == 2:
+                        ninst = lastlline[1]
+                    else:
+                        ninst = minst
+                    whoisonlinewrapper(ninst, minst, whoasked, 1)
+                elif line.find('!myhome') != -1:
+                    rawline = line.split(':')
+                    lastlline = rawline[2].strip().split(' ')
+                    if len(lastlline) == 2:
+                        ninst = lastlline[1]
+                    else:
+                        ninst = ''
+                    homeserver(minst, whoasked, ninst)
+                elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!votestart') != -1:
+                    log.debug(f'responding to a dino wipe vote request on {minst} from {whoasked}')
+                    startvoter(minst, whoasked)
+                elif line.find('!agree') != -1 or line.find('!yes') != -1:
+                    log.debug(f'responding to YES vote on {minst} from {whoasked}')
+                    castedvote(minst, whoasked, True)
+                elif line.find('!disagree') != -1 or line.find('!no') != -1:
+                    log.info(f'responding to NO vote on {minst} from {whoasked}')
+                    castedvote(minst, whoasked, False)
+                elif line.find('!timeleft') != -1 or line.find('!restart') != -1:
+                    log.info(f'responding to a restart timeleft request on {minst} from {whoasked}')
+                    resptimeleft(minst, whoasked)
+                elif line.find('!linkme') != -1 or line.find('!link') != -1:
+                    linker(minst, whoasked)
+                elif line.find('!lottery') != -1 or line.find('!lotto') != -1:
+                    rawline = line.split(':')
+                    if len(rawline) > 2:
+                        lastlline = rawline[2].strip().split(' ')
+                        if len(lastlline) == 2:
+                            lchoice = lastlline[1]
+                        else:
+                            lchoice = False
+                        lotteryquery(whoasked, lchoice, minst)
+                elif line.find('[TCsAR]') != -1:
+                    dfg = line.split('||')
+                    dfh = dfg[1].split('|')
+                    tcdata = {}
+                    for each in dfh:
+                        ee = each.strip().split(': ')
+                        if len(ee) > 1:
+                            tcdata.update({ee[0]: ee[1]})
+                    if 'SteamID' in tcdata:
+                        processtcdata(minst, tcdata)
+                else:
+                    rawline = line.split('(')
+                    if len(rawline) > 1:
+                        rawname = rawline[1].split(')')
+                        whoname = rawname[0].lower()
+                        if len(rawname) > 1:
+                            cmsg = rawname[1]
                             nmsg = line.split(': ')
                             if len(nmsg) > 2:
                                 try:
                                     if nmsg[0].startswith('"'):
                                         dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
-                                        dto = dto - tzfix
                                     else:
                                         dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
-                                        dto = dto - tzfix
                                     tstamp = dto.strftime('%m-%d %I:%M%p')
-                                    writeglobal(minst, whoname, cmsg)
-                                    writechat('Global', whoname, cmsg, tstamp)
+                                    writechat(inst, whoname, cmsg, tstamp)
+                                    writechatlog(inst, whoname, cmsg, tstamp)
                                 except:
                                     log.critical('could not parse date from chat', exc_info=True)
-                        else:
-                            subprocess.run("""arkmanager rconcmd "ServerChat Commands: You didn't supply a message \
-to send to all servers" @%s""" % (minst), shell=True)
-            except:
-                log.critical('Critical Error in global chat writer!', exc_info=True)
-
-        elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
-            whoasked = getnamefromchat(line)
-            lastwipe = elapsedTime(Now(), getlastwipe(minst))
-            subprocess.run('arkmanager rconcmd "ServerChat Last wild dino wipe was %s ago" @%s' %
-                           (lastwipe, minst), shell=True)
-            log.info(f'responded to a lastdinowipe query on {minst} from {whoasked}')
-
-        elif line.find('!lastrestart') != -1:
-            whoasked = getnamefromchat(line)
-            lastrestart = elapsedTime(Now(), getlastrestart(minst))
-            subprocess.run('arkmanager rconcmd "ServerChat Last server restart was %s ago" @%s' %
-                           (lastrestart, minst), shell=True)
-            log.info(f'responded to a lastrestart query on {minst} from {whoasked}')
-
-        elif line.find('!lastseen') != -1:
-            whoasked = getnamefromchat(line)
-            rawseenname = line.split(':')
-            orgname = rawseenname[1].strip()
-            lsnname = rawseenname[2].split('!lastseen')
-            if len(lsnname) > 1:
-                seenname = lsnname[1].strip().lower()
-                lsn = getlastseen(seenname)
-                subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, minst), shell=True)
-            else:
-                subprocess.run('arkmanager rconcmd "ServerChat You must specify a player name to search" @%s' %
-                               (minst), shell=True)
-            log.info(f'responding to a lastseen request for {seenname} from {orgname}')
-
-        elif line.find('!playedtime') != -1:
-            rawseenname = line.split(':')
-            orgname = rawseenname[1].strip()
-            lsnname = rawseenname[2].split('!playedtime')
-            seenname = lsnname[1].strip().lower()
-            whoasked = getnamefromchat(line)
-            if lsnname:
-                lpt = gettimeplayed(seenname)
-            else:
-                lpt = gettimeplayed(whoasked)
-            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, minst), shell=True)
-            log.info(f'responding to a playedtime request for {whoasked}')
-        elif line.find('!recent') != -1 or line.find('!whorecent') != -1 or line.find('!lasthour') != -1:
-            whoasked = getnamefromchat(line)
-            rawline = line.split(':')
-            lastlline = rawline[2].strip().split(' ')
-            if len(lastlline) == 2:
-                ninst = lastlline[1]
-            else:
-                ninst = minst
-            whoisonlinewrapper(ninst, minst, whoasked, 2)
-        elif line.find('!today') != -1 or line.find('!lastday') != -1:
-            whoasked = getnamefromchat(line)
-            rawline = line.split(':')
-            lastlline = rawline[2].strip().split(' ')
-            if len(lastlline) == 2:
-                ninst = lastlline[1]
-            else:
-                ninst = minst
-            whoisonlinewrapper(ninst, minst, whoasked, 3)
-        elif line.find('!mypoints') != -1 or line.find('!myinfo') != -1:
-            whoasked = getnamefromchat(line)
-            log.info(f'responding to a myinfo request on {minst} from {whoasked}')
-            respmyinfo(minst, whoasked)
-        elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1:
-            whoasked = getnamefromchat(line)
-            rawline = line.split(':')
-            lastlline = rawline[2].strip().split(' ')
-            if len(lastlline) == 2:
-                ninst = lastlline[1]
-            else:
-                ninst = minst
-            whoisonlinewrapper(ninst, minst, whoasked, 1)
-        elif line.find('!myhome') != -1:
-            whoasked = getnamefromchat(line)
-            rawline = line.split(':')
-            lastlline = rawline[2].strip().split(' ')
-            if len(lastlline) == 2:
-                ninst = lastlline[1]
-            else:
-                ninst = ''
-            homeserver(minst, whoasked, ninst)
-        elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!votestart') != -1:
-            whoasked = getnamefromchat(line)
-            log.debug(f'responding to a dino wipe vote request on {minst} from {whoasked}')
-            startvoter(minst, whoasked)
-        elif line.find('!agree') != -1 or line.find('!yes') != -1:
-            whoasked = getnamefromchat(line)
-            log.debug(f'responding to YES vote on {minst} from {whoasked}')
-            castedvote(minst, whoasked, True)
-        elif line.find('!disagree') != -1 or line.find('!no') != -1:
-            whoasked = getnamefromchat(line)
-            log.info(f'responding to NO vote on {minst} from {whoasked}')
-            castedvote(minst, whoasked, False)
-        elif line.find('!timeleft') != -1 or line.find('!restart') != -1:
-            whoasked = getnamefromchat(line)
-            log.info(f'responding to a restart timeleft request on {minst} from {whoasked}')
-            resptimeleft(minst, whoasked)
-        elif line.find('!linkme') != -1 or line.find('!link') != -1:
-            whoasked = getnamefromchat(line)
-            linker(minst, whoasked)
-        elif line.find('!lottery') != -1 or line.find('!lotto') != -1:
-            whoasked = getnamefromchat(line)
-            rawline = line.split(':')
-            if len(rawline) > 2:
-                lastlline = rawline[2].strip().split(' ')
-                if len(lastlline) == 2:
-                    lchoice = lastlline[1]
+                if line.startswith('Running command') or line.startswith('Command processed') \
+                        or line.startswith('Error:') or isserver(line):
+                    pass
                 else:
-                    lchoice = False
-                lotteryquery(whoasked, lchoice, minst)
-        elif line.find('[TCsAR]') != -1:
-            dfg = line.split('||')
-            dfh = dfg[1].split('|')
-            tcdata = {}
-            for each in dfh:
-                ee = each.strip().split(': ')
-                if len(ee) > 1:
-                    tcdata.update({ee[0]: ee[1]})
-            if 'SteamID' in tcdata:
-                processtcdata(minst, tcdata)
-        else:
-            rawline = line.split('(')
-            if len(rawline) > 1:
-                rawname = rawline[1].split(')')
-                whoname = rawname[0].lower()
-                if len(rawname) > 1:
-                    cmsg = rawname[1]
-                    nmsg = line.split(': ')
-                    if len(nmsg) > 2:
-                        try:
-                            if nmsg[0].startswith('"'):
-                                dto = datetime.strptime(nmsg[0][3:], '%y.%m.%d_%H.%M.%S')
-                            else:
-                                dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
-                            tstamp = dto.strftime('%m-%d %I:%M%p')
-                            writechat(inst, whoname, cmsg, tstamp)
-                            writechatlog(inst, whoname, cmsg, tstamp)
-                        except:
-                            log.critical('could not parse date from chat', exc_info=True)
-        if line.startswith('Running command') or line.startswith('Command processed') \
-                or line.startswith('Error:') or isserver(line):
-            pass
-        else:
-            with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
-                lobber = line.replace('"', '').strip()
-                if lobber != '':
-                    f.write(f"""{line.replace('"','').strip()}\n""")
-            f.close()
+                    with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
+                        lobber = line.replace('"', '').strip()
+                        if lobber != '':
+                            f.write(f"""{line.replace('"','').strip()}\n""")
+                    f.close()
 
 
 def clisten(minst):
