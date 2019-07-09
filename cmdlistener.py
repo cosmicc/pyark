@@ -369,13 +369,12 @@ def getnamefromchat(chat):
             #log.warning(rawline)
             return rawline.lower()
     except:
-        log.error('Potential colon (:) in steam namei {chat}')
-        return None
+        log.error(f'GetNameFromChat Error: {chat}')
 
 
 def getnamefromchaterror(inst):
     #subprocess.run('arkmanager rconcmd "ServerChat Someone has a colon : in their steam name. This makes me, the bot, have issues. This needs to be removed from your steam name please!" @%s' % (inst,), shell=True)
-    log.error(f'Get Name from Chat Error on {inst}')
+    pass
 
 def isserver(line):
     rawissrv = line.split(':')
