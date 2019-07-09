@@ -358,24 +358,24 @@ def startvoter(inst, whoasked):
 def getnamefromchat(chat):
     # log.warning(chat)
     try:
+        log.warning(len(chat))
+        log.warning(chat)
         rawlineorg = chat.split(':')
         if len(rawlineorg) > 1:
-            #log.warning(rawline)
+            #log.warning(rawlineorg)
             rawline = rawlineorg[1].split(' (')
             #log.warning(rawline)
             rawline = rawline[1][:-1].strip()
             #log.warning(rawline)
             return rawline.lower()
-        else:
-            return None
     except:
         log.error('Potential colon (:) in steam name')
         return None
 
 
 def getnamefromchaterror(inst):
-    subprocess.run('arkmanager rconcmd "ServerChat Someone has a colon : in their steam name. This makes me, the bot, have issues. This needs to be removed from your steam name please!" @%s' % (inst,), shell=True)
-
+    #subprocess.run('arkmanager rconcmd "ServerChat Someone has a colon : in their steam name. This makes me, the bot, have issues. This needs to be removed from your steam name please!" @%s' % (inst,), shell=True)
+    log.error(f'Get Name from Chat Error on {inst}')
 
 def isserver(line):
     rawissrv = line.split(':')
@@ -548,11 +548,20 @@ def checkcommands(minst):
     for line in iter(b.splitlines()):
         if line.startswith('Running command') or line.startswith('Command processed') or line.startswith('Error:') or isserver(line):
             pass
-        else:
+        elif line.find('[TCsAR]') != -1:
+            dfg = line.split('||')
+            dfh = dfg[1].split('|')
+            tcdata = {}
+            for each in dfh:
+                ee = each.strip().split(': ')
+                if len(ee) > 1:
+                    tcdata.update({ee[0]: ee[1]})
+            if 'SteamID' in tcdata:
+                processtcdata(minst, tcdata)
+        elif len(line) > 3 and not line.find('released:') and not line.find('trapped:'):
             whoasked = getnamefromchat(line)
             if whoasked is None:
-                #getnamefromchaterror(minst)
-                log.error('getnameerror')
+                getnamefromchaterror(minst)
             else:
                 if line.find('!help') != -1:
                     subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, \
@@ -682,16 +691,6 @@ def checkcommands(minst):
                         else:
                             lchoice = False
                         lotteryquery(whoasked, lchoice, minst)
-                elif line.find('[TCsAR]') != -1:
-                    dfg = line.split('||')
-                    dfh = dfg[1].split('|')
-                    tcdata = {}
-                    for each in dfh:
-                        ee = each.strip().split(': ')
-                        if len(ee) > 1:
-                            tcdata.update({ee[0]: ee[1]})
-                    if 'SteamID' in tcdata:
-                        processtcdata(minst, tcdata)
                 else:
                     rawline = line.split('(')
                     if len(rawline) > 1:
