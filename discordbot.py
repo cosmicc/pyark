@@ -212,23 +212,23 @@ def discordbot():
             msg = msg + "**`!servers`**  - Status and links to all the servers in the cluster\n"
             msg = msg + "**`!who`**  - List all players currently online on all the servers\n"
             msg = msg + "**`!myinfo`**  - Your in-game player information\n"
-            msg = msg + "**!expire**  - Your in-game experation timers and time left before dino/structure decay\n"
-            msg = msg + "**!ec**  - Links to more Extinction Core Mod information\n"
-            msg = msg + "**!points**  - More information about the Galaxy Cluster points system\n"
-            msg = msg + "**!linkme <code>**  - Link your discord account to your in-game player with <code> from typing !linkme in-game\n"
-            msg = msg + "**!kickme**  - Kick your player from the server it was on so you don't have to wait\n"
-            msg = msg + "**!lotto**  - Show information about the current lottery\n"
-            msg = msg + "**!lotto enter**  - Join the current lottery if one exists\n"
-            msg = msg + "**!today**  - List all players online in the last 24 hours\n"
-            msg = msg + "**!lastseen <playername>**  - Show the last time a player was online in-game\n"
-            msg = msg + "**!lastwipe <server>**  - Show the last time a wild dino wipe was performed\n"
-            msg = msg + "**!lastrestart <server>**  - Show the last time the server was restarted and why\n"
-            msg = msg + "**!myhome**  - Show what your current Home server is set to (where all your points go)\n"
-            msg = msg + "**!newest**  - List the last 5 newest players to the cluster\n"
-            msg = msg + "**!topplayed**  - List the top 10 players with the most playtime\n"
-            msg = msg + "**!lastlotto**  - List the last 5 lottery winners\n"
-            msg = msg + "**!winners**  - List the 5 all-time lottery winners\n"
-            msg = msg + "**!primordial**  - Warns you in-game if you haven't logged in since the server has restarted (so you can reset your primordial's buff bug)\n\n"
+            msg = msg + "**`!expire`**  - Your in-game experation timers and time left before dino/structure decay\n"
+            msg = msg + "**`!ec`**  - Links to more Extinction Core Mod information\n"
+            msg = msg + "**`!points`**  - More information about the Galaxy Cluster points system\n"
+            msg = msg + "**`!linkme <code>`**  - Link your discord account to your in-game player with <code> from typing !linkme in-game\n"
+            msg = msg + "**`!kickme`**  - Kick your player from the server it was on so you don't have to wait\n"
+            msg = msg + "**`!lotto`**  - Show information about the current lottery\n"
+            msg = msg + "**`!lotto enter`**  - Join the current lottery if one exists\n"
+            msg = msg + "**`!today`**  - List all players online in the last 24 hours\n"
+            msg = msg + "**`!lastseen <playername>`**  - Show the last time a player was online in-game\n"
+            msg = msg + "**`!lastwipe <server>`**  - Show the last time a wild dino wipe was performed\n"
+            msg = msg + "**`!lastrestart <server>`**  - Show the last time the server was restarted and why\n"
+            msg = msg + "**`!myhome`**  - Show what your current Home server is set to (where all your points go)\n"
+            msg = msg + "**`!newest`**  - List the last 5 newest players to the cluster\n"
+            msg = msg + "**`!topplayed`**  - List the top 10 players with the most playtime\n"
+            msg = msg + "**`!lastlotto`**  - List the last 5 lottery winners\n"
+            msg = msg + "**`!winners`**  - List the 5 all-time lottery winners\n"
+            msg = msg + "**`!primordial`**  - Warns you in-game if you haven't logged in since the server has restarted (so you can reset your primordial's buff bug)\n\n"
             embed = discord.Embed(title="Galaxy Custom Bot Commands:", description=msg, color=HELP_COLOR)
             embed.set_footer(text=msg2)
             await client.send_message(message.author, embed=embed)
@@ -745,9 +745,7 @@ def discordbot():
                     if linfo:
                         msg = f'Type **`!lotto enter`** to join the lottery'
                         embed=discord.Embed(title=f"Current lottery is up to {linfo['payout']} reward points", description=f"{linfo['players']} players have entered into this lottery so far", color=SUCCESS_COLOR)
-                        embed.add_field(name=f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}', value="\u200b", inline=False)
-                        embed.set_footer(text=msg)
-
+                        embed.add_field(name=f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}', value=msg, inline=False)
                         await client.send_message(message.author, embed=embed)
                     else:
                         msg = 'There are no lotterys currently underway.'
@@ -761,7 +759,7 @@ def discordbot():
                 whofor = str(message.author).lower()
                 pplayer = dbquery("SELECT * from players WHERE discordid = '%s'" % (whofor,), fetch='one')
                 if not pplayer:
-                    msg = f'Your discord account needs to be linked to your in-game player first. Type !linkme in-game to do this'
+                    msg = f'Your discord account needs to be linked to your in-game player first. Type **`!linkme`** in-game to do this'
                     embed = discord.Embed(description=msg, color=FAIL_COLOR)
                     await client.send_message(message.channel, embed=embed)
                 else:

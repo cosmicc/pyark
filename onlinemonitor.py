@@ -11,12 +11,17 @@ from time import sleep
 
 hstname = socket.gethostname()
 log = logging.getLogger(name=hstname)
-clog = logging.getLogger(name='currency')
 
 welcomthreads = []
 greetthreads = []
 
 global instance
+
+
+def clog(msg, minst):
+    with open(f"/home/ark/shared/logs/{minst}/gamelog/points.log", "at") as f:
+            f.write(f"""{msg.strip()}\n""")
+    f.close()
 
 
 def resetplayerbit(steamid):
@@ -102,14 +107,14 @@ def checklottodeposits(steamid, inst):
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, weach[3], inst), shell=True)
-                clog.info('{weach[3]} points added to {elpinfo[1]} for a lottery win')
+                clog(f'{weach[3]} points added to {elpinfo[1]} for a lottery win', inst)
             elif weach[4] == 0:
                 log.info(f'{weach[3]} points removed from {elpinfo[1]} for a lottery entry')
                 msg = f'{weach[3]} ARc points have been withdrawn from your account for a lottery entry'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s %s" @%s' %
                                (steamid, str(int(elpinfo[5]) - int(weach[3])), inst), shell=True)
-                clog.info(f'{weach[3]} points removed from {elpinfo[1]} for a lottery entry')
+                clog(f'{weach[3]} points removed from {elpinfo[1]} for a lottery entry', inst)
         dbupdate("DELETE FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
 
 
@@ -155,7 +160,7 @@ def playergreet(steamid, inst):
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, xferpoints, inst), shell=True)
-                clog.info(f'transferred {xferpoints} points into transfer account for {oplayer[1]} on {inst}')
+                clog(f'transferred {xferpoints} points into transfer account for {oplayer[1]} on {inst}', inst)
             if int(oplayer[2]) + 600 > Now():
                 if oplayer[3] != inst:
                     gogo = 1
