@@ -21,6 +21,7 @@ import json
 import pandas as pd
 import psycopg2
 import pytz
+import os
 
 webui = Blueprint('webui', __name__)
 
@@ -70,46 +71,49 @@ def follow(stream):
 
 
 def getpyarklog():
-    logpath = f'/home/ark/shared/logs/pyark/pyark.log'
-    reslt = ''
-    with open(logpath, 'rt') as following:
-        following.seek(0, 0)
-        for each in follow(following):
-            if each.find('[CRITICAL]') != -1:
-                ar = 'has-text-danger'
-            elif each.find('[ERROR]') != -1:
-                ar = 'has-text-danger'
-            elif each.find('[WARNING]') != -1:
-                ar = f'has-text-warning'
-            elif each.find('[INFO]') != -1 or each.find('[DEBUG]'):
-                if each.find('vote') != -1:
-                    ar = ''
-                elif each.find('maintenance') != -1:
-                    ar = ''
-                elif each.find('arkupdater') != -1:
-                    ar = ''
-                elif each.find('lottery') != -1:
-                    ar = ''
-                elif each.find('points') != -1:
-                    ar = ''
-                elif each.find('-restart') != -1:
-                    ar = ''
-                elif each.find('new player') != -1:
-                    ar = ''
-                elif each.find('left the server') != -1:
-                    ar = 'has-text-link'
-                elif each.find('link') != -1:
-                    ar = ''
-                elif each.find('has joined') != -1 or each.find('transferred') != -1:
-                    ar = 'has-text-success'
-                elif each.find('responding') != -1:
-                    ar = ''
-                elif each.find('notifying') != -1:
-                    ar = ''
-                else:
-                    ar = ''
-            reslt = reslt + f"""<p class="is-size-7 {ar}">{each}</p><br>"""
-    return reslt
+    logfi = open('/home/ark/shared/logs/pyark/pyark.log', 'r')
+    reslt = []
+    clrs = []
+    count = 0
+    for each in reversed(list(logfi)):
+        if each.find('[CRITICAL]') != -1:
+            ar = 'has-text-danger'
+        elif each.find('[ERROR]') != -1:
+            ar = 'has-text-danger'
+        elif each.find('[WARNING]') != -1:
+            ar = f'has-text-warning'
+        elif each.find('[INFO]') != -1 or each.find('[DEBUG]'):
+            if each.find('vote') != -1:
+                ar = 'has-text-light'
+            elif each.find('maintenance') != -1:
+                ar = 'has-text-info'
+            elif each.find('arkupdater') != -1:
+                ar = 'has-text-white'
+            elif each.find('lottery') != -1:
+                ar = 'has-text-grey'
+            elif each.find('points') != -1:
+                ar = 'has-text-success'
+            elif each.find('-restart') != -1:
+                ar = 'has-text-white'
+            elif each.find('new player') != -1:
+                ar = 'has-text-warning'
+            elif each.find('left the server') != -1:
+                ar = 'has-text-link'
+            elif each.find('link') != -1:
+                ar = 'has-test-success'
+            elif each.find('has joined') != -1 or each.find('transferred') != -1:
+                ar = 'has-text-success'
+            elif each.find('responding') != -1:
+                ar = 'has-test-success'
+            elif each.find('notifying') != -1:
+                ar = 'has-text-success'
+            else:
+                ar = 'has-text-grey-lighter'
+        if count <= 50:
+            clrs.append(f"{ar}")
+            reslt.append(f"{each.strip()}")
+            count += 1
+    return clrs, reslt
 
 
 @webui.context_processor
@@ -821,5 +825,6 @@ def _chatlog(instance):
 @webui.route('/pyarklog')
 @login_required
 def _pyarklog():
-    pyarklog = getpyarklog()
-    return render_template('pyarklog.html', pyarklog=pyarklog)
+    clrs, reslt = getpyarklog()
+    newlog = zip(clrs, reslt)
+    return render_template('pyarklog.html', newlog=newlog)

@@ -1,87 +1,21 @@
 {% extends "base.html" %}
 {% block head %}
     {{ super() }}
-    <script>
-    setInterval(function(){ 
-            $("#playertitle").load(" #playertitle"); 
-            $("#playerinfo").load(" #playerinfo");
-            starttimer()
-        }, 60000);
-        </script>
-
-
 {% endblock %}
 
 {% block content %}
-    {% if current_user.steamid == playerinfo['steamid'] or current_user.has_role('admin') %}
-<div id="playertitle">
-    {% if ui_isbanned(playerinfo['steamid']) %}
-    <div class='container is-mobile has-background-danger bottom-pad-10'>
-    {% elif ui_isplayeronline(playerinfo['steamid']) %}
-    <div class='container is-mobile has-background-success bottom-pad-10'>
-    {% elif ui_isplayerold(playerinfo['steamid']) %}
-    <div class='container is-mobile has-background-black bottom-pad-10'>
-    {% else %}
-    <div class='container is-mobile has-background-grey bottom-pad-10'>
+<style type="text/css">
+p {
+   margin: 1px;
+   line-height: 17px;
+}
+</style>
+    {% if current_user.has_role('admin') %}
+    <div class="content left-pad-extra right-pad-extra is-centered">
+        {% for color,msg in newlog %} 
+            <p class="is-size-7 is-family-code {{color}}">{{msg}}</p>
+        {% endfor %}    
+    </div>    
     {% endif %}
-    <div>
-        <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ playerinfo['playername'].title() }}</h1>
-        <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active: {{ ui_playerlastactive(playerinfo['lastseen']) }}</h2>
-    </div>
-    </div>
-</div>
-
-<div class='container is-mobile top-pad-10 left-pad-extra right-pad-extra'>
-    <div class="box left-pad-extra top-pad-5 bottom-pad-5 right-pad-extra">
-    <div id="pyarklog" class="container">
-    {{ pyarklog }}
-    </div>
-    </div>
-</div>
-
-<div class="container left-pad-extra right-pad-extra top-pad-5">
-    <form action="/webinfo/{{ playerinfo['steamid'] }}" method="POST">
-        <input name="email" value="{{ webuser.email }}" type="hidden">
-        <div class="control">
-            <p>Timezone:</p>
-            <div class="select">
-                <select name="timezone">
-                {% for each in ui_gettimezones() %}
-                {% if each == webuser.timezone %}
-                <option selected="selected" value="{{ each }}">{{ each }}</option>
-                {% else %}
-                <option value="{{ each }}">{{ each }}</option>
-                {% endif %}
-                {% endfor %}
-                </select>
-            </div>
-        </div>
-        <div class="container top-pad-15 bottom-pad-5 left-pad-extra right-pad-extra">
-            <div class="columns is-mobile">
-                <div class="column">
-                    <div class="control">
-                        <center><input class="button is-info" name="btype" value="Update Settings" type="submit">
-                    </center>
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="control">
-                        <center><input class="button is-info" name="btype" value="Change Password" type="submit">
-                    </center>
-                    </div>
-                </div>
-                {% if current_user.has_role('admin') and  playerinfo['steamid'] != '76561198408657294' %}
-                <div class="column">
-                    <div class="control">
-                        <center><input class="button is-danger" name="btype" value="Toggle Active" type="submit">
-                    </center>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </form>
-</div>
-{% endif %}
 {% endblock %}
 

@@ -22,8 +22,8 @@
         <div class="level-item is-mobile">
             <a href="/serverinfo/{{ instance }}">
             <div>
-                <p class='heading has-text-centered is-size-6 is-capitalized'>{{ instance }}</p>
-                <p class='title has-text-centered is-size-3'>{{ ui_getplayersonline(instance, 'count') }}</p>
+                <p class='heading has-text-centered is-size-6 has-text-grey-lighter is-capitalized'>{{ instance }}</p>
+                <p class='title has-text-centered is-size-3 has-text-white'>{{ ui_getplayersonline(instance, 'count') }}</p>
             </div>
             </a>
         </div>
@@ -50,9 +50,9 @@
 <div class="container left-pad-extra right-pad-extra top-pad-10 bottom-pad-5">
     <div id="announcement">
             {% if ui_getannouncement() != "None" %}
-            <center><p class="is-size-6 has-text-weight-bold">{{ ui_getannouncement() }}</p></center>
+            <center><p class="is-size-6 has-text-weight-bold has-text-grey-lighter">{{ ui_getannouncement() }}</p></center>
             {% else %}
-            <center><p class="is-size-6 has-text-weight-bold">No Login Announcement</p></center>
+            <center><p class="is-size-6 has-text-weight-bold has-text-grey-lighter">No Login Announcement</p></center>
             {% endif %}
     </div>
 </div>
@@ -80,7 +80,7 @@
 <div class="container left-pad-extra right-pad-extra">
     <div id="currentplayers">
         <div>
-            <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered '>Total Players Online: {{ui_getplayersonline('all', 'count')}}</p>
+            <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered has-text-white'>Total Players Online: {{ui_getplayersonline('all', 'count')}}</p>
         </div>
         {% for player in ui_getplayersonline('all', 'list') %}
         <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
@@ -91,7 +91,7 @@
 </div>
     
 {% if current_user.has_role('admin') %}
-<div class='container top-pad-10 left-pad-extra right-pad-extra'>
+<div class='container top-pad-10 left-pad-extra right-pad-extra has-text-grey-lighter'>
     <center><small><p>&nbsp;&nbsp;Cluster Login Announcement:</p></small></center>
     <form action="/" method="POST">
         <div class="field has-addons">
@@ -109,7 +109,7 @@
 <div class="container top-pad-10 left-pad-extra right-pad-extra">
     <div id="lastfive">
         <div>
-            <p class= 'subtitle top-pad-dbl is-size-5 has-text-weight-bold has-text-centered '>Last 5 Players Online:</p>
+            <p class= 'subtitle top-pad-dbl is-size-5 has-text-weight-bold has-text-centered has-text-grey-lighter'>Last 5 Players Online:</p>
         </div>
         {% for player in ui_getlastplayersonline('all', 'list') %}
         <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }} ago
