@@ -66,17 +66,17 @@ def discordbot():
                             embed = discord.Embed(title=f"A new Lottery has started!", color=SUCCESS_COLOR)
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                             buyin = int(each[2])/25
-                            embed.add_field(name=f"Starting Pot: {each[2]} Points", value=f"**{int(buyin)} Points** to join this lottery, lottery winnings grow as more join\nLottery will end in **{each[1]}**\n\nType **`!lotto enter`** to join this lottery, or **`!points`** for more information", inline=False)
+                            embed.add_field(name=f"Starting Pot: {each[2]} Points", value=f"It costs **{int(buyin)} Points** to join this lottery, lottery winnings grow as more join\nLottery will end in **{each[1]}**\n\nType **`!lotto enter`** to join this lottery, or **`!points`** for more information", inline=False)
                             await client.send_message(channel2, embed=embed)
                         elif each[0] == 'LOTTOEND':
                             embed = discord.Embed(title=f"The current Lottery has ended", color=SUCCESS_COLOR)
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
-                            embed.add_field(name=f"Congratulations to {each[2].upper()} winning **{each[1]}** Points", value=f"Next lottery will start in 1 hour, Type **`!points`** for more information", inline=False)
+                            embed.add_field(name=f"Congratulations to {each[2].upper()} winning **{each[1]}** Points", value=f"Next lottery will start in **1** hour, Type **`!points`** for more information", inline=False)
                             await client.send_message(channel2, embed=embed)
                         elif each[0] == 'UPDATE':
                             embed = discord.Embed(title=f"A New Update has been released!", color=INFO_COLOR)
                             embed.set_author(name='ARK Updater for Galaxy Cluster Servers', icon_url='https://patchbot.io/images/games/ark_sm.png')
-                            embed.add_field(name=f"Reason: {msg}", value=f"{each[1]}\nAny applicable servers will begin a 30 min restart countdown now", inline=False)
+                            embed.add_field(name=f"Reason: {msg}", value=f"{each[1]}\nAny applicable servers will begin a **30 min** restart countdown now", inline=False)
                             await client.send_message(channel2, embed=embed)
                         else:
                             if each[1] == "ALERT":
@@ -146,7 +146,7 @@ def discordbot():
                 if kuser:
                     if kuser[8] != whofor:
                         log.info(f'kickme request from {whofor} denied, no account linked')
-                        msg = f'Your discord account must be linked to your player for this to work.\nType !linkme in-game to do this.'
+                        msg = f'Your discord account must be linked to your player for this to work.\nType **`!linkme`** in-game to do this.'
                         embed = discord.Embed(description=msg, color=FAIL_COLOR)
                     else:
                         if Now() - float(kuser[2]) > 300:
@@ -235,6 +235,80 @@ def discordbot():
             # await client.add_reaction(message, '597645497590874162')
             if not message.channel.is_private and str(message.channel) != 'bot-channel':
                 await client.delete_message(message)
+
+        elif message.content.lower().startswith('!lotto') or message.content.lower().startswith('!lottery'):
+                whofor = str(message.author).lower()
+                newname = message.content.split(' ')
+                linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
+                if len(newname) > 1:
+                    if newname[1].lower() == 'enter' or newname[1].lower() == 'join':
+                        lpinfo = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
+                        if not lpinfo:
+                            log.info(f'lottery join request from {whofor} denied, account not linked')
+                            msg = f'Your discord account must be linked to your in-game player account to join a lottery from discord.\nType !linkme in-game to do this'
+                            embed = discord.Embed(description=msg, color=FAIL_COLOR)
+                            if str(message.channel) == 'bot-channel':
+                                await client.send_message(message.channel, embed=embed)
+                            else:
+                                await client.send_message(message.author, embed=embed)
+                        else:
+                            whofor = lpinfo[1]
+                            lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
+                            lfo = 'Reward Points'
+                            # ltime = epochto(float(linfo[3]) + (Secs['hour'] * int(linfo[5])), 'string', est=True)
+                            if lpcheck is None:
+                                dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('%s', '%s', '%s', '%s')" % (lpinfo[0], lpinfo[1], Now(fmt='dt'), 0))
+                                dbupdate("UPDATE lotteryinfo SET payout = '%s', players = '%s' WHERE id = %s" % (linfo["payout"] + linfo["buyin"] * 2, linfo["players"] + 1, linfo["id"]))
+                                msg = f'You have been added to the {lfo} lottery!\nThis lottery has now risen to **{linfo["payout"] + linfo["buyin"] * 2}** points.\nA winner will be choosen in **{elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}**. Good Luck!'
+                                embed = discord.Embed(description=msg, color=SUCCESS_COLOR)
+                                if str(message.channel) == 'bot-channel':
+                                    await client.send_message(message.channel, embed=embed)
+                                else:
+                                    await client.send_message(message.author, embed=embed)
+                                if not message.channel.is_private and str(message.channel) != 'bot-channel':
+                                    await client.delete_message(message)
+                                log.info(f'player {whofor} has joined the current active lottery.')
+                                if lastlottoannounce-Now() > timedelta(minutes=1):  #### ANNOUNCE GENERAL
+                                    embed = discord.Embed(title=f"A new lottery player has entered the lottery!", color=INFO_COLOR)
+                                    embed.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
+                                    embed.add_field(name=f"Current lottery amount: **{linfo['payout'] + linfo['buyin'] * 2}**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\nType **`!lotto enter`** to join, or **`!points`** for more information", inline=True)
+                                    await client.send_message(channel2, embed=embed)
+                                    lastlottoannounce = Now()
+                                else:
+                                    pass
+                            elif not linfo:
+                                msg = 'There are no lotterys currently underway.'
+                                embed = discord.Embed(description=msg, color=FAIL_COLOR)
+                                if str(message.channel) == 'bot-channel':
+                                    await client.send_message(message.channel, embed=embed)
+                                else:
+                                    await client.send_message(message.author, embed=embed)
+                                if not message.channel.is_private and str(message.channel) != 'bot-channel':
+                                    await client.delete_message(message)
+                            else:
+                                msg = f'You are already participating in the current lottery for {lfo}.\nThis lottery is currently at **{linfo["payout"]}** points.\nLottery ends in **{elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}**'
+                                embed = discord.Embed(description=msg, color=FAIL_COLOR)
+                                if str(message.channel) == 'bot-channel':
+                                    await client.send_message(message.channel, embed=embed)
+                                else:
+                                    await client.send_message(message.author, embed=embed)
+                                if not message.channel.is_private and str(message.channel) != 'bot-channel':
+                                    await client.delete_message(message)
+                else:
+                    if linfo:
+                        msg = f'It costs **{linfo["buyin"]} points** to join this lottery\n\nType **`!lotto enter`** to join the lottery, **`!points`** for more information'
+                        embed=discord.Embed(title=f"Current lottery is up to {linfo['payout']} reward points", description=f"{linfo['players']} players have entered into this lottery so far", color=SUCCESS_COLOR)
+                        embed.add_field(name=f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}', value=msg, inline=False)
+                        if str(message.channel) == 'bot-channel' or str(message.channel) == 'general-chat':
+                            await client.send_message(message.channel, embed=embed)
+                        else:
+                            await client.send_message(message.author, embed=embed)
+                    else:
+                        msg = 'There are no lotteries currently underway.'
+                        embed = discord.Embed(description=msg, color=FAIL_COLOR)
+                        await client.send_message(message.author, embed=embed)
+                if not message.channel.is_private and str(message.channel) != 'bot-channel':
+                    await client.delete_message(message)
 
         elif message.content.lower().startswith('!whotoday') or message.content.lower().startswith('!today') or message.content.lower().startswith('!lastday'):
             if checkcorrect(message):
@@ -501,7 +575,7 @@ def discordbot():
                         await client.send_message(message.channel, embed=embed)
                 else:
                     log.info(f'home server request from {whofor} denied, no account linked')
-                    msg = f"Your discord account is not linked to your in-game player, Type !linkme in-game to do this"
+                    msg = f"Your discord account is not linked to your in-game player, Type **`!linkme`** in-game to do this"
                     embed = discord.Embed(description=msg, color=FAIL_COLOR)
                     await client.send_message(message.channel, embed=embed)
             else:
@@ -548,7 +622,7 @@ def discordbot():
                 if kuser:
                     if kuser[8] != whofor:
                         log.info(f'myinfo request from {whofor} denied, no account linked')
-                        msg = f'Your discord account is not linked to a in-game player. Type !linkme in-game to do this.'
+                        msg = f'Your discord account is not linked to a in-game player. Type **`!linkme`** in-game to do this.'
                         embed = discord.Embed(description=msg, color=FAIL_COLOR)
                         await client.send_message(message.channel, embed=embed)
                     else:
@@ -701,56 +775,6 @@ def discordbot():
             else:
                 embed = discord.Embed(description=rejectmsg, color=FAIL_COLOR)
                 await client.send_message(message.author, embed=embed)
-                if not message.channel.is_private:
-                    await client.delete_message(message)
-
-        elif message.content.lower().startswith('!lotto') or message.content.lower().startswith('!lottery'):
-                whofor = str(message.author).lower()
-                newname = message.content.split(' ')
-                linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
-                if len(newname) > 1:
-                    if newname[1].lower() == 'enter' or newname[1].lower() == 'join':
-                        lpinfo = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
-                        if not lpinfo:
-                            log.info(f'lottery join request from {whofor} denied, account not linked')
-                            msg = f'Your discord account must be linked to your in-game player account to join a lottery from discord.\nType !linkme in-game to do this'
-                            embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                            await client.send_message(message.author, embed=embed)
-                        else:
-                            whofor = lpinfo[1]
-                            lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
-                            lfo = 'Reward Points'
-                            # ltime = epochto(float(linfo[3]) + (Secs['hour'] * int(linfo[5])), 'string', est=True)
-                            if lpcheck is None:
-                                dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('%s', '%s', '%s', '%s')" % (lpinfo[0], lpinfo[1], Now(fmt='dt'), 0))
-                                dbupdate("UPDATE lotteryinfo SET payout = '%s', players = '%s' WHERE id = %s" % (linfo["payout"] + linfo["buyin"] * 2, linfo["players"] + 1, linfo["id"]))
-                                msg = f'You have been added to the {lfo} lottery!\nThis lottery has now risen to **{linfo["payout"] + linfo["buyin"] * 2}** points.\nA winner will be choosen in **{elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}**. Good Luck!'
-                                embed = discord.Embed(description=msg, color=SUCCESS_COLOR)
-                                await client.send_message(message.author, embed=embed)
-                                log.info(f'player {whofor} has joined the current active lottery.')
-                                if lastlottoannounce-Now() > timedelta(hours=1):
-                                    #### ANNOUNCE GENERAL
-                                    lastlottoannounce
-                                else:
-                                    pass
-                            elif not linfo:
-                                msg = 'There are no lotterys currently underway.'
-                                embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                                await client.send_message(message.author, embed=embed)
-                            else:
-                                msg = f'You are already participating in the current lottery for {lfo}.\nThis lottery is currently at **{linfo["payout"]}** points.\nLottery ends in **{elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}**'
-                                embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                                await client.send_message(message.author, embed=embed)
-                else:
-                    if linfo:
-                        msg = f'Type **`!lotto enter`** to join the lottery'
-                        embed=discord.Embed(title=f"Current lottery is up to {linfo['payout']} reward points", description=f"{linfo['players']} players have entered into this lottery so far", color=SUCCESS_COLOR)
-                        embed.add_field(name=f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}', value=msg, inline=False)
-                        await client.send_message(message.author, embed=embed)
-                    else:
-                        msg = 'There are no lotterys currently underway.'
-                        embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                        await client.send_message(message.author, embed=embed)
                 if not message.channel.is_private:
                     await client.delete_message(message)
 

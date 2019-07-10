@@ -20,7 +20,7 @@ global instance
 
 def clog(msg, minst):
     with open(f"/home/ark/shared/logs/{minst}/gamelog/points.log", "at") as f:
-            f.write(f"""{msg.strip()}\n""")
+            f.write(f"""{Now(fmt='string')} - {msg.strip()}\n""")
     f.close()
 
 
