@@ -29,12 +29,13 @@ FAIL_COLOR = 0xff0000
 INFO_COLOR = 0x0088ff
 HELP_COLOR = 0xff8800
 
-rejectmsg = 'Bot commands are limited to the **#bot-channel** and **Private message** (here)\nType **!help** for a description of all the commands'
+rejectmsg = 'Bot commands are limited to the **`#bot-channel`** and **Private message** (here)\nType **`!help`** for a description of all the commands'
 
 
 def getlastlottoannounce():
     lastl = dbquery("SELECT lastlottoannounce FROM general", fetch='one', single=True)
     return lastl[0]
+
 
 def getrates():
     return dbquery("SELECT * FROM rates", fetch='one', fmt='dict')
@@ -69,6 +70,7 @@ def discordbot():
             try:
                 log.debug('executing discord bot task checker')
                 if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=6) and isinlottery():
+                    linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
                     log.info('announcing running lottery in discord')
                     embed = discord.Embed(title=f"A lottery is currently running!", color=INFO_COLOR)
                     embed.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
@@ -175,7 +177,7 @@ def discordbot():
             msg = f'The **`#join-servers`** channel has information and links to the servers and mods, **`!help`** for commands'
             embed = discord.Embed(description=msg, color=HELP_COLOR)
             await client.send_message(message.channel, embed=embed)
-        elif message.content.lower().find('what are the rates') != -1 or message.content.lower().find('server rates') != -1 or message.content.lower().find('tame rate') != -1 or message.content.lower().find('harvest rate') != -1 or message.content.lower().find('current rates') != -1 or message.content.lower().find('breeding rate') != -1:
+        elif message.content.lower().find('what are the rates') != -1 or message.content.lower().find('server rates') != -1 or message.content.lower().find('tame rate') != -1 or message.content.lower().find('harvest rate') != -1 or message.content.lower().find('current rates') != -1 or message.content.lower().find('breeding rate') != -1  or message.content.lower().find('rates here') != -1:
             log.info(f'responding to server rates chat for {message.author} on discrod')
             msg = 'Try using the **`!rates`** command to get current server rates, **`!help`** for more information'
             embed = discord.Embed(description=msg, color=HELP_COLOR)
@@ -831,7 +833,7 @@ def discordbot():
                             chktme = Now() - float(row[2])
                             if chktme < 40:
                                 pcnt += 1
-                    embed.add_field(name=f'Server {instt[0].capitalize()} is  **{onl}**  Players ({pcnt}/50)', value=f'Steam: {instt[15]}\nArkServers: {instt[16]}\nBattleMetrics: {instt[17]}', inline=False)
+                    embed.add_field(name=f'Server {instt[0].capitalize()} is  **{onl}**  Players ({pcnt}/50)', value=f'Hostname: {instt[23]}\nSteam: {instt[15]}\nArkServers: {instt[16]}\nBattleMetrics: {instt[17]}', inline=False)
                 await client.send_message(message.channel, embed=embed)
             else:
                 embed = discord.Embed(description=rejectmsg, color=FAIL_COLOR)
