@@ -109,7 +109,7 @@ def getpyarklog():
                 ar = 'has-text-success'
             else:
                 ar = 'has-text-grey-lighter'
-        if count <= 50:
+        if count <= 100:
             clrs.append(f"{ar}")
             reslt.append(f"{each.strip()}")
             count += 1
@@ -452,12 +452,24 @@ def getbannedplayers():
     return dbquery("SELECT playername FROM players WHERE banned != '' ORDER BY playername ASC", fmt='list', single=True)
 
 
+def getdailyplayers():
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' ORDER BY playername ASC" % (Now() - Secs['day'],), fmt='list', single=True)
+
+
+def getweeklyplayers():
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' ORDER BY playername ASC" % (Now() - Secs['week'],), fmt='list', single=True)
+
+
 def getexpiredplayers():
-    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen < '%s' ORDER BY playername ASC" % (Now() - Secs['month'],), fmt='list', single=True)
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' ORDER BY playername ASC" % (Now() - Secs['month'],), fmt='list', single=True)
+
+
+def getarchivedplayers():
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' ORDER BY playername ASC" % (Now() - Secs['3month'],), fmt='list', single=True)
 
 
 def getnewplayers(atime):
-    return dbquery("SELECT playername FROM players WHERE banned = '' AND firstseen > '%s' ORDER BY playername ASC" % (Now() - Secs[atime],), fmt='list', single=True)
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND firstseen >= '%s' ORDER BY playername ASC" % (Now() - Secs[atime],), fmt='list', single=True)
 
 
 def getlastevent():
@@ -558,7 +570,7 @@ def dashboard():
         setannouncement(request.form["message"])
         flash(f'Login Announcement Set', 'info')
         return redirect(url_for('webui.dashboard'))
-    return render_template('dashboard.html', loginname=current_user.email, instances=instancelist())
+    return render_template('dashboard.html', loginname=current_user.email, instances=instancelist(), activeplayers=len(getexpiredplayers()), unarchivedplayers=len(getarchivedplayers()), newplayers=len(getnewplayers('week')), dailyplayers=len(getdailyplayers()), weeklyplayers=len(getweeklyplayers()))
 
 
 @webui.route('/logout')

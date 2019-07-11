@@ -22,7 +22,7 @@
         <div class="level-item is-mobile">
             <a href="/serverinfo/{{ instance }}">
             <div>
-                <p class='heading has-text-centered is-size-6 has-text-grey-lighter is-capitalized'>{{ instance }}</p>
+                <p class='heading has-text-centered is-size-6 has-text-grey-lighter is-capitalized'>{{ instance[:3] }}</p>
                 <p class='title has-text-centered is-size-3 has-text-white'>{{ ui_getplayersonline(instance, 'count') }}</p>
             </div>
             </a>
@@ -50,9 +50,9 @@
 <div class="container left-pad-extra right-pad-extra top-pad-10 bottom-pad-5">
     <div id="announcement">
             {% if ui_getannouncement() != "None" %}
-            <center><p class="is-size-6 has-text-weight-bold has-text-grey-lighter">{{ ui_getannouncement() }}</p></center>
+            <center><p class="is-size-6 has-text-grey-lighter">{{ ui_getannouncement() }}</p></center>
             {% else %}
-            <center><p class="is-size-6 has-text-weight-bold has-text-grey-lighter">No Login Announcement</p></center>
+            <center><p class="is-size-6 has-text-grey-lighter">No Login Announcement</p></center>
             {% endif %}
     </div>
 </div>
@@ -80,13 +80,20 @@
 <div class="container left-pad-extra right-pad-extra">
     <div id="currentplayers">
         <div>
-            <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered has-text-white'>Total Players Online: {{ui_getplayersonline('all', 'count')}}</p>
+            <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered has-text-white'>{{ui_getplayersonline('all', 'count')}} Players Online </p>
         </div>
         {% for player in ui_getplayersonline('all', 'list') %}
         <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
         {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
         </a>
         {% endfor %}
+        <center><small>
+        <p class='is-size-6 has-text-light'>&nbsp;&nbsp;Active Members last Day:&nbsp;&nbsp;{{ dailyplayers }}</p>
+        <p class='is-size-6 has-text-light'>&nbsp;&nbsp;Active Members last 7 Days:&nbsp;&nbsp;{{ weeklyplayers }}</p>
+        <p class='is-size-6 has-text-light'>&nbsp;&nbsp;Active Members last 30 Days:&nbsp;&nbsp;{{ activeplayers }}</p>
+        <p class='is-size-6 has-text-light'>&nbsp;&nbsp;Active Members last 90 Days:&nbsp;&nbsp;{{ unarchivedplayers }}</p>
+        <p class='is-size-6 has-text-light'>&nbsp;&nbsp;New Members in last 7 Days:&nbsp;&nbsp;{{ newplayers }}</p>
+        </small></center>
     </div>
 </div>
     
