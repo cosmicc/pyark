@@ -2,6 +2,18 @@ from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.timehelper import Now, Secs
 
 
+def isplayeradmin(steamid):
+    playerid = dbquery("SELECT id FROM web_users WHERE steamid = '%s'" % (steamid,), fetch='one')
+    if playerid:
+        isadmin = dbquery("SELECT role_id FROM roles_users WHERE user_id = '%s'" % (playerid,), fetch='one')
+        if isadmin == 1:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
 def getplayer(steamid='', discordid='', playername='', fmt='tuple'):
     if steamid != '':
         dbdata = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
