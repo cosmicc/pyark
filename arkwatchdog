@@ -49,6 +49,19 @@ log.addHandler(log_fileh)
 log_fileh.setFormatter(log_format)
 
 
+def getservermem():
+    process = subprocess.Popen(['free', '-m'], stdout=subprocess.PIPE)
+    out, err = process.communicate()
+    lines = []
+    lines = out.decode().split('\n')
+    memvalues = lines[1].strip().split()
+    swapvalues = lines[2].strip().split()
+    memfree = memvalues[3]
+    memavailable = memvalues[6]
+    swapused = swapvalues[2]
+    return memfree, memavailable, swapused
+
+
 def stripansi(stripstr):
     ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     return(ansi_escape.sub('', stripstr))
@@ -162,6 +175,7 @@ def main():
                             isrunningint = 1
                             log.debug(f'{eachinst["name"]} passed instance running check')
                     actmem, totmem = getinstmem(eachinst['name'])
+                    memfree, memavail, swapused = getservermem()
 
                 if not isitlistening:
                     for neach in islistening.copy():
@@ -189,9 +203,9 @@ def main():
                             isonlineint = 1
                             log.debug(f'{eachinst["name"]} passed instance online check')
 
-                #log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
+                # log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
                 try:
-                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, eachinst['name']))
+                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), eachinst['name']))
                 except:
                     log.error('Error writing stats to database')
                 for feach in isrunning:

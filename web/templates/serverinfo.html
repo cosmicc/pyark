@@ -111,12 +111,16 @@
         </b></p>
         <p class='is-2'>Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
         {% if current_user.has_role('admin') %}
-        <p class='is-2'>Active Memory: <b>{{ serverinfo['actmem'] }} gigs</b></p>
-        <p class='is-2'>Total Memory: <b>{{ serverinfo['totmem'] }} gigs</b></p>
+        <p class='is-2'>Process Active Memory: <b>{{ serverinfo['actmem'] }} G</b></p>
+        <p class='is-2'>Process Total Memory: <b>{{ serverinfo['totmem'] }} G</b></p>
+        <p class='is-2'>Server Memory Available: <b>{{ serverinfo['svrmemavail'] }} M</b></p>
+        <p class='is-2'>Server Memory Free: <b>{{ serverinfo['svrmemfree'] }} M</b></p>
+        <p class='is-2'>Swap Used: <b>{{ serverinfo['svrswapused'] }} M</b></p>
+        <p class='is-2'>Server Hostname: <b>{{ serverinfo['serverhost'] }}</b></p>
         {% endif %}
-        <p class='is-2'>Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
-        <p class='is-2'>Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>
-        <p class='is-2'>Server in Event: <b>
+        <p class='is-2'>Ark Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
+        <p class='is-2'>Ark Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>
+        <p class='is-2'>Instance in Event: <b>
         {% if serverinfo['inevent'] == 1 %}
         No 
         {% else %}

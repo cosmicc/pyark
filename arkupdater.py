@@ -336,10 +336,9 @@ def buildconfig(inst):
         with open(newcfgfile, 'w') as configfile:
             config.write(configfile)
 
-        fname = f'{sharedpath}/config/Game-{inst}.ini'
-        stggamefile = f'{sharedpath}/stagedconfig/Game-{inst}.ini'
+        fname = f'{sharedpath}/config/Game-{inst.lower()}.ini'
         if os.path.isfile(fname):
-            gamebasefile = f'{sharedpath}/config/Game-{inst}.ini'
+            gamebasefile = f'{sharedpath}/config/Game-{inst.lower()}.ini'
         else:
             gamebasefile = f'{sharedpath}/config/Game-base.ini'
 

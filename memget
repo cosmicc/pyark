@@ -1,0 +1,15 @@
+import subprocess
+
+
+def getservermem():
+    process = subprocess.Popen(['free', '-m'], stdout=subprocess.PIPE)
+    out, err = process.communicate()
+    lines = []
+    lines = out.decode().split('\n')
+    memvalues = lines[1].strip().split()
+    swapvalues = lines[2].strip().split()
+    memfree = memvalues[3]
+    memavailable = memvalues[6]
+    swapused = swapvalues[2]
+    return memfree, memavailable, swapused
+
