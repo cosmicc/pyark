@@ -111,11 +111,13 @@
         </b></p>
         <p class='is-2'>Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
         {% if current_user.has_role('admin') %}
-        <p class='is-2'>Process Active Memory: <b>{{ serverinfo['actmem'] }} G</b></p>
-        <p class='is-2'>Process Total Memory: <b>{{ serverinfo['totmem'] }} G</b></p>
-        <p class='is-2'>Server Memory Available: <b>{{ serverinfo['svrmemavail'] }} M</b></p>
-        <p class='is-2'>Server Memory Free: <b>{{ serverinfo['svrmemfree'] }} M</b></p>
-        <p class='is-2'>Swap Used: <b>{{ serverinfo['svrswapused'] }} M</b></p>
+        <p class='is-2'>Process Active Memory: <b>{{ serverinfo['actmem'] }}g</b></p>
+        <p class='is-2'>Process Total Memory: <b>{{ serverinfo['totmem'] }}g</b></p>
+        <p class='is-2'>Server CPU: <b>{{ serverinfo['cpucores'] }}c @ {{ serverinfo['cpufreq'] }}Ghz</b></p>
+        <p class='is-2'>Server Load (1m/5m/15m): <b>{{ serverinfo['cpuload1'] }}%, {{ serverinfo['cpuload5'] }}%, {{ serverinfo['cpuload15'] }}%</b></p>
+        <p class='is-2'>Server Memory Available: <b>{{ serverinfo['svrmemavail'] }}m</b></p>
+        <p class='is-2'>Server Memory Free: <b>{{ serverinfo['svrmemfree'] }}m</b></p>
+        <p class='is-2'>Swap Used: <b>{{ serverinfo['svrswapused'] }}m</b></p>
         <p class='is-2'>Server Hostname: <b>{{ serverinfo['serverhost'].upper() }}</b></p>
         {% endif %}
         <p class='is-2'>Ark Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
