@@ -10,7 +10,7 @@ from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, ps
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
-from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer
+from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getexpiredplayers, getbannedplayers, getnewplayers
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto, joinedTime
 from wtforms import StringField, IntegerField
 from wtforms.validators import InputRequired, Length
@@ -448,30 +448,6 @@ def getautoevents():
     return dbquery("SELECT title FROM autoevents", fmt='list', single=True)
 
 
-def getbannedplayers():
-    return dbquery("SELECT playername FROM players WHERE banned != '' ORDER BY playername ASC", fmt='list', single=True)
-
-
-def getdailyplayers():
-    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' ORDER BY playername ASC" % (Now() - Secs['day'],), fmt='list', single=True)
-
-
-def getweeklyplayers():
-    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' ORDER BY playername ASC" % (Now() - Secs['week'],), fmt='list', single=True)
-
-
-def getexpiredplayers():
-    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' ORDER BY playername ASC" % (Now() - Secs['month'],), fmt='list', single=True)
-
-
-def getarchivedplayers():
-    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' ORDER BY playername ASC" % (Now() - Secs['3month'],), fmt='list', single=True)
-
-
-def getnewplayers(atime):
-    return dbquery("SELECT playername FROM players WHERE banned = '' AND firstseen >= '%s' ORDER BY playername ASC" % (Now() - Secs[atime],), fmt='list', single=True)
-
-
 def getlastevent():
     return dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY endtime DESC", fmt='dict', fetch='one')
 
@@ -570,7 +546,7 @@ def dashboard():
         setannouncement(request.form["message"])
         flash(f'Login Announcement Set', 'info')
         return redirect(url_for('webui.dashboard'))
-    return render_template('dashboard.html', loginname=current_user.email, instances=instancelist(), activeplayers=len(getexpiredplayers()), unarchivedplayers=len(getarchivedplayers()), newplayers=len(getnewplayers('week')), dailyplayers=len(getdailyplayers()), weeklyplayers=len(getweeklyplayers()))
+    return render_template('dashboard.html', loginname=current_user.email, instances=instancelist(), activeplayers=len(getactiveplayers(Secs['month'])), unarchivedplayers=len(getactiveplayers(Secs['3month'])), newplayers=len(getnewplayers(Secs['week'])), dailyplayers=len(getactiveplayers(Secs['day'])), weeklyplayers=len(getactiveplayers(Secs['week'])), hitnruns=len(gethitnruns(Secs['week'])), newplayersday=len(getnewplayers(Secs['day'])))
 
 
 @webui.route('/logout')

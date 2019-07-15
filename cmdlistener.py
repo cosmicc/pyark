@@ -304,7 +304,7 @@ def voting(inst, whoasked):
         if votingpassed():
             wipeit(inst)
             arewevoting = False
-        elif Now() - votestarttime > Secs['5min']:
+        elif Now() - votestarttime > Secs['3min']:
             if enoughvotes():
                 wipeit(inst)
                 arewevoting = False
@@ -317,7 +317,7 @@ def voting(inst, whoasked):
 {totvoters})', wcstamp())
                 arewevoting = False
         else:
-            if sltimer == 120 or sltimer == 240:
+            if sltimer == 60 or sltimer == 120:
                 log.debug(f'sending voting waiting message to vote on {inst}')
                 subprocess.run('arkmanager rconcmd "ServerChat Wild dino wipe vote is waiting. make sure you have \
 cast your vote !yes or !no in global chat" @%s' % (inst), shell=True)

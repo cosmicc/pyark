@@ -84,7 +84,7 @@
         {% if current_user.has_role('admin') %}
         <p class='is-2'>Ark Game Build: <b>{{ serverinfo['arkbuild'] }}</b></p>
         {% endif %}
-        <p class='is-2'>Last Server Restart: <b>{{ ui_elapsedTime(serverinfo['lastrestart']) }}</b></p>
+        <p class='is-2'>Last Instance Start: <b>{{ ui_elapsedTime(serverinfo['lastrestart']) }}</b></p>
         <p class='is-2'>Restart Reason: <b>{{ serverinfo['restartreason'].title() }}</b></p>
         <p class='is-2'>Last Dino Wipe: <b>{{ ui_elapsedTime(serverinfo['lastdinowipe']) }}</b></p>
         <p class='is-2'>Last Wipe Vote: <b>{{ ui_elapsedTime(serverinfo['lastvote']) }}</b></p>
@@ -120,6 +120,7 @@
         <p class='is-2'>Server Memory Available: <b>{{ serverinfo['svrmemavail'] }}m</b></p>
         <p class='is-2'>Server Memory Free: <b>{{ serverinfo['svrmemfree'] }}m</b></p>
         <p class='is-2'>Server Swap Used: <b>{{ serverinfo['svrswapused'] }}m</b></p>
+        <p class='is-2'>Server Needs Restart: <b>{{ serverinfo['restartserver'] }}</b></p>
         <p class='is-2'>Server Uptime: <b>{{ serverinfo['serveruptime'] }}</b></p>
         {% endif %}
         <p class='is-2'>Ark Server Rank: <b>{{ serverinfo['rank'] }}</b></p>

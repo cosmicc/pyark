@@ -1,6 +1,9 @@
 from modules.dbhelper import dbupdate, dbquery, statsupdate
-from modules.players import getplayersonline
+from modules.players import getplayersonline, getactiveplayers, getnewplayers, gethitnruns
 from modules.timehelper import Secs
+from timebetween import is_time_between
+from datetime import datetime
+from datetime import time as dt
 from time import time, sleep
 import logging
 import socket
@@ -30,6 +33,10 @@ def oscollect():
         checkiftableexists(each)
     while True:
         try:
+            t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
+            dailycollect = is_time_between(t, s, e)
+            if dailycollect:
+                dbupdate("INSERT INTO clusterstats (dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s')" % (getactiveplayers(Secs['day']), getactiveplayers(Secs['week']), getactiveplayers(Secs['month']), gethitnruns(Secs['day']), getnewplayers(Secs['day'])), db='statsdb')
             for each in stinst:
                 addvalue(each, getplayersonline(each, fmt='count'))
         except:

@@ -2,6 +2,26 @@ from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.timehelper import Now, Secs
 
 
+def getbannedplayers():
+    return dbquery("SELECT playername FROM players WHERE banned != '' ORDER BY playername ASC", fmt='list', single=True)
+
+
+def gethitnruns(atime):
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' and playedtime < 15 and connects = 1 ORDER BY playername ASC" % (Now() - Secs['week'],), fmt='list', single=True)
+
+
+def getactiveplayers(atime):
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' and playedtime > 15 and connects > 1 ORDER BY playername ASC" % (Now() - atime,), fmt='list', single=True)
+
+
+def getexpiredplayers():
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen < '%s' ORDER BY playername ASC" % (Now() - Secs['month'],), fmt='list', single=True)
+
+
+def getnewplayers(atime):
+    return dbquery("SELECT playername FROM players WHERE banned = '' AND firstseen >= '%s' ORDER BY playername ASC" % (Now() - atime,), fmt='list', single=True)
+
+
 def isplayeradmin(steamid):
     playerid = dbquery("SELECT id FROM web_users WHERE steamid = '%s'" % (steamid,), fetch='one')
     if playerid:
