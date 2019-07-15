@@ -6,6 +6,7 @@ from modules.pushover import pushover
 from sys import exit
 from time import sleep
 from modules.timehelper import Secs, Now
+import psutil
 import argparse
 import logging
 import re
@@ -47,6 +48,24 @@ if args.quiet is False:
 log_fileh = logging.FileHandler(logfile2)
 log.addHandler(log_fileh)
 log_fileh.setFormatter(log_format)
+
+def float_trunc_1dec(num):
+    try:
+        tnum = num // 0.1 / 10
+    except:
+        return False
+    else:
+        return tnum
+
+
+def getcpustats():
+    rawcpuload = psutil.getloadavg()
+    numcores = psutil.cpu_count()
+    cpufreq = psutil.cpu_freq()[0] / 1000
+    load1 = (rawcpuload[0] / numcores) * 100
+    load5 = (rawcpuload[1] / numcores) * 100
+    load15 = (rawcpuload[2] / numcores) * 100
+    return numcores, float_trunc_1dec(cpufreq), float_trunc_1dec(load1), float_trunc_1dec(load5), float_trunc_1dec(load15)
 
 
 def getservermem():
@@ -176,6 +195,7 @@ def main():
                             log.debug(f'{eachinst["name"]} passed instance running check')
                     actmem, totmem = getinstmem(eachinst['name'])
                     memfree, memavail, swapused = getservermem()
+                    cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
 
                 if not isitlistening:
                     for neach in islistening.copy():
@@ -205,7 +225,7 @@ def main():
 
                 # log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
                 try:
-                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), eachinst['name']))
+                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucored = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, eachinst['name']))
                 except:
                     log.error('Error writing stats to database')
                 for feach in isrunning:

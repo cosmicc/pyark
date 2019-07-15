@@ -116,7 +116,7 @@
         <p class='is-2'>Server Memory Available: <b>{{ serverinfo['svrmemavail'] }} M</b></p>
         <p class='is-2'>Server Memory Free: <b>{{ serverinfo['svrmemfree'] }} M</b></p>
         <p class='is-2'>Swap Used: <b>{{ serverinfo['svrswapused'] }} M</b></p>
-        <p class='is-2'>Server Hostname: <b>{{ serverinfo['serverhost'] }}</b></p>
+        <p class='is-2'>Server Hostname: <b>{{ serverinfo['serverhost'].upper() }}</b></p>
         {% endif %}
         <p class='is-2'>Ark Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
         <p class='is-2'>Ark Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>

@@ -22,6 +22,7 @@ flask-security = "*"
 bcrypt = "*"
 active-alchemy = "*"
 flask-sqlalchemy = "*"
+psutil = "*"
 
 [dev-packages]
 
