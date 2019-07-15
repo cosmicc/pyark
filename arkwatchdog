@@ -5,7 +5,7 @@ from modules.dbhelper import dbupdate
 from modules.pushover import pushover
 from sys import exit
 from time import sleep
-from modules.timehelper import Secs, Now
+from modules.timehelper import Secs, Now, elapsedTime
 import psutil
 import argparse
 import logging
@@ -49,6 +49,7 @@ log_fileh = logging.FileHandler(logfile2)
 log.addHandler(log_fileh)
 log_fileh.setFormatter(log_format)
 
+
 def float_trunc_1dec(num):
     try:
         tnum = num // 0.1 / 10
@@ -56,6 +57,18 @@ def float_trunc_1dec(num):
         return False
     else:
         return tnum
+
+
+def arkprocesscpu(inst):
+    pidfile = f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid'
+    file = open(pidfile, 'r')
+    arkpid = file.read()
+    arkprocess = psutil.Process(int(arkpid))
+    return arkprocess.cpu_percent()
+
+
+def getserveruptime():
+    return elapsedTime(Now(), psutil.boot_time())
 
 
 def getcpustats():
@@ -192,10 +205,13 @@ def main():
                         if neach == eachinst['name']:
                             isrunning[neach].update({'isit': 1, 'count': 0})
                             isrunningint = 1
+                            arkservercpu = arkprocesscpu(neach)
                             log.debug(f'{eachinst["name"]} passed instance running check')
+                    arkservercpu = float_trunc_1dec(arkprocesscpu(eachinst['name']))
                     actmem, totmem = getinstmem(eachinst['name'])
                     memfree, memavail, swapused = getservermem()
                     cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
+                    uptime = getserveruptime()
 
                 if not isitlistening:
                     for neach in islistening.copy():
@@ -225,7 +241,7 @@ def main():
 
                 # log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
                 try:
-                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, eachinst['name']))
+                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', arkcpu = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, arkservercpu, eachinst['name']))
                 except:
                     log.error('Error writing stats to database')
                 for feach in isrunning:
