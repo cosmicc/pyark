@@ -10,6 +10,7 @@ import psutil
 import argparse
 import logging
 import re
+import os
 import socket
 import subprocess
 
@@ -59,10 +60,18 @@ def float_trunc_1dec(num):
         return tnum
 
 
+def serverneedsrestart():
+    if os.path.isfile('/var/run/reboot-required'):
+        return True
+    else:
+        return False
+
+
 def arkprocesscpu(inst):
     pidfile = f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid'
     file = open(pidfile, 'r')
     arkpid = file.read()
+    file.close()
     arkprocess = psutil.Process(int(arkpid))
     return arkprocess.cpu_percent(interval=2)
 
@@ -241,7 +250,7 @@ def main():
 
                 # log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
                 try:
-                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', arkcpu = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, arkservercpu, eachinst['name']))
+                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', arkcpu = '%s', restartserver = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, arkservercpu, serverneedsrestart(), eachinst['name']))
                 except:
                     log.error('Error writing stats to database')
                 for feach in isrunning:

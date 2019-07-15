@@ -88,7 +88,7 @@
         <p class='is-2'>Restart Reason: <b>{{ serverinfo['restartreason'].title() }}</b></p>
         <p class='is-2'>Last Dino Wipe: <b>{{ ui_elapsedTime(serverinfo['lastdinowipe']) }}</b></p>
         <p class='is-2'>Last Wipe Vote: <b>{{ ui_elapsedTime(serverinfo['lastvote']) }}</b></p>
-        <p class='is-2'>Server is Running: <b>
+        <p class='is-2'>Instance is Running: <b>
         {% if serverinfo['isrunning'] == 1 %}
         Yes
         {% else %}
