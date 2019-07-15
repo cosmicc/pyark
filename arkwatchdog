@@ -64,7 +64,7 @@ def arkprocesscpu(inst):
     file = open(pidfile, 'r')
     arkpid = file.read()
     arkprocess = psutil.Process(int(arkpid))
-    return arkprocess.cpu_percent()
+    return arkprocess.cpu_percent(interval=2)
 
 
 def getserveruptime():

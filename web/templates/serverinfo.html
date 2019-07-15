@@ -95,31 +95,32 @@
         No
         {% endif %}
         </b></p>
-        <p class='is-2'>Server is Listening: <b>
+        <p class='is-2'>Instance is Listening: <b>
         {% if serverinfo['islistening'] == 1 %}
         Yes
         {% else %}
         No
         {% endif %}
         </b></p>
-        <p class='is-2'>Server is Online: <b>
+        <p class='is-2'>Instance is Online: <b>
         {% if serverinfo['isup'] == 1 %}
         Yes
         {% else %}
         No
         {% endif %}
         </b></p>
-        <p class='is-2'>Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
+        <p class='is-2'>Instance Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
         {% if current_user.has_role('admin') %}
-        <p class='is-2'>Process Active Memory: <b>{{ serverinfo['actmem'] }}g</b></p>
-        <p class='is-2'>Process Total Memory: <b>{{ serverinfo['totmem'] }}g</b></p>
+        <p class='is-2'>Instance Active Mem: <b>{{ serverinfo['actmem'] }}g</b></p>
+        <p class='is-2'>Instance Total Mem: <b>{{ serverinfo['totmem'] }}g</b></p>
+        <p class='is-2'>Instance CPU: <b>{{ serverinfo['arkcpu'] }}%</b></p>
         <p class='is-2'>Server Hostname: <b>{{ serverinfo['serverhost'].upper() }}</b></p>
         <p class='is-2'>Server CPU: <b>{{ serverinfo['cpucores'] }} cores @ {{ serverinfo['cpufreq'] }}Ghz</b></p>
         <p class='is-2'>Server Load (1m/5m/15m): <b>{{ serverinfo['cpuload1'] }}%, {{ serverinfo['cpuload5'] }}%, {{ serverinfo['cpuload15'] }}%</b></p>
         <p class='is-2'>Server Memory Available: <b>{{ serverinfo['svrmemavail'] }}m</b></p>
         <p class='is-2'>Server Memory Free: <b>{{ serverinfo['svrmemfree'] }}m</b></p>
         <p class='is-2'>Server Swap Used: <b>{{ serverinfo['svrswapused'] }}m</b></p>
-        <p class='is-2'>Server Uptime: <b>{{ serverinfo['serveruptime'].upper() }}</b></p>
+        <p class='is-2'>Server Uptime: <b>{{ serverinfo['serveruptime'] }}</b></p>
         {% endif %}
         <p class='is-2'>Ark Server Rank: <b>{{ serverinfo['rank'] }}</b></p>
         <p class='is-2'>Ark Server Votes: <b>{{ serverinfo['votes'] }} votes</b></p>
