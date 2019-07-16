@@ -1,5 +1,27 @@
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.timehelper import Now, Secs
+import re
+import subprocess
+
+
+def stripansi(stripstr):
+    ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    return(ansi_escape.sub('', stripstr))
+
+
+def getliveplayersonline(inst):
+    rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL, shell=True)
+    rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
+    players = 0
+    activeplayers = 0
+    for ea in rawrun2:
+        sttitle = stripansi(ea.split(':')[0]).strip()
+        if (sttitle == 'Players'):
+            players = int(stripansi(ea.split(':')[1]).strip().split('/')[0].strip())
+        if (sttitle == 'Active Players'):
+            activeplayers = int(stripansi(ea.split(':')[1]).strip())
+    return int(players), int(activeplayers)
 
 
 def getbannedplayers():
@@ -25,8 +47,8 @@ def getnewplayers(atime):
 def isplayeradmin(steamid):
     playerid = dbquery("SELECT id FROM web_users WHERE steamid = '%s'" % (steamid,), fetch='one')
     if playerid:
-        isadmin = dbquery("SELECT role_id FROM roles_users WHERE user_id = '%s'" % (playerid,), fetch='one')
-        if isadmin == 1:
+        isadmin = dbquery("SELECT role_id FROM roles_users WHERE user_id = '%s'" % (playerid[0],), fetch='one')
+        if isadmin[0] == 1:
             return True
         else:
             return False
@@ -86,6 +108,10 @@ def isplayeronline(playername='', steamid=''):
         return True
     else:
         return False
+
+
+def setprimordialbit(steamid, pbit):
+    dbupdate("UPDATE players SET primordialbit = '%s' WHERE steamid = '%s'" % (pbit, steamid))
 
 
 def kickplayer(instance, steamid):

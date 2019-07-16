@@ -31,6 +31,16 @@ def isinlottery():
         return False
 
 
+def getlottowinnings(pname):
+    pwins = dbquery("SELECT payout FROM lotteryinfo WHERE winner = '%s'" % (pname,))
+    totpoints = 0
+    twins = 0
+    for weach in pwins:
+        totpoints = totpoints + int(weach[0])
+        twins += 1
+    return twins, totpoints
+
+
 def getlotteryplayers(fmt):
     linfo = dbquery("SELECT playername FROM lotteryplayers", fmt=fmt)
     return linfo

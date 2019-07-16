@@ -4,7 +4,7 @@ from datetime import datetime
 from datetime import time as dt
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
-from modules.players import getplayersonline
+from modules.players import getliveplayersonline
 from modules.instances import getlastwipe, instancelist, isinstancerunning
 from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
@@ -89,7 +89,8 @@ def checkwipe(inst, force=False):
     global dwtimer
     lastwipe = getlastwipe(inst)
     if Now() - lastwipe > Secs['day']:
-        if getplayersonline(inst, fmt='count') == 0:
+        splayers, aplayers = getliveplayersonline(inst)
+        if aplayers == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
             writechat(inst, 'ALERT', f'### Empty server is over 24 hours since wild dino wipe. Wiping now.', wcstamp())
             wipeit(inst)
@@ -172,7 +173,8 @@ def restartloop(inst, ext='restart'):
     if ext == 'start':
         restartinstnow(inst, ext=ext)
     else:
-        if getplayersonline(inst, fmt='count') == 0:
+        splayers, aplayers = getliveplayersonline(inst)
+        if splayers == 0:
             setrestartbit(inst)
             log.info(f'server {inst} is empty and restarting now for a {reason}')
             writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
@@ -202,7 +204,8 @@ def restartloop(inst, ext='restart'):
                     timeleft = timeleft - 1
                     updatetimer(inst, timeleft)
                     snr = stillneedsrestart(inst)
-                    if getplayersonline(inst, fmt='count') == 0 or timeleft == 0:
+                    splayers, aplayers = getliveplayersonline(inst)
+                    if aplayers == 0 or timeleft == 0:
                         gotime = True
                 if stillneedsrestart(inst):
                     log.info(f'server {inst} is restarting now for a {reason}')
@@ -437,10 +440,10 @@ def checkupdates():
                 subprocess.run('arkmanager update --downloadonly @%s' % (instance[0]['name']),
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug('ark update downloaded to staging area')
-                msg = f'Ark update has been released. Servers will begin restart countdown now.\n\
-https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
+                # msg = f'Ark update has been released. Servers will begin restart countdown now.\n\
+# https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
                 writediscord('ARK Game Update', Now(), name='https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes', server='UPDATE')
-                #pushover('Ark Update', msg)
+                # pushover('Ark Update', msg)
                 log.info(f'ark update download complete. update staged. notifying servers')
                 dbupdate(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
         except:
@@ -467,14 +470,22 @@ https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
                 aname = f'{modname} Mod Update'
-                msg = f'Mod {modname} has been updated. Servers will begin restart countdowns now.\n\
-https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
+                # msg = f'Mod {modname} has been updated. Servers will begin restart countdowns now.\n\
+# https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
                 writediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
-                #pushover('Mod Update', msg)
+                # pushover('Mod Update', msg)
                 for neo in range(numinstances):
                         instancerestart(instance[neo]['name'], aname)
         else:
             log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
+
+
+def restartcheck():
+    for each in range(numinstances):
+        checkifenabled(instance[each]['name'])
+        if not isrebooting(instance[each]['name']):
+            checkifalreadyrestarting(instance[each]['name'])
+        checkconfig()
 
 
 def arkupd():
@@ -487,18 +498,22 @@ def arkupd():
         log.warning(f'No Ark game instances found, also NOT master updater, THIS ISNT RIGHT')
     while True:
         try:
-            for each in range(numinstances):
-                checkifenabled(instance[each]['name'])
-                if not isrebooting(instance[each]['name']):
-                    checkifalreadyrestarting(instance[each]['name'])
-            checkconfig()
+            restartcheck()
+            sleep(Secs['1min'])
             checkupdates()
+            restartcheck()
+            sleep(Secs['1min'])
             checkmaintenance()
+            restartcheck()
+            sleep(Secs['1min'])
             checkbackup()
-            sleep(Secs['5min'])
+            restartcheck()
+            sleep(Secs['1min'])
             for each in range(numinstances):
                 if not isrebooting(instance[each]['name']):
                     checkwipe(instance[each]['name'])
+            restartcheck()
+            sleep(Secs['1min'])
         except:
             log.critical('Critical Error in Ark Updater!', exc_info=True)
             sleep(60)

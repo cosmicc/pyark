@@ -389,7 +389,7 @@ def isserver(line):
 
 
 def linker(minst, whoasked):
-    dplayer = dbquery("SELECT * FROM players WHERE playername = '%s'" % (whoasked.lower(),), fetch='one')
+    dplayer = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked.lower(),whoasked.lower()), fetch='one')
     if dplayer:
         if dplayer[8] is None or dplayer[8] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
