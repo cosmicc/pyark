@@ -225,6 +225,8 @@ def restartloop(inst, ext='restart'):
                                    '\n\n\n             The server restart for %s has been cancelled'" @%s""" %
                                    (reason, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                     writechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
+        else:
+            log.debug(f'configuration restart skipped because {splayers} players and {aplayers} active players')
 
 
 def checkmaintenance():
