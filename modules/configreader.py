@@ -16,6 +16,7 @@ config = ExtConfigParser()
 config.read(configfile)
 
 # General
+debugmode = config.get('general', 'debug')
 sharedpath = config.get('general', 'shared')
 arkroot = config.get('general', 'arkroot')
 logfile = config.get('general', 'logfile')

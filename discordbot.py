@@ -163,7 +163,6 @@ def discordbot():
                 await client.send_message(ctx.message.author, embed=embed)
             elif str(ctx.message.channel) != 'bot-channel' or (not allowgeneral and str(ctx.message.channel) == 'general-chat'):
                 role = str(discord.utils.get(ctx.message.author.roles, name="Cluster Admin"))
-                log.warning(role, type(role))
                 if role != 'Cluster Admin':
                     await client.delete_message(ctx.message)
                 if reject and role != 'Cluster Admin':
@@ -181,10 +180,10 @@ def discordbot():
     @client.event
     async def on_member_join(member):
         log.info(f'new user has joined the Discord server: {member}')
-        fmt = 'If you are already a player on the servers, type !linkme in-game to link your discord account to your ark player.\n'
-        fmt = fmt + 'Type !servers for links to the servers\nType !mods for a link to the mod collection\n!help for everything else\n\n'
-        fmt = fmt + 'If you need any help look for pinned messages in #help'
-        embed = discord.Embed(title="Welcome to the Galaxy Cluster Ultimate Extinction core Server Discord", description=fmt, color=HELP_COLOR)
+        fmt = 'If you are already a player on the servers, type **`!linkme`** in-game to link your discord account to your ark player.\n'
+        fmt = fmt + 'Type **`!servers`** for links iand status of the servers\nType **`!mods`** for a link to the mod collection\n**`!help`** for all the other commands\n\n'
+        fmt = fmt + 'More help can be found with pinned messages in **#help**\nDont be afraid to ask for help in discord!'
+        embed = discord.Embed(title="Welcome to the Galaxy Cluster Ultimate Extinction Core Server Discord!", description=fmt, color=HELP_COLOR)
         await client.send_message(member, embed=embed)
 
     @client.event
@@ -223,6 +222,7 @@ def discordbot():
         msg = msg + "**`!events`**  - Current and upcomming cluster events\n"
         msg = msg + "**`!decay`**  - Cluster dino & structure decay rates and expire timers\n"
         msg = msg + "**`!who`**  - List all players currently online on all the servers\n"
+        msg = msg + "**`!timeleft <server>`**  - How much time left in server restart countdown\n"
         msg = msg + "**`!myinfo`**  - Your in-game player information\n"
         msg = msg + "**`!expire`**  - Your in-game experation timers and time left before dino/structure decay\n"
         msg = msg + "**`!ec`**  - Links to more Extinction Core Mod information\n"
@@ -241,12 +241,14 @@ def discordbot():
         msg = msg + "**`!lastlotto`**  - List the last 5 lottery winners\n"
         msg = msg + "**`!winners`**  - List the 5 all-time lottery winners\n"
         msg = msg + "**`!primordial`**  - Warns you in-game if you haven't logged in since the server has restarted (so you can reset your primordial's buff bug)\n\n"
-        msg = msg + '**Commands can be privately messaged directly to the bot or in the **`#bot-channel`**'
+        msg = msg + "The servers available are:"
+        for eachinst in instancelist():
+            msg = msg + f"  **`{eachinst}`**,"
+        msg = msg + "\n\n"
+        msg = msg + 'Commands can be privately messaged directly to the bot or in the **#bot-channel**'
 
         embed = discord.Embed(title="Galaxy Custom Bot Commands:", description=msg, color=HELP_COLOR)
         await client.send_message(ctx.message.author, embed=embed)
-        log.warning(ctx.message.channel)
-        log.warning(ctx.message.channel.is_private)
         if not ctx.message.channel.is_private and str(ctx.message.channel) != 'bot-channel':
             await client.delete_message(ctx.message)
 
@@ -481,7 +483,7 @@ def discordbot():
                 embed = discord.Embed(description=msg, color=INFO_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=True)
             else:
-                msg = f'The server **{instr.title()}** does not exist in the cluster'
+                msg = f'The server **{instr.title()}** does not exist in the cluster, !help for more information'
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=True)
         else:
@@ -502,7 +504,7 @@ def discordbot():
                 embed = discord.Embed(description=msg, color=INFO_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=True)
             else:
-                msg = f'The server **{instr.capitalize()}** was not found in the cluster'
+                msg = f'The server **{instr.capitalize()}** was not found in the cluster, !help for more information'
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=True)
         else:
@@ -512,6 +514,33 @@ def discordbot():
                 msg = msg + f'Last wild dino wipe for **{each.capitalize()}** was **{lastwipet} ago**\n'
             embed = discord.Embed(description=msg, color=INFO_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
+
+    @client.command(pass_context=True, name='timeleft', aliases=['time'])
+    async def _timeleft(ctx, *args):
+        if args:
+            instr = args[0].lower()
+            if instr in instancelist():
+                srest = dbquery(f"SELECT needsrestart, restartcountdown FROM instances where name = '%s'" % (instr,))
+                if srest[0][0] == 'False':
+                    msg = f'Server **{instr.title()}** is not currently in a restart countdown'
+                else:
+                    msg = f'Server **{instr.title()}** has **{srest[0][1]}** minutes left until restart'
+                embed = discord.Embed(description=msg, color=INFO_COLOR)
+                await messagesend(ctx, embed, allowgeneral=True, reject=True)
+            else:
+                msg = f'The server **{instr.capitalize()}** was not found in the cluster, !help for more information'
+                embed = discord.Embed(description=msg, color=FAIL_COLOR)
+                await messagesend(ctx, embed, allowgeneral=False, reject=True)
+        else:
+            msg = ''
+            for each in instancelist():
+                srest = dbquery(f"SELECT needsrestart, restartcountdown FROM instances where name = '%s'" % (each,))
+                if srest[0][0] == 'False':
+                    msg = msg + f'Server **{each.title()}** is not currently in a restart countdown\n'
+                else:
+                    msg = msg + f'Server **{each.title()}** has **{srest[1]}** minutes left until restart\n'
+            embed = discord.Embed(description=msg, color=INFO_COLOR)
+            await messagesend(ctx, embed, allowgeneral=True, reject=True)
 
     @client.command(pass_context=True, name='who', aliases=['whoson', 'whosonline', 'online'])
     async def _who(ctx):
@@ -785,6 +814,7 @@ def discordbot():
             if message.content.lower().find('server has crashed! - restarting server') != -1:
                 inst = message.content.split(':')[0].split()[3].lower()
                 dbupdate("UPDATE instances SET lastcrash = '%s' where name = '%s'" % (Now(fmt='dt'), inst))
+                dbupdate("UPDATE instances SET lastrestart = '%s' where name = '%s'" % (str(Now(fmt='epoch')), inst))
                 clog(f'{Now()} - Server has crashed', inst)
                 log.warning(f'server crash notification from {inst}')
                 msg = f'The **{inst.title()}** server has crashed!\n\nServer is now restarting, there may be a slight rollback'

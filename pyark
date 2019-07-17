@@ -8,7 +8,7 @@ from discordbot import discordbot
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port
+from modules.configreader import logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, debugmode
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
@@ -59,14 +59,20 @@ if args.quiet is False:
     log_console.setFormatter(console_format)
 
 log_fileh = logging.FileHandler(logfile)
-log_fileh.setLevel(logging.INFO)
+if debugmode == 'True':
+    log_fileh.setLevel(logging.DEBUG)
+else:
+    log_fileh.setLevel(logging.INFO)
 log_fileh.setFormatter(log_format)
 
 log.addHandler(log_fileh)
 
 plock()
 
-log.info(f'>>> pyark daemon is starting on {hstname}')
+if debugmode == 'True':
+    log.warning(f'>>> pyark daemon is starting on {hstname} in DEBUG MODE')
+else:
+    log.info(f'>>> pyark daemon is starting on {hstname}')
 
 checkgit = 0
 

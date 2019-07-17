@@ -52,7 +52,7 @@ def isinstanceup(inst):
 
 def getlastcrash(inst):
     dbdata = dbquery("SELECT lastcrash FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    if dbdata:
+    if dbdata[0] is not None:
         return dbdata[0]
     else:
         return 'Never'
