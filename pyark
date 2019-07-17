@@ -47,7 +47,7 @@ args = parser.parse_args()
 
 logformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {level: <6} | {message} | {name}:{function}:{line}'
 
-colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message <75}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message: <75}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
 
 
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
