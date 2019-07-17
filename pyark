@@ -45,7 +45,7 @@ parser.add_argument('-dd', '--trace', action='store_true', help='super verbose o
 
 args = parser.parse_args()
 
-logformat = '<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan> | <level>{extra[hostname]}:{extra[instance]}</level> | <level>{level: <6}</level> | <level>{message}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+logformat = '<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan> | <level>{extra[hostname]: >5}</level> | <level>{level: <6}</level> | <level>{message}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
 
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
@@ -57,6 +57,7 @@ log.level("POINTS", no=22, color="<light-green>", icon="¤")
 log.level("LOTTO", no=23, color="<green>", icon="¤")
 log.level("VOTE", no=20, color="<fg 208>", icon="¤")
 log.level("CRASH", no=29, color="<RED><white><bold>", icon="¤")
+log.level("TEST", no=20, color="<light-red>", icon="¤")
 
 # Console Logging
 if args.quiet:
