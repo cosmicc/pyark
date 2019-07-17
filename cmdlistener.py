@@ -242,7 +242,7 @@ def enoughvotes():
         tvoters += 1
         if each[2] == 1 or each[2] == 2:
             vcnt += 1
-    if vcnt >= tvoters/2:
+    if vcnt >= tvoters / 2:
         return True
     else:
         return False
@@ -271,7 +271,7 @@ def howmanyvotes():
 def wipeit(inst):
     yesvoters, totvoters = howmanyvotes()
     log.info(f'voting yes has won ({yesvoters}/{totvoters}), wild dinos are wiping on {inst} in 15 seconds')
-    subprocess.run("""arkmanager rconcmd "broadcast'\n\n\nThe wild dino wipe vote has finished. YES has won (%s of %s). Wiping all wild dinos in 10 seconds. '" @%s""" % (yesvoters, totvoters), shell=True)
+    subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nThe wild dino wipe vote has finished. YES has won (%s of %s). Wiping all wild dinos in 10 seconds. '" @%s""" % (yesvoters, totvoters), shell=True)
     writechat(inst, 'ALERT', f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). \
 Wiping wild dinos now.', wcstamp())
     sleep(7)
@@ -291,7 +291,7 @@ def voting(inst, whoasked):
     arewevoting = True
     pon = populatevoters(inst)
     setvote(whoasked, 2)
-    subprocess.run("""arkmanager rconcmd "broadcast'\n\n\nA wild dino wipe vote has started with %s players. vote !yes or !no in global chat now'" @%s""" % (pon, inst), shell=True)
+    subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nA wild dino wipe vote has started with %s players. vote !yes or !no in global chat now'" @%s""" % (pon, inst), shell=True)
     votestarttime = Now()
     sltimer = 0
     writechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp())
@@ -315,7 +315,7 @@ def voting(inst, whoasked):
         else:
             if sltimer == 60 or sltimer == 120:
                 log.debug(f'sending voting waiting message to vote on {inst}')
-                subprocess.run("""arkmanager rconcmd "broadcast'\n\n\nA wild dino wipe vote is waiting. Make sure you have cast your vote !yes or !no in global chat now'" @%s""" % (inst,), shell=True)
+                subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nA wild dino wipe vote is waiting. Make sure you have cast your vote !yes or !no in global chat now'" @%s""" % (inst,), shell=True)
 
         sltimer += 5
     # log.info(f'final votertable for vote on {inst}')
@@ -676,7 +676,7 @@ def checkcommands(minst):
                     else:
                         ninst = ''
                     homeserver(minst, whoasked, ninst)
-                elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!votestart') != -1:
+                elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!wipe') != -1:
                     log.debug(f'responding to a dino wipe vote request on {minst} from {whoasked}')
                     startvoter(minst, whoasked)
                 elif line.find('!agree') != -1 or line.find('!yes') != -1:
