@@ -8,7 +8,7 @@ from discordbot import discordbot
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel
+from modules.configreader import hstname, logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, debugfile, pointsfile, colorlogfile
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
@@ -50,7 +50,7 @@ logformat = '<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan> | <level>{extra[hostnam
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
 log.level("START", no=38, color="<yellow>", icon="¤")
-log.level("ADMIN", no=15, color="<yellow>", icon="¤")
+log.level("ADMIN", no=15, color="<light-yellow>", icon="¤")
 log.level("JOIN", no=21, color="<light-cyan>", icon="¤")
 log.level("LEAVE", no=21, color="<fg 5>", icon="¤")
 log.level("POINTS", no=22, color="<light-green>", icon="¤")
@@ -60,13 +60,33 @@ log.level("CRASH", no=29, color="<RED><white><bold>", icon="¤")
 
 # Console Logging
 if args.quiet:
-    log.add(sink=sys.stdout, level=50, backtrace=True, diagnose=True, colorize=True, format=logformat)
+    log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=False, format=logformat)
+elif args.trace:
+    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=logformat)
+elif args.debug:
+    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=logformat)
 else:
-    log.add(sink=sys.stderr, level=loglevel, backtrace=True, diagnose=True, colorize=True, format=logformat)
+    log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=logformat)
 
 # Info Logging pyark.log
-log.add(sink=logfile, level=20, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=logformat, rotation="1 day", retention="30 days", compression="gz")
+log.add(sink=logfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz")
 
+# Info Color Logging pyark-color.log
+log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=logformat, rotation="1 day", retention="30 days", compression="gz")
+
+# Debug Logging debug.log
+if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
+    if loglevel == 'DEBUG' or args.debug:
+        lev = 10
+    else:
+        lev = 5
+    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=logformat, rotation="1 day", retention="30 days", compression="gz", delay=True)
+
+# Points Logging points.log
+log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz", delay=True, filter='POINTS')
+
+# Admin Logging admin.log
+log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz", delay=True, filter='ADMIN')
 
 plock()
 
