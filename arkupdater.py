@@ -235,9 +235,7 @@ def checkmaintenance():
         log.info(f'maintenance: daily maintenance window has opened for {hstname}...')
         for each in range(numinstances):
             inst = instance[each]['name']
-            message = 'Server maintenance has started. All dino mating will be temporarily stopped.  All unclaimed dinos will be cleared, and server will also be performing updates and backups.'
-            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
-
+            subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nServer maintenance has started. All dino mating will be temporarily stopped.  All unclaimed dinos will be cleared, and the server will also be performing updates and backups.'" @%s""" % (inst,), shell=True)
         log.info(f'maintenance: running server os maintenance on {hstname}...')
         log.debug(f'os update started for {hstname}')
         subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -263,7 +261,7 @@ def checkmaintenance():
                 sleep(5)
                 checkwipe(inst, force=True)
                 lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-                if Now() - float(lstsv[0]) > 259200 or getcfgver(inst) != getpendingcfgver(inst):
+                if Now() - float(lstsv[0]) > Secs['3day'] or getcfgver(inst) != getpendingcfgver(inst):
                     maintrest = "maintenance restart"
                     instancerestart(inst, maintrest)
                 else:

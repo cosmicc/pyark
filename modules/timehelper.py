@@ -2,7 +2,7 @@ from datetime import timedelta, datetime, time, date
 
 tzfix = timedelta(hours=4)
 
-Secs = {'minute': 60, '1min': 60, '2min': 120, '3min': 180, '4min': 240, '5min': 300, '10min': 600, '15min': 900, '20min': 1200, '30min': 1800, 'halfhour': 1800, '60min': 3600, 'hour': 3600, '2hour': 7200, '4hour': 14400, '8hour': 28800, '12hour': 43200, 'day': 86400, '1day': 86400, 'week': 604800, 'month': 2592000, '3month': 7776000}
+Secs = {'minute': 60, '1min': 60, '2min': 120, '3min': 180, '4min': 240, '5min': 300, '10min': 600, '15min': 900, '20min': 1200, '30min': 1800, 'halfhour': 1800, '60min': 3600, 'hour': 3600, '2hour': 7200, '4hour': 14400, '8hour': 28800, '12hour': 43200, 'day': 86400, '1day': 86400, '3day': 259200, 'week': 604800, 'month': 2592000, '3month': 7776000}
 
 intervals = (
     ('years', 31536000),
