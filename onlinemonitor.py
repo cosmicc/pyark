@@ -14,12 +14,6 @@ greetthreads = []
 global instance
 
 
-def clog(msg, minst):
-    with open(f"/home/ark/shared/logs/{minst}/gamelog/points.log", "at") as f:
-            f.write(f"""{Now(fmt='string')} - {msg.strip()}\n""")
-    f.close()
-
-
 def resetplayerbit(steamid):
     dbupdate("UPDATE players SET restartbit = 0 WHERE steamid = '%s'" % (steamid,))
 
@@ -98,19 +92,17 @@ def checklottodeposits(steamid, inst):
     if lottocheck and inst == elpinfo[15]:
         for weach in lottocheck:
             if weach[4] == 1:
-                log.info(f'{weach[3]} points added to {elpinfo[1]} for a lottery win')
+                log.log('POINTS', f'{weach[3]} points added to {elpinfo[1]} for a lottery win')
                 msg = f'{weach[3]} ARc points have been deposited into your account for a lottery win!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, weach[3], inst), shell=True)
-                clog(f'{weach[3]} points added to {elpinfo[1]} for a lottery win', inst)
             elif weach[4] == 0:
-                log.info(f'{weach[3]} points removed from {elpinfo[1]} for a lottery entry')
+                log.log('POINTS', f'{weach[3]} points removed from {elpinfo[1]} for a lottery entry')
                 msg = f'{weach[3]} ARc points have been withdrawn from your account for a lottery entry'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s %s" @%s' %
                                (steamid, str(int(elpinfo[5]) - int(weach[3])), inst), shell=True)
-                clog(f'{weach[3]} points removed from {elpinfo[1]} for a lottery entry', inst)
         dbupdate("DELETE FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
 
 
