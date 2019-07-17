@@ -16,7 +16,7 @@ class ExtConfigParser(ConfigParser):
 config = ExtConfigParser()
 config.read(configfile)
 
-hstname = gethostname()
+hstname = gethostname().upper()
 
 # General
 loglevel = config.get('general', 'loglevel')
