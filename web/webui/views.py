@@ -228,6 +228,13 @@ def database_processor7():
 
 
 @webui.context_processor
+def database_processor77():
+    def ui_datetimeto(dt, fmt):
+        return datetimeto(dt, fmt)
+    return dict(ui_datetimeto=ui_datetimeto)
+
+
+@webui.context_processor
 def _isinevent():
     def ui_isinevent():
         return iseventtime()
