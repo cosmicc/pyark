@@ -30,12 +30,6 @@ HELP_COLOR = 0xff8800
 rejectmsg = 'Bot commands are limited to the **`#bot-channel`** and **Private message** (here)\nType **`!help`** for a description of all the commands'
 
 
-def clog(msg, inst):
-    with open(f"/home/ark/shared/logs/{inst}/gamelog/crash.log", "at") as f:
-            f.write(f"""{Now(fmt='string')} - {msg.strip()}\n""")
-    f.close()
-
-
 def getlastlottoannounce():
     lastl = dbquery("SELECT lastlottoannounce FROM general", fetch='one', single=True)
     return lastl[0]
@@ -812,8 +806,7 @@ def discordbot():
                 inst = message.content.split(':')[0].split()[3].lower()
                 dbupdate("UPDATE instances SET lastcrash = '%s' where name = '%s'" % (Now(fmt='dt'), inst))
                 dbupdate("UPDATE instances SET lastrestart = '%s' where name = '%s'" % (str(Now(fmt='epoch')), inst))
-                clog(f'{Now()} - Server has crashed', inst)
-                log.warning(f'server crash notification from {inst}')
+                log.log('CRASH', f'{inst.upper()} Server has crashed at {Now(fmt="string", est=True)} EST')
                 msg = f'The **{inst.title()}** server has crashed!\n\nServer is now restarting, there may be a slight rollback'
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                 await client.send_message(channel2, embed=embed)
