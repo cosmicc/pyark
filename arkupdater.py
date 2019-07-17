@@ -284,8 +284,9 @@ def instancerestart(inst, reason, ext='restart'):
     dbupdate("UPDATE instances SET restartreason = '%s' WHERE name = '%s'" % (reason, inst))
     if not isrebooting(inst):
         for each in range(numinstances):
-            instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, ext))
-            instance[each]['restartthread'].start()
+            if instance[each]['name'] == inst:
+                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, ext))
+                instance[each]['restartthread'].start()
 
 
 def compareconfigs(config1, config2):
