@@ -5,7 +5,7 @@ from datetime import time as dt
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
 from modules.players import getliveplayersonline
-from modules.instances import getlastwipe, instancelist, isinstancerunning
+from modules.instances import getlastwipe, instancelist, isinstancerunning, isinstanceup
 from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
 from time import sleep
@@ -88,7 +88,7 @@ def wipeit(inst):
 def checkwipe(inst):
     global dwtimer
     lastwipe = getlastwipe(inst)
-    if Now() - lastwipe > Secs['12hour']:
+    if Now() - lastwipe > Secs['12hour'] and isinstanceup(inst):
         splayers, aplayers = getliveplayersonline(inst)
         if aplayers == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
@@ -101,7 +101,7 @@ def checkwipe(inst):
             dwtimer += 1
             if dwtimer == 12:
                 dwtimer = 0
-    elif Now() - lastwipe > Secs['day']:
+    elif Now() - lastwipe > Secs['day'] and isinstanceup(inst):
         log.info(f'dino wipe needed for {inst}, players online but forced, wiping now')
         subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nIts been over 24 hours since a wild dino wipe, forcing a maintenance wipe.  Wiping all wild dinos in 10 seconds.'" @%s""" % (inst,), shell=True)
         sleep(10)

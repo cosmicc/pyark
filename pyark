@@ -218,6 +218,7 @@ def main():
             exit()
         except:
             log.critical(f'exception in main loop', exc_info=True)
+            sleep(60)
 
 
 if __name__ == '__main__':

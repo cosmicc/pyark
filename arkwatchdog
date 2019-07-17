@@ -3,6 +3,7 @@
 from modules.configreader import instance
 from modules.dbhelper import dbupdate
 from modules.pushover import pushover
+from modules.instances import 
 from sys import exit
 from time import sleep
 from modules.timehelper import Secs, Now, elapsedTime
@@ -141,6 +142,8 @@ def getrunning(inst):
     rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL, shell=True)
     rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
+    players = 0
+    activeplayers = 0
     for ea in rawrun2:
         sttitle = stripansi(ea.split(':')[0]).strip()
         if (sttitle == 'Server running'):
@@ -160,6 +163,10 @@ def getrunning(inst):
                 sonline = True
             elif (stripansi(ea.split(':')[1]).strip() == 'No'):
                 sonline = False
+        if (sttitle == 'Players'):
+            players = int(stripansi(ea.split(':')[1]).strip().split('/')[0].strip())
+        if (sttitle == 'Active Players'):
+            activeplayers = int(stripansi(ea.split(':')[1]).strip())
         if (sttitle == 'Server build ID'):
             serverbuild = stripansi(ea.split(':')[1]).strip()
         if (sttitle == 'Server version'):
@@ -169,7 +176,7 @@ def getrunning(inst):
         if (sttitle == 'Steam connect link'):
             steamlink = stripansi(ea.split('  ')[1]).strip()
 
-    return (srunning, slistening, sonline, serverbuild, serverversion, steamlink, arkserverslink)
+    return (srunning, slistening, sonline, serverbuild, serverversion, steamlink, arkserverslink, players, activeplayers)
 
 
 def restartserver(inst, reason):
@@ -210,7 +217,7 @@ def main():
         totmem = 0
         try:
             for eachinst in instance:
-                isitrunning, isitlistening, isitonline, arkbuild, arkversion, steamlink, arkserverslink = getrunning(eachinst['name'])
+                isitrunning, isitlistening, isitonline, arkbuild, arkversion, steamlink, arkserverslink, players, activeplayers = getrunning(eachinst['name'])
                 if not isitrunning:
                     for neach in isrunning.copy():
                         if neach == eachinst['name']:
@@ -258,7 +265,7 @@ def main():
 
                 # log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
                 try:
-                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', arkcpu = '%s', restartserver = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, arkservercpu, serverneedsrestart(), eachinst['name']))
+                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', arkcpu = '%s', restartserver = '%s', connectingplayers = '%s', activeplayers = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, arkservercpu, serverneedsrestart(), int(players), int(activeplayers), eachinst['name']))
                 except:
                     log.error('Error writing stats to database')
                 for feach in isrunning:
