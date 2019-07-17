@@ -151,7 +151,7 @@ def playergreet(steamid, inst):
             # elif len(oplayer) > 2:
             if oplayer[16] != 0 and oplayer[15] == inst:
                 xferpoints = int(oplayer[16])
-                log.info(f'transferring {xferpoints} non home server points into account for \
+                log.log('POINTS', f'transferring {xferpoints} non home server points into account for \
 {oplayer[1]} on {inst}')
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
@@ -164,7 +164,7 @@ def playergreet(steamid, inst):
                     mtxt = f'{oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
                     subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                     writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
-                    log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
+                    log.log('JOIN', f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
                     #############################
                 # log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))

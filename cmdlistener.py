@@ -279,7 +279,7 @@ Wiping wild dinos now.', wcstamp())
 
 
 def voting(inst, whoasked):
-    log.info(f'wild dino wipe voting has started for {inst} by {whoasked}')
+    log.log('VOTE', f'wild dino wipe voting has started for {inst} by {whoasked}')
     global lastvoter
     global votestarttime
     global arewevoting
@@ -304,7 +304,7 @@ def voting(inst, whoasked):
                 yesvoters, totvoters = howmanyvotes()
                 subprocess.run('arkmanager rconcmd "ServerChat Not enough votes (%s of %s). voting has ended." @%s' %
                                (yesvoters, totvoters, inst), shell=True)
-                log.info(f'not enough votes ({yesvoters}/{totvoters}), voting has ended on {inst}')
+                log.log('VOTE', f'not enough votes ({yesvoters}/{totvoters}), voting has ended on {inst}')
                 writechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of \
 {totvoters})', wcstamp())
                 arewevoting = False
@@ -332,13 +332,13 @@ def startvoter(inst, whoasked):
         timeleft = playedTime(rawtimeleft)
         subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
-        log.info(f'vote start denied for {whoasked} on {inst} because 4 hour timer')
+        log.log('VOTE', f'vote start denied for {whoasked} on {inst} because 4 hour timer')
     elif Now() - float(lastvoter) < Secs['10min']:      # 10 min between attempts
         rawtimeleft = Secs['10min'] - (Now() - lastvoter)
         timeleft = playedTime(rawtimeleft)
         subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
-        log.info(f'vote start denied for {whoasked} on {inst} because 10 min timer')
+        log.log('VOTE', f'vote start denied for {whoasked} on {inst} because 10 min timer')
     else:
         for each in range(numinstances):
             if instance[each]['name'] == inst:

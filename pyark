@@ -90,10 +90,10 @@ log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False,
 
 plock()
 
-if loglevel == 'DEBUG':
-    log.log('START', f'>>> pyark daemon is starting on {hstname} in DEBUG MODE')
-elif loglevel == 'TRACE':
-    log.log('START', f'>>> pyark daemon is starting on {hstname} in TRACE MODE')
+if loglevel == 'DEBUG' or args.debug:
+    log.log('START', f'>>> pyark daemon is starting on {hstname} in **DEBUG MODE**')
+elif loglevel == 'TRACE' or args.trace:
+    log.log('START', f'>>> pyark daemon is starting on {hstname} in ***TRACE MODE***')
 else:
     log.log('START', f'>>> pyark daemon is starting on {hstname} in normal mode')
 
