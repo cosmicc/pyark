@@ -123,7 +123,7 @@ def discordbot():
                 cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 40, now - 44))
                 if cbuffr:
                     for reach in cbuffr:
-                        log.info(f'{reach[1]} has left the server {reach[3]}')
+                        log.log('LEAVE', f'{reach[1]} has left the server {reach[3]}')
                         mt = f'{reach[1].capitalize()} has left the server'
                         writeglobal(reach[3], 'ALERT', mt)
                         writechat(reach[3], 'ALERT', f'>>> {reach[1].title()} has left the server', wcstamp())
