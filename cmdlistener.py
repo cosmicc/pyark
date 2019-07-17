@@ -5,14 +5,10 @@ from modules.players import getplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from time import sleep
-import logging
+from loguru import logger as log
 import random
-import socket
 import subprocess
 import threading
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
 
 lastvoter = 0.1
 votertable = []
@@ -354,23 +350,24 @@ def startvoter(inst, whoasked):
 def getnamefromchat(chat):
     # log.warning(chat)
     try:
-        #log.warning(len(chat))
-        #log.warning(chat)
+        # log.warning(len(chat))
+        # log.warning(chat)
         rawlineorg = chat.split(':')
         if len(rawlineorg) > 1:
-            #log.warning(rawlineorg)
+            # log.warning(rawlineorg)
             rawline = rawlineorg[1].split(' (')
-            #log.warning(rawline)
+            # log.warning(rawline)
             rawline = rawline[1][:-1].strip()
-            #log.warning(rawline)
+            # log.warning(rawline)
             return rawline.lower()
     except:
         log.error(f'GetNameFromChat Error: {chat}')
 
 
 def getnamefromchaterror(inst):
-    #subprocess.run('arkmanager rconcmd "ServerChat Someone has a colon : in their steam name. This makes me, the bot, have issues. This needs to be removed from your steam name please!" @%s' % (inst,), shell=True)
+    # subprocess.run('arkmanager rconcmd "ServerChat Someone has a colon : in their steam name. This makes me, the bot, have issues. This needs to be removed from your steam name please!" @%s' % (inst,), shell=True)
     pass
+
 
 def isserver(line):
     rawissrv = line.split(':')
@@ -385,7 +382,7 @@ def isserver(line):
 
 
 def linker(minst, whoasked):
-    dplayer = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked.lower(),whoasked.lower()), fetch='one')
+    dplayer = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked.lower(), whoasked.lower()), fetch='one')
     if dplayer:
         if dplayer[8] is None or dplayer[8] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
@@ -521,7 +518,7 @@ def lotteryquery(whoasked, lchoice, inst):
             if lpcheck is None:
                 dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('%s', '%s', '%s', '%s')" %
                          (lpinfo[0], lpinfo[1], Now(fmt='dt'), 0))
-                dbupdate("UPDATE lotteryinfo SET payout = '%s', players = '%s' WHERE completed = False" % (linfo['payout'] + linfo['buyin']*2,linfo['players']+1))
+                dbupdate("UPDATE lotteryinfo SET payout = '%s', players = '%s' WHERE completed = False" % (linfo['payout'] + linfo['buyin'] * 2, linfo['players'] + 1))
                 msg = f'You have been added to the {lfo} lottery! A winner will be choosen in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}. Good Luck!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
                 log.info(f'player {whoasked} has joined the current active lottery.')
@@ -545,9 +542,9 @@ def checkcommands(minst):
             pass
         elif line.find('AdminCmd:') != -1:
             with open(f"/home/ark/shared/logs/{minst}/gamelog/admin.log", "at") as f:
-               lobber = line.replace('"', '').strip()
-               if lobber != '':
-                   f.write(f"""{line.replace('"','').strip()}\n""")
+                lobber = line.replace('"', '').strip()
+                if lobber != '':
+                    f.write(f"""{line.replace('"','').strip()}\n""")
             f.close()
         elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('joined this ARK!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('starved to death!') != -1 or line.find('left this ARK!') != -1:
             with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:

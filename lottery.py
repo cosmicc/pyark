@@ -7,12 +7,7 @@ from modules.timehelper import estshift, Secs, Now, datetimeto, elapsedTime
 from numpy import argmax
 from numpy.random import seed, shuffle, randint
 from time import sleep
-import logging
-import socket
-
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
+from loguru import logger as log
 
 
 def writediscord(msg, tstamp, server='generalchat', name='ALERT'):

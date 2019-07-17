@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, time, date
+from datetime import timedelta, datetime, time
 
 tzfix = timedelta(hours=4)
 
@@ -7,15 +7,17 @@ Secs = {'minute': 60, '1min': 60, '2min': 120, '3min': 180, '4min': 240, '5min':
 intervals = (
     ('years', 31536000),
     ('months', 2592000),
-    #('weeks', 604800),  # 60 * 60 * 24 * 7
+    # ('weeks', 604800),  # 60 * 60 * 24 * 7
     ('days', 86400),    # 60 * 60 * 24
     ('hours', 3600),    # 60 * 60
     ('minutes', 60),
     ('seconds', 1),)
 
+
 def d2dt_maint(dtme):
-     tme = time(10, 59)
-     return datetime.combine(dtme, tme)
+    tme = time(10, 59)
+    return datetime.combine(dtme, tme)
+
 
 def datetimeto(dt, fmt, est=False):
     if fmt == 'epoch':

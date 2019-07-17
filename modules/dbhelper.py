@@ -1,13 +1,9 @@
 from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 from datetime import datetime
-import logging
-import socket
+from loguru import logger as log
 from sys import exit
 import psycopg2
 from time import sleep
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
 
 
 def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):

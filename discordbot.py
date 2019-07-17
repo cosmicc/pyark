@@ -12,11 +12,7 @@ from os import system
 import asyncio
 import discord
 from discord.ext import commands
-import logging
-import socket
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
+from loguru import logger as log
 
 client = commands.Bot(command_prefix='!', case_insensitive=True)
 client.remove_command('help')

@@ -5,11 +5,7 @@ from timebetween import is_time_between
 from datetime import datetime
 from datetime import time as dt
 from time import time, sleep
-import logging
-import socket
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
+from loguru import logger as log
 
 
 def checkiftableexists(inst):

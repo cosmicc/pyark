@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+from socket import gethostname
 
 configfile = '/home/ark/pyark.cfg'
 
@@ -15,8 +16,10 @@ class ExtConfigParser(ConfigParser):
 config = ExtConfigParser()
 config.read(configfile)
 
+hstname = gethostname()
+
 # General
-debugmode = config.get('general', 'debug')
+loglevel = config.get('general', 'loglevel')
 sharedpath = config.get('general', 'shared')
 arkroot = config.get('general', 'arkroot')
 logfile = config.get('general', 'logfile')

@@ -3,14 +3,10 @@ from clusterevents import iseventtime, getcurrenteventinfo
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.timehelper import elapsedTime, playedTime, wcstamp, Now
-import logging
-import socket
+from loguru import logger as log
 import subprocess
 import threading
 from time import sleep
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
 
 welcomthreads = []
 greetthreads = []
@@ -152,7 +148,7 @@ def playergreet(steamid, inst):
                 log.warning(f'welcome message thread already running for new player {steamid}')
             writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
         else:
-        # elif len(oplayer) > 2:
+            # elif len(oplayer) > 2:
             if oplayer[16] != 0 and oplayer[15] == inst:
                 xferpoints = int(oplayer[16])
                 log.info(f'transferring {xferpoints} non home server points into account for \
@@ -170,7 +166,7 @@ def playergreet(steamid, inst):
                     writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
                     log.info(f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
                     #############################
-                #log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
+                # log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
             else:
                 log.info(f"player {oplayer[1].title()} has joined {inst}, total player's connections {int(oplayer[7])+1}")

@@ -2,11 +2,6 @@ from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.timehelper import Now
 from sys import exit
-import logging
-import socket
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
 
 
 def enableinstance(inst):

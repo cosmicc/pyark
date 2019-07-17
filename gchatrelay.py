@@ -2,12 +2,8 @@ from modules.dbhelper import dbupdate, db_getall
 from modules.players import getplayer
 from modules.timehelper import Now
 from time import sleep
-import logging
-import socket
+from loguru import logger as log
 import subprocess
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
 
 
 def gchatrelay(inst):

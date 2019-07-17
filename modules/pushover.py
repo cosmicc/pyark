@@ -1,14 +1,10 @@
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from configparser import RawConfigParser, NoSectionError
 from modules.configreader import po_userkey, po_appkey
-import logging
+from loguru import logger as log
 import os
 import requests
-import socket
 import time
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
 
 
 __all__ = ["init", "get_sounds", "Client", "MessageRequest",

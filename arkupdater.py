@@ -1,4 +1,4 @@
-from modules.configreader import sharedpath, arkroot, numinstances, instance, instr, is_arkupdater
+from modules.configreader import hstname, sharedpath, arkroot, numinstances, instance, instr, is_arkupdater
 import configparser
 from datetime import datetime
 from datetime import time as dt
@@ -11,14 +11,11 @@ from modules.timehelper import wcstamp, Secs, Now
 from time import sleep
 from clusterevents import iseventtime, getcurrenteventext
 from discordbot import writediscord
-import logging
+from loguru import logger as log
 import os
-import socket
 import subprocess
 import threading
 
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
 
 confupdtimer = 0
 dwtimer = 0

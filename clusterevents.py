@@ -1,12 +1,8 @@
 from time import sleep
-import logging
-import socket
 import subprocess
+from loguru import logger as log
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now, Secs, d2dt_maint
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
 
 
 def writediscord(msg, tstamp):

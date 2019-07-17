@@ -1,11 +1,7 @@
 from modules.dbhelper import dbquery, dbupdate
 from time import sleep
-import logging
-import socket
+from loguru import logger as log
 import subprocess
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
 
 
 def kicker(inst):

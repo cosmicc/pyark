@@ -3,11 +3,7 @@ from modules.timehelper import Secs
 from time import sleep
 from urllib.request import urlopen, Request
 import json
-import logging
-import socket
-
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
+from loguru import logger as log
 
 
 def fetchurldata(url):
