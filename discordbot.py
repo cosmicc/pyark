@@ -59,6 +59,7 @@ def savediscordtodb(author):
         dbupdate("INSERT INTO discordnames (discordname) VALUES ('%s')" % (str(author),))
 
 
+@log.catch
 def discordbot():
     global client
 
@@ -784,7 +785,7 @@ def discordbot():
     async def on_message(message):
         savediscordtodb(message.author)
         if str(message.author) == "Galaxy Cluster#7499":
-            log.debug('skipping processing of bots own on_message trigger')
+            log.trace('skipping processing of bots own on_message trigger')
         elif message.content.lower().find('join the server') != -1 or message.content.lower().find('how do i join') != -1 or message.content.lower().find('server link') != -1 or message.content.lower().find('mod collection') != -1 or message.content.lower().find('mod list') != -1 or message.content.lower().find('link to server') != -1:
             log.info(f'responding to join server chat for {message.author} on discrod')
             msg = f'The **`#join-servers`** channel has information and links to the servers and mods, **`!help`** for commands'

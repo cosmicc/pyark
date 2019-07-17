@@ -250,6 +250,7 @@ def playergreet(steamid, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
+@log.catch
 def onlineupdate(inst):
     global greetthreads
     log.debug(f'starting online player watcher on {inst}')

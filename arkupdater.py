@@ -161,6 +161,7 @@ def restartinstnow(inst, ext='restart'):
         dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0, restartcountdown = 30, needsrestart = 'False' WHERE name = '%s'" % (inst,))
 
 
+@log.catch
 def restartloop(inst, ext='restart'):
     log.debug(f'{inst} restart loop has started')
     timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')

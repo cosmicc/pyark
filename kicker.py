@@ -4,6 +4,7 @@ from loguru import logger as log
 import subprocess
 
 
+@log.catch
 def kicker(inst):
     log.debug(f'starting kicklist kicker thread for {inst}')
     while True:

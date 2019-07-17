@@ -163,6 +163,7 @@ def checkfornewlottery():
         startlottery(lottoinfo)
 
 
+@log.catch
 def lotterywatcher():
     while True:
         try:

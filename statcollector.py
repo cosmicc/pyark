@@ -22,6 +22,7 @@ def flushold(tinst):  # not implimented
     dbupdate("DELETE FROM %s WHERE date < '%s'" % (tinst, aweek), db='statsdb')
 
 
+@log.catch
 def oscollect():
     log.debug(f'starting online stats collectors')
     stinst = dbquery('SELECT name FROM instances', fmt='list', single=True)

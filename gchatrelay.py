@@ -6,6 +6,7 @@ from loguru import logger as log
 import subprocess
 
 
+@log.catch
 def gchatrelay(inst):
     while True:
         try:
