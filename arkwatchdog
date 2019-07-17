@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from modules.configreader import instance
+from modules.configreader import instance, hstname
 from modules.dbhelper import dbupdate
 from modules.pushover import pushover
 from sys import exit
@@ -8,10 +8,10 @@ from time import sleep
 from modules.timehelper import Secs, Now, elapsedTime
 import psutil
 import argparse
-import logging
+from loguru import logger as log
 import re
 import os
-import socket
+import sys
 import subprocess
 
 __author__ = "Ian Perry"
@@ -24,31 +24,50 @@ __progname__ = "pyark-daemon"
 __description__ = "ark instance watchdog service"
 __detaildesc__ = ""
 
-hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
+logfile2 = '/home/ark/shared/logs/pyark/arkwatchdog.log'
+logfile3 = '/home/ark/shared/logs/pyark/arkwatchdog-color.log'
 
-logfile2 = '/home/ark/shared/logs/arkwatchdog/arkwatchdog.log'
 
 parser = argparse.ArgumentParser(prog=__progname__)
 parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
 parser.add_argument('-q', '--quiet', action='store_true',
                     help='supress logging output to console. default: error logging')
-parser.add_argument('--debug', action='store_true', help='verbose output (debug)')
+parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')
+parser.add_argument('-t', '--trace', action='store_true', help='super verbose output (trace)')
 args = parser.parse_args()
-if args.debug:  # changed to false to force debugging
-    log.setLevel(logging.DEBUG)
-else:
-    log.setLevel(logging.INFO)
-console_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(name)s:%(message)s')
-log_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(name)s:%(message)s')
 
-if args.quiet is False:
-    log_console = logging.StreamHandler()
-    log.addHandler(log_console)
-    log_console.setFormatter(console_format)
-log_fileh = logging.FileHandler(logfile2)
-log.addHandler(log_fileh)
-log_fileh.setFormatter(log_format)
+logformat = '<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+
+colorlogformat = '<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+
+log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
+
+log.level("START", no=38, color="<light-red>", icon="¤")
+log.level("TEST", no=20, color="<light-red>", icon="¤")
+
+# Console Logging
+if args.quiet:
+    log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=False, format=logformat)
+elif args.trace:
+    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=logformat)
+elif args.debug:
+    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=logformat)
+else:
+    log.add(sink=sys.stdout, level=20, backtrace=False, diagnose=False, colorize=True, format=logformat)
+
+if args.debug or args.trace:
+    exp = True
+    if args.debug:
+        lev = 10
+    else:
+        lev = 5
+else:
+    lev = 20
+    exp = False
+
+log.add(sink=logfile2, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz")
+
+log.add(sink=logfile3, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=logformat, rotation="1 day", retention="30 days", compression="gz")
 
 
 def issharedmounted():
@@ -175,7 +194,7 @@ def getrunning(inst):
             arkserverslink = stripansi(ea.split('  ')[1]).strip()
         if (sttitle == 'Steam connect link'):
             steamlink = stripansi(ea.split('  ')[1]).strip()
-    
+
     return (srunning, slistening, sonline, serverbuild, serverversion, steamlink, arkserverslink, players, activeplayers)
 
 
@@ -201,7 +220,7 @@ def main():
         islistening[seat['name']].update({'isit': 0, 'count': 0})
         isonline[seat['name']] = {}
         isonline[seat['name']].update({'isit': 0, 'count': 0})
-    log.info(f'>>> ark instance watchdog daemon is starting on {hstname}')
+    log.log('START', f'>>> ark instance watchdog daemon is starting on {hstname}')
     if didserverjustboot():
         log.info('server just booted, starting instances for the first time')
         if issharedmounted():
@@ -294,7 +313,7 @@ def main():
             log.critical('Keyboard Interrupt Detected, Exiting.')
             exit()
         except:
-            log.critical('Critical Error in Ark Watchdog!', exc_info=True)
+            log.exception('Critical Error in Ark Watchdog!')
         log.debug('sleeping 2 min between checks')
         try:
             sleep(Secs['2min'])

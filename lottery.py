@@ -59,7 +59,7 @@ def getlotteryendtime():
 
 
 def determinewinner(linfo):
-    log.info('Lottery time has ended. Determining winner.')
+    log.log('LOTTO', 'Lottery time has ended. Determining winner.')
     winners = []
     picks = []
     adjpicks = []
@@ -86,7 +86,7 @@ def determinewinner(linfo):
             winnersid = winners[winneridx]
             lwinner = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (winnersid,), fetch='one')
             dbupdate("UPDATE lotteryinfo SET winner = '%s', completed = True WHERE id = '%s'" % (lwinner[1], linfo['id']))
-            log.info(f'Lottery winner is: {lwinner[1]} with a winning number of: ')
+            log.log('LOTTO', f'Lottery winner is: {lwinner[1]}, this is win {lwinner[18]} ')
             winners.remove(winnersid)
             log.debug(f'queuing up lottery deposits for {winners}')
             for ueach in winners:
@@ -107,7 +107,7 @@ def determinewinner(linfo):
         except:
             log.critical('Critical Error Lottery Winner determination!', exc_info=True)
     else:
-        log.info(f'Lottery has ended. Not enough players: ({len(lottoers)}/3)')
+        log.log('LOTTO', f'Lottery has ended. Not enough players: ({len(lottoers)}/3)')
         dbupdate("UPDATE lotteryinfo SET winner = 'None', completed = True WHERE id = %s" % (linfo["id"],))
         msg = f'Lottery has ended. Not enough players have participated.  Requires at least 3 players.\nNo points will be withdrawn from any participants.\nNext lottery begins in 1 hour.'
         writediscord(f'NONE', Now(), name=f'{len(lottoers)}', server='LOTTOEND')
@@ -127,7 +127,7 @@ def lotteryloop(linfo):
         if Now(fmt='dt') >= tdy:
             determinewinner(linfo)
             inlottery = False
-    log.info(f'Lottery loop has completed')
+    log.debug(f'Lottery loop has completed')
 
 
 def startlottery(lottoinfo):

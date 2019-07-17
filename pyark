@@ -45,7 +45,10 @@ parser.add_argument('-dd', '--trace', action='store_true', help='super verbose o
 
 args = parser.parse_args()
 
-logformat = '<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+logformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {level: <6} | {message} | {name}:{function}:{line}'
+
+colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message <75}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+
 
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
@@ -57,23 +60,24 @@ log.level("POINTS", no=22, color="<light-green>", icon="¤")
 log.level("LOTTO", no=23, color="<green>", icon="¤")
 log.level("VOTE", no=20, color="<fg 208>", icon="¤")
 log.level("CRASH", no=29, color="<RED><white><bold>", icon="¤")
+log.level("WIPE", no=20, color="<yellow>", icon="¤")
 log.level("TEST", no=20, color="<light-red>", icon="¤")
 
 # Console Logging
 if args.quiet:
     log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=False, format=logformat)
 elif args.trace:
-    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=logformat)
+    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 elif args.debug:
-    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=logformat)
+    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 else:
-    log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=logformat)
+    log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 
 # Info Logging pyark.log
 log.add(sink=logfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz")
 
 # Info Color Logging pyark-color.log
-log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=logformat, rotation="1 day", retention="30 days", compression="gz")
+log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days", compression="gz")
 
 # Debug Logging debug.log
 if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
