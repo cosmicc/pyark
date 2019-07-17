@@ -271,7 +271,7 @@ def howmanyvotes():
 def wipeit(inst):
     yesvoters, totvoters = howmanyvotes()
     log.info(f'voting yes has won ({yesvoters}/{totvoters}), wild dinos are wiping on {inst} in 15 seconds')
-    subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nThe wild dino wipe vote has finished. YES has won (%s of %s). Wiping all wild dinos in 10 seconds. '" @%s""" % (yesvoters, totvoters), shell=True)
+    subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nThe wild dino wipe vote has finished. YES has won (%s of %s). Wiping all wild dinos in 10 seconds.'" @%s""" % (yesvoters, totvoters, inst), shell=True)
     writechat(inst, 'ALERT', f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). \
 Wiping wild dinos now.', wcstamp())
     sleep(7)
@@ -297,7 +297,7 @@ def voting(inst, whoasked):
     writechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp())
     while arewevoting:
         sleep(5)
-        if votingpassed() and Now() - votestarttime > 15:
+        if votingpassed() and Now() - votestarttime > 10:
             wipeit(inst)
             arewevoting = False
         elif Now() - votestarttime > Secs['3min']:
