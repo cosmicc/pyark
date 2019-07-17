@@ -258,10 +258,10 @@ def checkmaintenance():
                 sleep(5)
                 log.debug(f'maintenance: shutting down dino mating on {inst}...')
                 subprocess.run('arkmanager rconcmd "ScriptCommand MatingOff_DS" @%s' % (inst,), shell=True)
-                sleep(1)
+                sleep(5)
                 log.info(f'maintenance: clearing all unclaimed dinos on {inst}...')
                 subprocess.run('arkmanager rconcmd "ScriptCommand DestroyUnclaimed_DS" @%s' % (inst,), shell=True)
-                sleep(3)
+                sleep(5)
                 checkwipe(inst, force=True)
                 lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
                 if Now() - float(lstsv[0]) > 259200 or getcfgver(inst) != getpendingcfgver(inst):
@@ -488,7 +488,6 @@ def restartcheck():
         checkifenabled(instance[each]['name'])
         if not isrebooting(instance[each]['name']):
             checkifalreadyrestarting(instance[each]['name'])
-        checkconfig()
 
 
 def arkupd():
@@ -501,6 +500,7 @@ def arkupd():
         log.warning(f'No Ark game instances found, also NOT master updater, THIS ISNT RIGHT')
     while True:
         try:
+            checkconfig()
             restartcheck()
             sleep(Secs['1min'])
             checkupdates()
