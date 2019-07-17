@@ -80,7 +80,7 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
         lev = 10
     else:
         lev = 5
-    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=logformat, rotation="1 day", retention="30 days", compression="gz", delay=True)
+    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz", delay=True)
 
 # Points Logging points.log
 log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz", delay=True, filter='POINTS')
