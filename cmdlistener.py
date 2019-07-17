@@ -297,7 +297,7 @@ def voting(inst, whoasked):
     writechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp())
     while arewevoting:
         sleep(5)
-        if votingpassed():
+        if votingpassed() and Now() - votestarttime > 15:
             wipeit(inst)
             arewevoting = False
         elif Now() - votestarttime > Secs['3min']:
