@@ -259,9 +259,9 @@ def checkmaintenance():
                 log.info(f'maintenance: clearing all unclaimed dinos on {inst}...')
                 subprocess.run('arkmanager rconcmd "ScriptCommand DestroyUnclaimed_DS" @%s' % (inst,), shell=True)
                 sleep(5)
-                checkwipe(inst, force=True)
+                checkwipe(inst)
                 lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-                if Now() - float(lstsv[0]) > Secs['3day'] or getcfgver(inst) != getpendingcfgver(inst):
+                if Now() - float(lstsv[0]) > Secs['3day'] or getcfgver(inst) < getpendingcfgver(inst):
                     maintrest = "maintenance restart"
                     instancerestart(inst, maintrest)
                 else:

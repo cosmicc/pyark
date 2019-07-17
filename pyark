@@ -15,11 +15,13 @@ from modules.processlock import plock
 from onlinemonitor import onlineupdate
 from statcollector import oscollect
 from sys import exit
+import sys
 from time import sleep
 from web import create_app
 from os import stat
 import argparse
-import logging
+from loguru import logger as log
+#import logging
 import lottery
 import socket
 import subprocess
@@ -37,7 +39,7 @@ __description__ = "pyark daemon service"
 __detaildesc__ = ""
 
 hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
+#log = logging.getLogger(name=hstname)
 
 parser = argparse.ArgumentParser(prog=__progname__)
 parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
@@ -46,33 +48,46 @@ parser.add_argument('-q', '--quiet', action='store_true',
 parser.add_argument('--debug', action='store_true', help='verbose output (debug)')
 args = parser.parse_args()
 # if args.debug == True:  # changed to false to force debugging
-log.setLevel(logging.DEBUG)
+# log.setLevel(logging.DEBUG)
 # else:
 #    log.setLevel(logging.INFO)
-console_format = logging.Formatter('%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] %(threadName)s : %(message)s', '%m-%d %H:%M:%S')
-log_format = logging.Formatter('%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] %(threadName)s : %(message)s', '%m-%d %H:%M:%S')
+# console_format = logging.Formatter('%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] %(threadName)s : %(message)s', '%m-%d %H:%M:%S')
+
+# log_format = logging.Formatter('%(asctime)s.%(msecs)03d %(name)s [%(levelname)s] %(threadName)s : %(message)s', '%m-%d %H:%M:%S')
+
+# if args.quiet is False:
+#    log_console = logging.StreamHandler()
+#    log_console.setLevel(logging.DEBUG)
+#    log.addHandler(log_console)
+#    log_console.setFormatter(console_format)
+
+# log_fileh = logging.FileHandler(logfile)
+if debugmode == 'True':
+    loglevel = 'DEBUG'
+else:
+    loglevel = 'INFO'
+# log_fileh.setFormatter(log_format)
+
+# log.addHandler(log_fileh)
 
 if args.quiet is False:
-    log_console = logging.StreamHandler()
-    log_console.setLevel(logging.DEBUG)
-    log.addHandler(log_console)
-    log_console.setFormatter(console_format)
-
-log_fileh = logging.FileHandler(logfile)
-if debugmode == 'True':
-    log_fileh.setLevel(logging.DEBUG)
+    log.configure(
+        handlers=[dict(sink=sys.stdout, level=loglevel, backtrace=True, format='<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>'),
+                  dict(sink=logfile, level=loglevel, enqueue=True, serialize=False, rotation="1 MB", retention="14 days", compression="gz")],
+                  levels=[dict(name="STARTUP", no=38, icon="¤", color="<yellow>")], extra={"common_to_all": "default"}, activation=[("my_module.secret", False), ("another_library.module", True)])
 else:
-    log_fileh.setLevel(logging.INFO)
-log_fileh.setFormatter(log_format)
+    log.configure(
+        handlers=[dict(sink=sys.stderr, level="CRITICAL", backtrace=True, format='<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>'),
+                  dict(sink=logfile, level=loglevel, enqueue=True, serialize=False, rotation="1 MB", retention="14 days", compression="gz")],
+                  levels=[dict(name="STARTUP", no=38, icon="¤", color="<yellow>")], extra={"common_to_all": "default"}, activation=[("my_module.secret", False), ("another_library.module", True)])
 
-log.addHandler(log_fileh)
 
 plock()
 
 if debugmode == 'True':
     log.warning(f'>>> pyark daemon is starting on {hstname} in DEBUG MODE')
 else:
-    log.info(f'>>> pyark daemon is starting on {hstname}')
+    log.log('STARTUP', f'>>> pyark daemon is starting on {hstname}')
 
 checkgit = 0
 

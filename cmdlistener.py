@@ -567,7 +567,7 @@ def checkcommands(minst):
                 processtcdata(minst, tcdata)
         else:
             whoasked = getnamefromchat(line)
-            log.debug(f'chatline who: {whoasked}')
+            # log.debug(f'chatline who: {whoasked}')
             if whoasked is None:
                 getnamefromchaterror(minst)
             else:
@@ -700,7 +700,7 @@ def checkcommands(minst):
                             lchoice = False
                         lotteryquery(whoasked, lchoice, minst)
                 else:
-                    log.debug(f'chatline: {line}')
+                    # log.debug(f'chatline: {line}')
                     rawline = line.split('(')
                     if len(rawline) > 1:
                         rawname = rawline[1].split(')')
