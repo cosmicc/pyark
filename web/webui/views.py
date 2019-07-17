@@ -221,6 +221,20 @@ def database_processor6():
 
 
 @webui.context_processor
+def database_processor66():
+    def ui_getinstap(inst):
+        return dbquery("SELECT activeplayers FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='string', fetch='one')
+    return dict(ui_getinstap=ui_getinstap)
+
+
+@webui.context_processor
+def database_processor61():
+    def ui_getinstcp(inst):
+        return dbquery("SELECT connectingplayers FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='string', fetch='one')
+    return dict(ui_getinstcp=ui_getinstcp)
+
+
+@webui.context_processor
 def database_processor7():
     def ui_isinlottery():
         return isinlottery()

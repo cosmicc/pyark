@@ -39,9 +39,9 @@
         {% elif ui_isinrestart(instance) %}
         <a class="button has-background-warning is-mobile is-medium is-centered has-text-black is-rounded is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}&nbsp;-&nbsp;{{ ui_getplayersonline(instance, fmt='count') }}/50&nbsp;-&nbsp;{{ ui_getrestartleft(instance) }}&nbsp;min</a>
         {% elif not ui_iscurrentconfig(instance) %}
-        <a class="button has-background-info is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href    ="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
+        <a class="button has-background-info is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href    ="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;{{ ui_getinstap(instance) }}/{{ ui_getinstcp(instance) }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
         {% else %}
-            <a class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
+            <a class="button has-background-success is-medium is-mobile is-centered has-text-white is-rounded is-fullwidth" href="/serverinfo/{{ instance }}">{{ instance.capitalize() }}&nbsp;-&nbsp;{{ ui_getinstap(instance) }}/{{ ui_getinstcp(instance) }}&nbsp;-&nbsp;v{{ ui_getinstver(instance) }}</a>
         {% endif %}
         {% endfor %}
     </div>

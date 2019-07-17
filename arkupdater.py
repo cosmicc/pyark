@@ -4,7 +4,7 @@ from datetime import datetime
 from datetime import time as dt
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
-from modules.players import getliveplayersonline
+from modules.players import getliveplayersonline, getplayersonline
 from modules.instances import getlastwipe, instancelist, isinstancerunning, isinstanceup
 from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
@@ -90,7 +90,7 @@ def checkwipe(inst):
     lastwipe = getlastwipe(inst)
     if Now() - lastwipe > Secs['12hour'] and isinstanceup(inst):
         splayers, aplayers = getliveplayersonline(inst)
-        if aplayers == 0:
+        if aplayers == 0 and int(getplayersonline(inst, fmt='count')) == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
             writechat(inst, 'ALERT', f'### Empty server is over 12 hours since wild dino wipe. Wiping now.', wcstamp())
             wipeit(inst)
@@ -173,7 +173,7 @@ def restartloop(inst, ext='restart'):
         restartinstnow(inst, ext=ext)
     else:
         splayers, aplayers = getliveplayersonline(inst)
-        if splayers == 0:
+        if splayers == 0 and int(getplayersonline(inst, fmt='count')) == 0:
             setrestartbit(inst)
             log.info(f'server {inst} is empty and restarting now for a {reason}')
             writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
@@ -204,7 +204,7 @@ def restartloop(inst, ext='restart'):
                     updatetimer(inst, timeleft)
                     snr = stillneedsrestart(inst)
                     splayers, aplayers = getliveplayersonline(inst)
-                    if aplayers == 0 or timeleft == 0:
+                    if (aplayers == 0 and int(getplayersonline(inst, fmt='count')) == 0) or timeleft == 0:
                         gotime = True
                 if stillneedsrestart(inst):
                     log.info(f'server {inst} is restarting now for a {reason}')

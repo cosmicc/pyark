@@ -24,7 +24,7 @@
     <div class='container has-background-success bottom-pad-10'>
     {% endif %}
     <div>
-    <h1 class='title top-pad-10 left-pad has-text-white'>&nbsp;{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50</h1>
+    <h1 class='title top-pad-10 left-pad has-text-white'>&nbsp;{{ serverinfo['name'].title() }}  {{ ui_getplayersonline(serverinfo['name'], fmt='count') }}/50 ({{ serverinfo['connectingplayers'] }})</h1>
     {% if ui_isinrestart(serverinfo['name']) %}
         <h2 class='subtitle left-pad has-text-white'>&nbsp;Restarting in {{ serverinfo['restartcountdown'] }} minutes</h2>
     {% else %}
