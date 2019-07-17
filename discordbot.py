@@ -70,7 +70,7 @@ def discordbot():
         await client.wait_until_ready()
         while not client.is_closed:
             try:
-                log.debug('executing discord bot task checker')
+                # log.debug('executing discord bot task checker')
                 if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=6) and isinlottery():
                     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
                     log.info('announcing running lottery in discord')
