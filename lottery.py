@@ -119,7 +119,7 @@ def lotteryloop(linfo):
         log.debug('clearing lotteryplayers table')
         dbupdate("DELETE FROM lotteryplayers")
     inlottery = True
-    log.info('lottery loop has begun, waiting for lottery entries')
+    log.log('LOTTO', 'lottery loop has begun, waiting for lottery entries')
     while inlottery:
         sleep(Secs['5min'])
         tdy = linfo['startdate'] + timedelta(hours=linfo['days'])
@@ -171,5 +171,5 @@ def lotterywatcher():
             checkfornewlottery()
             sleep(Secs['5min'])
         except:
-            log.critical('Critical Error Lottery Watcher!', exc_info=True)
+            log.exception('Critical Error Lottery Watcher!')
             sleep(Secs['5min'])

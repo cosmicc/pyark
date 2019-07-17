@@ -684,7 +684,7 @@ def discordbot():
             embed = discord.Embed(description=msg, color=FAIL_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
-    @client.command(pass_context=True, name='myhome', aliases=['home', 'homeserver'])
+    @client.command(pass_context=True, name='myhome', aliases=['home', 'homeserver', 'sethome'])
     @commands.check(is_linked)
     async def _myhome(ctx, *args):
         whofor = str(ctx.message.author).lower()
