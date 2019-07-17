@@ -85,22 +85,14 @@ def wipeit(inst):
     resetlastwipe(inst)
 
 
-def checkwipe(inst, force=False):
+def checkwipe(inst):
     global dwtimer
     lastwipe = getlastwipe(inst)
-    if Now() - lastwipe > Secs['day']:
+    if Now() - lastwipe > Secs['12hour']:
         splayers, aplayers = getliveplayersonline(inst)
         if aplayers == 0:
             log.info(f'dino wipe needed for {inst}, 0 players connected, wiping now')
-            writechat(inst, 'ALERT', f'### Empty server is over 24 hours since wild dino wipe. Wiping now.', wcstamp())
-            wipeit(inst)
-            dwtimer = 0
-        elif force:
-            log.info(f'dino wipe needed for {inst}, players online but forced, wiping now')
-            message = 'Its been over 24 hours since a wild dino wipe. Maintenance wild dino wipe in 10 seconds'
-            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
-            sleep(10)
-            writechat(inst, 'ALERT', f'### Empty server is over 24 hours since wild dino wipe. Wiping now.', wcstamp())
+            writechat(inst, 'ALERT', f'### Empty server is over 12 hours since wild dino wipe. Wiping now.', wcstamp())
             wipeit(inst)
             dwtimer = 0
         else:
@@ -109,6 +101,13 @@ def checkwipe(inst, force=False):
             dwtimer += 1
             if dwtimer == 12:
                 dwtimer = 0
+    elif Now() - lastwipe > Secs['day']:
+        log.info(f'dino wipe needed for {inst}, players online but forced, wiping now')
+        subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nIts been over 24 hours since a wild dino wipe, forcing a maintenance wipe.  Wiping all wild dinos in 10 seconds.'" @%s""" % (inst,), shell=True)
+        sleep(10)
+        writechat(inst, 'ALERT', f'### Server is over 24 hours since wild dino wipe. Forcing wipe now.', wcstamp())
+        wipeit(inst)
+        dwtimer = 0
     else:
         log.debug(f'no dino wipe is needed for {inst}')
 

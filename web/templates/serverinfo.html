@@ -110,6 +110,7 @@
         {% endif %}
         </b></p>
         <p class='is-2'>Instance Uptime: <b>{{ serverinfo['uptime'] }}%</b></p>
+        <p class='is-2'>Last Crash: <b>{{ lastcrash }}</b></p>
         {% if current_user.has_role('admin') %}
         <p class='is-2'>Instance Active Mem: <b>{{ serverinfo['actmem'] }}g</b></p>
         <p class='is-2'>Instance Total Mem: <b>{{ serverinfo['totmem'] }}g</b></p>

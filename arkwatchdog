@@ -51,6 +51,10 @@ log.addHandler(log_fileh)
 log_fileh.setFormatter(log_format)
 
 
+def issharedmounted():
+    return os.path.ismount('/home/ark/shared')
+
+
 def float_trunc_1dec(num):
     try:
         tnum = num // 0.1 / 10
@@ -169,11 +173,14 @@ def getrunning(inst):
 
 
 def restartserver(inst, reason):
-    log.warning(f'restarting instance {inst}')
-    pmsg = f'Instance {inst} failed {reason} checks!\nRestarting Instance'
-    pushover('Watchdog', pmsg)
-    subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL,
-                   stderr=subprocess.DEVNULL, shell=True)
+    if issharedmounted():
+        log.warning(f'restarting instance {inst}')
+        pmsg = f'Instance {inst} failed {reason} checks!\nRestarting Instance'
+        pushover('Watchdog', pmsg)
+        subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, shell=True)
+    else:
+        log.warning(f'Server {hstname} is waiting for drives to mount')
 
 
 def main():
@@ -190,13 +197,14 @@ def main():
     log.info(f'>>> ark instance watchdog daemon is starting on {hstname}')
     if didserverjustboot():
         log.info('server just booted, starting instances for the first time')
-        for eat in instance:
-            log.info(f'starting instance {eat["name"]}')
-            subprocess.run('arkmanager start @%s' % (eat['name']), stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL, shell=True)
-        log.debug('sleeping 15 min while instances start')
-        log.sleep(Secs['15min'])
-    log.debug('starting watchdog loop')
+        if issharedmounted():
+            for eat in instance:
+                log.info(f'starting instance {eat["name"]}')
+                subprocess.run('arkmanager start @%s' % (eat['name']), stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL, shell=True)
+            log.debug('sleeping 15 min while instances start')
+            log.sleep(Secs['15min'])
+        log.debug('starting watchdog loop')
     while True:
         actmem = 0
         totmem = 0

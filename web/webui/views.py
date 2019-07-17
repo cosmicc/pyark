@@ -8,7 +8,7 @@ from itertools import chain, zip_longest
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, psql_port
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance
+from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance, getlastcrash
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getexpiredplayers, getbannedplayers, getnewplayers
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto, joinedTime
@@ -567,7 +567,7 @@ def logout():
 @webui.route('/serverinfo/<instance>')
 @login_required
 def serverinfo(instance):
-    return render_template('serverinfo.html', serverinfo=instanceinfo(instance))
+    return render_template('serverinfo.html', serverinfo=instanceinfo(instance), lastcrash=getlastcrash(instance))
 
 
 @webui.route('/playersearch', methods=['POST', 'GET'])

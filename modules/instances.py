@@ -50,6 +50,14 @@ def isinstanceup(inst):
         return False
 
 
+def getlastcrash(inst):
+    dbdata = dbquery("SELECT lastcrash FROM instances WHERE name = '%s'" % (inst,), fetch='one')
+    if dbdata:
+        return dbdata[0]
+    else:
+        return 'Never'
+
+
 def instancelist():
     dbdata = dbquery('SELECT name FROM instances ORDER BY name', fmt='list', single=True)
     return dbdata
