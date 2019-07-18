@@ -106,7 +106,6 @@ def arkprocesscpu(inst):
 
 def getlaststart(inst):
     laststart = dbquery("SELECT lastrestart WHERE name = '%s'" % (inst,))
-    log.log('TEST', laststart)
     return laststart
 
 
