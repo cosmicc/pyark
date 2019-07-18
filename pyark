@@ -172,7 +172,7 @@ def main():
         ostat = threading.Thread(name='stat-collector', target=oscollect, daemon=True)
         ostat.start()
     if webserver_enabled == "True":
-        log.info(f'Starting Web Server on IP: {webserver_ip} PORT: {webserver_port}')
+        log.log('START', f'Starting Web Server on IP: {webserver_ip} PORT: {webserver_port}')
     try:
         app = create_app('config.BaseConfig')
         webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port}, daemon=True)

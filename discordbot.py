@@ -179,7 +179,7 @@ def discordbot():
 
     @client.event
     async def on_ready():
-        log.info(f'discord logged in as {client.user.name} id {client.user.id}')
+        log.log('START', f'discord logged in as {client.user.name} id {client.user.id}')
         await client.change_presence(game=discord.Game(name="!help"))
 
     @client.event
