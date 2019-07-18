@@ -119,7 +119,7 @@ def lotteryloop(linfo):
         log.debug('clearing lotteryplayers table')
         dbupdate("DELETE FROM lotteryplayers")
     inlottery = True
-    log.log('LOTTO', 'lottery loop has begun, waiting for lottery entries')
+    log.debug('lottery loop has begun, waiting for lottery entries')
     while inlottery:
         sleep(Secs['5min'])
         tdy = linfo['startdate'] + timedelta(hours=linfo['days'])

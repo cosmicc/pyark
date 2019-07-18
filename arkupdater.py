@@ -489,9 +489,9 @@ def restartcheck():
 def arkupd():
     log.debug('arkupdater thread started')
     if numinstances > 0:
-        log.log('START', f'found {numinstances} ark server instances: {instr}')
+        log.info(f'found {numinstances} ark server instances: [{instr}]')
     elif is_arkupdater:
-        log.log('START', f'No Ark game instances found, but is Master Game Updater')
+        log.info(f'No Ark game instances found, but is [Master Game Updater]')
     else:
         log.error(f'No Ark game instances found, also NOT master updater, THIS ISNT RIGHT')
     while True:
