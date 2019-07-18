@@ -249,7 +249,7 @@ def main():
         try:
             for eachinst in instance:
                 isitrunning, isitlistening, isitonline, arkbuild, arkversion, steamlink, arkserverslink, players, activeplayers = getrunning(eachinst['name'])
-                if not isitrunning and Now() - int(getlaststart(eachinst)) > Secs['10min']:
+                if not isitrunning and Now() - int(getlaststart(eachinst['name'])) > Secs['10min']:
                     for neach in isrunning.copy():
                         if neach == eachinst['name']:
                             isrunning[neach].update({'isit': 0, 'count': isrunning[neach]['count'] + 1})
@@ -268,7 +268,7 @@ def main():
                     cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
                     uptime = getserveruptime()
 
-                if not isitlistening and Now() - int(getlaststart(eachinst)) > Secs['10min']:
+                if not isitlistening and Now() - int(getlaststart(eachinst['name'])) > Secs['10min']:
                     for neach in islistening.copy():
                         if neach == eachinst['name']:
                             islistening[neach].update({'isit': 0, 'count': islistening[neach]['count'] + 1})
@@ -281,7 +281,7 @@ def main():
                             islisteningint = 1
                             log.debug(f'{eachinst["name"]} passed instance listening check')
 
-                if not isitonline and Now() - int(getlaststart(eachinst)) > Secs['10min']:
+                if not isitonline and Now() - int(getlaststart(eachinst['name'])) > Secs['10min']:
                     for neach in isonline.copy():
                         if neach == eachinst['name']:
                             isonline[neach].update({'isit': 0, 'count': isonline[neach]['count'] + 1})
