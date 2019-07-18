@@ -92,13 +92,13 @@ def checklottodeposits(steamid, inst):
     if lottocheck and inst == elpinfo[15]:
         for weach in lottocheck:
             if weach[4] == 1:
-                log.log('POINTS', f'{weach[3]} points added to {elpinfo[1]} for a lottery win')
+                log.log('POINTS', f'{weach[3]} lottery win points added to [{elpinfo[1].title()}]')
                 msg = f'{weach[3]} ARc points have been deposited into your account for a lottery win!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, weach[3], inst), shell=True)
             elif weach[4] == 0:
-                log.log('POINTS', f'{weach[3]} points removed from {elpinfo[1]} for a lottery entry')
+                log.log('POINTS', f'{weach[3]} lottery entry points removed from [{elpinfo[1].title()}]')
                 msg = f'{weach[3]} ARc points have been withdrawn from your account for a lottery entry'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s %s" @%s' %
@@ -121,13 +121,13 @@ def playergreet(steamid, steamname, inst):
     gogo = 0
     xferpoints = 0
     if checkifbanned(steamid):
-        log.warning(f'banned player [{steamname}] [{steamid}] has tried to connect or is online on {inst}. kicking and banning.')
+        log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
         subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (steamid, inst), shell=True)
         # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
         oplayer = getplayer(steamid)
         if not oplayer:
-            log.info(f'player [steamname] with steamid [{steamid}] was not found. adding new player to cluster!')
+            log.info(f'Player [steamname] with steamid [{steamid}] was not found. Adding new player to cluster')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                        firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                        primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, lotterywinnings, steamname) VALUES \
@@ -137,7 +137,7 @@ def playergreet(steamid, steamname, inst):
                 welcomthreads.append({'steamid': steamid, 'sthread': welcom})
                 welcom.start()
             else:
-                log.warning(f'welcome message thread already running for new player [{steamname}]')
+                log.warning(f'Welcome message thread already running for new player [{steamname}]')
             writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
         else:
             # elif len(oplayer) > 2:
@@ -148,7 +148,6 @@ def playergreet(steamid, steamname, inst):
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, xferpoints, inst), shell=True)
-                clog(f'transferred {xferpoints} points into account for [{oplayer[1].title()}] on [{inst}.title()]', inst)
             if int(oplayer[2]) + 600 > Now():
                 if oplayer[3] != inst:
                     gogo = 1
