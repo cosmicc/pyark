@@ -183,7 +183,6 @@ def main():
         isonline[seat['name']] = {}
         isonline[seat['name']].update({'isit': 0, 'count': 0})
     log.log('START', f'Instance Watchdog Daemon is starting on {hstname}')
-    log.log('TEST', f'{isrunning}\n {isonline}')
     if didserverjustboot():
         log.log('WATCH', 'server just booted, starting instances for the first time')
         while not issharedmounted():
@@ -201,7 +200,7 @@ def main():
     while True:
         actmem = 0
         totmem = 0
-        log.log('TEST', f'{isrunning}\n {isonline}')
+        log.log('TEST', f'running:{isrunning} online:{isonline}')
         sleep(Secs['3min'])
         try:
             for eachinst in instance:
