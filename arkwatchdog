@@ -200,8 +200,6 @@ def main():
     while True:
         actmem = 0
         totmem = 0
-        log.log('TEST', f'running:{isrunning} online:{isonline}')
-        sleep(Secs['3min'])
         try:
             for eachinst in instance:
                 isitrunning, isitonline = processinststatus(eachinst['name'])
@@ -258,6 +256,7 @@ def main():
             log.exception('Critical Error in Ark Watchdog!')
         log.debug('sleeping 2 min between checks')
         try:
+            log.log('TEST', f'running:{isrunning} online:{isonline}')
             sleep(Secs['2min'])
         except KeyboardInterrupt:
             log.critical('Keyboard Interrupt Detected, Exiting.')
