@@ -52,7 +52,7 @@ colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[
 
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
-log.level("START", no=38, color="<light-red>", icon="¤")
+log.level("START", no=38, color="<light-yellow>", icon="¤")
 log.level("ADMIN", no=15, color="<light-yellow>", icon="¤")
 log.level("JOIN", no=21, color="<fg 13>", icon="¤")
 log.level("LEAVE", no=21, color="<fg 5>", icon="¤")
