@@ -17,14 +17,17 @@ def processinststatus(inst):
                             stderr=subprocess.DEVNULL, shell=True)
     rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
     log.log('TEST', rawrun2)
+    serverrunning = None
+    serveronline = None
     players = None
+    serverbuild = None
     activeplayers = None
+    steamlink = None
+    arkserverslink = None
+    serverversion = None
+    serverpid = 0
     for ea in rawrun2:
-        steamlink = None
-        arkserverslink = None
-        serverversion = None
-        serverpid = 0
-        sttitle = stripansi(ea.split(':')[0]).strip()
+       sttitle = stripansi(ea.split(':')[0]).strip()
         if (sttitle == 'Server running'):
             if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
                 serverrunning = True
@@ -65,7 +68,7 @@ def processinststatus(inst):
                 dbupdate("UPDATE instances SET arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', connectingplayers = '%s', activeplayers = '%s' WHERE name = '%s'" % (int(serverbuild), serverversion, steamlink, arkserverslink, int(players), int(activeplayers), inst))
             except:
                 log.exception('Error writing extra stats to database')
-
+    return serverrunning, serveronline
 
 def enableinstance(inst):
     dbupdate("UPDATE instances SET enabled = True WHERE name = '%s'" % (inst,))

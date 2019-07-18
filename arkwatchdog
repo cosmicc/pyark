@@ -197,7 +197,7 @@ def main():
                 sleep(120)
             log.debug('sleeping 15 min while instances start')
             log.sleep(Secs['10min'])
-        log.debug('starting watchdog loop')
+    log.debug('starting watchdog loop')
     while True:
         actmem = 0
         totmem = 0
