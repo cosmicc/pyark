@@ -332,13 +332,13 @@ def startvoter(inst, whoasked):
         timeleft = playedTime(rawtimeleft)
         subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
-        log.log('VOTE', f'vote start denied for [{whoasked}] on [{inst}] because 4 hour timer')
+        log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 4 hour timer')
     elif Now() - float(lastvoter) < Secs['10min']:      # 10 min between attempts
         rawtimeleft = Secs['10min'] - (Now() - lastvoter)
         timeleft = playedTime(rawtimeleft)
         subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
-        log.log('VOTE', f'vote start denied for [{whoasked}] on [{inst}] because 10 min timer')
+        log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 10 min timer')
     else:
         for each in range(numinstances):
             if instance[each]['name'] == inst:
@@ -386,7 +386,7 @@ def linker(minst, whoasked):
     if dplayer:
         if dplayer[8] is None or dplayer[8] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
-            log.info(f'generated code {rcode} for link request from {dplayer[1]} on {minst}')
+            log.info(f'Generated code [{rcode}] for link request from [{dplayer[1].title()}] on [{minst.title()}]')
             dbupdate("DELETE from linkrequests WHERE steamid = '%s'" % (dplayer[0],))
             dbupdate("INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('%s', '%s', '%s')" % (dplayer[0], dplayer[1], str(rcode)))
             msg = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
@@ -465,7 +465,7 @@ def homeserver(inst, whoasked, ext):
         if ext in tservers:
             if ext != pinfo[15]:
                 if inst == pinfo[15]:
-                    log.info(f'{whoasked} has transferred home servers from {pinfo[15]} to {ext} \
+                    log.info(f'[{whoasked.title()}] has transferred home servers from [{pinfo[15].title()}] to [{ext.title()}] \
 with {pinfo[5]} points')
                     subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
                                    (steamid, inst), shell=True)
@@ -540,7 +540,7 @@ def checkcommands(minst):
     for line in iter(b.splitlines()):
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
-        elif line.find('AdminCmd:') != -1:
+        elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
             log.log('ADMIN', line.replace('"', '').strip())
         elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('joined this ARK!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('starved to death!') != -1 or line.find('left this ARK!') != -1:
             with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
