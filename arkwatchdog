@@ -173,8 +173,9 @@ def getrunning(inst):
     players = 0
     activeplayers = 0
     for ea in rawrun2:
-        steamlink = ''
-        arkserverslink = ''
+        steamlink = 'N/A'
+        arkserverslink = 'N/A'
+        serverversion = 'N/A'
         sttitle = stripansi(ea.split(':')[0]).strip()
         if (sttitle == 'Server running'):
             if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
