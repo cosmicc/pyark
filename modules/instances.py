@@ -27,7 +27,7 @@ def processinststatus(inst):
     serverversion = None
     serverpid = 0
     for ea in rawrun2:
-       sttitle = stripansi(ea.split(':')[0]).strip()
+        sttitle = stripansi(ea.split(':')[0]).strip()
         if (sttitle == 'Server running'):
             if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
                 serverrunning = True
