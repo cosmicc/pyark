@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
 from modules.configreader import instance, hstname, logfile, colorlogfile, debugfile, critlogfile, loglevel
-from modules.dbhelper import dbupdate, dbquery
+from modules.dbhelper import dbquery
 from modules.pushover import pushover
+from modules.instances import processinststatus
 from sys import exit
 from time import sleep
 from modules.timehelper import Secs, Now, elapsedTime
 import psutil
 import argparse
 from loguru import logger as log
-import re
 import os
 import sys
 import subprocess
@@ -96,11 +96,7 @@ def serverneedsrestart():
 
 
 def arkprocesscpu(inst):
-    pidfile = f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid'
-    file = open(pidfile, 'r')
-    arkpid = file.read()
-    file.close()
-    arkprocess = psutil.Process(int(arkpid))
+    arkprocess = psutil.Process(getinstpid(inst))
     return arkprocess.cpu_percent(interval=2)
 
 
@@ -136,15 +132,12 @@ def getservermem():
     return memfree, memavailable, swapused
 
 
-def stripansi(stripstr):
-    ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-    return(ansi_escape.sub('', stripstr))
-
-
 def getinstpid(inst):
-    rawpid = subprocess.run('arkmanager getpid @%s' % (inst), stdout=subprocess.PIPE,
-                            stderr=subprocess.DEVNULL, shell=True)
-    return rawpid.stdout.decode('utf-8').split('\n')[1]
+    pidfile = f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid'
+    file = open(pidfile, 'r')
+    arkpid = file.read()
+    file.close()
+    return int(arkpid)
 
 
 def didserverjustboot():
@@ -166,51 +159,7 @@ def getinstmem(inst):
     return instrss, instvsz
 
 
-def getrunning(inst):
-    rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
-                            stderr=subprocess.DEVNULL, shell=True)
-    rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
-    players = 0
-    activeplayers = 0
-    for ea in rawrun2:
-        steamlink = 'N/A'
-        arkserverslink = 'N/A'
-        serverversion = 'N/A'
-        sttitle = stripansi(ea.split(':')[0]).strip()
-        if (sttitle == 'Server running'):
-            if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
-                srunning = True
-            elif (stripansi(ea.split(':')[1]).strip() == 'No'):
-                srunning = False
-                sonline = False
-        if (sttitle == 'Server listening'):
-            if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
-                slistening = True
-            elif (stripansi(ea.split(':')[1]).strip() == 'No'):
-                slistening = False
-                sonline = False
-        if (sttitle == 'Server online'):
-            if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
-                sonline = True
-            elif (stripansi(ea.split(':')[1]).strip() == 'No'):
-                sonline = False
-        if (sttitle == 'Players'):
-            players = int(stripansi(ea.split(':')[1]).strip().split('/')[0].strip())
-        if (sttitle == 'Active Players'):
-            activeplayers = int(stripansi(ea.split(':')[1]).strip())
-        if (sttitle == 'Server build ID'):
-            serverbuild = stripansi(ea.split(':')[1]).strip()
-        if (sttitle == 'Server version'):
-            serverversion = stripansi(ea.split(':')[1]).strip()
-        if (sttitle == 'ARKServers link'):
-            arkserverslink = stripansi(ea.split('  ')[1]).strip()
-        if (sttitle == 'Steam connect link'):
-            steamlink = stripansi(ea.split('  ')[1]).strip()
-
-    return (srunning, slistening, sonline, serverbuild, serverversion, steamlink, arkserverslink, players, activeplayers)
-
-
-def restartserver(inst, reason):
+def startserver(inst, reason):
     if issharedmounted():
         log.log('WATCH', f'restarting instance {inst}')
         pmsg = f'Instance {inst} failed {reason} checks!\nRestarting Instance'
@@ -221,34 +170,42 @@ def restartserver(inst, reason):
         log.warning(f'Server {hstname} is waiting for drives to mount')
 
 
+# def oldwrite():
+#                dbupdate("UPDATE instances SET actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', arkcpu = '%s', restartserver = '%s', connectingplayers = '%s', activeplayers = '%s' WHERE name = '%s'" % (int(serverbuild), serverversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, arkservercpu, serverneedsrestart(), int(players), int(activeplayers), eachinst['name']))
+
+
 def main():
     isrunning = {}
-    islistening = {}
     isonline = {}
     for seat in instance:
         isrunning[seat['name']] = {}
         isrunning[seat['name']].update({'isit': 0, 'count': 0})
-        islistening[seat['name']] = {}
-        islistening[seat['name']].update({'isit': 0, 'count': 0})
         isonline[seat['name']] = {}
         isonline[seat['name']].update({'isit': 0, 'count': 0})
     log.log('START', f'Instance Watchdog Daemon is starting on {hstname}')
+    log.log('TEST', f'{isrunning}\n {isonline}')
     if didserverjustboot():
         log.log('WATCH', 'server just booted, starting instances for the first time')
+        while not issharedmounted():
+            log.log('WATCH', 'Shared drive is not mounted, waiting for mount to complete...')
+            sleep(60)
         if issharedmounted():
             for eat in instance:
-                log.log('WATCH', f'starting instance {eat["name"]}')
+                log.log('WATCH', f'Starting first server boot instance [{eat["name"].title()}]')
                 subprocess.run('arkmanager start @%s' % (eat['name']), stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL, shell=True)
+                sleep(120)
             log.debug('sleeping 15 min while instances start')
-            log.sleep(Secs['15min'])
+            log.sleep(Secs['10min'])
         log.debug('starting watchdog loop')
     while True:
         actmem = 0
         totmem = 0
+        log.log('TEST', f'{isrunning}\n {isonline}')
+        sleep(Secs['3min'])
         try:
             for eachinst in instance:
-                isitrunning, isitlistening, isitonline, arkbuild, arkversion, steamlink, arkserverslink, players, activeplayers = getrunning(eachinst['name'])
+                isitrunning, isitonline = processinststatus(eachinst['name'])
                 if not isitrunning and Now() - int(getlaststart(eachinst['name'])[0]) > Secs['10min']:
                     for neach in isrunning.copy():
                         if neach == eachinst['name']:
@@ -268,19 +225,6 @@ def main():
                     cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
                     uptime = getserveruptime()
 
-                if not isitlistening and Now() - int(getlaststart(eachinst['name'])[0]) > Secs['10min']:
-                    for neach in islistening.copy():
-                        if neach == eachinst['name']:
-                            islistening[neach].update({'isit': 0, 'count': islistening[neach]['count'] + 1})
-                            islisteningint = 0
-                            log.warning(f'{eachinst["name"]} failed instance listening check {islistening[neach]["count"] + 1}/5')
-                else:
-                    for neach in islistening.copy():
-                        if neach == eachinst['name']:
-                            islistening[neach].update({'isit': 1, 'count': 0})
-                            islisteningint = 1
-                            log.debug(f'{eachinst["name"]} passed instance listening check')
-
                 if not isitonline and Now() - int(getlaststart(eachinst['name'])[0]) > Secs['10min']:
                     for neach in isonline.copy():
                         if neach == eachinst['name']:
@@ -295,31 +239,18 @@ def main():
                             log.debug(f'{eachinst["name"]} passed instance online check')
 
                 # log.debug(isonlineint, islisteningint, isrunningint, time.time(), actmem, totmem, eachinst['name'])
-                try:
-                    dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', arkcpu = '%s', restartserver = '%s', connectingplayers = '%s', activeplayers = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, arkservercpu, serverneedsrestart(), int(players), int(activeplayers), eachinst['name']))
-                except:
-                    log.exception('Error writing stats to database')
                 for feach in isrunning:
                     if feach == eachinst['name']:
                         if isrunning[feach]['count'] == 2:
                             isrunning[feach].update({'isit': 0, 'count': 0})
-                            islistening[feach].update({'isit': 0, 'count': 0})
                             isonline[feach].update({'isit': 0, 'count': 0})
-                            restartserver(eachinst['name'], 'running')
-                for feach in islistening:
-                    if feach == eachinst['name']:
-                        if islistening[feach]['count'] == 10:
-                            isrunning[feach].update({'isit': 0, 'count': 0})
-                            islistening[feach].update({'isit': 0, 'count': 0})
-                            isonline[feach].update({'isit': 0, 'count': 0})
-                            restartserver(eachinst['name'], 'listening')
+                            startserver(eachinst['name'], 'running')
                 for feach in isonline:
                     if feach == eachinst['name']:
                         if isonline[feach]['count'] == 10:
                             isrunning[feach].update({'isit': 0, 'count': 0})
-                            islistening[feach].update({'isit': 0, 'count': 0})
                             isonline[feach].update({'isit': 0, 'count': 0})
-                            restartserver(eachinst['name'], 'online')
+                            startserver(eachinst['name'], 'online')
 
         except KeyboardInterrupt:
             log.critical('Keyboard Interrupt Detected, Exiting.')

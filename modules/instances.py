@@ -2,6 +2,69 @@ from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.timehelper import Now
 from sys import exit
+from loguru import logger as log
+import subprocess
+from re import compile as rcompile
+
+
+def stripansi(stripstr):
+    ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    return(ansi_escape.sub('', stripstr))
+
+
+def processinststatus(inst):
+    rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL, shell=True)
+    rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
+    log.log('TEST', rawrun2)
+    players = None
+    activeplayers = None
+    for ea in rawrun2:
+        steamlink = None
+        arkserverslink = None
+        serverversion = None
+        serverpid = 0
+        sttitle = stripansi(ea.split(':')[0]).strip()
+        if (sttitle == 'Server running'):
+            if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
+                serverrunning = True
+            elif (stripansi(ea.split(':')[1]).strip() == 'No'):
+                serverrunning = False
+                serveronline = False
+                serverlistening = False
+        if (sttitle == 'Server PID'):
+            serverpid = stripansi(ea.split(':')[1]).strip()
+        if (sttitle == 'Server listening'):
+            if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
+                serverlistening = True
+            elif (stripansi(ea.split(':')[1]).strip() == 'No'):
+                serveronline = False
+        if (sttitle == 'Server online'):
+            if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
+                serveronline = True
+            elif (stripansi(ea.split(':')[1]).strip() == 'No'):
+                serveronline = False
+        if (sttitle == 'Players'):
+            players = int(stripansi(ea.split(':')[1]).strip().split('/')[0].strip())
+        if (sttitle == 'Active Players'):
+            activeplayers = int(stripansi(ea.split(':')[1]).strip())
+        if (sttitle == 'Server build ID'):
+            serverbuild = stripansi(ea.split(':')[1]).strip()
+        if (sttitle == 'Server version'):
+            serverversion = stripansi(ea.split(':')[1]).strip()
+        if (sttitle == 'ARKServers link'):
+            arkserverslink = stripansi(ea.split('  ')[1]).strip()
+        if (sttitle == 'Steam connect link'):
+            steamlink = stripansi(ea.split('  ')[1]).strip()
+        try:
+            dbupdate("UPDATE instances SET serverpid = '%s', sup = '%s', islistening = '%s', isrunning = '%s' WHERE name = '%s'" % (int(serverpid), serverrunning, serverlistening, serveronline, inst))
+        except:
+            log.exception('Error writing up stats to database')
+        if players is not None and activeplayers is not None and serverbuild is not None and serverversion is not None and steamlink is not None and arkserverslink is not None:
+            try:
+                dbupdate("UPDATE instances SET arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', connectingplayers = '%s', activeplayers = '%s' WHERE name = '%s'" % (int(serverbuild), serverversion, steamlink, arkserverslink, int(players), int(activeplayers), inst))
+            except:
+                log.exception('Error writing extra stats to database')
 
 
 def enableinstance(inst):

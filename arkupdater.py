@@ -236,11 +236,11 @@ def checkmaintenance():
             inst = instance[each]['name']
             subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nServer maintenance has started. All dino mating will be temporarily stopped.  All unclaimed dinos will be cleared, and the server will also be performing updates and backups.'" @%s""" % (inst,), shell=True)
         log.log('MAINT', f'Running server os maintenance on [{hstname.upper()}]...')
-        log.debug(f'os update started for {hstname}')
+        log.debug(f'OS update started for {hstname}')
         subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        log.debug(f'os upgrade started for {hstname}')
+        log.debug(f'OS upgrade started for {hstname}')
         subprocess.run('apt upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-        log.debug(f'os autoremove started for {hstname}')
+        log.debug(f'OS autoremove started for {hstname}')
         subprocess.run('apt autoremove -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         for each in range(numinstances):
             inst = instance[each]['name']
@@ -269,8 +269,8 @@ def checkmaintenance():
             except:
                 log.exception(f'Error during {inst} instance daily maintenance')
         if os.path.isfile('/var/run/reboot-required'):
-            log.warning(f'maintenance: {hstname} physical server needs a hardware reboot after package updates')
-        log.log('MAINT', f'daily maintenance has ended for {hstname}')
+            log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
+        log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
 
 
 def instancerestart(inst, reason, ext='restart'):

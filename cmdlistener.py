@@ -304,7 +304,7 @@ def voting(inst, whoasked):
                 yesvoters, totvoters = howmanyvotes()
                 subprocess.run('arkmanager rconcmd "ServerChat Not enough votes (%s of %s). voting has ended." @%s' %
                                (yesvoters, totvoters, inst), shell=True)
-                log.log('VOTE', f'not enough votes ({yesvoters}/{totvoters}), voting has ended on {inst}')
+                log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({yesvoters}/{totvoters})')
                 writechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of \
 {totvoters})', wcstamp())
                 arewevoting = False
