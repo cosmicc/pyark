@@ -62,7 +62,7 @@ def processinststatus(inst):
             steamlink = stripansi(ea.split('  ')[1]).strip()
     try:
         log.log('TEST', f'{serverpid}, {serverrunning}, {serverlistening}, {serveronline}')
-        dbupdate("UPDATE instances SET serverpid = %s, sup = %s, islistening = %s, isrunning = %s WHERE name = '%s'" % (int(serverpid), int(serverrunning), int(serverlistening), int(serveronline), inst))
+        dbupdate("UPDATE instances SET serverpid = '%s', sup = '%s', islistening = '%s', isrunning = '%s' WHERE name = '%s'" % (int(serverpid), int(serverrunning), int(serverlistening), int(serveronline), inst))
     except:
         log.exception('Error writing up stats to database')
     if players is not None and activeplayers is not None and serverbuild is not None and serverversion is not None and steamlink is not None and arkserverslink is not None:
