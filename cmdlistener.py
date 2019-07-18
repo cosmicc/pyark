@@ -332,13 +332,13 @@ def startvoter(inst, whoasked):
         timeleft = playedTime(rawtimeleft)
         subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
-        log.log('VOTE', f'vote start denied for {whoasked} on {inst} because 4 hour timer')
+        log.log('VOTE', f'vote start denied for [{whoasked}] on [{inst}] because 4 hour timer')
     elif Now() - float(lastvoter) < Secs['10min']:      # 10 min between attempts
         rawtimeleft = Secs['10min'] - (Now() - lastvoter)
         timeleft = playedTime(rawtimeleft)
         subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
                        (timeleft, inst), shell=True)
-        log.log('VOTE', f'vote start denied for {whoasked} on {inst} because 10 min timer')
+        log.log('VOTE', f'vote start denied for [{whoasked}] on [{inst}] because 10 min timer')
     else:
         for each in range(numinstances):
             if instance[each]['name'] == inst:

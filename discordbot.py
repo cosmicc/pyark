@@ -61,7 +61,7 @@ def discordbot():
         await client.wait_until_ready()
         while not client.is_closed:
             try:
-                # log.debug('executing discord bot task checker')
+                log.trace('executing discord bot task checker')
                 if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=6) and isinlottery():
                     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
                     log.log('LOTTO', 'announcing running lottery in discord')
@@ -148,6 +148,14 @@ def discordbot():
             log.warning(f'admin command {ctx.message.content} was rejected for {ctx.message.author}')
             return False
 
+    def logcommand(ctx):
+        if ctx.message.channel.is_private:
+            dchan = 'Direct Message'
+        else:
+            dchan = ctx.message.channel
+        log.info(f'discord command [{ctx.message.content}] executed by [{ctx.message.author}] in {dchan}')
+        return True
+
     async def messagesend(ctx, embed, allowgeneral=False, reject=True, adminonly=False):
         try:
             if ctx.message.channel.is_private:
@@ -170,7 +178,7 @@ def discordbot():
 
     @client.event
     async def on_member_join(member):
-        log.info(f'new user has joined the Discord server: {member}')
+        log.info(f'new user [{member}] has joined the Discord server')
         fmt = 'If you are already a player on the servers, type **`!linkme`** in-game to link your discord account to your ark player.\n'
         fmt = fmt + 'Type **`!servers`** for links iand status of the servers\nType **`!mods`** for a link to the mod collection\n**`!help`** for all the other commands\n\n'
         fmt = fmt + 'More help can be found with pinned messages in **#help**\nDont be afraid to ask for help in discord!'
@@ -191,7 +199,7 @@ def discordbot():
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=False)
             elif isinstance(error, NotLinked):
-                log.warning(f'Player is not linked {ctx.message.author}')
+                log.info(f'Player is not linked {ctx.message.author}')
                 msg = f'Your discord account needs to be linked to your in-game player first. Type **`!linkme`** in-game to do this'
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=False)
@@ -203,8 +211,8 @@ def discordbot():
             log.exception('command error: ')
 
     @client.command(pass_context=True, name='help', aliases=['helpme', 'commands'])
+    @commands.check(logcommand)
     async def _help(ctx):
-        log.info(f'help request on discord from {ctx.message.author}')
         msg = ''
         # msg3 = '!lasthour, !timeleft'
         msg = msg + "**`!mods`**  - Link to all the mods for this cluster\n"
@@ -244,24 +252,28 @@ def discordbot():
             await client.delete_message(ctx.message)
 
     @client.command(pass_context=True, name='mods', aliases=['mod', 'arkmods'])
+    @commands.check(logcommand)
     async def _mods(ctx):
         msg = f'Galaxy Cluster Ultimate Extinction Core Mod Collection:\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=1475281369'
         embed = discord.Embed(description=msg, color=HELP_COLOR)
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
     @client.command(pass_context=True, name='points', aliases=['rewards'])
+    @commands.check(logcommand)
     async def _rewards(ctx):
         msg = f'Galaxy Cluster Ultimate Extinction Core Rewards Vault, ARc Points, Home Server, Lotterys, & Currency:\nhttps://docs.google.com/document/d/154QjLnw4hjxe_DtiTqfSwINsKdUp9Iz3M_umcI5zkRk/edit?usp=sharing'
         embed = discord.Embed(description=msg, color=HELP_COLOR)
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
     @client.command(pass_context=True, name='ec', aliases=['extinction'])
+    @commands.check(logcommand)
     async def _ec(ctx):
         msg = f'Extinction Core Info:\nhttps://steamcommunity.com/workshop/filedetails/discussion/817096835/1479857071254169967\nExtinction Core Wiki:\nhttp://extinctioncoreark.wikia.com/wiki/Extinction_Core_Wiki\nExtinction Core Dino Spreadsheet\nhttps://docs.google.com/spreadsheets/d/1GtqBvFK0R0VI7dj7CdkXEuQydqw3xjITZmc0qD95Kug/edit?usp=sharing'
         embed = discord.Embed(description=msg, color=HELP_COLOR)
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
     @client.command(pass_context=True, name='servers', aliases=['server'])
+    @commands.check(logcommand)
     async def _servers(ctx):
         dbsvr = dbquery("SELECT * FROM instances")
         msg = 'Galaxy Cluster Ultimate Extinction Core Servers:'
@@ -282,6 +294,7 @@ def discordbot():
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
     @client.command(pass_context=True, name='primordial')
+    @commands.check(logcommand)
     @commands.check(is_linked)
     async def _primordial(ctx):
         pplayer = dbquery("SELECT * from players WHERE discordid = '%s'" % (str(ctx.message.author).lower(),), fetch='one')
@@ -297,6 +310,7 @@ def discordbot():
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
     @client.command(pass_context=True, name='topplayed', aliases=['topplayers', 'topplaytime'])
+    @commands.check(logcommand)
     async def _topplayed(ctx):
         lsplayer = gettopplayedplayers('all', last=10)
         nom = 0
@@ -310,6 +324,7 @@ def discordbot():
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
     @client.command(pass_context=True, name='newest', aliases=['newplayers', 'lastnew'])
+    @commands.check(logcommand)
     async def _newest(ctx):
         newlist = getnewestplayers('all', last=5)
         msg2 = 'Last 5 Newest Players to the cluster:'
@@ -322,6 +337,7 @@ def discordbot():
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
     @client.command(pass_context=True, name='myinfo', aliases=['mypoints'])
+    @commands.check(logcommand)
     @commands.check(is_linked)
     async def _myinfo(ctx):
         whofor = str(ctx.message.author).lower()
@@ -369,6 +385,7 @@ def discordbot():
         await messagesend(ctx, embed, allowgeneral=False, reject=False)
 
     @client.command(pass_context=True, name='winners', aliases=['lottowinners', 'lastlotto'])
+    @commands.check(logcommand)
     async def _winners(ctx):
         last5 = dbquery("SELECT * FROM lotteryinfo WHERE completed = True AND winner != 'None' ORDER BY id DESC LIMIT 5")
         top5 = dbquery("SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5")
@@ -392,6 +409,7 @@ def discordbot():
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
     @client.command(pass_context=True, name='decay', aliases=['expire', 'mydecay'])
+    @commands.check(logcommand)
     async def _decay(ctx):
         whofor = str(ctx.message.author).lower()
         kuser = getplayer(discordid=whofor)
@@ -438,6 +456,7 @@ def discordbot():
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
     @client.command(pass_context=True, name='event', aliases=['events'])
+    @commands.check(logcommand)
     async def _event(ctx):
         lastevent = getlasteventinfo()
         currentevent = getcurrenteventinfo()
@@ -459,12 +478,14 @@ def discordbot():
             log.exception(f'Error calculating events')
 
     @client.command(pass_context=True, name='vote', aliases=['startvote'])
+    @commands.check(logcommand)
     async def _vote(ctx):
         msg = f'Wild dino wipe voting is only allowed in-game.\n\nGoto the #poll-channel to vote on a poll.'
         embed = discord.Embed(description=msg, color=FAIL_COLOR)
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
     @client.command(pass_context=True, name='lastrestart', aliases=['restart'])
+    @commands.check(logcommand)
     async def _lastrestart(ctx, *args):
         if args:
             instr = args.lower()
@@ -486,6 +507,7 @@ def discordbot():
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
     @client.command(pass_context=True, name='lastwipe', aliases=['lastwildwipe'])
+    @commands.check(logcommand)
     async def _lastwipe(ctx, *args):
         if args:
             instr = args.lower()
@@ -507,6 +529,7 @@ def discordbot():
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
     @client.command(pass_context=True, name='timeleft', aliases=['time'])
+    @commands.check(logcommand)
     async def _timeleft(ctx, *args):
         if args:
             instr = args[0].lower()
@@ -534,6 +557,7 @@ def discordbot():
             await messagesend(ctx, embed, allowgeneral=True, reject=True)
 
     @client.command(pass_context=True, name='who', aliases=['whoson', 'whosonline', 'online'])
+    @commands.check(logcommand)
     async def _who(ctx):
         tcnt = 0
         for each in instancelist():
@@ -550,6 +574,7 @@ def discordbot():
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
     @client.command(pass_context=True, name='rate', aliases=['serverrates', 'rates'])
+    @commands.check(logcommand)
     async def _rate(ctx):
         rates = getrates()
         cevent = getcurrenteventinfo()
@@ -562,6 +587,7 @@ def discordbot():
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
     @client.command(pass_context=True, name='test')
+    @commands.check(logcommand)
     @commands.check(is_admin)
     async def _test(ctx):
         try:
@@ -579,6 +605,7 @@ def discordbot():
             log.exception('error in test')
 
     @client.command(pass_context=True, name='whotoday', aliases=['today', 'lastday'])
+    @commands.check(logcommand)
     async def _today(ctx):
         tcnt = 0
         for each in instancelist():
@@ -595,6 +622,7 @@ def discordbot():
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
     @client.command(pass_context=True, name='kickme', aliases=['kick'])
+    @commands.check(logcommand)
     @commands.check(is_linked)
     async def _kickme(ctx):
         whofor = str(ctx.message.author).lower()
@@ -616,6 +644,7 @@ def discordbot():
             await client.delete_message(ctx.message)
 
     @client.command(pass_context=True, name='linkme', aliases=['link'])
+    @commands.check(logcommand)
     async def _linkme(ctx, *args):
         whofor = str(ctx.message.author).lower()
         dplayer = dbquery("SELECT playername FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
@@ -651,6 +680,7 @@ def discordbot():
             await client.delete_message(ctx.message)
 
     @client.command(pass_context=True, name='lastseen', aliases=['laston', 'lastonline'])
+    @commands.check(logcommand)
     async def _lastseen(ctx, *, arg):
         log.info(f'responding to lastseen request for {arg} from {ctx.message.author} on discord')
         seenname = arg.lower()
@@ -679,6 +709,7 @@ def discordbot():
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
     @client.command(pass_context=True, name='myhome', aliases=['home', 'homeserver', 'sethome'])
+    @commands.check(logcommand)
     @commands.check(is_linked)
     async def _myhome(ctx, *args):
         whofor = str(ctx.message.author).lower()
@@ -701,6 +732,7 @@ def discordbot():
             await messagesend(ctx, embed, allowgeneral=False, reject=False)
 
     @client.command(pass_context=True, name='lotto', aliases=['lottery'])
+    @commands.check(logcommand)
     @commands.check(is_linked)
     async def _lotto(ctx, *args):
                 whofor = str(ctx.message.author).lower()

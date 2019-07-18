@@ -10,7 +10,7 @@ from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, ps
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance, getlastcrash
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
-from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getexpiredplayers, getbannedplayers, getnewplayers
+from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getexpiredplayers, getbannedplayers, getnewplayers, getdiscordplayers
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto, joinedTime
 from wtforms import StringField, IntegerField
 from wtforms.validators import InputRequired, Length
@@ -591,6 +591,13 @@ def result():
         return render_template("playerinfo.html", playerinfo=getplayer(playername=request.form['player'].lower(), fmt='dict'))
 
 
+@webui.route('/discordsearch', methods=['POST', 'GET'])
+@login_required
+def result2():
+    if request.method == 'POST':
+        return render_template("playerinfo.html", playerinfo=getplayer(discordid=request.form['player'].lower(), fmt='dict'))
+
+
 @webui.route('/startlottery', methods=['POST', 'GET'])
 @login_required
 @roles_required('admin')
@@ -740,7 +747,7 @@ def webinfo(steamid):
 @webui.route('/playerinfo')
 @login_required
 def _players():
-    return render_template('playerselect.html', players=getplayernames(), bannedplayers=getbannedplayers(), expiredplayers=getexpiredplayers(), newplayers=getnewplayers('week'))
+    return render_template('playerselect.html', players=getplayernames(), bannedplayers=getbannedplayers(), expiredplayers=getexpiredplayers(), newplayers=getnewplayers(Secs['week']), discordplayers=getdiscordplayers())
 
 
 @webui.route('/events')

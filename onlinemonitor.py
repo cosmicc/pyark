@@ -115,29 +115,29 @@ def checkifbanned(steamid):
         return False
 
 
-def playergreet(steamid, inst):
+def playergreet(steamid, steamname, inst):
     global greetthreads
     global welcomthreads
     gogo = 0
     xferpoints = 0
     if checkifbanned(steamid):
-        log.warning(f'banned player with steamid {steamid} has tried to connect or is online on {inst}. kicking and banning.')
+        log.warning(f'banned player [{steamname}] [{steamid}] has tried to connect or is online on {inst}. kicking and banning.')
         subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (steamid, inst), shell=True)
         # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
         oplayer = getplayer(steamid)
         if not oplayer:
-            log.info(f'steamid {steamid} was not found. adding new player to cluster!')
+            log.info(f'player [steamname] with steamid [{steamid}] was not found. adding new player to cluster!')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                        firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, lotterywinnings) VALUES \
-                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, 0))
+                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, lotterywinnings, steamname) VALUES \
+                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, 0, steamname))
             if not iswelcoming(steamid):
                 welcom = threading.Thread(name='welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid, inst))
                 welcomthreads.append({'steamid': steamid, 'sthread': welcom})
                 welcom.start()
             else:
-                log.warning(f'welcome message thread already running for new player {steamid}')
+                log.warning(f'welcome message thread already running for new player [{steamname}]')
             writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
         else:
             # elif len(oplayer) > 2:
@@ -159,15 +159,15 @@ def playergreet(steamid, inst):
                     log.log('JOIN', f'player {oplayer[1].capitalize()} has transferred from {oplayer[3]} to {inst}')
                     #############################
                 # log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
-                dbupdate("UPDATE players SET lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
+                dbupdate("UPDATE players SET lastseen = '%s', server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
             else:
                 log.log('JOIN', f"player {oplayer[1].title()} has joined {inst}, total player's connections {int(oplayer[7])+1}")
-                dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s' WHERE steamid = '%s'" %
-                         (Now(), inst, int(oplayer[7]) + 1, steamid))
+                dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" %
+                         (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
                 totplay = playedTime(int(oplayer[4]))
                 try:
-                    log.debug(f'fetching steamid {steamid} auctions from auction api website')
+                    log.debug(f'fetching [{steamname}] [{steamid}] auctions from auction api website')
                     pauctions = fetchauctiondata(steamid)
                     totauctions, iauctions, dauctions = getauctionstats(pauctions)
                     writeauctionstats(steamid, totauctions, iauctions, dauctions)
@@ -262,16 +262,17 @@ def onlineupdate(inst):
                         rawline = line.split(',')
                         if len(rawline) > 1:
                             nsteamid = rawline[1].strip()
+                            steamname = rawline[0].strip('. ')[1]
                             if f'greet-{nsteamid}' not in greetthreads:
                                 if not isgreeting(nsteamid):
                                     gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet,
-                                                               args=(nsteamid, inst))
+                                                               args=(nsteamid, steamname, inst))
                                     greetthreads.append({'steamid': nsteamid, 'gthread': gthread})
                                     gthread.start()
                                 else:
-                                    log.debug(f'online player greeting aleady running for {nsteamid}')
+                                    log.debug(f'online player greeting aleady running for {steamname}')
                             else:
-                                log.debug(f'greeting already running for {nsteamid}')
+                                log.debug(f'greeting already running for {steamname}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
             sleep(10)

@@ -36,6 +36,10 @@ def getactiveplayers(atime):
     return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' and playedtime > 15 and connects > 1 ORDER BY playername ASC" % (Now() - atime,), fmt='list', single=True)
 
 
+def getdiscordplayers():
+    return dbquery("SELECT discordid FROM players WHERE discordid != '' ORDER BY playername ASC", fmt='list', single=True)
+
+
 def getexpiredplayers():
     return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen < '%s' ORDER BY playername ASC" % (Now() - Secs['month'],), fmt='list', single=True)
 
