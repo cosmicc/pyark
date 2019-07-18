@@ -263,7 +263,6 @@ def onlineupdate(inst):
                         if len(rawline) > 1:
                             nsteamid = rawline[1].strip()
                             steamname = rawline[0].split('. ')[1]
-                            log.log('TEST', steamname)
                             if f'greet-{nsteamid}' not in greetthreads:
                                 if not isgreeting(nsteamid):
                                     gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet,
@@ -276,6 +275,6 @@ def onlineupdate(inst):
                                 log.debug(f'greeting already running for {steamname}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
-            sleep(10)
+            sleep(15)
         except:
             log.exception('Critical Error in Online Updater!')
