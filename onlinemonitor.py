@@ -263,6 +263,7 @@ def onlineupdate(inst):
                         if len(rawline) > 1:
                             nsteamid = rawline[1].strip()
                             steamname = rawline[0].strip('. ')[1]
+                            log.log('TEST', steamname)
                             if f'greet-{nsteamid}' not in greetthreads:
                                 if not isgreeting(nsteamid):
                                     gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet,
