@@ -20,6 +20,7 @@ def processinststatus(inst):
     serverrunning = None
     serveronline = None
     players = None
+    serverlistening = None
     serverbuild = None
     activeplayers = None
     steamlink = None
@@ -30,23 +31,23 @@ def processinststatus(inst):
         sttitle = stripansi(ea.split(':')[0]).strip()
         if (sttitle == 'Server running'):
             if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
-                serverrunning = True
+                serverrunning = 1
             elif (stripansi(ea.split(':')[1]).strip() == 'No'):
-                serverrunning = False
-                serveronline = False
-                serverlistening = False
+                serverrunning = 0
+                serveronline = 0
+                serverlistening = 0
         if (sttitle == 'Server PID'):
             serverpid = stripansi(ea.split(':')[1]).strip()
         if (sttitle == 'Server listening'):
             if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
-                serverlistening = True
+                serverlistening = 1
             elif (stripansi(ea.split(':')[1]).strip() == 'No'):
-                serveronline = False
+                serveronline = 0
         if (sttitle == 'Server online'):
             if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
-                serveronline = True
+                serveronline = 1
             elif (stripansi(ea.split(':')[1]).strip() == 'No'):
-                serveronline = False
+                serveronline = 0
         if (sttitle == 'Players'):
             players = int(stripansi(ea.split(':')[1]).strip().split('/')[0].strip())
         if (sttitle == 'Active Players'):
@@ -60,7 +61,7 @@ def processinststatus(inst):
         if (sttitle == 'Steam connect link'):
             steamlink = stripansi(ea.split('  ')[1]).strip()
         try:
-            dbupdate("UPDATE instances SET serverpid = %s, sup = '%s', islistening = '%s', isrunning = '%s' WHERE name = '%s'" % (int(serverpid), serverrunning, serverlistening, serveronline, inst))
+            dbupdate("UPDATE instances SET serverpid = %s, sup = %s, islistening = %s, isrunning = %s WHERE name = '%s'" % (int(serverpid), int(serverrunning), int(serverlistening), int(serveronline), inst))
         except:
             log.exception('Error writing up stats to database')
         if players is not None and activeplayers is not None and serverbuild is not None and serverversion is not None and steamlink is not None and arkserverslink is not None:
