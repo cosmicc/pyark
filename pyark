@@ -54,13 +54,15 @@ log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
 log.level("START", no=38, color="<light-red>", icon="¤")
 log.level("ADMIN", no=15, color="<light-yellow>", icon="¤")
-log.level("JOIN", no=21, color="<light-cyan>", icon="¤")
+log.level("JOIN", no=21, color="<fg 13>", icon="¤")
 log.level("LEAVE", no=21, color="<fg 5>", icon="¤")
 log.level("POINTS", no=22, color="<light-green>", icon="¤")
 log.level("LOTTO", no=23, color="<green>", icon="¤")
 log.level("VOTE", no=20, color="<fg 208>", icon="¤")
 log.level("CRASH", no=29, color="<RED><white><bold>", icon="¤")
-log.level("WIPE", no=20, color="<yellow>", icon="¤")
+log.level("WIPE", no=20, color="<fg 86>", icon="¤")
+log.level("UPDATE", no=20, color="<light-cyan>", icon="¤")
+log.level("MAINT", no=20, color="<fg 86>", icon="¤")
 log.level("TEST", no=20, color="<light-red>", icon="¤")
 
 # Console Logging
