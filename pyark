@@ -35,6 +35,7 @@ __email__ = "ianperry99@gmail.com"
 __progname__ = "pyark-daemon"
 __description__ = "pyark daemon service"
 __detaildesc__ = ""
+__name__ = "pyark"
 
 parser = argparse.ArgumentParser(prog=__progname__)
 parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
@@ -258,7 +259,7 @@ def main():
             sleep(60)
 
 
-if __name__ == '__main__':
+if __name__ == 'pyark':
     gitupdatecheck()
     gitcheck = 1
     main()
