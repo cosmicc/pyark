@@ -8,7 +8,7 @@ from discordbot import discordbot
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, debugfile, pointsfile, colorlogfile
+from modules.configreader import hstname, logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, debugfile, pointsfile, colorlogfile, crashlogfile, critlogfile
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
@@ -85,13 +85,20 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
         lev = 10
     else:
         lev = 5
-    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz", delay=True)
+    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=False, format=logformat, rotation="1 MB", retention="30 days", compression="gz", delay=True)
 
 # Points Logging points.log
-log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz", delay=True, filter='POINTS')
+log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", compression="gz", delay=True, filter='POINTS')
 
 # Admin Logging admin.log
-log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz", delay=True, filter='ADMIN')
+log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", compression="gz", delay=True, filter='ADMIN')
+
+# Crash Logging admin.log
+log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", compression="gz", delay=True, filter='CRASH')
+
+# Crit Logging admin.log
+log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=False, format=logformat, rotation="1 MB", retention="30 days", compression="gz", delay=True)
+
 
 plock()
 
@@ -169,7 +176,7 @@ def main():
         webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port}, daemon=True)
         webserver.start()
     except:
-        log.critical(f'Web Server failed to start.', exc_info=True)
+        log.exception(f'Web Server failed to start.')
 
     while True:
         try:
@@ -245,7 +252,7 @@ def main():
             log.critical(f'Keyboard Interrupt Exiting.')
             exit()
         except:
-            log.critical(f'exception in main loop', exc_info=True)
+            log.exception(f'exception in main loop')
             sleep(60)
 
 

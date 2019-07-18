@@ -143,7 +143,7 @@ def playergreet(steamid, inst):
             # elif len(oplayer) > 2:
             if oplayer[16] != 0 and oplayer[15] == inst:
                 xferpoints = int(oplayer[16])
-                log.log('POINTS', f'transferring {xferpoints} non home server points into account for \
+                log.log('POINTS', f'transferred {xferpoints} non home server points for \
 {oplayer[1]} on {inst}')
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
@@ -276,4 +276,4 @@ def onlineupdate(inst):
                             log.error(f'problem with parsing online player - {rawline}')
             sleep(10)
         except:
-            log.critical('Critical Error in Online Updater!', exc_info=True)
+            log.exception('Critical Error in Online Updater!')

@@ -591,12 +591,12 @@ def checkcommands(minst):
                                             writeglobal(minst, whoname, cmsg)
                                             writechat('Global', whoname, cmsg, tstamp)
                                         except:
-                                            log.critical('could not parse date from chat', exc_info=True)
+                                            log.exception('could not parse date from chat')
                                 else:
                                     subprocess.run("""arkmanager rconcmd "ServerChat Commands: You didn't supply a message \
         to send to all servers" @%s""" % (minst), shell=True)
                     except:
-                        log.critical('Critical Error in global chat writer!', exc_info=True)
+                        log.exception('Critical Error in global chat writer!')
 
                 elif line.find('!lastdinowipe') != -1 or line.find('!lastwipe') != -1:
                     lastwipe = elapsedTime(Now(), getlastwipe(minst))
@@ -711,7 +711,7 @@ def checkcommands(minst):
                                     writechat(inst, whoname, cmsg, tstamp)
                                     writechatlog(inst, whoname, cmsg, tstamp)
                                 except:
-                                    log.critical('could not parse date from chat', exc_info=True)
+                                    log.exception('could not parse date from chat')
 
 
 @log.catch
@@ -722,4 +722,4 @@ def clisten(minst):
             checkcommands(minst)
             sleep(2)
         except:
-            log.critical('Critical Error in Command Listener!', exc_info=True)
+            log.exception('Critical Error in Command Listener!')

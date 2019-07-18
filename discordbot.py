@@ -64,7 +64,7 @@ def discordbot():
                 # log.debug('executing discord bot task checker')
                 if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=6) and isinlottery():
                     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
-                    log.info('announcing running lottery in discord')
+                    log.log('LOTTO', 'announcing running lottery in discord')
                     embed = discord.Embed(title=f"A lottery is currently running!", color=INFO_COLOR)
                     embed.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                     embed.add_field(name=f"Current lottery is up to **{linfo['payout']} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\nType **`!lotto enter`** to join, or **`!points`** for more information", inline=True)
@@ -72,7 +72,7 @@ def discordbot():
                     setlastlottoannounce(Now(fmt='dt'))
                 await asyncio.sleep(60)
             except:
-                log.critical('error in task checker!', exc_info=True)
+                log.exception('error in task checker!')
 
     async def chatbuffer():
         global lastupdateannounce
@@ -124,7 +124,7 @@ def discordbot():
             except discord.errors.HTTPException:
                 log.warning('HTTP Exception error while contacting discord!')
             except:
-                log.critical('Critical Error in Chat Buffer discord writer!', exc_info=True)
+                log.exception('Critical Error in Chat Buffer discord writer!')
             await asyncio.sleep(5)
 
     class NotLinked(commands.CheckFailure):
@@ -166,7 +166,7 @@ def discordbot():
             else:
                 await client.send_message(ctx.message.channel, embed=embed)
         except:
-            log.critical('Critical error in discord send', exc_info=True)
+            log.exception('Critical error in discord send')
 
     @client.event
     async def on_member_join(member):
@@ -200,7 +200,7 @@ def discordbot():
             else:
                 log.warning(f'discord bot error for {ctx.message.author}: {ctx.message.content} - {error}')
         except:
-            log.critical('command error: ', exc_info=True)
+            log.exception('command error: ')
 
     @client.command(pass_context=True, name='help', aliases=['helpme', 'commands'])
     async def _help(ctx):
@@ -387,7 +387,7 @@ def discordbot():
                 ccount += 1
                 msg = msg + f'#{ccount} **{heach[1].capitalize()}** with **{heach[18]}** Lottery Wins.  **{heach[19]}** Total points won.\n'
         except:
-            log.critical('Critical Error determining lottery winners!', exc_info=True)
+            log.exception('Critical Error determining lottery winners!')
         embed = discord.Embed(title=msg2, description=msg, color=INFO_COLOR)
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
@@ -433,7 +433,7 @@ def discordbot():
                         metalt = '**Your Metal Structures & Dinos may have Expired!**'
                     msg = msg + f'{woodt}\n{stonet}\n{metalt}'
                 except:
-                    log.critical('Critical Error in decay calculation!', exc_info=True)
+                    log.exception('Critical Error in decay calculation!')
         embed = discord.Embed(title=msg2, description=msg, color=INFO_COLOR)
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
@@ -456,7 +456,7 @@ def discordbot():
                 msg = msg + f'Next Event is not scheduled yet.\n'
             await messagesend(ctx, msg, allowgeneral=False, reject=True)
         except:
-            log.critical(f'Error calculating events', exc_info=True)
+            log.exception(f'Error calculating events')
 
     @client.command(pass_context=True, name='vote', aliases=['startvote'])
     async def _vote(ctx):
@@ -576,7 +576,7 @@ def discordbot():
             embed.add_field(name=f"CTX", value=f"{dir(ctx.message.author.server)}", inline=True)
             await messagesend(ctx, embed, allowgeneral=True, reject=True)
         except:
-            log.critical('error in test', exc_info=True)
+            log.exception('error in test')
 
     @client.command(pass_context=True, name='whotoday', aliases=['today', 'lastday'])
     async def _today(ctx):

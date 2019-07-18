@@ -354,7 +354,7 @@ def buildconfig(inst):
             subprocess.run('rm -f "%s"' % (newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             return False
     except:
-        log.critical(f'Problem building config for inst {inst}', exc_info=True)
+        log.exception(f'Problem building config for inst {inst}')
         return False
 
 
@@ -514,5 +514,5 @@ def arkupd():
             restartcheck()
             sleep(Secs['1min'])
         except:
-            log.critical('Critical Error in Ark Updater!', exc_info=True)
+            log.exception('Critical Error in Ark Updater!')
             sleep(60)

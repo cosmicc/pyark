@@ -27,6 +27,8 @@ colorlogfile = config.get('general', 'colorlogfile')
 adminfile = config.get('general', 'adminlogfile')
 pointsfile = config.get('general', 'pointslogfile')
 debugfile = config.get('general', 'debuglogfile')
+crashlogfile = config.get('general', 'crashlogfile')
+critlogfile = config.get('general', 'critlogfile')
 
 is_arkupdater = config.get('general', 'is_arkupdater')
 is_asdatapuller = config.get('general', 'is_asdatapuller')

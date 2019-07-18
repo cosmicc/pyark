@@ -31,4 +31,4 @@ def gchatrelay(inst):
                         dbupdate("DELETE FROM globalbuffer WHERE id = '%s'" % (each['id'],))
             sleep(3)
         except:
-            log.critical('Critical Error in Global Chat Relayer!', exc_info=True)
+            log.exception('Critical Error in Global Chat Relayer!')

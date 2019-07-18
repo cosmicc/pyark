@@ -1,6 +1,6 @@
 from modules.dbhelper import dbupdate, dbquery, statsupdate
 from modules.players import getplayersonline, getactiveplayers, getnewplayers, gethitnruns
-from modules.timehelper import Secs
+from modules.timehelper import Secs, Now
 from timebetween import is_time_between
 from datetime import datetime
 from datetime import time as dt
@@ -33,9 +33,9 @@ def oscollect():
             t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
             dailycollect = is_time_between(t, s, e)
             if dailycollect:
-                dbupdate("INSERT INTO clusterstats (dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s')" % (getactiveplayers(Secs['day']), getactiveplayers(Secs['week']), getactiveplayers(Secs['month']), gethitnruns(Secs['day']), getnewplayers(Secs['day'])), db='statsdb')
+                dbupdate("INSERT INTO clusterstats (timestamp, dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (Now(fmt='dt'), len(getactiveplayers(Secs['day'])), len(getactiveplayers(Secs['week'])), len(getactiveplayers(Secs['month'])), len(gethitnruns(Secs['day'])), len(getnewplayers(Secs['day']))), db='statsdb')
             for each in stinst:
                 addvalue(each, getplayersonline(each, fmt='count'))
         except:
-            log.critical('Critical Error in Online Stat Collector!', exc_info=True)
+            log.exception('Critical Error in Online Stat Collector!')
         sleep(Secs['5min'])

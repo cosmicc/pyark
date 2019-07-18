@@ -105,7 +105,7 @@ def determinewinner(linfo):
             nlw = lwin + int(linfo['payout'])
             dbupdate("UPDATE players SET lottowins = '%s', lotterywinnings = '%s' WHERE steamid = '%s'" % (int(lwinner[18]) + 1, nlw, lwinner[0]))
         except:
-            log.critical('Critical Error Lottery Winner determination!', exc_info=True)
+            log.exception('Critical Error Lottery Winner determination!')
     else:
         log.log('LOTTO', f'Lottery has ended. Not enough players: ({len(lottoers)}/3)')
         dbupdate("UPDATE lotteryinfo SET winner = 'None', completed = True WHERE id = %s" % (linfo["id"],))
@@ -134,7 +134,7 @@ def startlottery(lottoinfo):
     # lottoend = estshift(lottoinfo['startdate'] + timedelta(days=lottoinfo['days']))
     lend = elapsedTime(datetimeto(lottoinfo['startdate'] + timedelta(hours=lottoinfo['days']), fmt='epoch'), Now())
     if lottoinfo['announced'] is False:
-        log.info(f'New lottery has started. Buy-in: {lottoinfo["buyin"]}, Starting pot: {lottoinfo["payout"]}, Length: {lottoinfo["days"]} Hours, Ends in {lend}')
+        log.log('LOTTO', f'New lottery has started. Buy-in: {lottoinfo["buyin"]}, Starting pot: {lottoinfo["payout"]}, Length: {lottoinfo["days"]} Hours, Ends in {lend}')
         msg = f'A new lottery has started! {lottoinfo["buyin"]} points to enter in this lottery.\nStarting pot {lottoinfo["payout"]} points and grows as players enter. '
         msg = msg + f'Lottery Ends in {lend}\nType !lotto for more info or !lotto enter to join'
         writeglobal('ALERT', 'ALERT', msg)

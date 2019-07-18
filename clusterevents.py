@@ -104,5 +104,5 @@ def eventwatcher(inst):
             elif not iseventtime() and currentserverevent(inst) != '0':
                 stopserverevent(inst)
         except:
-            log.critical(f'Critical error in event coordinator', exc_info=True)
+            log.exception(f'Critical error in event coordinator')
         sleep(Secs['1min'])
