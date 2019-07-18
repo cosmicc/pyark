@@ -153,7 +153,7 @@ def discordbot():
             dchan = 'Direct Message'
         else:
             dchan = ctx.message.channel
-        log.info(f'discord command [{ctx.message.content}] executed by [{ctx.message.author}] in {dchan}')
+        log.info(f'discord command [{ctx.message.content}] executed by [{ctx.message.author}] in #{dchan}')
         return True
 
     async def messagesend(ctx, embed, allowgeneral=False, reject=True, adminonly=False):

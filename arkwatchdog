@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from modules.configreader import instance, hstname, logfile, colorlogfile, debugfile, critlogfile, loglevel
-from modules.dbhelper import dbupdate
+from modules.dbhelper import dbupdate, dbquery
 from modules.pushover import pushover
 from sys import exit
 from time import sleep
@@ -102,6 +102,12 @@ def arkprocesscpu(inst):
     file.close()
     arkprocess = psutil.Process(int(arkpid))
     return arkprocess.cpu_percent(interval=2)
+
+
+def getlaststart(inst):
+    laststart = dbquery("SELECT lastrestart WHERE name = '%s'" % (inst,))
+    log.log('TEST', laststart)
+    return laststart
 
 
 def getserveruptime():
@@ -243,7 +249,7 @@ def main():
         try:
             for eachinst in instance:
                 isitrunning, isitlistening, isitonline, arkbuild, arkversion, steamlink, arkserverslink, players, activeplayers = getrunning(eachinst['name'])
-                if not isitrunning:
+                if not isitrunning and Now() - int(getlaststart(eachinst)) > Secs['10min']:
                     for neach in isrunning.copy():
                         if neach == eachinst['name']:
                             isrunning[neach].update({'isit': 0, 'count': isrunning[neach]['count'] + 1})
@@ -262,7 +268,7 @@ def main():
                     cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
                     uptime = getserveruptime()
 
-                if not isitlistening:
+                if not isitlistening and Now() - int(getlaststart(eachinst)) > Secs['10min']:
                     for neach in islistening.copy():
                         if neach == eachinst['name']:
                             islistening[neach].update({'isit': 0, 'count': islistening[neach]['count'] + 1})
@@ -275,7 +281,7 @@ def main():
                             islisteningint = 1
                             log.debug(f'{eachinst["name"]} passed instance listening check')
 
-                if not isitonline:
+                if not isitonline and Now() - int(getlaststart(eachinst)) > Secs['10min']:
                     for neach in isonline.copy():
                         if neach == eachinst['name']:
                             isonline[neach].update({'isit': 0, 'count': isonline[neach]['count'] + 1})
@@ -292,7 +298,7 @@ def main():
                 try:
                     dbupdate("UPDATE instances SET isup = '%s', islistening = '%s', isrunning = '%s', arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', uptimestamp = '%s', actmem = '%s', totmem = '%s', serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', arkcpu = '%s', restartserver = '%s', connectingplayers = '%s', activeplayers = '%s' WHERE name = '%s'" % (isonlineint, islisteningint, isrunningint, int(arkbuild), arkversion, steamlink, arkserverslink, Now(), actmem, totmem, hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, arkservercpu, serverneedsrestart(), int(players), int(activeplayers), eachinst['name']))
                 except:
-                    log.error('Error writing stats to database')
+                    log.exception('Error writing stats to database')
                 for feach in isrunning:
                     if feach == eachinst['name']:
                         if isrunning[feach]['count'] == 2:
