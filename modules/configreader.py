@@ -69,10 +69,13 @@ instance = [dict() for x in range(numinstances)]
 
 instr = ''
 
-for each in range(numinstances):
-    a = config.get('instance%s' % (each), 'name')
-    instance[each] = {'name': a, }
-    if instr == '':
-        instr = '%s' % (a)
-    else:
-        instr = instr + ', %s' % (a)
+if numinstances == 0:
+    instr = 'Master Bot'
+else:
+    for each in range(numinstances):
+        a = config.get('instance%s' % (each), 'name')
+        instance[each] = {'name': a, }
+        if instr == '':
+            instr = '%s' % (a.title())
+        else:
+            instr = instr + ', %s' % (a.title())

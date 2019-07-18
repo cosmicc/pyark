@@ -8,7 +8,7 @@ from discordbot import discordbot
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, debugfile, pointsfile, colorlogfile, crashlogfile, critlogfile
+from modules.configreader import hstname, logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, debugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
@@ -106,11 +106,11 @@ log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True,
 plock()
 
 if loglevel == 'DEBUG' or args.debug:
-    log.log('START', f'>>> pyark daemon is starting on {hstname} in **DEBUG MODE**')
+    log.log('START', f'Pyark daemon is starting on {hstname} in **DEBUG MODE**')
 elif loglevel == 'TRACE' or args.trace:
-    log.log('START', f'>>> pyark daemon is starting on {hstname} in ***TRACE MODE***')
+    log.log('START', f'Pyark daemon is starting on {hstname} in ***TRACE MODE***')
 else:
-    log.log('START', f'>>> pyark daemon is starting on {hstname} in normal mode')
+    log.log('START', f'Pyark daemon is starting on {hstname} in normal mode')
 
 checkgit = 0
 
@@ -181,7 +181,7 @@ def main():
     except:
         log.exception(f'Web Server failed to start.')
     sleep(5)
-    log.log('START', f'Pyark bot is ready and serving on {hstname}...')
+    log.info(f'Pyark bot is ready and serving {instr} on {hstname}...')
     while True:
         try:
             if shutil.disk_usage('/').free < 2000000000:
