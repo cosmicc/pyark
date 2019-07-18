@@ -143,8 +143,8 @@ def playergreet(steamid, steamname, inst):
             # elif len(oplayer) > 2:
             if oplayer[16] != 0 and oplayer[15] == inst:
                 xferpoints = int(oplayer[16])
-                log.log('POINTS', f'transferred {xferpoints} non home server points for \
-{oplayer[1]} on {inst}')
+                log.log('POINTS', f'Transferred {xferpoints} non-home server points for \
+[{oplayer[1].title()}] on [{inst.title()}]')
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, xferpoints, inst), shell=True)
@@ -153,15 +153,15 @@ def playergreet(steamid, steamname, inst):
                 if oplayer[3] != inst:
                     gogo = 1
                     #############################
-                    mtxt = f'[{oplayer[1].title()}] has transferred here from [{oplayer[3].capitalize()}]'
+                    mtxt = f'Player [{oplayer[1].title()}] has transferred here from [{oplayer[3].capitalize()}]'
                     subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                     writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
-                    log.log('JOIN', f'player [{oplayer[1].title()}] has transferred from [{oplayer[3].title()}] to [{inst.title()}]')
+                    log.log('JOIN', f'Player [{oplayer[1].title()}] has transferred from [{oplayer[3].title()}] to [{inst.title()}]')
                     #############################
                 # log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
             else:
-                log.log('JOIN', f"player [{oplayer[1].title()}] has joined [{inst}], total player's connections: {int(oplayer[7])+1}")
+                log.log('JOIN', f"Player [{oplayer[1].title()}] has joined [{inst.title()}], total player's connections: {int(oplayer[7])+1}")
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" %
                          (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))

@@ -64,7 +64,7 @@ def discordbot():
                 log.trace('executing discord bot task checker')
                 if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=6) and isinlottery():
                     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
-                    log.log('LOTTO', 'announcing running lottery in discord')
+                    log.log('LOTTO', 'Announcing running lottery in discord')
                     embed = discord.Embed(title=f"A lottery is currently running!", color=INFO_COLOR)
                     embed.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                     embed.add_field(name=f"Current lottery is up to **{linfo['payout']} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\nType **`!lotto enter`** to join, or **`!points`** for more information", inline=True)
@@ -721,12 +721,12 @@ def discordbot():
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=False)
             else:
-                log.info(f'home server request granted for {kuser[1]}')
+                log.info(f'Home server request granted for [{kuser[1].title()}]')
                 msg = f'Your current home server is: **{kuser[15].capitalize()}**\nThis is the server all your points go to'
                 embed = discord.Embed(description=msg, color=SUCCESS_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=False)
         else:
-            log.info(f'home server request from {whofor} denied, no account linked')
+            log.info(f'Home server request from [{whofor.title()}] denied, no account linked')
             msg = f"Your discord account is not linked to your in-game player, Type **`!linkme`** in-game to do this"
             embed = discord.Embed(description=msg, color=FAIL_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=False)
@@ -741,7 +741,7 @@ def discordbot():
                     if args[0].lower() == 'enter' or args[0].lower() == 'join':
                         lpinfo = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
                         if not lpinfo:
-                            log.info(f'lottery join request from {whofor} denied, account not linked')
+                            log.info(f'Lottery join request from [{whofor.title()}] denied, account not linked')
                             msg = f'Your discord account must be linked to your in-game player account to join a lottery from discord.\nType !linkme in-game to do this'
                             embed = discord.Embed(description=msg, color=FAIL_COLOR)
                             if str(ctx.message.channel) == 'bot-channel':
@@ -764,7 +764,7 @@ def discordbot():
                                     await client.send_message(ctx.message.author, embed=embed)
                                 if not ctx.message.channel.is_private and str(ctx.message.channel) != 'bot-channel':
                                     await client.delete_message(ctx.message)
-                                log.info(f'player {whofor} has joined the current active lottery.')
+                                log.info(f'Player [{whofor.title()}] has joined the current active lottery')
                                 if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=2):
                                     embed2 = discord.Embed(title=f"A new lottery player has entered the lottery!", color=INFO_COLOR)
                                     embed2.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
