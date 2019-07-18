@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from modules.configreader import instance, hstname
+from modules.configreader import instance, hstname, logfile, colorlogfile, debugfile, critlogfile, loglevel
 from modules.dbhelper import dbupdate
 from modules.pushover import pushover
 from sys import exit
@@ -23,10 +23,7 @@ __email__ = "ianperry99@gmail.com"
 __progname__ = "pyark-daemon"
 __description__ = "ark instance watchdog service"
 __detaildesc__ = ""
-
-logfile2 = '/home/ark/shared/logs/pyark/arkwatchdog.log'
-logfile3 = '/home/ark/shared/logs/pyark/arkwatchdog-color.log'
-
+__name__ = "arkwatchdog"
 
 parser = argparse.ArgumentParser(prog=__progname__)
 parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
@@ -36,38 +33,46 @@ parser.add_argument('-d', '--debug', action='store_true', help='verbose output (
 parser.add_argument('-t', '--trace', action='store_true', help='super verbose output (trace)')
 args = parser.parse_args()
 
-logformat = '<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
 
-colorlogformat = '<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+logformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {level: <6} | {message} | {name}:{function}:{line}'
+
+colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message: <75}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+
 
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
-log.level("START", no=38, color="<light-red>", icon="¤")
+log.level("START", no=38, color="<light-yellow>", icon="¤")
+log.level("WATCH", no=38, color="<light-yellow>", icon="¤")
+log.level("UPDATE", no=20, color="<light-cyan>", icon="¤")
+log.level("MAINT", no=20, color="<fg 86>", icon="¤")
 log.level("TEST", no=20, color="<light-red>", icon="¤")
 
 # Console Logging
 if args.quiet:
     log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=False, format=logformat)
 elif args.trace:
-    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=logformat)
+    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 elif args.debug:
-    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=logformat)
+    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 else:
-    log.add(sink=sys.stdout, level=20, backtrace=False, diagnose=False, colorize=True, format=logformat)
+    log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 
-if args.debug or args.trace:
-    exp = True
-    if args.debug:
+# Info Logging pyark.log
+log.add(sink=logfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz")
+
+# Info Color Logging pyark-color.log
+log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days", compression="gz")
+
+# Debug Logging debug.log
+if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
+    if loglevel == 'DEBUG' or args.debug:
         lev = 10
     else:
         lev = 5
-else:
-    lev = 20
-    exp = False
+    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=False, format=logformat, rotation="1 MB", retention="30 days", compression="gz", delay=True)
 
-log.add(sink=logfile2, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=False, format=logformat, rotation="1 day", retention="30 days", compression="gz")
-
-log.add(sink=logfile3, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=logformat, rotation="1 day", retention="30 days", compression="gz")
+# Crit Logging admin.log
+log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=False, format=logformat, rotation="1 MB", retention="30 days", compression="gz", delay=True)
 
 
 def issharedmounted():
@@ -200,7 +205,7 @@ def getrunning(inst):
 
 def restartserver(inst, reason):
     if issharedmounted():
-        log.warning(f'restarting instance {inst}')
+        log.log('WATCH', f'restarting instance {inst}')
         pmsg = f'Instance {inst} failed {reason} checks!\nRestarting Instance'
         pushover('Watchdog', pmsg)
         subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL,
@@ -220,12 +225,12 @@ def main():
         islistening[seat['name']].update({'isit': 0, 'count': 0})
         isonline[seat['name']] = {}
         isonline[seat['name']].update({'isit': 0, 'count': 0})
-    log.log('START', f'>>> ark instance watchdog daemon is starting on {hstname}')
+    log.log('START', f'Instance Watchdog Daemon is starting on {hstname}')
     if didserverjustboot():
-        log.info('server just booted, starting instances for the first time')
+        log.log('WATCH', 'server just booted, starting instances for the first time')
         if issharedmounted():
             for eat in instance:
-                log.info(f'starting instance {eat["name"]}')
+                log.log('WATCH', f'starting instance {eat["name"]}')
                 subprocess.run('arkmanager start @%s' % (eat['name']), stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL, shell=True)
             log.debug('sleeping 15 min while instances start')
@@ -322,5 +327,5 @@ def main():
             exit()
 
 
-if __name__ == '__main__':
+if __name__ == 'arkwatchdog':
     main()

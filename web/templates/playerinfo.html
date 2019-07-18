@@ -91,15 +91,17 @@
     <div id="playerinfo" class="container">
         {% if current_user.has_role('admin') or current_user.steamid == playerinfo['steamid'] %}
         <p class='is-2'>Steam ID: <b>{{ playerinfo['steamid'].title() }}</b></p>
+        <p class='is-2'>Steam Name: <b>{{ playerinfo['steamname'] }}</b></p>
+        {% if playerinfo['alias'] %}
+        <p class='is-2'>Playername Alias: <b>{{ playerinfo['alias'].title() }}</b></p>
+        {% endif %}
         {% if playerinfo['discordid'] != "" %}
         <p class='is-2'>Discord ID: <b>{{ playerinfo['discordid'].title() }}</b></p>
         {% else %}
         <p class='is-2'>Linked to Discord: <b>No</b></p>
         {% endif %}
         {% endif %}
-        {% if playerinfo['alias'] %}
-        <p class='is-2'>Playername Alias: <b>{{ playerinfo['alias'].title() }}</b></p>
-        {% endif %}
+
         <p class='is-2'>Last Seen on: <b>{{ playerinfo['server'].title() }}</b></p>
         <p class='is-2'>Home Server: <b>{{ playerinfo['homeserver'].title() }}</b></p>
         <p class='is-2'>Total Played Time: <b>{{ ui_playedTime(playerinfo['playedtime']) }}</b></p>
