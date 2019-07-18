@@ -181,7 +181,7 @@ def main():
     except:
         log.exception(f'Web Server failed to start.')
     sleep(5)
-    log.info(f'Pyark bot is ready and serving {instr} on {hstname}...')
+    log.info(f'Pyark bot is ready and serving [{instr.title()}] on {hstname}...')
     while True:
         try:
             if shutil.disk_usage('/').free < 2000000000:

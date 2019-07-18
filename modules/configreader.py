@@ -76,6 +76,6 @@ else:
         a = config.get('instance%s' % (each), 'name')
         instance[each] = {'name': a, }
         if instr == '':
-            instr = '%s' % (a.title())
+            instr = '%s' % (a)
         else:
-            instr = instr + ', %s' % (a.title())
+            instr = instr + ', %s' % (a)

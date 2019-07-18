@@ -489,9 +489,9 @@ def restartcheck():
 def arkupd():
     log.debug('arkupdater thread started')
     if numinstances > 0:
-        log.log('START', f'Found {numinstances} ARK server instances: [{instr}]')
+        log.debug(f'Found {numinstances} ARK server instances: [{instr}]')
     else:
-        log.log('START', f'No ARK game instances found, running as [Master Bot]')
+        log.debug(f'No ARK game instances found, running as [Master Bot]')
     while True:
         try:
             checkconfig()
