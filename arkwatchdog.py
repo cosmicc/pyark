@@ -163,17 +163,13 @@ def getinstmem(inst):
 def checkpyark():
     for line in open('/tmp/pyark.lock', 'r'):
         pyarkpid = line
-    pyarkstatus = 'N/A'
     if psutil.pid_exists(pyarkpid):
         pyarkproc = psutil.Process(pid=pyarkpid)
-        if pyarkproc.name() == 'pyark':
-            pyarkstatus = pyarkproc.status()
-            log.trace(f'Pyark process [{pyarkpid}] is running with status [{pyarkstatus}]')
-        else:
-            log.log('WATCH', f'Pyark PID is NOT the pyark process [{pyarkpid}]')
+        print(pyarkproc.name())
+        print(pyarkproc.exe())
+        print(pyarkproc.status())
     else:
-        log.log('WATCH', f'Pyark process is NOT running [{pyarkpid}]')
-
+       print('no such process')
 
 def startserver(inst, reason, restart=False):
     if issharedmounted():
@@ -286,7 +282,6 @@ def main():
             log.trace(f'running:{isrunning}')
             log.trace(f'online:{isonline}')
             sleep(Secs['1min'])
-            checkpyark()
         except KeyboardInterrupt:
             log.critical('Keyboard Interrupt Detected, Exiting.')
             exit()
