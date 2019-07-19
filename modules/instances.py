@@ -16,10 +16,10 @@ def getinststatus(inst):
     rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL, shell=True)
     rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
-    serverrunning = None
-    serveronline = None
+    serverrunning = 0
+    serveronline = 0
     players = None
-    serverlistening = None
+    serverlistening = 0
     serverbuild = None
     activeplayers = None
     steamlink = None

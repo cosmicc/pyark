@@ -4,6 +4,7 @@ from modules.configreader import instance, hstname, logfile, colorlogfile, debug
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
 from modules.instances import getinststatus, isinstanceenabled
+from arkupdater import restartinstnow
 from sys import exit
 from time import sleep
 from modules.timehelper import Secs, Now, elapsedTime
@@ -162,15 +163,9 @@ def getinstmem(inst):
 def startserver(inst, reason, restart=False):
     if issharedmounted():
         if loglevel != 'DEBUG' or loglevel != 'TRACE' or not args.debug or not args.trace:
-            if restart:
-                log.log('WATCH', f'Instance [{inst.title()}] is stopping...')
-                subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL,
-                               stderr=subprocess.DEVNULL, shell=True)
-
-            subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL, shell=True)
+            restartinstnow(inst)
         else:
-            log.log('WATCH', f'Instance [{inst.title()}] failed checks. Debug mode stops restart...')
+            log.log('WATCH', f'Instance [{inst.title()}] Debug mode stops start/restart...')
     else:
         log.warning(f'Server {hstname} is waiting for drives to mount')
 
