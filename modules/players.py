@@ -1,27 +1,10 @@
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.timehelper import Now, Secs
-import re
-import subprocess
-
-
-def stripansi(stripstr):
-    ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-    return(ansi_escape.sub('', stripstr))
 
 
 def getliveplayersonline(inst):
-    rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
-                            stderr=subprocess.DEVNULL, shell=True)
-    rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
-    players = 0
-    activeplayers = 0
-    for ea in rawrun2:
-        sttitle = stripansi(ea.split(':')[0]).strip()
-        if (sttitle == 'Players'):
-            players = int(stripansi(ea.split(':')[1]).strip().split('/')[0].strip())
-        if (sttitle == 'Active Players'):
-            activeplayers = int(stripansi(ea.split(':')[1]).strip())
-    return int(players), int(activeplayers)
+    dbdata = dbquery("SELECT connectingplayers, activeplayers FROM instances WHERE name = '%s'" % (inst,))
+    return dbdata[0]
 
 
 def getbannedplayers():

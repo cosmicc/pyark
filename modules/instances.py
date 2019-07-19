@@ -12,7 +12,7 @@ def stripansi(stripstr):
     return(ansi_escape.sub('', stripstr))
 
 
-def processinststatus(inst):
+def getinststatus(inst):
     rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL, shell=True)
     rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
@@ -61,7 +61,7 @@ def processinststatus(inst):
         if (sttitle == 'Steam connect link'):
             steamlink = stripansi(ea.split('  ')[1]).strip()
     try:
-        log.log('TEST', f'{serverpid}, {serverrunning}, {serverlistening}, {serveronline}')
+        log.log('TEST', f'{serverpid}, {serveronline}, {serverlistening}, {serverrunning}')
         dbupdate("UPDATE instances SET serverpid = '%s', isup = '%s', islistening = '%s', isrunning = '%s' WHERE name = '%s'" % (int(serverpid), int(serverrunning), int(serverlistening), int(serveronline), inst))
     except:
         log.exception('Error writing up stats to database')
@@ -71,6 +71,12 @@ def processinststatus(inst):
             except:
                 log.exception('Error writing extra stats to database')
     return serverrunning, serveronline
+
+
+def isinstanceenabled(inst):
+    sen = dbquery("SELECT enabled FROM instances WHERE name = '%s'" % (inst,), fetch='one')
+    return sen[0]
+
 
 def enableinstance(inst):
     dbupdate("UPDATE instances SET enabled = True WHERE name = '%s'" % (inst,))
