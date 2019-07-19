@@ -852,6 +852,7 @@ def discordbot():
             client.loop.create_task(taskchecker())
             client.run(discordtoken)
         except:
-            log.critical('Critical Error in Discord Bot Routine.')
+            log.exception('Critical Error in Discord Bot Routine.')
             sleep(60)
+            log.warning('Restarting Pyark on [{hstname}] because of discord bot error')
             system('ark restart')
