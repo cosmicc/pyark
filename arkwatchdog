@@ -198,6 +198,9 @@ def main():
         actmem = 0
         totmem = 0
         try:
+            if serverstatcount = 5:
+                serverstatcount = 0
+            serverstatcount += 1
             for eachinst in instance:
                 if isinstanceenabled(eachinst['name']):
                     isitrunning, isitonline = getinststatus(eachinst['name'])
@@ -244,15 +247,12 @@ def main():
                                 isonline[feach].update({'isit': 0, 'count': 0})
                                 startserver(eachinst['name'], 'online')
 
-            if serverstatcount == 0:
-                serverstatcount = 5
-                log.debug(f'Updating server stats for server {hstname.upper()}')
-                memfree, memavail, swapused = getservermem()
-                cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
-                uptime = getserveruptime()
-                dbupdate("UPDATE instances SET serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s' WHERE name = '%s'" % (hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, eachinst['name']))
-            else:
-                serverstatcount -= 1
+                    if serverstatcount == 1:
+                        log.debug(f'Updating server stats for server {hstname.upper()}')
+                        memfree, memavail, swapused = getservermem()
+                        cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
+                        uptime = getserveruptime()
+                        dbupdate("UPDATE instances SET serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s' WHERE name = '%s'" % (hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, eachinst['name']))
 
         except KeyboardInterrupt:
             log.critical('Keyboard Interrupt Detected, Exiting.')
