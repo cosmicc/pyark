@@ -171,9 +171,9 @@ def checkpyark():
                 pyarkstatus = pyarkproc.status()
                 log.trace(f'Pyark process [{pyarkpid}] is running with status [{pyarkstatus}]')
             else:
-                log.log('WATCH', f'Pyark PID is NOT the pyark process [{pyarkpid}]')
+                log.warning(f'Pyark PID is NOT the pyark process [{pyarkpid}]')
         else:
-            log.log('WATCH', f'Pyark process is NOT running [{pyarkpid}]')
+            log.warning(f'Pyark process is NOT running [{pyarkpid}]')
     except:
         log.exception('checkpyark error')
 
