@@ -260,7 +260,7 @@ def main():
             log.exception('Critical Error in Ark Watchdog!')
         log.debug('sleeping 1 min between checks')
         try:
-            log.log('TEST', f'running:{isrunning} online:{isonline}')
+            log.trace(f'running:{isrunning} online:{isonline}')
             sleep(Secs['1min'])
         except KeyboardInterrupt:
             log.critical('Keyboard Interrupt Detected, Exiting.')
