@@ -243,6 +243,7 @@ def main():
                                 isrunning[neach].update({'isit': 0, 'count': isrunning[neach]['count'] + 1})
                                 if isrunning[neach]['count'] > 1:
                                     log.warning(f'[{eachinst["name"].title()}] failed instance running check ({isrunning[neach]["count"]}/3)')
+                                    dbupdate("UPDATE instances SET isup = 0 WHERE name = '%s'" % (eachinst['name'],))
                     else:
                         log.debug(f'skipping running check for 3 min startup for {eachinst["name"]}')
 
@@ -252,9 +253,11 @@ def main():
                                 isonline[neach].update({'isit': 0, 'count': isonline[neach]['count'] + 1})
                                 if isonline[neach]['count'] > 4:
                                     log.warning(f'[{eachinst["name"].title()}] failed instance online check ({isonline[neach]["count"]}/10)')
+                                    dbupdate("UPDATE instances SET isup = 0 WHERE name = '%s'" % (eachinst['name'],))
+
                     elif isitonline:
                         log.debug(f'{eachinst["name"]} passed instance online check')
-                        dbupdate("UPDATE instances SET uptimestamp = '%s' WHERE name = '%s'" % (Now(), eachinst['name']))
+                        dbupdate("UPDATE instances SET uptimestamp = '%s', isup = 1 WHERE name = '%s'" % (Now(), eachinst['name']))
                         for neach in isonline.copy():
                             if neach == eachinst['name']:
                                 isonline[neach].update({'isit': 1, 'count': 0})

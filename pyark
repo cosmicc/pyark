@@ -42,7 +42,7 @@ parser.add_argument('--version', action='version', version='%(prog)s {}'.format(
 parser.add_argument('-q', '--quiet', action='store_true',
                     help='supress logging output to console. default: error logging')
 parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')
-parser.add_argument('-dd', '--trace', action='store_true', help='super verbose output (trace)')
+parser.add_argument('-t', '--trace', action='store_true', help='super verbose output (trace)')
 
 args = parser.parse_args()
 
@@ -69,21 +69,21 @@ log.level("TEST", no=5, color="<light-red>", icon="¤")
 
 
 def checklogadmin(record):
-    if record.level == 'ADMIN':
+    if record['level'] == 'ADMIN':
         return True
     else:
         return False
 
 
 def checklogpoints(record):
-    if record.level == 'POINTS':
+    if record['level'] == 'POINTS':
         return True
     else:
         return False
 
 
 def checklogcrash(record):
-    if record.level == 'CRASH':
+    if record['level'] == 'CRASH':
         return True
     else:
         return False

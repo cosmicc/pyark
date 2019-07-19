@@ -61,7 +61,7 @@ def getinststatus(inst):
             steamlink = stripansi(ea.split('  ')[1]).strip()
     try:
         log.trace(f'pid: {serverpid}, online: {serveronline}, listening: {serverlistening}, running: {serverrunning}, {inst}')
-        dbupdate("UPDATE instances SET serverpid = '%s', isup = '%s', islistening = '%s', isrunning = '%s' WHERE name = '%s'" % (int(serverpid), int(serveronline), int(serverlistening), int(serverrunning), inst))
+        dbupdate("UPDATE instances SET serverpid = '%s', isonline = '%s', islistening = '%s', isrunning = '%s' WHERE name = '%s'" % (int(serverpid), int(serveronline), int(serverlistening), int(serverrunning), inst))
     except:
         log.exception('Error writing up stats to database')
     if players is not None and activeplayers is not None and serverbuild is not None and serverversion is not None and steamlink is not None and arkserverslink is not None:
