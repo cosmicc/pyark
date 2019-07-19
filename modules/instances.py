@@ -60,7 +60,7 @@ def getinststatus(inst):
         if (sttitle == 'Steam connect link'):
             steamlink = stripansi(ea.split('  ')[1]).strip()
     try:
-        log.trace(f'{serverpid}, {serveronline}, {serverlistening}, {serverrunning}')
+        log.trace(f'{serverpid}, {serveronline}, {serverlistening}, {serverrunning}, {inst}')
         dbupdate("UPDATE instances SET serverpid = '%s', isup = '%s', islistening = '%s', isrunning = '%s' WHERE name = '%s'" % (int(serverpid), int(serverrunning), int(serverlistening), int(serveronline), inst))
     except:
         log.exception('Error writing up stats to database')

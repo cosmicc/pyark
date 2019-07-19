@@ -201,7 +201,7 @@ def main():
             for eachinst in instance:
                 if isinstanceenabled(eachinst['name']):
                     isitrunning, isitonline = getinststatus(eachinst['name'])
-                    log.debug(f'got running: {isitrunning} and online: {isitonline} from {eachinst["name"]}')
+                    log.trace(f'got running: {isitrunning} and online: {isitonline} from {eachinst["name"]}')
                     if isitrunning:
                         log.debug(f'updating process stats for {eachinst["name"]}')
                         arkservercpu = float_trunc_1dec(arkprocesscpu(eachinst["name"]))
