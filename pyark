@@ -89,7 +89,7 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
         lev = 10
     else:
         lev = 5
-    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, rotation="1 MB", retention="30 days", compression="gz", delay=True)
+    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days", compression="gz", delay=True)
 
 # Points Logging points.log
 log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", compression="gz", delay=True, filter='POINTS')
@@ -101,7 +101,7 @@ log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False,
 log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", compression="gz", delay=True, filter='CRASH')
 
 # Crit Logging admin.log
-log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, rotation="1 MB", retention="30 days", compression="gz", delay=True)
+log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days", compression="gz", delay=True)
 
 
 plock()
