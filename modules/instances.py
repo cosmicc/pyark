@@ -16,7 +16,7 @@ def getinststatus(inst):
     rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL, shell=True)
     rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
-    log.log('TEST', rawrun2)
+    log.trace(f'{rawrun2} {inst}')
     serverrunning = None
     serveronline = None
     players = None
@@ -61,7 +61,7 @@ def getinststatus(inst):
         if (sttitle == 'Steam connect link'):
             steamlink = stripansi(ea.split('  ')[1]).strip()
     try:
-        log.log('TEST', f'{serverpid}, {serveronline}, {serverlistening}, {serverrunning}')
+        log.trace(f'{serverpid}, {serveronline}, {serverlistening}, {serverrunning}')
         dbupdate("UPDATE instances SET serverpid = '%s', isup = '%s', islistening = '%s', isrunning = '%s' WHERE name = '%s'" % (int(serverpid), int(serverrunning), int(serverlistening), int(serveronline), inst))
     except:
         log.exception('Error writing up stats to database')
