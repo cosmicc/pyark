@@ -163,7 +163,7 @@ def getinstmem(inst):
 def checkpyark():
     try:
         for line in open('/tmp/pyark.lock', 'r'):
-            pyarkpid = line
+            pyarkpid = int(line)
         pyarkstatus = 'N/A'
         if psutil.pid_exists(pyarkpid):
             pyarkproc = psutil.Process(pid=pyarkpid)
