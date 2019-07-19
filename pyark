@@ -65,7 +65,7 @@ log.level("WIPE", no=20, color="<fg 86>", icon="¤")
 log.level("UPDATE", no=20, color="<light-cyan>", icon="¤")
 log.level("MAINT", no=20, color="<fg 86>", icon="¤")
 log.level("GIT", no=30, color="<yellow>", icon="¤")
-log.level("TEST", no=20, color="<light-red>", icon="¤")
+log.level("TEST", no=5, color="<light-red>", icon="¤")
 
 # Console Logging
 if args.quiet:
