@@ -161,18 +161,21 @@ def getinstmem(inst):
 
 
 def checkpyark():
-    for line in open('/tmp/pyark.lock', 'r'):
-        pyarkpid = line
-    pyarkstatus = 'N/A'
-    if psutil.pid_exists(pyarkpid):
-        pyarkproc = psutil.Process(pid=pyarkpid)
-        if pyarkproc.name() == 'pyark':
-            pyarkstatus = pyarkproc.status()
-            log.trace(f'Pyark process [{pyarkpid}] is running with status [{pyarkstatus}]')
+    try:
+        for line in open('/tmp/pyark.lock', 'r'):
+            pyarkpid = line
+        pyarkstatus = 'N/A'
+        if psutil.pid_exists(pyarkpid):
+            pyarkproc = psutil.Process(pid=pyarkpid)
+            if pyarkproc.name() == 'pyark':
+                pyarkstatus = pyarkproc.status()
+                log.trace(f'Pyark process [{pyarkpid}] is running with status [{pyarkstatus}]')
+            else:
+                log.log('WATCH', f'Pyark PID is NOT the pyark process [{pyarkpid}]')
         else:
-            log.log('WATCH', f'Pyark PID is NOT the pyark process [{pyarkpid}]')
-    else:
-        log.log('WATCH', f'Pyark process is NOT running [{pyarkpid}]')
+            log.log('WATCH', f'Pyark process is NOT running [{pyarkpid}]')
+    except:
+        log.exception('checkpyark error')
 
 
 def startserver(inst, reason, restart=False):
