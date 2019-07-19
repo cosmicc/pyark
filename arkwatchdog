@@ -206,7 +206,7 @@ def main():
                         log.debug(f'updating process stats for {eachinst["name"]}')
                         arkservercpu = float_trunc_1dec(arkprocesscpu(eachinst["name"]))
                         actmem, totmem = getinstmem(eachinst['name'])
-                        dbupdate("UPDATE instances SET actmem = '%s', totmem = '%s', arkcpu = '%s', WHERE name = '%s'" % (actmem, totmem, arkservercpu, eachinst['name']))
+                        dbupdate("UPDATE instances SET actmem = '%s', totmem = '%s', arkcpu = '%s' WHERE name = '%s'" % (actmem, totmem, arkservercpu, eachinst['name']))
                         for neach in isrunning.copy():
                             isrunning[neach].update({'isit': 1, 'count': 0})
                             log.debug(f'{eachinst["name"]} passed instance running check')
