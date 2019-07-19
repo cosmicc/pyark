@@ -69,7 +69,7 @@ def isgreeting(steamid):
 def serverisinrestart(steamid, inst, oplayer):
     rbt = dbquery("SELECT * FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     if rbt[3] == "True":
-        log.info(f'notifying player {oplayer[1]} that server {inst} will be restarting in {rbt[7]} min')
+        log.info(f'Notifying player [{oplayer[1].title()}] that server [{inst.title()}] will be restarting in {rbt[7]} min')
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
 

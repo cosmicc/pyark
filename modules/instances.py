@@ -69,7 +69,7 @@ def getinststatus(inst):
                 dbupdate("UPDATE instances SET arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', connectingplayers = '%s', activeplayers = '%s' WHERE name = '%s'" % (int(serverbuild), serverversion, steamlink, arkserverslink, int(players), int(activeplayers), inst))
             except:
                 log.exception('Error writing extra stats to database')
-    return serverrunning, serveronline
+    return serverrunning, serverlistening, serveronline
 
 
 def isinstanceenabled(inst):

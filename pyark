@@ -119,10 +119,10 @@ log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False
 # Admin Logging admin.log
 log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", delay=True, filter=checklogadmin)
 
-# Crash Logging admin.log
+# Crash Logging crash.log
 log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", delay=True, filter=checklogcrash)
 
-# Crit Logging admin.log
+# Error Logging error.log
 log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days", delay=True)
 
 plock()
