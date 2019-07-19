@@ -208,8 +208,9 @@ def main():
                         actmem, totmem = getinstmem(eachinst['name'])
                         dbupdate("UPDATE instances SET actmem = '%s', totmem = '%s', arkcpu = '%s' WHERE name = '%s'" % (actmem, totmem, arkservercpu, eachinst['name']))
                         for neach in isrunning.copy():
-                            isrunning[neach].update({'isit': 1, 'count': 0})
-                            log.debug(f'{eachinst["name"]} passed instance running check')
+                            if neach == eachinst['name']:
+                                isrunning[neach].update({'isit': 1, 'count': 0})
+                                log.debug(f'{eachinst["name"]} passed instance running check')
                     else:
                         for neach in isrunning.copy():
                             if neach == eachinst['name']:
