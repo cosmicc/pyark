@@ -198,7 +198,7 @@ def main():
         actmem = 0
         totmem = 0
         try:
-            if serverstatcount = 5:
+            if serverstatcount == 5:
                 serverstatcount = 0
             serverstatcount += 1
             for eachinst in instance:
