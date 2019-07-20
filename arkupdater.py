@@ -80,7 +80,7 @@ def wipeit(inst):
     sleep(3)
     subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     resetlastwipe(inst)
-    log.log('WIPE', f'All wile dinos have been wiped from [{inst.title()}]')
+    log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
 def checkwipe(inst):

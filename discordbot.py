@@ -764,7 +764,7 @@ def discordbot():
                                     await client.send_message(ctx.message.author, embed=embed)
                                 if not ctx.message.channel.is_private and str(ctx.message.channel) != 'bot-channel':
                                     await client.delete_message(ctx.message)
-                                log.info(f'Player [{whofor.title()}] has joined the current active lottery')
+                                log.log('LOTTO', f'Player [{whofor.title()}] has joined the current active lottery')
                                 if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=2):
                                     embed2 = discord.Embed(title=f"A new lottery player has entered the lottery!", color=INFO_COLOR)
                                     embed2.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')

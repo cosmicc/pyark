@@ -510,7 +510,7 @@ def lotteryquery(whoasked, lchoice, inst):
     lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
     if linfo:
         if lchoice == 'join' or lchoice == 'enter':
-            log.info(f'Responding to a [!lotto join] request from [{whoasked.title()}] on [{inst.title()}]')
+            log.log('CMD', f'Responding to a [!lotto join] request from [{whoasked.title()}] on [{inst.title()}]')
             lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
             lfo = 'ARc Rewards Points'
             # ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
@@ -525,7 +525,7 @@ def lotteryquery(whoasked, lchoice, inst):
                 msg = f'You are already participating in this lottery for {lfo}.  Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
         else:
-            log.info(f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
+            log.log('CMD', f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
             sendlotteryinfo(linfo, lpinfo, inst)
     else:
         log.info(f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
