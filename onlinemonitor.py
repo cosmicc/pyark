@@ -160,7 +160,7 @@ def playergreet(steamid, steamname, inst):
                 # log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
             else:
-                log.log('JOIN', f"Player [{oplayer[1].title()}] has joined [{inst.title()}], total connections: {int(oplayer[7])+1}")
+                log.log('JOIN', f"Player [{oplayer[1].title()}] has joined [{inst.title()}], connections: {int(oplayer[7])+1}")
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" %
                          (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
