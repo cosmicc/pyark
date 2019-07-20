@@ -58,8 +58,8 @@ log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
 log.level("START", no=38, color="<fg 39>", icon="¤")
 log.level("ADMIN", no=15, color="<fg 15><bg 18>", icon="¤")
-log.level("JOIN", no=21, color="<fg 201>", icon="¤")
-log.level("LEAVE", no=21, color="<fg 165>", icon="¤")
+log.level("JOIN", no=21, color="<fg 219>", icon="¤")
+log.level("LEAVE", no=21, color="<fg 201>", icon="¤")
 log.level("POINTS", no=22, color="<fg 154>", icon="¤")
 log.level("LOTTO", no=23, color="<fg 70>", icon="¤")
 log.level("VOTE", no=20, color="<fg 208>", icon="¤")
@@ -218,7 +218,7 @@ def main():
     except:
         log.exception(f'Web Server failed to start.')
     sleep(5)
-    log.info(f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
+    log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
     while True:
         try:
             if shutil.disk_usage('/').free < 2000000000:
