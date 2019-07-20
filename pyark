@@ -60,7 +60,7 @@ log.level("START", no=38, color="<fg 39>", icon="¤")
 log.level("ADMIN", no=15, color="<fg 15><bg 18>", icon="¤")
 log.level("JOIN", no=21, color="<fg 201>", icon="¤")
 log.level("LEAVE", no=21, color="<fg 128>", icon="¤")
-log.level("POINTS", no=22, color="<fg 154>", icon="¤")
+log.level("POINTS", no=22, color="<fg 118>", icon="¤")
 log.level("LOTTO", no=23, color="<fg 70>", icon="¤")
 log.level("VOTE", no=20, color="<fg 208>", icon="¤")
 log.level("CMD", no=20, color="<fg 147>", icon="¤")
@@ -69,11 +69,12 @@ log.level("WIPE", no=20, color="<fg 86>", icon="¤")
 log.level("UPDATE", no=20, color="<light-cyan>", icon="¤")
 log.level("MAINT", no=20, color="<fg 121>", icon="¤")
 log.level("GIT", no=30, color="<fg 229>", icon="¤")
-log.level("TEST", no=5, color="<light-red>", icon="¤")
+log.level("EXIT", no=35, color="<fg 228><bg 18>", icon="¤")
+log.level("TEST", no=5, color="<black><YELLOW>", icon="¤")
 
 
 def sig_handler(signal, frame):
-    log.critical(f'Termination signal {signal} recieved. Exiting.')
+    log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
     sleep(1)
     killme(0)
 
