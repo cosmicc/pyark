@@ -82,7 +82,6 @@ def getserverlist():
 
 
 def whoisonlinewrapper(inst, oinst, whoasked, crnt):
-    log.info(f'Responding to a [!who] request from [{whoasked.title()}] on [{inst.title()}]')
     if oinst == inst:
         slist = getserverlist()
         for each in slist:
@@ -314,7 +313,6 @@ def voting(inst, whoasked):
                 subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nA wild dino wipe vote is waiting. Make sure you have cast your vote !yes or !no in global chat now'" @%s""" % (inst,), shell=True)
 
         sltimer += 5
-    # log.info(f'final votertable for vote on {inst}')
     log.debug(votertable)
     votertable = []
     lastvoter = Now()
@@ -508,11 +506,11 @@ def sendlotteryinfo(linfo, lpinfo, inst):
 
 
 def lotteryquery(whoasked, lchoice, inst):
-    log.info(f'Responding to a [!lotto {lchoice}] request from [{whoasked.title()}] on [{inst.title()}]')
     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
     lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
     if linfo:
         if lchoice == 'join' or lchoice == 'enter':
+            log.info(f'Responding to a [!lotto join] request from [{whoasked.title()}] on [{inst.title()}]')
             lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
             lfo = 'ARc Rewards Points'
             # ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
@@ -527,8 +525,10 @@ def lotteryquery(whoasked, lchoice, inst):
                 msg = f'You are already participating in this lottery for {lfo}.  Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
         else:
+            log.info(f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
             sendlotteryinfo(linfo, lpinfo, inst)
     else:
+        log.info(f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
         msg = f'There are no current lotterys underway.'
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg, inst), shell=True)
 
@@ -569,7 +569,7 @@ def checkcommands(minst):
                     subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, \
                     !myinfo, !myhome, !lastwipe, !lastrestart, !vote, !lottery, !lastseen <playername>, !playtime <playername>" @%s' %
                                    (minst), shell=True)
-                    log.info(f'Responding to a [!help] request from [{whoasked.title()}] on [{minst.title()}]')
+                    log.log('CMD', f'Responding to a [!help] request from [{whoasked.title()}] on [{minst.title()}]')
                 elif line.find('@all') != -1:
                     try:
                         rawline = line.split('(')
@@ -603,13 +603,13 @@ def checkcommands(minst):
                     lastwipe = elapsedTime(Now(), getlastwipe(minst))
                     subprocess.run('arkmanager rconcmd "ServerChat Last wild dino wipe was %s ago" @%s' %
                                    (lastwipe, minst), shell=True)
-                    log.info(f'Responding to a [!lastwipe] request from [{whoasked.title()}] on [{minst.title()}]')
+                    log.log('CMD', f'Responding to a [!lastwipe] request from [{whoasked.title()}] on [{minst.title()}]')
 
                 elif line.find('!lastrestart') != -1:
                     lastrestart = elapsedTime(Now(), getlastrestart(minst))
                     subprocess.run('arkmanager rconcmd "ServerChat Last server restart was %s ago" @%s' %
                                    (lastrestart, minst), shell=True)
-                    log.info(f'Responding to a [!lastrestart] request from [{whoasked.title()}] on [{minst.title()}]')
+                    log.log('CMD', f'Responding to a [!lastrestart] request from [{whoasked.title()}] on [{minst.title()}]')
 
                 elif line.find('!lastseen') != -1:
                     rawseenname = line.split(':')
@@ -619,10 +619,11 @@ def checkcommands(minst):
                         seenname = lsnname[1].strip().lower()
                         lsn = getlastseen(seenname)
                         subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, minst), shell=True)
+                        log.log('CMD', f'Responding to a [!lastseen] request for [{seenname.title()}] from [{orgname.title()}] on [{minst.title()}]')
                     else:
                         subprocess.run('arkmanager rconcmd "ServerChat You must specify a player name to search" @%s' %
                                        (minst), shell=True)
-                    log.info(f'Responding to a [!lastseen] request for [{seenname.title()}] from [{orgname.title()}] on [{minst.title()}]')
+                        log.log('CMD', f'Responding to a invalid [!lastseen] request from [{orgname.title()}] on [{minst.title()}]')
 
                 elif line.find('!playedtime') != -1:
                     rawseenname = line.split(':')
@@ -634,7 +635,8 @@ def checkcommands(minst):
                     else:
                         lpt = gettimeplayed(whoasked)
                     subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, minst), shell=True)
-                    log.info(f'Responding to a [!playedtime] request for [{whoasked.title()}] on [{minst.title()}]')
+                    log.log('CMD', f'Responding to a [!playedtime] request for [{whoasked.title()}] on [{minst.title()}]')
+
                 elif line.find('!recent') != -1 or line.find('!whorecent') != -1 or line.find('!lasthour') != -1:
                     rawline = line.split(':')
                     lastlline = rawline[2].strip().split(' ')
@@ -642,7 +644,9 @@ def checkcommands(minst):
                         ninst = lastlline[1]
                     else:
                         ninst = minst
+                    log.log('CMD', f'Responding to a [!recent] request for [{whoasked.title()}] on [{minst.title()}]')
                     whoisonlinewrapper(ninst, minst, whoasked, 2)
+
                 elif line.find('!today') != -1 or line.find('!lastday') != -1:
                     rawline = line.split(':')
                     lastlline = rawline[2].strip().split(' ')
@@ -650,40 +654,53 @@ def checkcommands(minst):
                         ninst = lastlline[1]
                     else:
                         ninst = minst
+                    log.log('CMD', f'Responding to a [!today] request for [{whoasked.title()}] on [{minst.title()}]')
                     whoisonlinewrapper(ninst, minst, whoasked, 3)
+
                 elif line.find('!mypoints') != -1 or line.find('!myinfo') != -1:
                     log.info(f'Responding to a [!myinfo] request from [{whoasked.title()}] on [{minst.title()}')
                     respmyinfo(minst, whoasked)
-                elif line.find('!whoson') != -1 or line.find('!whosonline') != -1 or line.find('!who') != -1:
+
+                elif line.find('!whoson') != -1 or line.find('!online') != -1 or line.find('!who') != -1:
                     rawline = line.split(':')
                     lastlline = rawline[2].strip().split(' ')
                     if len(lastlline) == 2:
                         ninst = lastlline[1]
                     else:
                         ninst = minst
+                    log.log('CMD', f'Responding to a [!who] request for [{whoasked.title()}] on [{minst.title()}]')
                     whoisonlinewrapper(ninst, minst, whoasked, 1)
-                elif line.find('!myhome') != -1:
+
+                elif line.find('!myhome') != -1 or line.find('!home') != -1 or line.find('!sethome') != -1:
                     rawline = line.split(':')
                     lastlline = rawline[2].strip().split(' ')
                     if len(lastlline) == 2:
                         ninst = lastlline[1]
                     else:
                         ninst = ''
+                    log.log('CMD', f'Responding to a [!myhome] request for [{whoasked.title()}] on [{minst.title()}]')
                     homeserver(minst, whoasked, ninst)
+
                 elif line.find('!vote') != -1 or line.find('!startvote') != -1 or line.find('!wipe') != -1:
                     log.debug(f'Responding to a [!vote] request from [{whoasked.title()}] on [{minst.title()}]')
                     startvoter(minst, whoasked)
+
                 elif line.find('!agree') != -1 or line.find('!yes') != -1:
                     log.debug(f'responding to YES vote on {minst} from {whoasked}')
                     castedvote(minst, whoasked, True)
+
                 elif line.find('!disagree') != -1 or line.find('!no') != -1:
-                    log.info(f'responding to NO vote on {minst} from {whoasked}')
+                    log.log('VOTE', f'Responding to NO vote on [{minst.title()}] from [{whoasked.title()}]')
                     castedvote(minst, whoasked, False)
+
                 elif line.find('!timeleft') != -1 or line.find('!restart') != -1:
-                    log.info(f'Responding to a [!timeleft] request from [{whoasked.title()}] on [{minst.title()}]')
+                    log.log('CMD', f'Responding to a [!timeleft] request from [{whoasked.title()}] on [{minst.title()}]')
                     resptimeleft(minst, whoasked)
+
                 elif line.find('!linkme') != -1 or line.find('!link') != -1:
+                    log.log('CMD', f'Responding to a [!linkme] request from [{whoasked.title()}] on [{minst.title()}]')
                     linker(minst, whoasked)
+
                 elif line.find('!lottery') != -1 or line.find('!lotto') != -1:
                     rawline = line.split(':')
                     if len(rawline) > 2:
