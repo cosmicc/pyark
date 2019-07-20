@@ -836,8 +836,7 @@ def discordbot():
         elif str(message.channel) == 'server-notifications':
             if message.content.lower().find('server has crashed! - restarting server') != -1:
                 inst = message.content.split(':')[0].split()[3].lower()
-                dbupdate("UPDATE instances SET lastcrash = '%s' where name = '%s'" % (Now(fmt='dt'), inst))
-                dbupdate("UPDATE instances SET lastrestart = '%s' where name = '%s'" % (str(Now(fmt='epoch')), inst))
+                dbupdate("UPDATE instances SET isup = 0, lastcrash = '%s', lastrestart = '%s' where name = '%s'" % (Now(fmt='dt'), str(Now(fmt='epoch')), inst))
                 log.log('CRASH', f'{inst.upper()} Server has crashed at {Now(fmt="string", est=True)} EST')
                 msg = f'The **{inst.title()}** server has crashed!\n\nServer is now restarting, there may be a slight rollback'
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)

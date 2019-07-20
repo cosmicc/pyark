@@ -277,3 +277,4 @@ def onlineupdate(inst):
             sleep(15)
         except:
             log.exception('Critical Error in Online Updater!')
+            sleep(10)

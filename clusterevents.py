@@ -16,6 +16,15 @@ def setmotd(inst, motd=None, cancel=False):
         subprocess.run("""/usr/local/bin/arkmanager rconcmd "SetMessageOfTheDay ''" @%s""" % (inst,), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 
+def iseventrebootday():
+    startday = dbquery("SELECT title FROM events WHERE starttime = '%s'" % (Now(fmt='dtd'),), fmt='string', fetch='one')
+    endday = dbquery("SELECT title FROM events WHERE endtime = '%s'" % (Now(fmt='dtd'),), fmt='string', fetch='one')
+    if startday:
+        return f'{startday} Event Start'
+    elif endday:
+        return f'{startday} Event End'
+
+
 def iseventtime():
     inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fmt='dict', fetch='one')
     if inevent:

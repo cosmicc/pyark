@@ -422,8 +422,8 @@ def processtcdata(inst, tcdata):
     pexist = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid, ), fetch='one')
     if not pexist:
         if steamid != '':
-            log.info(f'player {playername} with steamid {steamid} was not found on {inst}. adding \
-new player to cluster.')
+            log.info(f'Player [{playername.title()}] steamid [{steamid}] was not found on [{inst.title()}] Adding \
+new player to cluster')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                       firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
@@ -508,6 +508,7 @@ def sendlotteryinfo(linfo, lpinfo, inst):
 
 
 def lotteryquery(whoasked, lchoice, inst):
+    log.info(f'Responding to a [!lotto {lchoice}] request from [{whoasked.title()}] on [{inst.title()}]')
     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
     lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
     if linfo:
@@ -720,6 +721,7 @@ def clisten(minst):
     while True:
         try:
             checkcommands(minst)
-            sleep(2)
+            sleep(3)
         except:
             log.exception('Critical Error in Command Listener!')
+            sleep(10)

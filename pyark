@@ -14,16 +14,17 @@ from modules.timehelper import Now
 from modules.processlock import plock
 from onlinemonitor import onlineupdate
 from statcollector import oscollect
-from sys import exit
 import sys
 from time import sleep
 from web import create_app
 from os import stat
+from os import _exit as killme
 import argparse
 from loguru import logger as log
 import lottery
 import subprocess
 import threading
+import signal
 import shutil
 
 __author__ = "Ian Perry"
@@ -48,6 +49,8 @@ args = parser.parse_args()
 
 logformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {level: <6} | {message} | {name}:{function}:{line}'
 
+logsimple = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
+
 colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message: <75}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
 
 
@@ -66,6 +69,18 @@ log.level("UPDATE", no=20, color="<light-cyan>", icon="¤")
 log.level("MAINT", no=20, color="<fg 86>", icon="¤")
 log.level("GIT", no=30, color="<yellow>", icon="¤")
 log.level("TEST", no=5, color="<light-red>", icon="¤")
+
+
+def sig_handler(signal, frame):
+    log.critical(f'Termination signal {signal} recieved. Exiting.')
+    sleep(1)
+    killme(0)
+
+
+signal.signal(signal.SIGTERM, sig_handler)
+signal.signal(signal.SIGHUP, sig_handler)
+signal.signal(signal.SIGINT, sig_handler)
+signal.signal(signal.SIGQUIT, sig_handler)
 
 
 def checklogadmin(record):
@@ -114,13 +129,13 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
     log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days", delay=True)
 
 # Points Logging points.log
-log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", delay=True, filter=checklogpoints)
+log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, rotation="1 week", retention="30 days", delay=True, filter=checklogpoints)
 
 # Admin Logging admin.log
-log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", delay=True, filter=checklogadmin)
+log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, rotation="1 week", retention="30 days", delay=True, filter=checklogadmin)
 
 # Crash Logging crash.log
-log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 week", retention="30 days", delay=True, filter=checklogcrash)
+log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, rotation="1 week", retention="30 days", delay=True, filter=checklogcrash)
 
 # Error Logging error.log
 log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days", delay=True)
@@ -132,10 +147,9 @@ if loglevel == 'DEBUG' or args.debug:
 elif loglevel == 'TRACE' or args.trace:
     log.log('START', f'Pyark daemon is starting on {hstname} in ***TRACE MODE***')
 else:
-    log.log('START', f'Pyark daemon is starting on {hstname} in normal mode')
+    log.log('START', f'Pyark is starting on [{hstname}] for [{instr.title()}] in Normal Mode')
 
 checkgit = 0
-
 
 
 def gitupdatecheck():
@@ -211,16 +225,16 @@ def main():
                 log.critical('Root Disk under 2Gig. Shutting instance and script down')
                 subprocess.run('arkmanager stop --warn @all', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 subprocess.run('/home/ark/pyark/pyarlcli stop', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                exit()
+                killme(0)
         except:
             log.critical('unable to determine root freespace')
             sleep(60)
-            exit()
+            killme(0)
         try:
             if stat('/home/ark/shared/logs/pyark/pyark.log').st_size > 1000000000:
                 log.critical('Pyark log over 1Gig. Shutting script down')
                 subprocess.run('/home/ark/pyark/pyarkcli stop', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                exit()
+                killme(0)
         except:
             log.critical('unable to determine pyark log filesize')
             sleep(60)
@@ -276,11 +290,11 @@ def main():
                     t = f'web server'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
         except KeyboardInterrupt:
-            log.critical(f'Keyboard Interrupt Exiting.')
-            exit()
+            log.critical(f'Keyboard Interrupt termination recieved. Exiting.')
+            killme(0)
         except:
-            log.exception(f'exception in main loop')
-            sleep(60)
+            log.exception(f'Exception in Pyark Main Routine! Exiting')
+            killme(1)
 
 
 if __name__ == 'pyark':

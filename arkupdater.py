@@ -9,7 +9,7 @@ from modules.instances import getlastwipe, instancelist, isinstancerunning, isin
 from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
 from time import sleep
-from clusterevents import iseventtime, getcurrenteventext
+from clusterevents import iseventtime, getcurrenteventext, iseventrebootday
 from discordbot import writediscord
 from loguru import logger as log
 import os
@@ -249,11 +249,15 @@ def checkmaintenance():
                 sleep(5)
                 checkwipe(inst)
                 lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-                if Now() - float(lstsv[0]) > Secs['3day'] or getcfgver(inst) < getpendingcfgver(inst):
+                eventreboot = iseventrebootday()
+                if eventreboot:
+                    maintrest = f"{eventreboot}"
+                    instancerestart(inst, maintrest)
+                elif Now() - float(lstsv[0]) > Secs['3day'] or getcfgver(inst) < getpendingcfgver(inst):
                     maintrest = "maintenance restart"
                     instancerestart(inst, maintrest)
                 else:
-                    message = 'Server maintenance has ended. If you had dinos mating right now you will need to turn it back on.'
+                    message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
                     subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
             except:
                 log.exception(f'Error during {inst} instance daily maintenance')
