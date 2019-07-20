@@ -51,7 +51,7 @@ logformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {level: <6
 
 logsimple = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
 
-colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: <5}</level> | <level>{level: <6}</level> | <level>{message: <75}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: >5}</level> | <level>{level: <7}</level> | <level>{message: <75}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
 
 
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
@@ -159,7 +159,7 @@ def gitupdatecheck():
     origin = repo.remotes.origin
     origin.fetch()
     if repo.head.commit != origin.refs[0].commit:
-        log.log('GIT', f'newer pyark version found on repo. updating and restarting...')
+        log.log('GIT', f'New Pyark version found. Updating and Restarting...')
         origin.pull()
         # origin.push()
         subprocess.run('systemctl restart pyark', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
