@@ -29,7 +29,7 @@ def writechat(inst, whos, msg, tstamp):
 
 def welcomenewplayer(steamid, inst):
         global welcomthreads
-        log.info(f'welcome message thread started for new player {steamid} on {inst}')
+        log.info(f'Welcome message thread started for new player [{steamid}] on [{inst.title()}]')
         sleep(3)
         mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)

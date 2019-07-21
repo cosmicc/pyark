@@ -70,7 +70,7 @@ log.level("UPDATE", no=20, color="<light-cyan>", icon="¤")
 log.level("MAINT", no=20, color="<fg 121>", icon="¤")
 log.level("GIT", no=30, color="<fg 229>", icon="¤")
 log.level("EXIT", no=35, color="<fg 228><bg 18>", icon="¤")
-log.level("TEST", no=5, color="<black><YELLOW>", icon="¤")
+log.level("TEST", no=5, color="<black><bg 148>", icon="¤")
 
 
 def sig_handler(signal, frame):
@@ -117,10 +117,10 @@ else:
     log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 
 # Info Logging pyark.log
-log.add(sink=logfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat, rotation="1 day", retention="30 days")
+log.add(sink=logfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat)
 
 # Info Color Logging pyark-color.log
-log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days")
+log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=colorlogformat)
 
 # Debug Logging debug.log
 if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
@@ -128,19 +128,19 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
         lev = 10
     else:
         lev = 5
-    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days", delay=True)
+    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
 
 # Points Logging points.log
-log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, rotation="1 week", retention="30 days", delay=True, filter=checklogpoints)
+log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, delay=True, filter=checklogpoints)
 
 # Admin Logging admin.log
-log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, rotation="1 week", retention="30 days", delay=True, filter=checklogadmin)
+log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, delay=True, filter=checklogadmin)
 
 # Crash Logging crash.log
-log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, rotation="1 week", retention="30 days", delay=True, filter=checklogcrash)
+log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, delay=True, filter=checklogcrash)
 
 # Error Logging error.log
-log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, rotation="1 day", retention="30 days", delay=True)
+log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
 
 plock()
 

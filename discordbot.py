@@ -17,6 +17,7 @@ from loguru import logger as log
 client = commands.Bot(command_prefix='!', case_insensitive=True)
 client.remove_command('help')
 
+
 lastupdateannounce = Now(fmt='dt') + timedelta(minutes=21)
 
 channel = discord.Object(id=discord_serverchat)
@@ -28,6 +29,11 @@ INFO_COLOR = 0x0088ff
 HELP_COLOR = 0xff8800
 
 rejectmsg = 'Bot commands are limited to the **`#bot-channel`** and **Private message** (here)\nType **`!help`** for a description of all the commands'
+
+
+def addlottomessage(messageid):
+    log.trace(f'Adding lotto descird message id [{messageid}] to lottomessage table')
+    dbupdate("INSERT INTO lotterymessages (messageid) VALUES ('%s')" % (messageid,))
 
 
 def getlastlottoannounce():
@@ -56,6 +62,16 @@ def savediscordtodb(author):
 @log.catch
 def discordbot():
     global client
+    async def clearlottomessages():
+        log.trace(f'starting lottomessage id clearing')
+        msgs = dbquery(f'SELECT messageid FROM lotterymessages', fmt='list', fetch='all', single=True)
+        for msgid in msgs:
+            msg = await client.get_message(channel2, msgid)
+            try:
+                await client.delete_message(msg)
+                dbupdate(f"DELETE from lotterymessages WHERE messageid = '%s'" % (msgid,))
+            except:
+                log.error(f'error while determining lotto messages from db')
 
     async def taskchecker():
         await client.wait_until_ready()
@@ -92,12 +108,16 @@ def discordbot():
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                             buyin = int(each[2]) / 25
                             embed.add_field(name=f"Starting Pot: {each[2]} Points", value=f"It costs **{int(buyin)} Points** to join this lottery, lottery winnings grow as more join\nLottery will end in **{each[1]}**\n\nType **`!lotto enter`** to join this lottery, or **`!points`** for more information", inline=False)
-                            await client.send_message(channel2, embed=embed)
+                            msg = await client.send_message(channel2, embed=embed)
+                            clearlottomessages()
+                            addlottomessage(msg.id)
                         elif each[0] == 'LOTTOEND':
                             embed = discord.Embed(title=f"The current Lottery has ended", color=SUCCESS_COLOR)
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                             embed.add_field(name=f"Congratulations to {each[2].upper()} winning **{each[1]}** Points", value=f"Next lottery will start in **1** hour, Type **`!points`** for more information", inline=False)
-                            await client.send_message(channel2, embed=embed)
+                            msg = await client.send_message(channel2, embed=embed)
+                            clearlottomessages()
+                            addlottomessage(msg.id)
                         elif each[0] == 'UPDATE':
                             if Now(fmt='dt') - lastupdateannounce > timedelta(minutes=20):
                                 lastupdateannounce = Now(fmt='dt')
@@ -159,20 +179,20 @@ def discordbot():
     async def messagesend(ctx, embed, allowgeneral=False, reject=True, adminonly=False):
         try:
             if ctx.message.channel.is_private:
-                await client.send_message(ctx.message.author, embed=embed)
+                return await client.send_message(ctx.message.author, embed=embed)
             elif str(ctx.message.channel) != 'bot-channel' or (not allowgeneral and str(ctx.message.channel) == 'general-chat'):
                 role = str(discord.utils.get(ctx.message.author.roles, name="Cluster Admin"))
                 if role != 'Cluster Admin':
                     await client.delete_message(ctx.message)
                 if reject and role != 'Cluster Admin':
                     rejectembed = discord.Embed(description=rejectmsg, color=HELP_COLOR)
-                    await client.send_message(ctx.message.author, embed=rejectembed)
+                    return await client.send_message(ctx.message.author, embed=rejectembed)
                 elif role != 'Cluster Admin':
-                    await client.send_message(ctx.message.author, embed=embed)
+                    return await client.send_message(ctx.message.author, embed=embed)
                 else:
-                    await client.send_message(ctx.message.channel, embed=embed)
+                    return await client.send_message(ctx.message.channel, embed=embed)
             else:
-                await client.send_message(ctx.message.channel, embed=embed)
+                return await client.send_message(ctx.message.channel, embed=embed)
         except:
             log.exception('Critical error in discord send')
 
@@ -194,8 +214,8 @@ def discordbot():
     async def on_command_error(error, ctx):
         try:
             if isinstance(error, commands.CommandNotFound):
-                log.warning(f'invalid discord command {ctx.message.content} sent from {ctx.message.author}')
-                msg = f'**`{ctx.message.content}`** command does not exist'
+                log.warning(f'Invalid discord command [{ctx.message.content}] sent from [{ctx.message.author}]')
+                msg = f'Command **`{ctx.message.content}`** does not exist.  **`!help`** for a list and description of all the commands.'
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=False)
             elif isinstance(error, NotLinked):
@@ -342,7 +362,7 @@ def discordbot():
     async def _myinfo(ctx):
         whofor = str(ctx.message.author).lower()
         kuser = getplayer(discordid=whofor)
-        log.info(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
+        log.debug(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
         pauctions = fetchauctiondata(kuser[0])
         au1, au2, au3 = getauctionstats(pauctions)
         writeauctionstats(kuser[0], au1, au2, au3)
@@ -591,16 +611,18 @@ def discordbot():
     @commands.check(is_admin)
     async def _test(ctx):
         try:
-            #rates = getrates()
-            #eventr = getlastlottoannounce()
-            #user = ctx.message.author
-            #a = str(discord.utils.get(user.roles, name="Cluster Admin"))
-            #log.warning(a)
-            #log.warning(type(a))
+            #generalchat = client.get_channel(channel2)
+            #mgs = []
+            #async for x in client.logs_from(channel2, limit = 10):
+            #    mgs.append(x)
             embed = discord.Embed(title=f"test!", color=INFO_COLOR)
-            embed.set_author(name='Galaxy Cluster Reward Server Rates', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
-            embed.add_field(name=f"CTX", value=f"{dir(ctx.message.author.server)}", inline=True)
+            #for each in mgs:
+            #    if each.id
+                #log.log('TEST', each.id)
+            embed.add_field(name=f"CTX", value=f"hi", inline=True)
             await messagesend(ctx, embed, allowgeneral=True, reject=True)
+            #  addlottomessage(msg.id)
+            await clearlottomessages()
         except:
             log.exception('error in test')
 
@@ -769,8 +791,10 @@ def discordbot():
                                     embed2 = discord.Embed(title=f"A new lottery player has entered the lottery!", color=INFO_COLOR)
                                     embed2.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                                     embed2.add_field(name=f"Current lottery has risen to **{linfo['payout'] + linfo['buyin'] * 2} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\nType **`!lotto enter`** to join, or **`!points`** for more information", inline=True)
-                                    await client.send_message(channel2, embed=embed2)
+                                    msg = await client.send_message(channel2, embed=embed2)
                                     setlastlottoannounce(Now(fmt='dt'))
+                                    clearlottomessages()
+                                    addlottomessage(msg.id)
                                 else:
                                     pass
                             elif not linfo:
@@ -793,7 +817,7 @@ def discordbot():
                                     await client.delete_message(ctx.message)
                 else:
                     if linfo:
-                        msg = f'It costs **{linfo["buyin"]} points** to join this lottery\n\nType **`!lotto enter`** to join the lottery, **`!points`** for more information'
+                        msg = f'It costs **{linfo["buyin"]} points** to join this lottery\n\nType **`!lotto enter`** to join the lottery, **`!lastlotto`** for last lottery results. **`!points`** for more information'
                         embed = discord.Embed(title=f"Current lottery is up to {linfo['payout']} reward points", description=f"{linfo['players']} players have entered into this lottery so far", color=SUCCESS_COLOR)
                         embed.add_field(name=f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}', value=msg, inline=False)
                         if str(ctx.message.channel) == 'bot-channel':
@@ -812,21 +836,35 @@ def discordbot():
         savediscordtodb(message.author)
         if str(message.author) == "Galaxy Cluster#7499":
             log.trace('skipping processing of bots own on_message trigger')
+
         elif message.content.lower().find('join the server') != -1 or message.content.lower().find('how do i join') != -1 or message.content.lower().find('server link') != -1 or message.content.lower().find('mod collection') != -1 or message.content.lower().find('mod list') != -1 or message.content.lower().find('link to server') != -1:
-            log.info(f'responding to join server chat for {message.author} on discrod')
+            log.info(f'Responding to [join server] chat for [{message.author}] on [{message.channel}]')
             msg = f'The **`#join-servers`** channel has information and links to the servers and mods, **`!help`** for commands'
             embed = discord.Embed(description=msg, color=HELP_COLOR)
             await client.send_message(message.channel, embed=embed)
+
         elif message.content.lower().find('what are the rates') != -1 or message.content.lower().find('server rates') != -1 or message.content.lower().find('tame rate') != -1 or message.content.lower().find('harvest rate') != -1 or message.content.lower().find('current rates') != -1 or message.content.lower().find('breeding rate') != -1 or message.content.lower().find('rates here') != -1:
-            log.info(f'responding to server rates chat for {message.author} on discrod')
+            log.info(f'Responding to [server rates] chat for [{message.author}] on [{message.channel}]')
             msg = 'Try using the **`!rates`** command to get current server rates, **`!help`** for more information'
             embed = discord.Embed(description=msg, color=HELP_COLOR)
             await client.send_message(message.channel, embed=embed)
+
         elif message.content.lower().find('servers up') != -1 or message.content.lower().find('servers down') != -1 or message.content.lower().find('server up') != -1 or message.content.lower().find('server down') != -1 or message.content.lower().find('server status') != -1:
-            log.info(f'responding to server server up/down chat for {message.author} on discrod')
+            log.info(f'Responding to [server up/down] chat for [{message.author}] on [{message.channel}]')
             msg = 'Try using the **`!servers`** command to get all the current servers statuses, **`!help`** for more information'
             embed = discord.Embed(description=msg, color=HELP_COLOR)
             await client.send_message(message.channel, embed=embed)
+
+        elif message.content.lower().find("isn't that right bot") != -1 or message.content.lower().find('isnt that right bot') != -1 or message.content.lower().find('right bot?') != -1:
+            log.info(f'Responding to [right bot?] chat from [{message.author}] on [{message.channel}]')
+            msg = 'That is right.'
+            await client.send_message(message.channel, msg=msg)
+
+        elif message.content.lower().find("hi bot") != -1 or message.content.lower().find('hello bot') != -1:
+            log.info(f'Responding to [hello bot] chat from [{message.author}] on [{message.channel}]')
+            msg = 'Hello.'
+            await client.send_message(message.channel, msg=msg)
+
 
         elif str(message.channel) == 'server-chat':
             whos = dbquery("SELECT playername FROM players WHERE discordid = '%s'" % (str(message.author).lower(),), fetch='one')
