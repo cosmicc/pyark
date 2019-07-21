@@ -658,7 +658,7 @@ def checkcommands(minst):
                     whoisonlinewrapper(ninst, minst, whoasked, 3)
 
                 elif line.find('!mypoints') != -1 or line.find('!myinfo') != -1:
-                    log.info(f'Responding to a [!myinfo] request from [{whoasked.title()}] on [{minst.title()}')
+                    log.log('CMD', f'Responding to a [!myinfo] request from [{whoasked.title()}] on [{minst.title()}]')
                     respmyinfo(minst, whoasked)
 
                 elif line.find('!whoson') != -1 or line.find('!online') != -1 or line.find('!who') != -1:

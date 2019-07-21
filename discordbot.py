@@ -198,9 +198,9 @@ def discordbot():
 
     @client.event
     async def on_member_join(member):
-        log.info(f'new user [{member}] has joined the Discord server')
+        log.info(f'New user [{member}] has joined the Galaxy Discord Server')
         fmt = 'If you are already a player on the servers, type **`!linkme`** in-game to link your discord account to your ark player.\n'
-        fmt = fmt + 'Type **`!servers`** for links iand status of the servers\nType **`!mods`** for a link to the mod collection\n**`!help`** for all the other commands\n\n'
+        fmt = fmt + 'Type **`!servers`** for links and status of the servers\nType **`!mods`** for a link to the mod collection\n**`!help`** for all the other commands\n\n'
         fmt = fmt + 'More help can be found with pinned messages in **#help**\nDont be afraid to ask for help in discord!'
         embed = discord.Embed(title="Welcome to the Galaxy Cluster Ultimate Extinction Core Server Discord!", description=fmt, color=HELP_COLOR)
         await client.send_message(member, embed=embed)

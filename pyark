@@ -117,7 +117,7 @@ else:
     log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 
 # Info Logging pyark.log
-log.add(sink=logfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logformat)
+log.add(sink=logfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=colorlogformat)
 
 # Info Color Logging pyark-color.log
 log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=colorlogformat)
