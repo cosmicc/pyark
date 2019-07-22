@@ -15,6 +15,7 @@ import logging
 import subprocess
 import time
 from time import sleep
+from sh import tail
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('action_to_perform',
@@ -935,15 +936,26 @@ def pyarklogs():
 
 
 def watchlog(dlog):
+    lineno = 0
     if dlog is False:
-        logpath = f'/home/ark/shared/logs/pyark/pyark-color.log'
+        logpath = f'/home/ark/shared/logs/pyark/pyark.log'
     elif dlog is True:
         logpath = f'/home/ark/shared/logs/pyark/debug.log'
-    with open(logpath, 'rt') as following:
-        following.seek(0, 0)
-        for each in follow(following):
-            print(f'{each}')
-            sleep(.1)
+    for line in tail("-F", logpath, _iter=True):
+        if not line.startswith('^@'):
+            data = json.loads(line.strip())
+            print(f'{data["text"].strip()}')
+
+#    with open(logpath) as f:
+#        f.seek(0, 0)
+#        for line in follow(f):
+            #print(line)
+#            lineno += 1
+#            if not line.startswith('^@'):
+#                data = json.loads(line.strip())
+#                print(f'{type(data)} {lineno}')
+#            else:
+#                print('skipping')
 
 
 def writechat(inst, whos, msg, tstamp):

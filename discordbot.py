@@ -62,30 +62,37 @@ def savediscordtodb(author):
 @log.catch
 def discordbot():
     global client
+
     async def clearlottomessages():
-        log.trace(f'starting lottomessage id clearing')
+        log.trace(f'starting discord lottomessage id clearing')
         msgs = dbquery(f'SELECT messageid FROM lotterymessages', fmt='list', fetch='all', single=True)
         for msgid in msgs:
-            msg = await client.get_message(channel2, msgid)
             try:
+                msg = await client.get_message(channel2, msgid)
                 await client.delete_message(msg)
-                dbupdate(f"DELETE from lotterymessages WHERE messageid = '%s'" % (msgid,))
             except:
-                log.error(f'error while determining lotto messages from db')
+                log.debug(f'error while deleting lotto messages from db')
+            else:
+                log.debug(f'Deleted lottery message id {msg.id}')
+            finally:
+                dbupdate(f"DELETE from lotterymessages WHERE messageid = '%s'" % (msgid,))
 
     async def taskchecker():
         await client.wait_until_ready()
         while not client.is_closed:
             try:
                 log.trace('executing discord bot task checker')
-                if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=6) and isinlottery():
+                if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=4) and isinlottery():
                     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
                     log.log('LOTTO', 'Announcing running lottery in discord')
                     embed = discord.Embed(title=f"A lottery is currently running!", color=INFO_COLOR)
                     embed.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                     embed.add_field(name=f"Current lottery is up to **{linfo['payout']} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\nType **`!lotto enter`** to join, or **`!points`** for more information", inline=True)
-                    await client.send_message(channel2, embed=embed)
+                    msg = await client.send_message(channel2, embed=embed)
                     setlastlottoannounce(Now(fmt='dt'))
+                    clearlottomessages()
+                    addlottomessage(msg.id)
+
                 await asyncio.sleep(60)
             except:
                 log.exception('error in task checker!')
@@ -117,7 +124,7 @@ def discordbot():
                             embed.add_field(name=f"Congratulations to {each[2].upper()} winning **{each[1]}** Points", value=f"Next lottery will start in **1** hour, Type **`!points`** for more information", inline=False)
                             msg = await client.send_message(channel2, embed=embed)
                             clearlottomessages()
-                            addlottomessage(msg.id)
+                            #addlottomessage(msg.id)
                         elif each[0] == 'UPDATE':
                             if Now(fmt='dt') - lastupdateannounce > timedelta(minutes=20):
                                 lastupdateannounce = Now(fmt='dt')
@@ -787,7 +794,7 @@ def discordbot():
                                 if not ctx.message.channel.is_private and str(ctx.message.channel) != 'bot-channel':
                                     await client.delete_message(ctx.message)
                                 log.log('LOTTO', f'Player [{whofor.title()}] has joined the current active lottery')
-                                if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=2):
+                                if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=1):
                                     embed2 = discord.Embed(title=f"A new lottery player has entered the lottery!", color=INFO_COLOR)
                                     embed2.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='http://icons.iconarchive.com/icons/custom-icon-design/pretty-office-11/512/coin-us-dollar-icon.png')
                                     embed2.add_field(name=f"Current lottery has risen to **{linfo['payout'] + linfo['buyin'] * 2} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\nType **`!lotto enter`** to join, or **`!points`** for more information", inline=True)

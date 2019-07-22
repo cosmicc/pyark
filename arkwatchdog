@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.6
 
-from modules.configreader import instance, hstname, logfile, colorlogfile, debugfile, critlogfile, loglevel, instr
+from modules.configreader import instance, hstname, jsonlogfile, colorlogfile, jsondebugfile, critlogfile, loglevel, instr
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
 from modules.instances import getinststatus, isinstanceenabled
@@ -58,21 +58,19 @@ elif args.debug:
 else:
     log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 
-# Info Logging pyark.log
-log.add(sink=logfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=logformat)
-
-# Info Color Logging pyark-color.log
+# Json logging pyarklog.json
+log.add(sink=jsonlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=colorlogformat)
+# Color logging pyark.log
 log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=colorlogformat)
-
-# Debug Logging debug.log
+# Debug json logging debuglog.json
 if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
     if loglevel == 'DEBUG' or args.debug:
         lev = 10
     else:
         lev = 5
-    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
+    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
 
-# Error Logging admin.log
+# Error Logging crit.log
 log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
 
 

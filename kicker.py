@@ -11,7 +11,7 @@ def kicker(inst):
         try:
             kicked = dbquery("SELECT * FROM kicklist WHERE instance = '%s'" % (inst,), fetch='one')
             if kicked:
-                log.success(f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
+                log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
                 subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (kicked[1], inst), shell=True)
                 dbupdate("DELETE FROM kicklist WHERE steamid = '%s'" % (kicked[1],))
         except:

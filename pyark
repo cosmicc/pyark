@@ -8,7 +8,7 @@ from discordbot import discordbot
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, logfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, debugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr
+from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
@@ -70,6 +70,7 @@ log.level("UPDATE", no=20, color="<light-cyan>", icon="¤")
 log.level("MAINT", no=20, color="<fg 121>", icon="¤")
 log.level("GIT", no=30, color="<fg 229>", icon="¤")
 log.level("EXIT", no=35, color="<fg 228><bg 18>", icon="¤")
+log.level("KICK", no=20, color="<fg 216>", icon="¤")
 log.level("TEST", no=5, color="<black><bg 148>", icon="¤")
 
 
@@ -116,30 +117,25 @@ elif args.debug:
 else:
     log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 
-# Info Logging pyark.log
-log.add(sink=logfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=colorlogformat)
-
-# Info Color Logging pyark-color.log
+# Json logging pyarklog.json
+log.add(sink=jsonlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=colorlogformat)
+# Color logging pyark.log
 log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=colorlogformat)
-
-# Debug Logging debug.log
+# Debug json logging debuglog.json
 if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
     if loglevel == 'DEBUG' or args.debug:
         lev = 10
     else:
         lev = 5
-    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
+    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
 
 # Points Logging points.log
 log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, delay=True, filter=checklogpoints)
-
 # Admin Logging admin.log
 log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, delay=True, filter=checklogadmin)
-
 # Crash Logging crash.log
 log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, delay=True, filter=checklogcrash)
-
-# Error Logging error.log
+# Error Logging crit.log
 log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
 
 plock()
