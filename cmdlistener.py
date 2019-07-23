@@ -420,8 +420,7 @@ def processtcdata(inst, tcdata):
     pexist = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid, ), fetch='one')
     if not pexist:
         if steamid != '':
-            log.info(f'Player [{playername.title()}] steamid [{steamid}] was not found on [{inst.title()}] Adding \
-new player to cluster')
+            log.info(f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                       firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \

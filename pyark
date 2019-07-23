@@ -1,10 +1,10 @@
 #!/usr/bin/python3.6
 
 from arkserversnet import arkserversnet
+from multiprocessing import Process
 from arkupdater import arkupd
 from clusterevents import eventwatcher
 from cmdlistener import clisten
-from discordbot import discordbot
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
@@ -53,7 +53,6 @@ logsimple = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
 
 colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: >5}</level> | <level>{level: <7}</level> | <level>{message: <75}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
 
-
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
 log.level("START", no=38, color="<fg 39>", icon="¤")
@@ -74,16 +73,11 @@ log.level("KICK", no=20, color="<fg 216>", icon="¤")
 log.level("TEST", no=5, color="<black><bg 148>", icon="¤")
 
 
-def sig_handler(signal, frame):
-    log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
-    sleep(1)
-    killme(0)
-
-
-signal.signal(signal.SIGTERM, sig_handler)
-signal.signal(signal.SIGHUP, sig_handler)
-signal.signal(signal.SIGINT, sig_handler)
-signal.signal(signal.SIGQUIT, sig_handler)
+def checkpyarklog(record):
+    if record['level'] != 'CRITICAL' and record['level'] != 'ERROR':
+        return True
+    else:
+        return False
 
 
 def checklogadmin(record):
@@ -107,6 +101,13 @@ def checklogcrash(record):
         return False
 
 
+def checkerrorlog(record):
+    if record['level'] == 'ERROR' or record['level'] == 'CRITICAL':
+        return True
+    else:
+        return False
+
+
 # Console Logging
 if args.quiet:
     log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=False, format=logformat)
@@ -118,7 +119,7 @@ else:
     log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
 
 # Json logging pyarklog.json
-log.add(sink=jsonlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=colorlogformat)
+log.add(sink=jsonlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=colorlogformat, filter=checkpyarklog)
 # Color logging pyark.log
 log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=colorlogformat)
 # Debug json logging debuglog.json
@@ -135,8 +136,8 @@ log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False
 log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, delay=True, filter=checklogadmin)
 # Crash Logging crash.log
 log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, delay=True, filter=checklogcrash)
-# Error Logging crit.log
-log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
+# Error Logging error.log
+log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True, filter=checkerrorlog)
 
 plock()
 
@@ -199,7 +200,8 @@ def main():
         arkserversnt = threading.Thread(name='arksvrnet-datapuller', target=arkserversnet, daemon=True)
         arkserversnt.start()
     if is_discordbot == "True":
-        discordt = threading.Thread(name='discord-bot', target=discordbot, daemon=True)
+        from discordbot import pyarkbot
+        discordt = Process(target=pyarkbot)
         discordt.start()
     if is_lotterymanager == "True":
         lotteryt = threading.Thread(name='lottery-watcher', target=lottery.lotterywatcher, daemon=True)
@@ -217,6 +219,18 @@ def main():
         log.exception(f'Web Server failed to start.')
     sleep(5)
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
+
+    def sig_handler(signal, frame):
+        log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
+        discordt.terminate()
+        sleep(1)
+        killme(0)
+
+    signal.signal(signal.SIGTERM, sig_handler)
+    signal.signal(signal.SIGHUP, sig_handler)
+    signal.signal(signal.SIGINT, sig_handler)
+    signal.signal(signal.SIGQUIT, sig_handler)
+
     while True:
         try:
             if shutil.disk_usage('/').free < 2000000000:
@@ -237,6 +251,8 @@ def main():
             log.critical('unable to determine pyark log filesize')
             sleep(60)
         try:
+
+
             if checkgit == 0:
                 gitupdatecheck()
                 checkgit += 1
@@ -257,7 +273,7 @@ def main():
             if is_discordbot == "True":
                 if not discordt.is_alive():
                     t = 'discord bot'
-                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+                    log.critical(f'!!!! CRITICAL ERROR! process {t} has crashed!!')
             if is_lotterymanager == "True":
                 if not lotteryt.is_alive():
                     t = 'lottery watch'

@@ -87,6 +87,26 @@ trclr = ''
 print('    ')
 
 
+
+def processlogline(line):
+    if not line.startswith('^@'):
+        data = json.loads(line.strip())
+        print(f'{data["text"].strip()}')
+
+
+def watchlog(dlog):
+    if dlog is False:
+        logpath = f'/home/ark/shared/logs/pyark/pyarklog.json'
+    elif dlog is True:
+        logpath = f'/home/ark/shared/logs/pyark/debuglog.json'
+    logproc = tail("-f", logpath, _out=processlogline)
+    while True:
+        sleep(10)
+        print('##############')
+        logproc.wait()
+
+
+
 def percentage(part, whole):
     return 100 * float(part) / float(whole)
 
@@ -934,28 +954,6 @@ def pyarklogs():
                 ar = f'{BWHT}'
         print(f'{ar}{each}{RST}')
 
-
-def watchlog(dlog):
-    lineno = 0
-    if dlog is False:
-        logpath = f'/home/ark/shared/logs/pyark/pyark.log'
-    elif dlog is True:
-        logpath = f'/home/ark/shared/logs/pyark/debug.log'
-    for line in tail("-F", logpath, _iter=True):
-        if not line.startswith('^@'):
-            data = json.loads(line.strip())
-            print(f'{data["text"].strip()}')
-
-#    with open(logpath) as f:
-#        f.seek(0, 0)
-#        for line in follow(f):
-            #print(line)
-#            lineno += 1
-#            if not line.startswith('^@'):
-#                data = json.loads(line.strip())
-#                print(f'{type(data)} {lineno}')
-#            else:
-#                print('skipping')
 
 
 def writechat(inst, whos, msg, tstamp):
