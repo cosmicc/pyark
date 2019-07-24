@@ -147,7 +147,7 @@ def startlottery(lottoinfo):
 def generatelottery():
     amiinalotto = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
     if not amiinalotto:
-        t, s, e = datetime.now(), dt(23, 0), dt(23, 5)  # Automatic Lottery 11:00pm GMT (7:00PM EST)
+        t, s, e = datetime.now(), dt(23, 0), dt(23, 5)  # 23,0 23,5 Automatic Lottery 11:00pm GMT (7:00PM EST)
         lottotime = is_time_between(t, s, e)
         if lottotime:
             buyins = [25, 30, 20, 35]

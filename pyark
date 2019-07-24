@@ -8,7 +8,7 @@ from cmdlistener import clisten
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr
+from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, logformat, colorlogformat, logsimple
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
@@ -18,7 +18,7 @@ import sys
 from time import sleep
 from web import create_app
 from os import stat
-from os import _exit as killme
+from os import _exit as exit
 import argparse
 from loguru import logger as log
 import lottery
@@ -47,12 +47,6 @@ parser.add_argument('-t', '--trace', action='store_true', help='super verbose ou
 
 args = parser.parse_args()
 
-logformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {level: <6} | {message} | {name}:{function}:{line}'
-
-logsimple = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
-
-colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: >5}</level> | <level>{level: <7}</level> | <level>{message: <75}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
-
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
 log.level("START", no=38, color="<fg 39>", icon="¤")
@@ -74,10 +68,10 @@ log.level("TEST", no=5, color="<black><bg 148>", icon="¤")
 
 
 def checkpyarklog(record):
-    if record['level'] != 'CRITICAL' and record['level'] != 'ERROR':
-        return True
-    else:
-        return False
+    #if record['level'] != 'CRITICAL' and record['level'] != 'ERROR':
+    return True
+    #else:
+    #    return False
 
 
 def checklogadmin(record):
@@ -128,7 +122,7 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
         lev = 10
     else:
         lev = 5
-    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
+    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=colorlogformat, delay=True)
 
 # Points Logging points.log
 log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=logsimple, delay=True, filter=checklogpoints)
@@ -223,8 +217,9 @@ def main():
     def sig_handler(signal, frame):
         log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
         discordt.terminate()
+        discordt.join()
         sleep(1)
-        killme(0)
+        exit(0)
 
     signal.signal(signal.SIGTERM, sig_handler)
     signal.signal(signal.SIGHUP, sig_handler)
@@ -237,11 +232,11 @@ def main():
                 log.critical('Root Disk under 2Gig. Shutting instance and script down')
                 subprocess.run('arkmanager stop --warn @all', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 subprocess.run('/home/ark/pyark/pyarlcli stop', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                killme(0)
+                exit(1)
         except:
             log.critical('unable to determine root freespace')
             sleep(60)
-            killme(0)
+            exit(1)
         try:
             if stat('/home/ark/shared/logs/pyark/pyark.log').st_size > 1000000000:
                 log.critical('Pyark log over 1Gig. Shutting script down')
@@ -251,8 +246,6 @@ def main():
             log.critical('unable to determine pyark log filesize')
             sleep(60)
         try:
-
-
             if checkgit == 0:
                 gitupdatecheck()
                 checkgit += 1

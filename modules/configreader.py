@@ -18,6 +18,12 @@ config.read(configfile)
 
 hstname = gethostname().upper()
 
+logformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {level: <6} | {message} | {name}:{function}:{line}'
+
+logsimple = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
+
+colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: >5}</level> | <level>{level: <7}</level> | <level>{message: <72}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+
 # General
 loglevel = config.get('general', 'loglevel')
 sharedpath = config.get('general', 'shared')
@@ -29,6 +35,7 @@ pointsfile = config.get('general', 'pointslogfile')
 jsondebugfile = config.get('general', 'jsondebugfile')
 crashlogfile = config.get('general', 'crashlogfile')
 critlogfile = config.get('general', 'critlogfile')
+maint_hour = config.get('general', 'maint_hour')
 
 is_arkupdater = config.get('general', 'is_arkupdater')
 is_asdatapuller = config.get('general', 'is_asdatapuller')
@@ -49,8 +56,8 @@ psql_statsdb = config.get('postgresql', 'statsdb')
 # psql_stats = "dbname='pyarkstats', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
 
 # Discord
-discord_channel = config.get('discord', 'general_channel')
-discord_serverchat = config.get('discord', 'serverchat_channel')
+generalchat_id = config.get('discord', 'general_channel')
+serverchat_id = config.get('discord', 'serverchat_channel')
 discordtoken = config.get('discord', 'token')
 
 # Pushover

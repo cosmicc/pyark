@@ -1,12 +1,13 @@
 import os
 import sys
 import fcntl
-import logging
+from loguru import logger as log
 import atexit
 import socket
 
 hstname = socket.gethostname()
-log = logging.getLogger(name=hstname)
+
+ppid = str(os.getpid())
 
 
 def cleanName(filename):
@@ -16,8 +17,6 @@ def cleanName(filename):
 
 
 def plock():
-    ppid = str(os.getpid())
-
     def aquireLock():
         if not os.path.isfile(lockfile):
             os.mknod(lockfile, mode=0o600)
@@ -29,14 +28,13 @@ def plock():
             log.exception('General error trying to lock process to file {}. exiting.'.format(lockfile))
             exit(1)
         else:
-            
             log.debug('Process has been locked to file {} with PID [{}]'.format(lockfile, ppid))
             return True
     if aquireLock():
-        nlock_handle = open(lockfile, 'a')
-        nlock_handle.write(ppid)
-        nlock_handle.close()
         atexit.register(unlock)
+        pidfile = f'{lpath}/{cleanName(sys.argv[0])}.pid'
+        with open(pidfile, 'w') as pfile:
+            pfile.write(ppid)
         return True
     else:
         log.error(f'Trying to start, but already running on pid {ppid}')
@@ -57,4 +55,5 @@ else:
     exit(1)
 
 lockfile = f'{lpath}/{cleanName(sys.argv[0])}.lock'
+
 lock_handle = open(lockfile, 'w')

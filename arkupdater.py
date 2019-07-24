@@ -1,4 +1,4 @@
-from modules.configreader import hstname, sharedpath, arkroot, numinstances, instance, instr, is_arkupdater
+from modules.configreader import hstname, sharedpath, arkroot, numinstances, instance, instr, is_arkupdater, maint_hour
 import configparser
 from datetime import datetime
 from datetime import time as dt
@@ -45,6 +45,15 @@ def setpendingcfgver(inst, cver):
 def getcfgver(inst):
     lastwipe = dbquery("SELECT cfgver FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     return int(lastwipe[0])
+
+
+def getlastmaint(svr):
+    lastmaint = dbquery("SELECT lastmaint FROM lastmaintenance WHERE name = '%s'" % (svr.upper(),), fetch='one', single=True)
+    return lastmaint[0]
+
+
+def setlastmaint(svr):
+    dbupdate("UPDATE lastmaintenance SET lastmaint = '%s' WHERE name = '%s'" % (Now(fmt='dtd'), svr.upper()))
 
 
 def getpendingcfgver(inst):
@@ -217,9 +226,10 @@ def restartloop(inst):
 
 
 def checkmaintenance():
-    t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # Maintenance reboot 9:00am GMT (5:00AM EST)
+    t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
-    if inmaint:
+    if inmaint and getlastmaint(hstname) < Now(fmt='dtd'):
+        setlastmaint(hstname)
         log.log('MAINT', f'Daily maintenance window has opened for server [{hstname.upper()}]...')
         for each in range(numinstances):
             inst = instance[each]['name']

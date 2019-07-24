@@ -1,19 +1,20 @@
 from time import sleep
 import subprocess
 from loguru import logger as log
+from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate
-from modules.timehelper import Now, Secs, d2dt_maint
+from modules.timehelper import Now, Secs
+from datetime import datetime
+from datetime import time as dt
 
 
-def writediscord(msg, tstamp):
-    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % ('generalchat', 'ALERT', msg, tstamp))
+def writediscord(msg, mtype, tstamp):
+    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (mtype, 'ALERT', msg, tstamp))
 
 
-def setmotd(inst, motd=None, cancel=False):
-    if not cancel:
-        subprocess.run("""/usr/local/bin/arkmanager rconcmd "SetMessageOfTheDay '%s'" @%s""" % (motd, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-    elif cancel:
-        subprocess.run("""/usr/local/bin/arkmanager rconcmd "SetMessageOfTheDay ''" @%s""" % (inst,), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+def d2dt_maint(dtme):
+    tme = dt(int(maint_hour) - 1, 55)
+    return datetime.combine(dtme, tme)
 
 
 def iseventrebootday():
@@ -95,18 +96,27 @@ def stopserverevent(inst):
 
 def checkifeventover():
     curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (endtime < '%s' OR endtime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
-    #  curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (endtime < '%s' OR endtime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'),), fetch='one')
     if curevent and not iseventtime():
-        log.info(f'Event {curevent[4]} is over. Closing Event')
-        msg = f"{curevent[4]} Event is Ending" ################################################################# embed
-        writediscord(msg, Now())
-        dbupdate("UPDATE events SET completed = 1 WHERE endtime = '%s'" % (curevent[3],))
+        log.info(f'Event {curevent[4]} is over. Closing down event')
+        msg = f"{curevent[0]}"
+        writediscord(msg, 'EVENTEND', Now())
+        dbupdate("UPDATE events SET completed = 1 WHERE id = '%s'" % (curevent[0],))
+
+
+def checkifeventstart():
+    curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND announced = False AND (starttime < '%s' OR starttime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+    if curevent and iseventtime():
+        log.info(f'Event {curevent[4]} has begun. Starting event')
+        msg = f"{curevent[0]}"
+        writediscord(msg, 'EVENTSTART', Now())
+        dbupdate("UPDATE events SET announced = True WHERE id = '%s'" % (curevent[0],))
 
 
 def eventwatcher(inst):
     log.debug(f'Starting server event coordinator for {inst}')
     while True:
         checkifeventover()
+        checkifeventstart()
         try:
             if iseventtime() and currentserverevent(inst) == '0':
                 startserverevent(inst)
