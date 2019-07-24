@@ -216,8 +216,11 @@ def main():
 
     def sig_handler(signal, frame):
         log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
-        discordt.terminate()
-        discordt.join()
+        try:
+            discordt.terminate()
+            discordt.join()
+        except:
+            exit(0)
         sleep(1)
         exit(0)
 
