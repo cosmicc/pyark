@@ -833,8 +833,7 @@ def pyarkbot():
             if args:
                 reqs = dbquery("SELECT * FROM linkrequests WHERE reqcode = '%s'" % (args[0],), fetch='one')
                 if reqs:
-                    log.info(f'Link on discord from [{whofor.title()}] successful for player \
-    [{reqs[1].title()}]')
+                    log.info(f'Link on discord from [{whofor.title()}] successful for player [{reqs[1].title()}]')
                     dbupdate("UPDATE players SET discordid = '%s' WHERE steamid = '%s'" % (whofor, reqs[0]))
                     dbupdate("DELETE FROM linkrequests WHERE reqcode = '%s'" % (args[0],))
                     msg = f'Your discord account *[{whofor}]* is now linked to your player **{reqs[1].title()}**\n\nYou can now use discord commands like:\n**`!kickme`** to kick your player off the server so you dont have to wait\n**`!myinfo`** to see all your cluster player information\n**`!help`** for a list of all the commands'
@@ -844,11 +843,11 @@ def pyarkbot():
                     except:
                         log.error('Error applying Linked Player role to user [{user}]')
                 else:
-                    log.info(f'link account request on discord from {whofor} denied, code not found')
+                    log.warning(f'link account request on discord from {whofor} denied, code not found')
                     msg = f'That link request code was not found. You must get a link code from typing !linkme in-game'
                     embed = discord.Embed(description=msg, color=FAIL_COLOR)
             else:
-                log.info(f'link account request on discord from {whofor} denied, no code specified')
+                log.warning(f'link account request on discord from {whofor} denied, no code specified')
                 msg = f'You must first type !linkme in-game to get a code, then specify that code here to link your accounts'
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
         if str(ctx.message.channel) == 'bot-channel':

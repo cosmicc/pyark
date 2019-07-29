@@ -332,7 +332,7 @@ def voting(inst, whoasked):
                 arewevoting = False
         else:
             if sltimer == 120:
-                log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title}]')
+                log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title()}]')
                 bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                  A Wild dino wipe vote is waiting for votes!</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n                    A single NO vote will cancel the wipe\n      At least half of the players online must vote yes for wipe to happen"""
                 subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
 
@@ -454,6 +454,8 @@ def processtcdata(inst, tcdata):
             welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, inst))
             welcom.start()
     elif steamid != '':
+        if playername.lower() != pexist[1].lower():
+            log.info(f'Player name mismatch [{pexist[1]}] to [{playername}]')
         if not pexist[23]:
             welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, inst))
             welcom.start()

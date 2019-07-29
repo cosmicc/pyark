@@ -192,10 +192,9 @@ def restartloop(inst):
             while snr and not gotime:
                 if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
                     log.log('UPDATE', f'{timeleft} min broadcast message sent to [{inst.title()}]')
-                    subprocess.run("""arkmanager rconcmd "broadcast
-                                   '\n\n\n          The server will be restarting in %s minutes for a %s'" @%s""" %
-                                   (timeleft, reason, inst), stdout=subprocess.DEVNULL,
-                                   stderr=subprocess.DEVNULL, shell=True)
+                    bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">{reason}</>\n\n<RichColor Color="1,1,0,1">                   The server will be restarting in</><RichColor Color="1,0,0,1">{timeleft}</><RichColor Color="1,1,0,1"> minutes</>"""
+                    subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
+
                 sleep(Secs['1min'])
                 timeleft = timeleft - 1
                 updatetimer(inst, timeleft)
@@ -206,9 +205,8 @@ def restartloop(inst):
             if stillneedsrestart(inst):
                 log.log('UPDATE', f'Server [{inst.title()}] is restarting now for a [{reason}]')
                 message = f'server {inst.capitalize()} is restarting now for a {reason}'
-                subprocess.run("""arkmanager rconcmd "broadcast
-                               '\n\n\n             The server is restarting NOW! for a %s'" @%s""" % (reason, inst),
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">Ark Game Update</>\n\n<RichColor Color="1,1,0,1">                     !! THE SERVER IS RESTARTING</><RichColor Color="1,0,0,1">NOW</><RichColor Color="1,1,0,1"> !!</>\n\n     The server will be back up in 10 minutes, you can check status in Discord"""
+                subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
                 writechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
                 subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL, shell=True)
@@ -217,9 +215,8 @@ def restartloop(inst):
                 restartinstnow(inst)
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
-                subprocess.run("""arkmanager rconcmd "broadcast
-                               '\n\n\n             The server restart for %s has been cancelled'" @%s""" %
-                               (reason, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n\n<RichColor Color="1,1,0,1">                    The server restart has been cancelled!</>"""
+                subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
                 writechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
     else:
         log.debug(f'configuration restart skipped because {splayers} players and {aplayers} active players')
