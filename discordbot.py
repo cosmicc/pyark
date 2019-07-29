@@ -14,7 +14,6 @@ import discord
 from discord.ext import commands
 from loguru import logger as log
 import signal
-from time import sleep
 from os import getpid, _exit
 from concurrent.futures._base import CancelledError
 
@@ -651,14 +650,14 @@ def pyarkbot():
         currentevent = getcurrenteventinfo()
         nextevent = getnexteventinfo()
         try:
-            if currentevent and currentevent is not None:
+            if currentevent:
                 title = f'Event {currentevent[4]} is currently active'
                 desc = f'{currentevent[5]}\nEvent ends in {elapsedTime(datetimeto(d2dt_maint(currentevent[3]), fmt="epoch"), Now())}'
             else:
                 title = f'There are no events currently active'
                 desc = f'Last event was {lastevent[4]} {elapsedTime(datetimeto(d2dt_maint(lastevent[3]), fmt="epoch"), Now())} ago'
             embed = discord.Embed(title=title, description=desc, color=INFO_COLOR)
-            if nextevent and nextevent is not None:
+            if nextevent:
                 embed.add_field(name=f'Next event is {nextevent[4]}', value=f'{nextevent[5]}\nNext event starts in {elapsedTime(datetimeto(d2dt_maint(nextevent[2]), fmt="epoch"), Now())}', inline=False)
             else:
                 embed.add_field(name=f'Next Event is not scheduled yet', value=f'Check back again soon for the next event', inline=False)

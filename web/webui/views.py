@@ -70,6 +70,24 @@ def follow(stream):
         print('Exited.')
 
 
+def processlogline(line):
+    try:
+        #if not line.startswith('^@'):
+            line = line.strip('\x00')
+            data = json.loads(line.strip(), strict=False)
+            print(f'{data["text"].strip()}')
+    except json.decoder.JSONDecodeError:
+        print(f'{repr(line)}')
+
+
+def watchlog(dlog):
+    if dlog is False:
+        logpath = f'/home/ark/shared/logs/pyark/pyarklog.json'
+    elif dlog is True:
+        logpath = f'/home/ark/shared/logs/pyark/debuglog.json'
+
+    logproc = tail("-f", logpath, _out=processlogline)
+ 
 def getpyarklog():
     logfi = open('/home/ark/shared/logs/pyark/pyark.log', 'r')
     reslt = []

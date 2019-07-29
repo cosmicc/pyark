@@ -22,7 +22,7 @@ def autoschedevolution():
         now = Now(fmt='dt')
         while now.strftime('%a') != 'Fri':
             now += timedelta(1)
-        enddt = now + timedelta(days=4)
+        enddt = now + timedelta(days=3)
         enddate = enddt.date()
         startdate = now.date()
 
@@ -97,11 +97,14 @@ def getlasteventinfo():
 
 def getnexteventinfo():
     inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' or starttime = '%s' ORDER BY starttime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='all')
-    if inevent[0][2] == (Now(fmt='dtd')) and not iseventtime():
-        return inevent[0]
-    elif inevent[0][2] == (Now(fmt='dtd')) and iseventtime():
-        if len(inevent) > 1:
-            return inevent[1]
+    if inevent:
+        if inevent[0][2] == (Now(fmt='dtd')) and not iseventtime():
+            return inevent[0]
+        elif inevent[0][2] == (Now(fmt='dtd')) and iseventtime():
+            if len(inevent) > 1:
+                return inevent[1]
+        elif inevent[0][2] > (Now(fmt='dtd')):
+            return inevent[0]
 
 
 def currentserverevent(inst):
@@ -133,6 +136,7 @@ def checkifeventover():
         writediscord(msg, 'EVENTEND', Now())
         dbupdate("UPDATE events SET completed = 1 WHERE id = '%s'" % (curevent[0],))
         replacerates('default')
+        autoschedevolution()
 
 
 def checkifeventstart():
