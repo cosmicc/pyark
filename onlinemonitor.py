@@ -27,27 +27,6 @@ def writechat(inst, whos, msg, tstamp):
                  (inst, whos, msg, tstamp))
 
 
-def welcomenewplayer(steamid, inst):
-        global welcomthreads
-        log.info(f'Welcome message thread started for new player [{steamid}] on [{inst.title()}]')
-        sleep(3)
-        mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        sleep(3)
-        mtxt = 'ARc rewards points earned as you play. Public teleporters, crafting area, and auction house. Build \
-or find a rewards vault, free starter items.'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        sleep(3)
-        mtxt = 'You get all your items back when you die automatically, The engram menu is laggy, sorry. Admins and \
-help in discord. PRESS F1 AT ANYTIME FOR HELP. Have Fun!'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-        sleep(3)
-        mtxt = 'Everyone welcome a new player to the cluster!'
-        subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
-        log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
-        welcomthreads[:] = [d for d in welcomthreads if d.get('steamid') != steamid]
-
-
 def iswelcoming(steamid):
     for each in welcomthreads:
         if each['steamid'] == steamid:
@@ -86,7 +65,7 @@ def isinlottery(steamid):
         return True
 
 
-def checklottodeposits(steamid, inst):
+def lottodeposits(steamid, inst):
     lottocheck = dbquery("SELECT * FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
     elpinfo = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     if lottocheck and inst == elpinfo[15]:
@@ -127,18 +106,11 @@ def playergreet(steamid, steamname, inst):
     else:
         oplayer = getplayer(steamid)
         if not oplayer:
-            log.info(f'Player [steamname] with steamid [{steamid}] was not found. Adding new player to cluster')
+            log.info(f'Player steamname: [{steamname}] on [{inst.title()}] was not found. Adding new player')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                        firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, lotterywinnings, steamname) VALUES \
-                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, 0, steamname))
-            if not iswelcoming(steamid):
-                welcom = threading.Thread(name='welcoming-%s' % steamid, target=welcomenewplayer, args=(steamid, inst))
-                welcomthreads.append({'steamid': steamid, 'sthread': welcom})
-                welcom.start()
-            else:
-                log.warning(f'Welcome message thread already running for new player [{steamname}]')
-            writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
+                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, lotterywinnings, steamname, welcomeannounce) VALUES \
+                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, 0, steamname, False))
         else:
             # elif len(oplayer) > 2:
             if oplayer[16] != 0 and oplayer[15] == inst:
@@ -219,7 +191,7 @@ def playergreet(steamid, steamname, inst):
                     mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                    (steamid, mtxt, inst), shell=True)
-            checklottodeposits(steamid, inst)
+            lottodeposits(steamid, inst)
             if int(oplayer[2]) + 60 < Now() and gogo == 0:
                 mtxt = f'{oplayer[1].capitalize()} has joined the server'
                 subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)

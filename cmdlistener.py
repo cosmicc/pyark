@@ -4,6 +4,7 @@ from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
+from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
 import random
@@ -55,6 +56,29 @@ def getlastseen(seenname):
             return f'{seenname.capitalize()} was last seen {plasttime} ago on {flast[3]}'
         else:
             return f'{seenname.capitalize()} is online now on {flast[3]}'
+
+
+def newplayer(steamid, inst):
+        pplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
+        if not pplayer[23]:
+            dbupdate("UPDATE players SET welcomeannounce = True WHERE steamid = '%s'" % (steamid,))
+            log.info(f'Sending welcome message to [{pplayer[1].title()}] on [{inst.title()}]')
+            sleep(3)
+            mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+            sleep(3)
+            mtxt = 'Rewards points earned as you play, Public teleporters, crafting area, Build a rewards vault, free starter items inside.'
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+            sleep(3)
+            mtxt = 'Press F1 or Discord at anytime for help. Have Fun!'
+            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+            sleep(3)
+            mtxt = 'Everyone welcome a new player to the cluster!'
+            subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+            log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
+            writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
+        else:
+            log.warning('Skipping welcome message, player already marked announced')
 
 
 def respmyinfo(inst, whoasked):
@@ -207,11 +231,8 @@ def castedvote(inst, whoasked, myvote):
                                (getsteamid(whoasked), mtxt, inst), shell=True)
                 log.info(f'Voting NO has won, NO wild dino wipe will be performed for {inst}')
                 sleep(1)
-                subprocess.run('arkmanager rconcmd "ServerChat Voting has finished. NO has won." @%s' %
-                               (inst), shell=True)
-                sleep(1)
-                subprocess.run('arkmanager rconcmd "ServerChat NO wild dino wipe will be performed" @%s' %
-                               (inst), shell=True)
+                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
+                subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
                 writechat(inst, 'ALERT', f'### A wild dino wipe vote has failed with a NO vote from \
 {whoasked.capitalize()}', wcstamp())
                 arewevoting = False
@@ -266,7 +287,8 @@ def howmanyvotes():
 def wipeit(inst):
     yesvoters, totvoters = howmanyvotes()
     log.log('VOTE', f'YES has won ({yesvoters}/{totvoters}), wild dinos are wiping on [{inst.title()}] in 15 seconds')
-    subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nThe wild dino wipe vote has finished. YES has won (%s of %s). Wiping all wild dinos in 10 seconds.'" @%s""" % (yesvoters, totvoters, inst), shell=True)
+    bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                                   A Wild dino wipe vote has finished</>\n<RichColor Color="0,1,0,1">                      YES votes have won! ('%s' of '%s' Players)</>\n\n  <            RichColor Color="1,1,0,1">                 !! WIPING ALL WILD DINOS IN 10 SECONDS !!</>""" % (yesvoters, totvoters)
+    subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
     writechat(inst, 'ALERT', f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). \
 Wiping wild dinos now.', wcstamp())
     sleep(7)
@@ -286,7 +308,8 @@ def voting(inst, whoasked):
     arewevoting = True
     pon = populatevoters(inst)
     setvote(whoasked, 2)
-    subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nA wild dino wipe vote has started with %s players. vote !yes or !no in global chat now'" @%s""" % (pon, inst), shell=True)
+    bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">             A Wild dino wipe vote has started with {pon} online players</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n                    A single NO vote will cancel the wipe\n      At least half of the players online must vote yes for wipe to happen\n                           Voting lasts 3 minutes"""
+    subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
     votestarttime = Now()
     sltimer = 0
     writechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp())
@@ -308,9 +331,10 @@ def voting(inst, whoasked):
 {totvoters})', wcstamp())
                 arewevoting = False
         else:
-            if sltimer == 60 or sltimer == 120:
-                log.debug(f'sending voting waiting message to vote on {inst}')
-                subprocess.run("""arkmanager rconcmd "Broadcast '\n\n\nA wild dino wipe vote is waiting. Make sure you have cast your vote !yes or !no in global chat now'" @%s""" % (inst,), shell=True)
+            if sltimer == 120:
+                log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title}]')
+                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                  A Wild dino wipe vote is waiting for votes!</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n                    A single NO vote will cancel the wipe\n      At least half of the players online must vote yes for wipe to happen"""
+                subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
 
         sltimer += 5
     log.debug(votertable)
@@ -423,11 +447,16 @@ def processtcdata(inst, tcdata):
             log.info(f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                       firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-                      primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins) VALUES \
-                      ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
+                      primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce) VALUES \
+                      ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
                      (steamid, playername, Now(), inst, int(playtime), rewardpoints, Now(), 1, '', '', 0, 0, 0, 0,
-                      0, inst, 0, Now(), 0))
+                      0, inst, 0, Now(), 0, False))
+            welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, inst))
+            welcom.start()
     elif steamid != '':
+        if not pexist[23]:
+            welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, inst))
+            welcom.start()
         if inst == pexist[15]:
             # log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating info.')
             dbupdate("UPDATE players SET playername = '%s', playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
@@ -489,7 +518,13 @@ with {pinfo[5]} points')
         subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0], msg, inst), shell=True)
 
 
-def sendlotteryinfo(linfo, lpinfo, inst):
+def lastlotto(whoasked, inst):
+    lastl = getlastlotteryinfo()
+    msg = f'Last lottery was won by {lastl["winner"].upper()} for {lastl["payout"]} points {elapsedTime(datetimeto(lastl["startdate"] + timedelta(hours=int(lastl["days"])), fmt="epoch"),Now())} ago'
+    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg, inst), shell=True)
+
+
+def lotteryinfo(linfo, lpinfo, inst):
     msg = f'Current lottery is up to {linfo["payout"]} ARc reward points.'
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
     msg = f'{linfo["players"]} players have entered into this lottery so far'
@@ -504,7 +539,7 @@ def sendlotteryinfo(linfo, lpinfo, inst):
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
 
 
-def lotteryquery(whoasked, lchoice, inst):
+def lottery(whoasked, lchoice, inst):
     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
     lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
     if linfo:
@@ -525,7 +560,7 @@ def lotteryquery(whoasked, lchoice, inst):
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
         else:
             log.log('CMD', f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
-            sendlotteryinfo(linfo, lpinfo, inst)
+            lotteryinfo(linfo, lpinfo, inst)
     else:
         log.info(f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
         msg = f'There are no current lotterys underway.'
@@ -540,7 +575,7 @@ def checkcommands(minst):
     for line in iter(b.splitlines()):
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
-        elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
+        elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('[WBUI]') != -1:
             log.log('ADMIN', line.replace('"', '').strip())
         elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('joined this ARK!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('starved to death!') != -1 or line.find('left this ARK!') != -1:
             with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
@@ -708,9 +743,20 @@ def checkcommands(minst):
                             lchoice = lastlline[1]
                         else:
                             lchoice = False
-                        lotteryquery(whoasked, lchoice, minst)
+                        lottery(whoasked, lchoice, minst)
+
+                elif line.find('!lastlotto') != -1 or line.find('!winner') != -1:
+                    log.log('CMD', f'Responding to a [!lastlotto] request from [{whoasked.title()}] on [{minst.title()}]')
+                    lastlotto(minst, whoasked)
+
+                elif line.startswith('!'):
+                    lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
+                    log.warning(f'Invalid command request from [{whoasked.title()}] on [{minst.title()}]')
+                    msg = "Invalid command. Try !help"
+                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
+
                 else:
-                    # log.debug(f'chatline: {line}')
+                    log.debug(f'chatline elsed: {line}')
                     rawline = line.split('(')
                     if len(rawline) > 1:
                         rawname = rawline[1].split(')')

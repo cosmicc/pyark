@@ -1,10 +1,10 @@
 from time import sleep
-import subprocess
 from loguru import logger as log
 from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now, Secs
-from datetime import datetime
+from modules.instances import instancelist, serverchat
+from datetime import datetime, timedelta
 from datetime import time as dt
 
 
@@ -15,6 +15,23 @@ def writediscord(msg, mtype, tstamp):
 def d2dt_maint(dtme):
     tme = dt(int(maint_hour) - 1, 55)
     return datetime.combine(dtme, tme)
+
+
+def autoschedevolution():
+    if not getnexteventinfo():
+        now = Now(fmt='dt')
+        while now.strftime('%a') != 'Fri':
+            now += timedelta(1)
+        enddt = now + timedelta(days=4)
+        enddate = enddt.date()
+        startdate = now.date()
+
+        einfo = dbquery("SELECT * FROM autoevents WHERE title = 'Evolution Weekend'", fmt='dict', fetch='one')
+        dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix) VALUES (0, '%s', '%s', '%s', '%s', '%s      ')" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
+
+        log.log('EVENTS', f'Scheduling next Evolution Weekend Event {startdate} - {enddate}')
+    else:
+        log.log('EVENTS', f'Skipping auto-schedule of next Evo weekend to do existing next event')
 
 
 def iseventrebootday():
@@ -41,15 +58,17 @@ def iseventtime():
 
 
 def getcurrenteventext():
-    inevent = dbquery("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
-    if inevent:
-        return inevent[0]
+    if iseventtime():
+        inevent = dbquery("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+        if inevent:
+            return inevent[0]
 
 
 def getcurrenteventtitle():
-    inevent = dbquery("SELECT title FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
-    if inevent:
-        return inevent[0]
+    if iseventtime():
+        inevent = dbquery("SELECT title FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+        if inevent:
+            return inevent[0]
 
 
 def getcurrenteventinfo():
@@ -57,10 +76,18 @@ def getcurrenteventinfo():
         inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
         if inevent:
             return inevent
+
+
+def replacerates(event):
+    try:
+        if event == 'default':
+            newrates = dbquery("SELECT * FROM rates WHERE type = 'default'", fetch='one', fmt='dict')
         else:
-            return None
-    else:
-        return None
+            newrates = dbquery("SELECT * FROM autoevents WHERE title = '%s'" % (event,), fetch='one', fmt='dict')
+        dbupdate(f"UPDATE rates set breed = {newrates['breed']}, tame = {newrates['tame']}, harvest = {newrates['harvest']}, mating = {newrates['mating']}, matingint = {newrates['matingint']}, hatch = {newrates['hatch']}, playerxp = {newrates['playerxp']}, tamehealth = {newrates['tamehealth']}, playerhealth = {newrates['playerhealth']}, playersta = {newrates['playersta']}, foodwater = {newrates['foodwater']}, pph = {newrates['pph']}, pphx = {newrates['pphx']} WHERE type = 'current'")
+        log.log('EVENTS', f'Replaced event rates with rates from {event}')
+    except:
+        log.exception('Error replacing rates')
 
 
 def getlasteventinfo():
@@ -69,8 +96,12 @@ def getlasteventinfo():
 
 
 def getnexteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' ORDER BY id DESC" % (Now(fmt='dtd'),), fetch='one')
-    return inevent
+    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' or starttime = '%s' ORDER BY starttime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='all')
+    if inevent[0][2] == (Now(fmt='dtd')) and not iseventtime():
+        return inevent[0]
+    elif inevent[0][2] == (Now(fmt='dtd')) and iseventtime():
+        if len(inevent) > 1:
+            return inevent[1]
 
 
 def currentserverevent(inst):
@@ -81,47 +112,52 @@ def currentserverevent(inst):
 def startserverevent(inst):
     dbupdate("UPDATE instances SET inevent = '%s' WHERE name = '%s'" % (getcurrenteventext(), inst))
     eventinfo = getcurrenteventinfo()
-    log.info(f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
+    log.log('EVENTS', f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
     msg = f"\n\n                      {eventinfo[4]} Event is Starting Soon!\n\n                        {eventinfo[5]}"
-    subprocess.run("""arkmanager rconcmd "broadcast '%s' " @%s""" % (msg, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    serverchat(msg, inst=inst, broadcast=True)
 
 
 def stopserverevent(inst):
     dbupdate("UPDATE instances SET inevent = 0 WHERE name = '%s'" % (inst,))
-    log.info(f'Ending event on instance {inst.capitalize()}')
+    log.log('EVENTS', f'Ending event on instance {inst.capitalize()}')
     eventinfo = getlasteventinfo()
     msg = f"\n\n                      {eventinfo[4]} Event is Ending Soon!"
-    subprocess.run("""arkmanager rconcmd "broadcast '%s' " @%s""" % (msg, inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    serverchat(msg, inst=inst, broadcast=True)
 
 
 def checkifeventover():
     curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (endtime < '%s' OR endtime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
     if curevent and not iseventtime():
-        log.info(f'Event {curevent[4]} is over. Closing down event')
+        log.log('EVENTS', f'Event {curevent[4]} is over. Closing down event')
         msg = f"{curevent[0]}"
         writediscord(msg, 'EVENTEND', Now())
         dbupdate("UPDATE events SET completed = 1 WHERE id = '%s'" % (curevent[0],))
+        replacerates('default')
 
 
 def checkifeventstart():
-    curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND announced = False AND (starttime < '%s' OR starttime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+    curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND announced = False AND (starttime < '%s' OR starttime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one', fmt='dict')
     if curevent and iseventtime():
-        log.info(f'Event {curevent[4]} has begun. Starting event')
-        msg = f"{curevent[0]}"
+        log.log('EVENTS', f'Event {curevent["title"]} has begun. Starting event')
+        msg = f"{curevent['id']}"
         writediscord(msg, 'EVENTSTART', Now())
-        dbupdate("UPDATE events SET announced = True WHERE id = '%s'" % (curevent[0],))
+        dbupdate("UPDATE events SET announced = True WHERE id = '%s'" % (curevent['id'],))
+        replacerates(curevent['title'])
+        autoschedevolution()
 
 
-def eventwatcher(inst):
-    log.debug(f'Starting server event coordinator for {inst}')
+def eventwatcher():
+    log.debug(f'Starting cluster server event coordinator')
+    instances = instancelist()
     while True:
-        checkifeventover()
-        checkifeventstart()
         try:
-            if iseventtime() and currentserverevent(inst) == '0':
-                startserverevent(inst)
-            elif not iseventtime() and currentserverevent(inst) != '0':
-                stopserverevent(inst)
+            checkifeventover()
+            checkifeventstart()
+            for inst in instances:
+                if iseventtime() and currentserverevent(inst) == '0':
+                    startserverevent(inst)
+                elif not iseventtime() and currentserverevent(inst) != '0':
+                    stopserverevent(inst)
         except:
             log.exception(f'Critical error in event coordinator')
         sleep(Secs['1min'])

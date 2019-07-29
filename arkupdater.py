@@ -225,7 +225,7 @@ def restartloop(inst):
         log.debug(f'configuration restart skipped because {splayers} players and {aplayers} active players')
 
 
-def checkmaintenance():
+def maintenance():
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
     if inmaint and getlastmaint(hstname) < Now(fmt='dtd'):
@@ -507,7 +507,7 @@ def arkupd():
             sleep(30)
             restartcheck()
             sleep(30)
-            checkmaintenance()
+            maintenance()
             restartcheck()
             sleep(30)
             restartcheck()

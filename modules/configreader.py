@@ -18,11 +18,11 @@ config.read(configfile)
 
 hstname = gethostname().upper()
 
-logformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {level: <6} | {message} | {name}:{function}:{line}'
+shortlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: <5}</level> | <level>{level: <67}</level> | <level>{message}</level>'
 
-logsimple = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
+simplelogformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
 
-colorlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: >5}</level> | <level>{level: <7}</level> | <level>{message: <72}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+longlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: >5}</level> | <level>{level: <7}</level> | <level>{message: <72}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
 
 # General
 loglevel = config.get('general', 'loglevel')
@@ -38,6 +38,7 @@ critlogfile = config.get('general', 'critlogfile')
 maint_hour = config.get('general', 'maint_hour')
 
 is_arkupdater = config.get('general', 'is_arkupdater')
+is_eventwatcher = config.get('general', 'is_eventwatcher')
 is_asdatapuller = config.get('general', 'is_asdatapuller')
 is_discordbot = config.get('general', 'is_discordbot')
 is_statscollector = config.get('general', 'is_statscollector')
@@ -58,6 +59,7 @@ psql_statsdb = config.get('postgresql', 'statsdb')
 # Discord
 generalchat_id = config.get('discord', 'general_channel')
 serverchat_id = config.get('discord', 'serverchat_channel')
+infochat_id = config.get('discord', 'info_channel')
 discordtoken = config.get('discord', 'token')
 
 # Pushover

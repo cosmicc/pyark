@@ -14,6 +14,7 @@ import json
 import logging
 import subprocess
 import time
+from os import system
 from time import sleep
 from sh import tail
 
@@ -24,7 +25,7 @@ parser.add_argument('action_to_perform',
                                              'listtables', 'notlinked', 'newest', 'server', 'dinowipe',
                                              'logwatch', 'lotterytables', 'log', 'topplayers', 'test',
                                              'debugwatch', 'showtable', 'oldest', 'logsearch', 'banplayer', 'banlist',
-                                             'unbanplayer', 'tribewipe', 'backupdb', 'shortest'], help='Action to perform')
+                                             'unbanplayer', 'tribewipe', 'backupdb', 'shortest', 'killall'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('start', action='store_true', help='Start the pyark daemon Systemctl')
 action_group.add_argument('stop', action='store_true', help='Stop the pyark daemon Systemctl')
@@ -56,6 +57,7 @@ action_group.add_argument('startevent', action='store_true', help='Start an Even
 action_group.add_argument('lottery', action='store_true', help='Show Lottery Info')
 action_group.add_argument('topplayers', action='store_true', help='Show Top Players')
 action_group.add_argument('log', action='store_true', help='Show the log (requires log length)')
+action_group.add_argument('killall', action='store_true', help='Kill all pyark processes')
 action_group.add_argument('test', action='store_true', help='TESTING AVG')
 
 parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
@@ -86,12 +88,19 @@ trclr = ''
 
 print('    ')
 
+null = None
 
+
+jsontest = """{"text": "\u001b[38;5;201m2019-07-27 09:01:34.674\u001b[0m | \u001b[38;5;201m SVR3\u001b[0m | \u001b[38;5;201mJOIN   \u001b[0m | \u001b[38;5;201mPlayer [Uglysammy] has transferred from [Ragnarok] to [Valguero]        \u001b[0m | \u001b[38;5;109monlinemonitor:playergreet:158\u001b[0m\n", "record": {"elapsed": {"repr": "14:54:27.711542", "seconds": 53667.711542}, "exception": null, "extra": {"hostname": "SVR3", "instance": "MAIN"}, "file": {"name": "onlinemonitor.py", "path": "/home/ark/pyark/onlinemonitor.py"}, "function": "playergreet", "level": {"icon": "\u00a4", "name": "JOIN", "no": 21}, "line": 158, "message": "Player [Uglysammy] has transferred from [Ragnarok] to [Valguero]", "module": "onlinemonitor", "name": "onlinemonitor", "process": {"id": 1749, "name": "MainProcess"}, "thread": {"id": 140505023248128, "name": "greet-76561198109504766"}, "time": {"repr": "2019-07-27 09:01:34.674965+00:00", "timestamp": 1564218094.674965}}}"""
 
 def processlogline(line):
-    if not line.startswith('^@'):
-        data = json.loads(line.strip())
-        print(f'{data["text"].strip()}')
+    try:
+        #if not line.startswith('^@'):
+            line = line.strip('\x00')
+            data = json.loads(line.strip(), strict=False)
+            print(f'{data["text"].strip()}')
+    except json.decoder.JSONDecodeError:
+        print(f'{repr(line)}')
 
 
 def watchlog(dlog):
@@ -99,12 +108,19 @@ def watchlog(dlog):
         logpath = f'/home/ark/shared/logs/pyark/pyarklog.json'
     elif dlog is True:
         logpath = f'/home/ark/shared/logs/pyark/debuglog.json'
-    logproc = tail("-f", logpath, _out=processlogline)
-    while True:
-        sleep(10)
-        print('##############')
-        logproc.wait()
 
+    logproc = tail("-f", logpath, _out=processlogline)
+    #while True:
+    #    sleep(10)
+    #    print('##############')
+    #    logproc.wait()
+
+
+def killall():
+    with open('/tmp/pyark.pid') as inf:
+        for line in inf:
+            system(f'kill -9 {line}')
+    print('All pyark processes killed.')
 
 
 def percentage(part, whole):
@@ -1228,6 +1244,8 @@ try:
         sctl('stop')
     elif args.action_to_perform == 'restart':
         sctl('restart')
+    elif args.action_to_perform == 'killall':
+        killall()
     elif args.action_to_perform == 'test':
         print(getallavg('monthly'))
     elif args.action_to_perform == 'log':

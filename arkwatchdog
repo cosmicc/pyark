@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.6
 
-from modules.configreader import instance, hstname, jsonlogfile, colorlogfile, jsondebugfile, critlogfile, loglevel, instr, logformat, colorlogformat
+from modules.configreader import instance, hstname, jsonlogfile, colorlogfile, jsondebugfile, critlogfile, loglevel, instr, shortlogformat, longlogformat
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
 from modules.instances import getinststatus, isinstanceenabled
@@ -56,28 +56,28 @@ log.level("WATCH", no=38, color="<light-yellow>", icon="¤")
 
 # Console Logging
 if args.quiet:
-    log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=False, format=logformat)
+    log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=False, format=longlogformat)
 elif args.trace:
-    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
+    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=longlogformat)
 elif args.debug:
-    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
+    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=longlogformat)
 else:
-    log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=colorlogformat)
+    log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=longlogformat)
 
 # Json logging pyarklog.json
-log.add(sink=jsonlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=colorlogformat)
+log.add(sink=jsonlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=longlogformat)
 # Color logging pyark.log
-log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=colorlogformat)
+log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=shortlogformat)
 # Debug json logging debuglog.json
 if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
     if loglevel == 'DEBUG' or args.debug:
         lev = 10
     else:
         lev = 5
-    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=colorlogformat, delay=True)
+    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=longlogformat, delay=True)
 
 # Error Logging crit.log
-log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=colorlogformat, delay=True)
+log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True)
 
 
 def issharedmounted():

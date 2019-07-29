@@ -1,9 +1,9 @@
 from datetime import timedelta
 from datetime import time as dt
 from datetime import datetime
-from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo
+from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo, iseventtime
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
-from modules.configreader import generalchat_id, serverchat_id, discordtoken, hstname, maint_hour
+from modules.configreader import generalchat_id, serverchat_id, discordtoken, hstname, maint_hour, infochat_id
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, getlastwipe, getlastrestart, writechat, writeglobal, getlastrestartreason
 from modules.players import getplayer, getplayerlastserver, getplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers, isplayeradmin, setprimordialbit
@@ -14,6 +14,8 @@ import discord
 from discord.ext import commands
 from loguru import logger as log
 import signal
+from time import sleep
+from os import getpid, _exit
 from concurrent.futures._base import CancelledError
 
 __name__ = 'discordbot'
@@ -47,8 +49,17 @@ def d2dt_maint(dtme):
 
 
 def addlottomessage(messageid):
-    log.trace(f'Adding lotto descird message id [{messageid}] to lottomessage table')
+    log.trace(f'Adding lotto discord message id [{messageid}] to lottomessage table')
     dbupdate("INSERT INTO lotterymessages (messageid) VALUES ('%s')" % (messageid,))
+
+
+def addeventmessage(messageid):
+    log.trace(f'Adding event discord message id [{messageid}] to eventmessage table')
+    dbupdate("INSERT INTO eventmessages (messageid) VALUES ('%s')" % (messageid,))
+
+
+def getrates():
+    return dbquery("SELECT * FROM rates WHERE type = 'current'", fetch='one', fmt='dict')
 
 
 def getlastlottoannounce():
@@ -56,12 +67,17 @@ def getlastlottoannounce():
     return lastl[0]
 
 
-def getrates():
-    return dbquery("SELECT * FROM rates", fetch='one', fmt='dict')
-
-
 def setlastlottoannounce(tstamp):
     dbupdate("UPDATE general SET lastlottoannounce = '%s'" % (tstamp,))
+
+
+def getlasteventannounce():
+    lastl = dbquery("SELECT lasteventannounce FROM general", fetch='one', single=True)
+    return lastl[0]
+
+
+def setlasteventannounce(tstamp):
+    dbupdate("UPDATE general SET lasteventannounce = '%s'" % (tstamp,))
 
 
 def savediscordtodb(author):
@@ -74,6 +90,8 @@ def savediscordtodb(author):
 def pyarkbot():
     global generalchat
     global serverchat
+    with open('/tmp/pyark.pid', 'a') as pidfile:
+        pidfile.write(f'\n{str(getpid())}')
 
     lastupdateannounce = Now(fmt='dt') + timedelta(minutes=21)
 
@@ -149,17 +167,34 @@ def pyarkbot():
         msgs = dbquery(f'SELECT messageid FROM lotterymessages', fmt='list', fetch='all', single=True)
         for msgid in msgs:
             try:
-                msg = await generalchat.get_message(msgid)
+                msg = await generalchat.fetch_message(int(msgid))
                 await msg.delete()
             except:
-                log.debug(f'error while deleting lotto messages from db')
+                log.exception(f'error while deleting lotto messages from db')
             else:
                 log.debug(f'Deleted lottery message id {msg.id}')
             finally:
                 dbupdate(f"DELETE from lotterymessages WHERE messageid = '%s'" % (msgid,))
 
+    async def cleareventmessages():
+        await client.wait_until_ready()
+        generalchat = client.get_channel(int(generalchat_id))
+        log.trace(f'starting discord eventmessage id clearing')
+        msgs = dbquery(f'SELECT messageid FROM eventmessages', fmt='list', fetch='all', single=True)
+        for msgid in msgs:
+            try:
+                msg = await generalchat.fetch_message(int(msgid))
+                await msg.delete()
+            except:
+                log.exception(f'error while deleting event messages from db')
+            else:
+                log.debug(f'Deleted event message id {msg.id}')
+            finally:
+                dbupdate(f"DELETE from eventmessages WHERE messageid = '%s'" % (msgid,))
+
     async def taskchecker():
         await client.wait_until_ready()
+        await asyncio.sleep(3)
         generalchat = client.get_channel(int(generalchat_id))
         while not client.is_closed():
             try:
@@ -169,22 +204,43 @@ def pyarkbot():
                     log.log('LOTTO', 'Announcing running lottery in discord')
                     embed = discord.Embed(title=f"A lottery is currently running!", color=INFO_COLOR)
                     embed.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='https://blacklabelagency.com/wp-content/uploads/2017/08/money-icon.png')
-                    embed.add_field(name=f"Current lottery is up to **{linfo['payout']} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\nType **`!lotto enter`** to join, or **`!points`** for more information", inline=True)
+                    embed.add_field(name=f"Current lottery is up to **{linfo['payout']} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\n**`!lotto enter`** to join the lottery\n**`!points`** for more information\n**`!winners`** for recent results", inline=True)
                     msg = await generalchat.send(embed=embed)
                     setlastlottoannounce(Now(fmt='dt'))
                     await clearlottomessages()
                     addlottomessage(msg.id)
+                if Now(fmt='dt') - getlasteventannounce() > timedelta(hours=12) and iseventtime():
+                    log.info('Announcing running event in discord')
+                    event = getcurrenteventinfo()
+                    embed = discord.Embed(title=f"An event is running!", color=INFO_COLOR)
+                    embed.set_author(name='Galaxy Cluster Server Events', icon_url='https://library.kissclipart.com/20180903/ueq/kissclipart-party-emoji-clipart-party-popper-emoji-aa28695001083d98.png')
+                    embed.add_field(name=f"The {event[4]} Event is live on all servers", value=f"{event[5]}\nEvent ends: ", inline=False)
+                    msg = await generalchat.send(embed=embed)
+                    setlasteventannounce(Now(fmt='dt'))
+                    await cleareventmessages()
+                    addeventmessage(msg.id)
 
-                await asyncio.sleep(60)
+                try:
+                    await serversinfo(None, refresher=True)
+                except discord.errors.NotFound:
+                    log.error('Cant find server info messages to refresh')
+                try:
+                    await serverrates(None, refresher=True)
+                except discord.errors.NotFound:
+                    log.error('Cant find rates info messages to refresh')
+                except:
+                    log.exception('some other error')
+                await asyncio.sleep(10)
             except CancelledError:
-                exit(0)
+                _exit(0)
             except:
                 log.exception('error in task checker!')
-                await asyncio.sleep(60)
+                await asyncio.sleep(10)
 
     async def chatbuffer():
         global lastupdateannounce
         await client.wait_until_ready()
+        await asyncio.sleep(5)
         serverchat = client.get_channel(int(serverchat_id))
         generalchat = client.get_channel(int(generalchat_id))
         while not client.is_closed():
@@ -202,7 +258,7 @@ def pyarkbot():
                             embed = discord.Embed(title=f"A new Lottery has started!", color=INFO_COLOR)
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='https://blacklabelagency.com/wp-content/uploads/2017/08/money-icon.png')
                             buyin = int(each[2]) / 25
-                            embed.add_field(name=f"Starting Pot: {each[2]} Points", value=f"It costs **{int(buyin)} Points** to join this lottery, lottery winnings grow as more join\nLottery will end in **{each[1]}**\n\nType **`!lotto enter`** to join this lottery, or **`!points`** for more information", inline=False)
+                            embed.add_field(name=f"Starting Pot: {each[2]} Points", value=f"It costs **{int(buyin)} Points** to join this lottery, lottery winnings grow as more join\nLottery will end in **{each[1]}**\n**`!lotto enter`** to join this lottery\n**`!points`** for more information\n**`!winners`** for recent results", inline=False)
                             msg = await generalchat.send(embed=embed)
                             await clearlottomessages()
                             addlottomessage(msg.id)
@@ -210,24 +266,31 @@ def pyarkbot():
                         elif each[0] == 'LOTTOEND':
                             embed = discord.Embed(title=f"The current Lottery has ended", color=INFO_COLOR)
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='https://blacklabelagency.com/wp-content/uploads/2017/08/money-icon.png')
-                            embed.add_field(name=f"Congratulations to {each[2].upper()} winning **{each[1]}** Points", value=f"Next lottery will start in **1** hour, Type **`!points`** for more information", inline=False)
+                            embed.add_field(name=f"Congratulations to {each[2].upper()} winning **{each[1]}** Points", value=f"Next lottery will start in **1** hour\n**`!points`** for more information\n**`!winners`** for recent results", inline=False)
                             msg = await generalchat.send(embed=embed)
                             await clearlottomessages()
                             addlottomessage(msg.id)
 
                         elif each[0] == 'EVENTSTART':
+                            setlasteventannounce(Now(fmt='dt'))
                             event = getcurrenteventinfo()
                             embed = discord.Embed(title=f"A new event is starting!", color=INFO_COLOR)
                             embed.set_author(name='Galaxy Cluster Server Events', icon_url='https://library.kissclipart.com/20180903/ueq/kissclipart-party-emoji-clipart-party-popper-emoji-aa28695001083d98.png')
-                            embed.add_field(name=f"The {event[4]} Event is starting", value=f"{event[5]}", inline=False)
+                            embed.add_field(name=f"The {event[4]} Event is live on all servers", value=f"{event[5]}", inline=False)
                             msg = await generalchat.send(embed=embed)
+                            await cleareventmessages()
+                            addeventmessage(msg.id)
 
                         elif each[0] == 'EVENTEND':
-                            event = getcurrenteventinfo()
+                            event = getlasteventinfo()
+                            nevent = getnexteventinfo()
                             embed = discord.Embed(title=f"The current event is ending!", color=INFO_COLOR)
                             embed.set_author(name='Galaxy Cluster Server Events', icon_url='https://library.kissclipart.com/20180903/ueq/kissclipart-party-emoji-clipart-party-popper-emoji-aa28695001083d98.png')
-                            embed.add_field(name=f"The {event[4]} Event is ending", value=f"Next event starts in ...", inline=False)
+                            embed.add_field(name=f"The {event[4]} Event is ending on all servers", value=f"Next event **{nevent[4]}** starts in **{elapsedTime(Now(), datetimeto(d2dt_maint(nevent[2]), fmt='epoch'))}**", inline=False)
                             msg = await generalchat.send(embed=embed)
+                            await cleareventmessages()
+                            addeventmessage(msg.id)
+                            setlasteventannounce(Now(fmt='dt'))
 
                         elif each[0] == 'UPDATE':
                             if Now(fmt='dt') - lastupdateannounce > timedelta(minutes=20):
@@ -254,9 +317,10 @@ def pyarkbot():
                         writechat(reach[3], 'ALERT', f'>>> {reach[1].title()} has left the server', wcstamp())
             except discord.errors.HTTPException:
                 log.warning('HTTP Exception error while contacting discord!')
+                await asyncio.sleep(10)
             except:
                 log.exception('Critical Error in Chat Buffer discord writer!')
-                await asyncio.sleep(30)
+                await asyncio.sleep(10)
             else:
                 await asyncio.sleep(5)
 
@@ -308,6 +372,48 @@ def pyarkbot():
                 return await ctx.message.channel.send(embed=embed)
         except:
             log.exception('Critical error in discord send')
+
+    async def serversinfo(ctx, refresher=False):
+        dbsvr = dbquery("SELECT * FROM instances ORDER BY name ASC")
+        msg = 'Galaxy Cluster Ultimate Extinction Core Servers:'
+        embed = discord.Embed(title=msg, color=INFO_COLOR)
+        for instt in dbsvr:
+            if int(instt[9]) == 0:
+                onl = 'OFFLINE'
+                pcnt = 0
+            elif int(instt[9]) == 1:
+                onl = 'ONLINE'
+                flast = dbquery("SELECT * FROM players WHERE server = '%s'" % (instt[0],))
+                pcnt = 0
+                for row in flast:
+                    chktme = Now() - float(row[2])
+                    if chktme < 40:
+                        pcnt += 1
+            embed.add_field(name=f'Server {instt[0].capitalize()} is  **{onl}**  Players ({pcnt}/50)', value=f'Hostname: {instt[23]}\nSteam: {instt[15]}\nArkServers: {instt[16]}\nBattleMetrics: {instt[17]}', inline=False)
+        if refresher:
+            infochat = client.get_channel(int(infochat_id))
+            msg = await infochat.fetch_message(603680854325329931)
+            await msg.edit(embed=embed)
+            log.trace('Discord server-and-mod server information updated')
+        else:
+            await messagesend(ctx, embed, allowgeneral=True, reject=False)
+
+    async def serverrates(ctx, refresher=False):
+        rates = getrates()
+        cevent = getcurrenteventinfo()
+        if cevent is None:
+            eventtext = 'No events are currently active (Normal Rates)'
+        else:
+            eventtext = f'{cevent[4]} event is active (Boosted Rates)'
+        embed = discord.Embed(title='Current Galaxy Cluster Server Rates:', color=INFO_COLOR)
+        embed.add_field(name=f"{eventtext}", value=f"Breeding Speed: **{rates['breed']}x**\nTaming Speed: **{rates['tame']}x**\nHarvest Speed: **{rates['harvest']}x**\nMating Speed: **{rates['mating']}x**\nMating Interval: **{rates['matingint']}x**\nHatching Speed: **{rates['hatch']}x**\nPlayer XP Speed: **{rates['playerxp']}x**\nTamed Health Recovery: **{rates['tamehealth']}%**\nPlayer Health Recovery: **{rates['playerhealth']}%**\nPlayer Stamina Drain: **{rates['playersta']}%**\nFood/Water Drain Speed: **{rates['foodwater']}%**\nReward Points per Hour: **{rates['pph']}** ({rates['pphx']}x)", inline=True)
+        if refresher:
+            infochat = client.get_channel(int(infochat_id))
+            msg = await infochat.fetch_message(603680843356962857)
+            await msg.edit(embed=embed)
+            log.trace('Discord server-and-mod rates information updated')
+        else:
+            await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
     @client.command(name='help', aliases=['helpme', 'commands'])
     @commands.check(logcommand)
@@ -374,23 +480,7 @@ def pyarkbot():
     @client.command(name='servers', aliases=['server'])
     @commands.check(logcommand)
     async def _servers(ctx):
-        dbsvr = dbquery("SELECT * FROM instances")
-        msg = 'Galaxy Cluster Ultimate Extinction Core Servers:'
-        embed = discord.Embed(title=msg, color=INFO_COLOR)
-        for instt in dbsvr:
-            if int(instt[9]) == 0:
-                onl = 'OFFLINE'
-                pcnt = 0
-            elif int(instt[9]) == 1:
-                onl = 'ONLINE'
-                flast = dbquery("SELECT * FROM players WHERE server = '%s'" % (instt[0],))
-                pcnt = 0
-                for row in flast:
-                    chktme = Now() - float(row[2])
-                    if chktme < 40:
-                        pcnt += 1
-            embed.add_field(name=f'Server {instt[0].capitalize()} is  **{onl}**  Players ({pcnt}/50)', value=f'Hostname: {instt[23]}\nSteam: {instt[15]}\nArkServers: {instt[16]}\nBattleMetrics: {instt[17]}', inline=False)
-        await messagesend(ctx, embed, allowgeneral=True, reject=False)
+        await serversinfo(ctx)
 
     @client.command(name='primordial')
     @commands.check(logcommand)
@@ -430,7 +520,7 @@ def pyarkbot():
         msg = ''
         for each in newlist:
             lsplayer = getplayer(playername=each)
-            lspago = elapsedTime(Now(), lsplayer[6])
+            lspago = elapsedTime(Now(), lsplayer[6], nowifmin=False)
             msg = msg + f'**{lsplayer[1].title()}** joined ***{lsplayer[3].capitalize()}***  -  {lspago} ago\n'
         embed = discord.Embed(title=msg2, description=msg, color=INFO_COLOR)
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
@@ -560,19 +650,19 @@ def pyarkbot():
         lastevent = getlasteventinfo()
         currentevent = getcurrenteventinfo()
         nextevent = getnexteventinfo()
-        msg = ''
         try:
-            if lastevent and lastevent is not None:
-                msg = msg + f'Last Event was: {lastevent[4]} ended {elapsedTime(datetimeto(d2dt_maint(lastevent[3]), fmt="epoch"), Now())} ago\n'
             if currentevent and currentevent is not None:
-                msg = msg + f'Current Event is: {currentevent[4]} {currentevent[5]}\nCurrent Event ends in {elapsedTime(datetimeto(d2dt_maint(currentevent[3]), fmt="epoch"), Now())}\n'
+                title = f'Event {currentevent[4]} is currently active'
+                desc = f'{currentevent[5]}\nEvent ends in {elapsedTime(datetimeto(d2dt_maint(currentevent[3]), fmt="epoch"), Now())}'
             else:
-                msg = msg + f'There is no Event currently running\n'
+                title = f'There are no events currently active'
+                desc = f'Last event was {lastevent[4]} {elapsedTime(datetimeto(d2dt_maint(lastevent[3]), fmt="epoch"), Now())} ago'
+            embed = discord.Embed(title=title, description=desc, color=INFO_COLOR)
             if nextevent and nextevent is not None:
-                msg = msg + f'Next Event is: {nextevent[4]} and starts in {elapsedTime(datetimeto(d2dt_maint(nextevent[2]), fmt="epoch"), Now())}\n'
+                embed.add_field(name=f'Next event is {nextevent[4]}', value=f'{nextevent[5]}\nNext event starts in {elapsedTime(datetimeto(d2dt_maint(nextevent[2]), fmt="epoch"), Now())}', inline=False)
             else:
-                msg = msg + f'Next Event is not scheduled yet.\n'
-            await messagesend(ctx, msg, allowgeneral=False, reject=True)
+                embed.add_field(name=f'Next Event is not scheduled yet', value=f'Check back again soon for the next event', inline=False)
+            await messagesend(ctx, embed=embed, allowgeneral=True, reject=False)
         except:
             log.exception(f'Error calculating events')
 
@@ -672,31 +762,21 @@ def pyarkbot():
                 embed.add_field(name=f"{each.capitalize().strip()} has no players online", value="\u200b", inline=False)
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
-    @client.command(name='rate', aliases=['serverrates', 'rates'])
+    @client.command(name='rates', aliases=['serverrates', 'rate'])
     @commands.check(logcommand)
-    async def _rate(ctx):
-        rates = getrates()
-        cevent = getcurrenteventinfo()
-        if cevent is not None:
-            eventtext = '*No events are currently active*'
-        else:
-            eventtext = '*Event is active*'
-        embed = discord.Embed(title='Current Galaxy Cluster Server Rates:', color=INFO_COLOR)
-        embed.add_field(name=f"{eventtext}", value=f"Breeding Speed: **{rates['breed']}x**\nTaming Speed: **{rates['tame']}x**\nHarvest Speed: **{rates['harvest']}x**\nMating Speed: **{rates['mating']}x**\nMating Interval: **{rates['matingint']}x**\nHatching Speed: **{rates['hatch']}x**\nPlayer XP Speed: **{rates['playerxp']}x**\nTamed Health Recovery: **{rates['tamehealth']}%**\nPlayer Health Recovery: **{rates['playerhealth']}%**\nPlayer Stamina Drain: **{rates['playersta']}% of Vanilla**\nFood/Water Drain Speed: **{rates['foodwater']}% of Vanilla**\nReward Point per Hour: **{rates['pph']} ({rates['pphx']}x)**\n\nType **`!decay`** to see server dino & structure expiration timers", inline=True)
-        await messagesend(ctx, embed, allowgeneral=True, reject=False)
+    async def _rates(ctx):
+        await serverrates(ctx)
 
     @client.command(name='test')
     @commands.check(logcommand)
     @commands.check(is_admin)
     async def _test(ctx):
         try:
-            event = getcurrenteventinfo()
-            embed = discord.Embed(title=f"A new event is starting!", color=INFO_COLOR)
+            embed = discord.Embed(title=f"The current event is ending!", color=INFO_COLOR)
             embed.set_author(name='Galaxy Cluster Server Events', icon_url='https://library.kissclipart.com/20180903/ueq/kissclipart-party-emoji-clipart-party-popper-emoji-aa28695001083d98.png')
-            embed.add_field(name=f"The {event[4]} Event is starting", value=f"{event[5]}", inline=False)
-
-            # await generalchat.send(embed=embed)
-            await messagesend(ctx, embed, allowgeneral=False, reject=True)
+            embed.add_field(name=f"test", value=f"{dir(ctx.message.author)}", inline=False)
+            await client.http.add_role(329659318972448771, ctx.message.author.id, 329691280412114945)
+            #await messagesend(ctx, embed, allowgeneral=False, reject=True)
             # addlottomessage(msg.id)
             # await clearlottomessages()
         except:
@@ -754,14 +834,16 @@ def pyarkbot():
             if args:
                 reqs = dbquery("SELECT * FROM linkrequests WHERE reqcode = '%s'" % (args[0],), fetch='one')
                 if reqs:
-                    log.info(f'Link on discord from [{whofor.title()}] accepted for player \
+                    log.info(f'Link on discord from [{whofor.title()}] successful for player \
     [{reqs[1].title()}]')
                     dbupdate("UPDATE players SET discordid = '%s' WHERE steamid = '%s'" % (whofor, reqs[0]))
                     dbupdate("DELETE FROM linkrequests WHERE reqcode = '%s'" % (args[0],))
                     msg = f'Your discord account *[{whofor}]* is now linked to your player **{reqs[1].title()}**\n\nYou can now use discord commands like:\n**`!kickme`** to kick your player off the server so you dont have to wait\n**`!myinfo`** to see all your cluster player information\n**`!help`** for a list of all the commands'
                     embed = discord.Embed(description=msg, color=SUCCESS_COLOR)
-                    role = discord.utils.get(ctx.message.author.server.roles, name="Linked Player")
-                    await client.add_roles(ctx.message.author, role)
+                    try:
+                        await client.http.add_role(329659318972448771, ctx.message.author.id, 329691280412114945)
+                    except:
+                        log.error('Error applying Linked Player role to user [{user}]')
                 else:
                     log.info(f'link account request on discord from {whofor} denied, code not found')
                     msg = f'That link request code was not found. You must get a link code from typing !linkme in-game'
@@ -780,7 +862,6 @@ def pyarkbot():
     @client.command(name='lastseen', aliases=['laston', 'lastonline'])
     @commands.check(logcommand)
     async def _lastseen(ctx, *, arg):
-        log.info(f'responding to lastseen request for {arg} from {ctx.message.author} on discord')
         seenname = arg.lower()
         flast = getplayerlastseen(playername=seenname)
         if not flast:
@@ -865,9 +946,9 @@ def pyarkbot():
                                     await ctx.message.delete()
                                 log.log('LOTTO', f'Player [{whofor.title()}] has joined the current active lottery')
                                 if Now(fmt='dt') - getlastlottoannounce() > timedelta(hours=1):
-                                    embed2 = discord.Embed(title=f"A new lottery player has entered the lottery!", color=INFO_COLOR)
+                                    embed2 = discord.Embed(title=f"A player has entered the lottery!", color=INFO_COLOR)
                                     embed2.set_author(name='Galaxy Cluster Reward Point Lottery', icon_url='https://blacklabelagency.com/wp-content/uploads/2017/08/money-icon.png')
-                                    embed2.add_field(name=f"Current lottery has risen to **{linfo['payout'] + linfo['buyin'] * 2} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\nType **`!lotto enter`** to join, or **`!points`** for more information", inline=True)
+                                    embed2.add_field(name=f"Current lottery has risen to **{linfo['payout'] + linfo['buyin'] * 2} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n**`!lotto enter`** to join the lottery\n**`!points`** for more information\n**`!winners`** for recent results", inline=True)
                                     msg = await generalchat.send(embed=embed2)
                                     setlastlottoannounce(Now(fmt='dt'))
                                     await clearlottomessages()
@@ -894,7 +975,7 @@ def pyarkbot():
                                     await ctx.message.delete()
                 else:
                     if linfo:
-                        msg = f'It costs **{linfo["buyin"]} points** to join this lottery\n\nType **`!lotto enter`** to join the lottery, **`!lastlotto`** for last lottery results. **`!points`** for more information'
+                        msg = f'It costs **{linfo["buyin"]} points** to join this lottery\n**`!lotto enter`** to join the lottery\n**`!winners`** for recent results\n**`!points`** for more information'
                         embed = discord.Embed(title=f"Current lottery is up to {linfo['payout']} reward points", description=f"{linfo['players']} players have entered into this lottery so far", color=SUCCESS_COLOR)
                         embed.add_field(name=f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}', value=msg, inline=False)
                         if str(ctx.message.channel) == 'bot-channel':
@@ -904,7 +985,7 @@ def pyarkbot():
                     else:
                         msg = 'There are no lotteries currently underway.'
                         embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                        await ctx.message.autho.send(embed=embed)
+                        await ctx.message.author.send(embed=embed)
                         if type(ctx.message.channel) != discord.channel.DMChannel and str(ctx.message.channel) != 'bot-channel':
                             await ctx.message.delete()
 
@@ -939,7 +1020,12 @@ def pyarkbot():
 
         elif message.content.lower().find("hi bot") != -1 or message.content.lower().find('hello bot') != -1:
             log.info(f'Responding to [hello bot] chat from [{message.author}] on [{message.channel}]')
-            msg = 'Hello.'
+            msg = 'Hello'
+            await message.channel.send(msg)
+
+        elif message.content.lower().find("wb bot") != -1 or message.content.lower().find('welcome back bot') != -1:
+            log.info(f'Responding to [wb bot] chat from [{message.author}] on [{message.channel}]')
+            msg = "It's great to be back"
             await message.channel.send(msg)
 
         elif str(message.channel) == 'server-chat':
@@ -950,8 +1036,8 @@ def pyarkbot():
         elif str(message.channel) == 'server-notifications':
             if message.content.lower().find('server has crashed! - restarting server') != -1:
                 inst = message.content.split(':')[0].split()[3].lower()
-                dbupdate("UPDATE instances SET isup = 0, lastcrash = '%s', lastrestart = '%s' where name = '%s'" % (Now(fmt='dt'), str(Now(fmt='epoch')), inst))
                 log.log('CRASH', f'{inst.upper()} Server has crashed at {Now(fmt="string", est=True)} EST')
+                dbupdate("UPDATE instances SET isup = 0, lastcrash = '%s', lastrestart = '%s' where name = '%s'" % (Now(fmt='dt'), str(Now(fmt='epoch')), inst))
                 msg = f'The **{inst.title()}** server has crashed!\n\nServer is now restarting, there may be a slight rollback'
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                 await generalchat.send(embed=embed)
@@ -964,7 +1050,7 @@ def pyarkbot():
             client.loop.create_task(taskchecker())
             client.run(discordtoken)
         except RuntimeError:
-            exit(1)
+            _exit(1)
         except:
             log.exception('Critical Error in Discord Bot Routine.')
         finally:

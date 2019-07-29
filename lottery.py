@@ -18,6 +18,11 @@ def writeglobal(inst, whos, msg):
     dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, Now()))
 
 
+def getlastlotteryinfo():
+    linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc", fetch='one', fmt='dict')
+    return linfo
+
+
 def isinlottery():
     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False")
     if linfo:
@@ -86,7 +91,7 @@ def determinewinner(linfo):
             winnersid = winners[winneridx]
             lwinner = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (winnersid,), fetch='one')
             dbupdate("UPDATE lotteryinfo SET winner = '%s', completed = True WHERE id = '%s'" % (lwinner[1], linfo['id']))
-            log.log('LOTTO', f'Lottery winner is: {lwinner[1]}, this is win {lwinner[18]} ')
+            log.log('LOTTO', f'Lottery winner is: {lwinner[1].upper()}, this is win #{lwinner[18]} ')
             winners.remove(winnersid)
             log.debug(f'queuing up lottery deposits for {winners}')
             for ueach in winners:
@@ -147,7 +152,7 @@ def startlottery(lottoinfo):
 def generatelottery():
     amiinalotto = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
     if not amiinalotto:
-        t, s, e = datetime.now(), dt(23, 0), dt(23, 5)  # 23,0 23,5 Automatic Lottery 11:00pm GMT (7:00PM EST)
+        t, s, e = datetime.now(), dt(21, 0), dt(21, 10)  # Automatic Lottery 9:00pm GMT (5:00PM EST)
         lottotime = is_time_between(t, s, e)
         if lottotime:
             buyins = [25, 30, 20, 35]
