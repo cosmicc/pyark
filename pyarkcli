@@ -98,7 +98,8 @@ def processlogline(line):
         #if not line.startswith('^@'):
             line = line.strip('\x00')
             data = json.loads(line.strip(), strict=False)
-            print(f'{data["text"].strip()}')
+            if data["record"]["level"]["name"] != "START" or data["record"]["level"]["name"] != "EXIT":
+                print(f'{data["text"].strip()}')
     except json.decoder.JSONDecodeError:
         print(f'{repr(line)}')
 
