@@ -45,7 +45,7 @@ def processlogline(line):
     try:
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
-        print(f'##{data}')
+        # print(f'##{data}')
         if not args.verbose and (data["record"]["level"]["name"] != "START" or data["record"]["level"]["name"] != "EXIT"):
             sendmsg(data["text"].strip())
         elif args.verbose:
@@ -56,16 +56,17 @@ def processlogline(line):
 
 def main():
     global clientsocket
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('127.0.0.1', 1024))
-    s.listen(3)
-    tlog = modules.tail.Tail('/home/ark/shared/logs/pyark/pyarklog.json')
+    s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s1.bind(('172.31.250.115', 1024))
+    s1.listen(3)
+    #tlog = modules.tail.Tail('/home/ark/shared/logs/pyark/pyarklog.json')
     while True:
-        clientsocket, address = s.accept()
+        clientsocket, address = s1.accept()
         print(f"Connection from {address} has been established")
-        startconnect()
+        #startconnect()
+        tlog = modules.tail.Tail('/home/ark/shared/logs/pyark/pyarklog.json')
         tlog.register_callback(processlogline)
-
+        tlog.follow()
 
 def startconnect():
         #watchlog(False)
