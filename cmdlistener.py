@@ -456,7 +456,7 @@ def processtcdata(inst, tcdata):
     elif steamid != '':
         if playername.lower() != pexist[1].lower():
             log.info(f'Player name update for [{pexist[1]}] to [{playername}]')
-            dbupdate("UPDATE players SET playername = '%s' WHERE steamdid = '%s'" % (playername, steamid))
+            dbupdate("UPDATE players SET playername = '%s' WHERE steamid = '%s'" % (playername, steamid))
         if not pexist[23]:
             welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, inst))
             welcom.start()

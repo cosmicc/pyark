@@ -23,7 +23,7 @@ def sendmsg(msgg):
     clientsocket.send(msg)
 
 
-def endtail(f, lines=1, _buffer=4098):
+def endtail(f, lines=1, _buffer=12288):
     """Tail a file and get X lines from the end"""
     lines_found = []
     block_counter = -1
@@ -64,14 +64,14 @@ def main():
         clientsocket, address = s.accept()
         print(f"Connection from {address} has been established")
         startconnect()
-        #tlog.register_callback(processlogline)
+        tlog.register_callback(processlogline)
 
 
 def startconnect():
         #watchlog(False)
         logpath = f'/home/ark/shared/logs/pyark/pyarklog.json'
         with open(logpath) as f:
-            lines = endtail(f, lines=10)
+            lines = endtail(f, lines=1)
             for line in lines:
                 processlogline(line)
 
