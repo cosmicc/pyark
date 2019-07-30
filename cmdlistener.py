@@ -455,14 +455,15 @@ def processtcdata(inst, tcdata):
             welcom.start()
     elif steamid != '':
         if playername.lower() != pexist[1].lower():
-            log.info(f'Player name mismatch [{pexist[1]}] to [{playername}]')
+            log.info(f'Player name update for [{pexist[1]}] to [{playername}]')
+            dbupdate("UPDATE players SET playername = '%s' WHERE steamdid = '%s'" % (playername, steamid))
         if not pexist[23]:
             welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, inst))
             welcom.start()
         if inst == pexist[15]:
             # log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating info.')
-            dbupdate("UPDATE players SET playername = '%s', playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
-                     (playername, playtime, rewardpoints, steamid))
+            dbupdate("UPDATE players SET playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
+                     (playtime, rewardpoints, steamid))
         else:
             # log.debug(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating info.')
             if int(pexist[16]) != int(rewardpoints):

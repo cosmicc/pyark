@@ -14,12 +14,12 @@ parser.add_argument('-v', '--verbose', action='store_true', help='Verbose')
 
 args = parser.parse_args()
 
-HEADERSIZE = 5
+HEADERSIZE = 8
 
 
 def sendmsg(msgg):
     msg = pickle.dumps(msgg)
-    msg = bytes(f'{len(str(msg)):<{HEADERSIZE}}', "utf-8") + msg
+    msg = bytes(f'{len(msg):<{HEADERSIZE}}', "utf-8") + msg
     clientsocket.send(msg)
 
 
@@ -45,11 +45,11 @@ def processlogline(line):
     try:
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
-        #print(f'##{data}')
+        print(f'##{data}')
         if not args.verbose and (data["record"]["level"]["name"] != "START" or data["record"]["level"]["name"] != "EXIT"):
-            sendmsg(data)
+            sendmsg(data["text"].strip())
         elif args.verbose:
-            sendmsg(data)
+            sendmsg(data["text"].strip())
     except json.decoder.JSONDecodeError:
         sendmsg(f'{repr(line)}')
 
@@ -58,20 +58,20 @@ def main():
     global clientsocket
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(('127.0.0.1', 1024))
-    s.listen(5)
+    s.listen(3)
     tlog = modules.tail.Tail('/home/ark/shared/logs/pyark/pyarklog.json')
     while True:
         clientsocket, address = s.accept()
         print(f"Connection from {address} has been established")
         startconnect()
-        tlog.register_callback(processlogline)
+        #tlog.register_callback(processlogline)
 
 
 def startconnect():
         #watchlog(False)
         logpath = f'/home/ark/shared/logs/pyark/pyarklog.json'
         with open(logpath) as f:
-            lines = endtail(f, lines=50)
+            lines = endtail(f, lines=10)
             for line in lines:
                 processlogline(line)
 
