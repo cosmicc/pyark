@@ -70,6 +70,15 @@ def setlastlottoannounce(tstamp):
     dbupdate("UPDATE general SET lastlottoannounce = '%s'" % (tstamp,))
 
 
+def getlastupdateannounce():
+    lastl = dbquery("SELECT lastupdateannounce FROM general", fetch='one', single=True)
+    return lastl[0]
+
+
+def setlastupdateannounce(tstamp):
+    dbupdate("UPDATE general SET lastupdateannounce = '%s'" % (tstamp,))
+
+
 def getlasteventannounce():
     lastl = dbquery("SELECT lasteventannounce FROM general", fetch='one', single=True)
     return lastl[0]
@@ -237,7 +246,6 @@ def pyarkbot():
                 await asyncio.sleep(10)
 
     async def chatbuffer():
-        global lastupdateannounce
         await client.wait_until_ready()
         await asyncio.sleep(5)
         serverchat = client.get_channel(int(serverchat_id))
@@ -292,8 +300,8 @@ def pyarkbot():
                             setlasteventannounce(Now(fmt='dt'))
 
                         elif each[0] == 'UPDATE':
-                            if Now(fmt='dt') - lastupdateannounce > timedelta(minutes=20):
-                                lastupdateannounce = Now(fmt='dt')
+                            if Now(fmt='dt') - getlastupdateannounce() > timedelta(minutes=15):
+                                setlastupdateannounce(Now(fmt='dt'))
                                 embed = discord.Embed(title=f"A New Update has been released!", color=INFO_COLOR)
                                 embed.set_author(name='ARK Updater for Galaxy Cluster Servers', icon_url='https://patchbot.io/images/games/ark_sm.png')
                                 embed.add_field(name=f"Update Reason: {each[2]}", value=f"{each[1]}\n\nAny applicable servers will begin a **30 min** restart countdown now", inline=False)

@@ -13,7 +13,7 @@ from time import sleep
 from loguru import logger as log
 from sh import tail as tailer
 
-HEADERSIZE = 8
+HEADERSIZE = 28
 log_file = '/home/ark/shared/logs/pyark/logserver.log'
 
 log_queue = Queue()
@@ -56,16 +56,28 @@ def clientloop(clientsocket, addr):
             thisqueue = client['queue']
             log.trace(f'found queue: {thisqueue}')
     now = int(datetime.now().timestamp())
-    header = clientsocket.recv(32).decode("utf-32")
+    header = clientsocket.recv(80).decode("utf-8")
+    log.trace(header.split('!'))
     linerequest = int(header.split('!')[1])
-    loglevel = int(header.split('!')[2])
+    argsdebug = bool(int(header.split('!')[2]))
+    argstrace = bool(int(header.split('!')[3]))
+    argsextend = bool(int(header.split('!')[4]))
+    argsstartexit = bool(int(header.split('!')[5]))
+    argscommands = bool(int(header.split('!')[6]))
+    argsvotes = bool(int(header.split('!')[7]))
+    argsjoinleave = bool(int(header.split('!')[8]))
+    argsserver = header.split('!')[9].strip()
+    argsshowonly = header.split('!')[10].strip()
+
     newdict = {}
     for num, client in enumerate(client_threads):
         if client['address'] == addr:
-            newdict = {'address': client['address'], 'thread': client['thread'], 'queue': client['queue'], 'loglevel': loglevel}
+            newdict = {'address': client['address'], 'thread': client['thread'], 'queue': client['queue'], 'debug': argsdebug, 'trace': argstrace, 'extend': argsextend, 'startexit': argsstartexit, 'commands': argscommands, 'votes': argsvotes, 'joinleave': argsjoinleave, 'server': argsserver, 'showonly': argsshowonly}
             client_threads.pop(num)
             client_threads.append(newdict)
-    log.debug(f'Requested playback of {linerequest} lines and loglevel {loglevel}')
+            log.debug(newdict)
+
+    log.debug(f'Requested playback of {linerequest} lines')
     try:
         for line in tailer(f"-n {linerequest}", "/home/ark/shared/logs/pyark/pyarklog.json", _iter=True):
             processlogline(line.strip(), single=addr)
@@ -129,28 +141,45 @@ def endtail(f, lines=1, _buffer=12288):
     return lines_found[-lines:]
 
 
+def putqueue(data, client, single):
+        if not single or single == client['address']:
+            if client['server'] == 'ALL' or client['server'] == data["record"]["extra"]['hostname']:
+                log.trace(f'Adding to {client["address"]} queue {data["text"].strip()}')
+                client["queue"].put(data["text"].strip())
+
+
 def processlogline(line, single=False):
     try:
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
-        log.trace(f'Got from log: {data["text"]}')
-        if data["record"]["level"]["name"] != "START" and data["record"]["level"]["name"] != "EXIT":
-            for client in client_threads:
-                if not single or single == client['address']:
-                    if client['loglevel'] > 0:
-                        msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
-                        data["text"] = data["text"].strip() + msgapp
-                    log.trace(f'putting in queue for {client["address"]}')
-                    client["queue"].put(data["text"].strip())
-        else:
-            for client in client_threads:
-                if client['loglevel'] > 0:
-                    if not single or single == client['address']:
-                        if client['loglevel'] > 0:
-                            msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
-                            data["text"] = data["text"].strip() + msgapp
-                        log.debug(f'putting in queue for {client["address"]}')
-                        client["queue"].put(data["text"].strip())
+        # log.trace(f'Got from log: {data["text"]}')
+        for client in client_threads:
+            if client['extend']:
+                msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
+                data["text"] = data["text"].strip() + msgapp
+            if client['showonly'] != 'ALL':
+                if data["record"]["level"]["name"].lower() == client['showonly'].lower():
+                    putqueue(data, client, single)
+
+            elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT":
+                if not client['startexit']:
+                    putqueue(data, client, single)
+
+            elif data["record"]["level"]["name"] == "CMD":
+                if client['commands']:
+                    putqueue(data, client, single)
+
+            elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
+                if client['joinleave']:
+                    putqueue(data, client, single)
+
+            elif data["record"]["level"]["name"] == "VOTE":
+                if client['votes']:
+                    putqueue(data, client, single)
+
+            else:
+                putqueue(data, client, single)
+
     except json.decoder.JSONDecodeError:
         log.exception(f'DECODE ERROR: {repr(line)}')
 
@@ -158,7 +187,7 @@ def processlogline(line, single=False):
 def main():
     global client_threads
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('172.31.250.115', 1024))
+    s.bind(('172.31.250.115', 11024))
     log.debug('Starting log tail thread')
     logwatch_thread = threading.Thread(target=logwatcher)
     logwatch_thread.start()
@@ -171,7 +200,7 @@ def main():
         clientsocket, address = s.accept()
         log.info(f"Connection from {address[0]}:{address[1]} has been established")
         nthread = threading.Thread(target=clientloop, args=(clientsocket, address[1]))
-        client_threads.append({'address': address[1], 'thread': nthread, 'queue': Queue(), 'loglevel': 0})
+        client_threads.append({'address': address[1], 'thread': nthread, 'queue': Queue(), 'debug': False, 'trace': False, 'extend': False, 'startexit': True, 'commands': True, 'votes': True, 'joinleave': True, 'server': 'ALL', 'showonly': 'ALL'})
         log.trace(client_threads)
         nthread.start()
 
@@ -193,5 +222,5 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         for client in client_threads:
             client_threads.remove(client)
-        sleep(2)
+        sleep(.5)
         os._exit(0)

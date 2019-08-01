@@ -6,18 +6,19 @@ from datetime import datetime
 from time import sleep
 import argparse
 
-HEADERSIZE = 27
+HEADERSIZE = 28
 
 parser = argparse.ArgumentParser()
 parser.add_argument('lines', action='store', help='number of lines in log history to show')
+parser.add_argument('-s', '--server', action='store', default='ALL', help='show only this log type')
 parser.add_argument('-d', '--debug', action='store_true', help='show debug log')
 parser.add_argument('-t', '--trace', action='store_true', help='show trace log')
 parser.add_argument('-e', '--extend', action='store_true', help='show extended info lines')
-parser.add_argument('--showonly', action='store', help='show only this log type')
-parser.add_argument('-s', '--startexit', action='store_false', help='remove start/exit entries')
-parser.add_argument('-c', '--commands', action='store_false', help='remove command entries')
-parser.add_argument('-vt', '--votes', action='store_false', help='remove vote entries')
-parser.add_argument('-j', '--joinleave', action='store_false', help='remove join/leave entries')
+parser.add_argument('--showonly', action='store', default='ALL', help='show only this log type')
+parser.add_argument('-rs', '--startexit', action='store_false', help='remove start/exit entries')
+parser.add_argument('-rc', '--commands', action='store_false', help='remove command entries')
+parser.add_argument('-rv', '--votes', action='store_false', help='remove vote entries')
+parser.add_argument('-rj', '--joinleave', action='store_false', help='remove join/leave entries')
 
 args = parser.parse_args()
 
@@ -40,17 +41,25 @@ def connect_to_server():
     cnt = False
     while not cnt:
         try:
-            sock.connect(('172.31.250.115', 1024))
+            sock.connect(('172.31.250.115', 11024))
             cnt = True
         except ConnectionRefusedError:
             log.error('Connection to log server refused. Retrying...')
             sleep(10)
     log.info(f'Connected to log server 172.31.250.115')
     sock.setblocking(0)
+    if args.showonly != 'ALL':
+        argsshowonly = f'{args.showonly:<8}!'
+    else:
+        argsshowonly = f'ALL     !'
+    if args.server != 'ALL':
+        argsserver = f'{args.server:<5}'
+    else:
+        argsserver = f'ALL   '
 
-    head = f'!{args.lines:>3}!{argsdebug}!{argstrace}!{argsextend}!{argsstartexit}!{argscommands}!{argsvotes}!{argsjoinleave}!       '
+    head = f'!{args.lines:>3}!{argsdebug}!{argstrace}!{argsextend}!{argsstartexit}!{argscommands}!{argsvotes}!{argsjoinleave}!{argsserver}!{argsshowonly}'
     print(head)
-    sock.send(bytes(head, "utf-32"))
+    sock.send(bytes(head, "utf-8"))
     timeout_timer = int(datetime.now().timestamp())
 
 
@@ -60,7 +69,7 @@ while True:
     new_msg = True
     while True:
         try:
-            msg = sock.recv(80)
+            msg = sock.recv(256)
             decodedmsg = msg.decode("utf-32")
             if new_msg:
                 new_msg = False

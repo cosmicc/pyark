@@ -246,7 +246,7 @@ def main():
                         for neach in isrunning.copy():
                             if neach == eachinst['name']:
                                 isrunning[neach].update({'isit': 0, 'count': isrunning[neach]['count'] + 1})
-                                if isrunning[neach]['count'] > 1:
+                                if isrunning[neach]['count'] > 2:
                                     log.warning(f'[{eachinst["name"].title()}] failed instance running check ({isrunning[neach]["count"]}/3)')
                                     dbupdate("UPDATE instances SET isup = 0 WHERE name = '%s'" % (eachinst['name'],))
                     else:
@@ -256,7 +256,7 @@ def main():
                         for neach in isonline.copy():
                             if neach == eachinst['name']:
                                 isonline[neach].update({'isit': 0, 'count': isonline[neach]['count'] + 1})
-                                if isonline[neach]['count'] > 4:
+                                if isonline[neach]['count'] > 5:
                                     log.warning(f'[{eachinst["name"].title()}] failed instance online check ({isonline[neach]["count"]}/10)')
                                     dbupdate("UPDATE instances SET isup = 0 WHERE name = '%s'" % (eachinst['name'],))
 
@@ -271,7 +271,7 @@ def main():
 
                     for feach in isrunning:
                         if feach == eachinst['name']:
-                            if isrunning[feach]['count'] == 3:
+                            if isrunning[feach]['count'] == 5:
                                 isrunning[feach].update({'isit': 0, 'count': 0})
                                 isonline[feach].update({'isit': 0, 'count': 0})
                                 log.warning(f'Instance [{eachinst["name"]}] failed running checks! Starting Instance')
