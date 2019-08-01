@@ -5,6 +5,8 @@ import json
 import os
 import socket
 import threading
+import argparse
+import sys
 from datetime import datetime
 from queue import Queue
 from time import sleep
@@ -12,8 +14,26 @@ from loguru import logger as log
 from sh import tail as tailer
 
 HEADERSIZE = 8
+log_file = '/home/ark/shared/logs/pyark/logserver.log'
 
 log_queue = Queue()
+log.remove()
+parser = argparse.ArgumentParser()
+parser.add_argument('-v', '--verbose', action='count', default=0)
+args = parser.parse_args()
+
+if args.verbose == 0:
+    log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=True)
+elif args.verbose == 3:
+    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True)
+elif args.verbose == 2:
+    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True)
+elif args.verbose == 1:
+    log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True)
+else:
+    log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=True)
+
+log.add(sink=log_file, level=20, enqueue=False, backtrace=True, diagnose=True, serialize=False, colorize=False)
 
 
 def checkconnections():
@@ -68,9 +88,8 @@ def clientloop(clientsocket, addr):
             logline = thisqueue.get()
             log.trace(f'got from queue: {logline}')
             sendmsg(clientsocket, addr, logline)
-            sleep(.1)
         else:
-            sleep(1)
+            sleep(.01)
 
 
 def sendmsg(clientsocket, addr, logline):
@@ -84,11 +103,12 @@ def sendmsg(clientsocket, addr, logline):
             msg = f'{len(msg):<{HEADERSIZE}}' + msg
             log.trace(f'sending: {len(msg)} {msg}')
             clientsocket.send(bytes(msg, "utf-32"))
+        sleep(.1)
     except BrokenPipeError:
-        for client in client_threads:
+        for num, client in enumerate(client_threads):
             if int(client['address']) == int(addr):
                 log.warning(f'Dead connection detected. Removing: {client["address"]}')
-                client_threads.remove(client)
+                client_threads.pop(num)
 
 
 def endtail(f, lines=1, _buffer=12288):

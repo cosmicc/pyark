@@ -64,7 +64,7 @@ def getlotteryendtime():
 
 
 def determinewinner(linfo):
-    log.log('LOTTO', 'Lottery time has ended. Determining winner.')
+    log.debug('Lottery time has ended. Determining winner.')
     winners = []
     picks = []
     adjpicks = []
@@ -91,7 +91,7 @@ def determinewinner(linfo):
             winnersid = winners[winneridx]
             lwinner = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (winnersid,), fetch='one')
             dbupdate("UPDATE lotteryinfo SET winner = '%s', completed = True WHERE id = '%s'" % (lwinner[1], linfo['id']))
-            log.log('LOTTO', f'Lottery winner is: {lwinner[1].upper()}, this is win #{lwinner[18]} ')
+            log.log('LOTTO', f'Lottery ended, winner is: {lwinner[1].upper()} for {linfo["payout"]} points, win #{lwinner[18]+1}')
             winners.remove(winnersid)
             log.debug(f'queuing up lottery deposits for {winners}')
             for ueach in winners:

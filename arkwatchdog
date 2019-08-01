@@ -183,7 +183,7 @@ def checkpyark():
         log.exception('checkpyark error')
 
 
-def startserver(inst, reason, restart=False):
+def startserver(inst, restart=False):
     if issharedmounted():
         if loglevel != 'DEBUG' or loglevel != 'TRACE' or not args.debug or not args.trace:
             restartinstnow(inst)
