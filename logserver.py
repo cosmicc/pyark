@@ -134,12 +134,13 @@ def clientloop(clientsocket, addr):
             log.debug(f'Ending thread for port {addr}')
             exit(0)
         if int(datetime.now().timestamp()) - now >= 15:
+            log.trace(f'Sending heartbeat to {addr}')
             sendmsg(clientsocket, addr, '!')
             now = int(datetime.now().timestamp())
 
         if not thisqueue.empty():
             logline = thisqueue.get()
-            log.trace(f'got from queue: {logline}')
+            log.trace(f'got from queue: {logline.split("|")[2]}')
             sendmsg(clientsocket, addr, logline)
         else:
             sleep(.01)
@@ -187,6 +188,7 @@ def endtail(f, lines=1, _buffer=12288):
     return lines_found[-lines:]
 
 
+@log.catch
 def putqueue(data, client, single):
         if not single or single == client['address']:
             if client['server'] == 'ALL' or client['server'] == data["record"]["extra"]['hostname']:
@@ -194,6 +196,7 @@ def putqueue(data, client, single):
                 client["queue"].put(data["text"].strip())
 
 
+@log.catch
 def processlogline(line, single=False):
     try:
         line = line.strip('\x00')
@@ -238,6 +241,7 @@ def processlogline(line, single=False):
         log.error(f'DECODE ERROR: {repr(line)}')
 
 
+@log.catch
 def main():
     global client_threads
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -251,7 +255,7 @@ def main():
     cleanup_thread = threading.Thread(target=checkconnections)
     cleanup_thread.start()
     log.info('Server started, waiting for clients...')
-    s.listen(3)
+    s.listen(4)
     while True:
         clientsocket, address = s.accept()
         log.info(f"Connection from {address[0]}:{address[1]} has been established")
@@ -263,6 +267,7 @@ def main():
     s.close()
 
 
+@log.catch
 def startconnect():
         # watchlog(False)
         logpath = f'/home/ark/shared/logs/pyark/pyarklog.json'

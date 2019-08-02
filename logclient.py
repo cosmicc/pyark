@@ -9,7 +9,7 @@ from os import _exit
 import sys
 
 HEADERSIZE = 30
-RECVSIZE = 512
+RECVSIZE = 256
 
 parser = argparse.ArgumentParser()
 parser.add_argument('lines', action='store', help='number of lines in log history to show')

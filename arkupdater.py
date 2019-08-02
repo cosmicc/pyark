@@ -329,7 +329,7 @@ def buildconfig(inst):
 
         if iseventtime():
             eventext = getcurrenteventext()
-            eventcfgfile = f'{sharedpath}/config/GameUserSettings-{eventext.lower()}.ini'
+            eventcfgfile = f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini'
             if os.path.isfile(eventcfgfile):
                 with open(eventcfgfile, 'r') as f:
                     lines = f.readlines()
