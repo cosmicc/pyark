@@ -50,7 +50,7 @@ args = parser.parse_args()
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
 log.level("START", no=38, color="<fg 39>", icon="¤")
-log.level("ADMIN", no=15, color="<fg 15><bg 18>", icon="¤")
+log.level("ADMIN", no=19, color="<fg 15><bg 18>", icon="¤")
 log.level("JOIN", no=21, color="<fg 201>", icon="¤")
 log.level("LEAVE", no=21, color="<fg 128>", icon="¤")
 log.level("POINTS", no=22, color="<fg 118>", icon="¤")
@@ -114,7 +114,7 @@ else:
     log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=longlogformat)
 
 # Json logging pyarklog.json
-log.add(sink=jsonlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat)
+log.add(sink=jsonlogfile, level=19, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat)
 # Color logging pyark.log
 log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=longlogformat)
 # Debug json logging debuglog.json
@@ -129,7 +129,7 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
 # Points Logging points.log
 log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogpoints)
 # Admin Logging admin.log
-log.add(sink=adminfile, level=15, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogadmin)
+log.add(sink=adminfile, level=19, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogadmin)
 # Crash Logging crash.log
 log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogcrash)
 # Error Logging error.log

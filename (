@@ -13,7 +13,7 @@ RECVSIZE = 512
 
 parser = argparse.ArgumentParser()
 parser.add_argument('lines', action='store', help='number of lines in log history to show')
-parser.add_argument('-v', '--verbose', action='store_true', help='verbose (client debug)')
+parser.add_argument('-v', '--verbose', action='store_true', default='ALL', help='verbose (client debug)')
 parser.add_argument('-s', '--server', action='store', default='ALL', help='show only this log type')
 parser.add_argument('-d', '--debug', action='store_true', help='show debug log')
 parser.add_argument('-t', '--trace', action='store_true', help='show trace log')
@@ -86,12 +86,12 @@ while True:
                 new_msg = False
                 msglen = int(msg.decode("utf-32")[:HEADERSIZE])
                 if msglen == 1:
-                    if decodedmsg[HEADERSIZE:] == '!':
-                        log.debug('HEARTBEAT Recieved')
-                        timeout_timer = int(datetime.now().timestamp())
-                        full_msg = ''
-                        new_msg = True
+                    log.debug('HEARTBEAT Recieved')
+                    timeout_timer = int(datetime.now().timestamp())
+                    full_msg = ''
+                    new_msg = True
                 if msglen == 2:
+                    log.error(decodedmsg)
                     if decodedmsg[HEADERSIZE:] == '##':
                         log.debug('Recieved closing signal from server')
                         full_msg = ''
@@ -101,7 +101,6 @@ while True:
                 full_msg += decodedmsg
             if len(full_msg) - HEADERSIZE == msglen and msglen > 2:
                 print(full_msg[HEADERSIZE:])
-                timeout_timer = int(datetime.now().timestamp())
                 new_msg = True
                 full_msg = ''
             if int(datetime.now().timestamp()) - timeout_timer > 31:
@@ -117,10 +116,10 @@ while True:
             sleep(10)
             connect_to_server()
         except KeyboardInterrupt:
-            _exit(0)
+            exit(0)
         except:
             log.exception('FUCK!')
         try:
             sleep(.005)
         except KeyboardInterrupt:
-            _exit(0)
+            exit(0)

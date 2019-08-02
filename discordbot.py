@@ -108,18 +108,6 @@ def pyarkbot():
 
     rejectmsg = 'Bot commands are limited to the **`#bot-channel`** and **Private message** (here)\nType **`!help`** for a description of all the commands'
 
-    def checkpyarklog(record):
-        # if record['level'] != 'CRITICAL' and record['level'] != 'ERROR':
-        return True
-        # else:
-        #    return False
-
-    def checkerrorlog(record):
-        if record['level'] == 'ERROR' or record['level'] == 'CRITICAL':
-            return True
-        else:
-            return False
-
     client = commands.Bot(command_prefix='!', case_insensitive=True)
     client.remove_command('help')
 

@@ -72,13 +72,13 @@ def lottodeposits(steamid, inst):
         for weach in lottocheck:
             if weach[4] == 1:
                 log.log('POINTS', f'{weach[3]} lottery win points added to [{elpinfo[1].title()}]')
-                msg = f'{weach[3]} ARc points have been deposited into your account for a lottery win!'
+                msg = f'{weach[3]} Reward points have been deposited into your account for a lottery win!'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
                                (steamid, weach[3], inst), shell=True)
             elif weach[4] == 0:
                 log.log('POINTS', f'{weach[3]} lottery entry points removed from [{elpinfo[1].title()}]')
-                msg = f'{weach[3]} ARc points have been withdrawn from your account for a lottery entry'
+                msg = f'{weach[3]} Reward points have been withdrawn from your account for a lottery entry'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
                 subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s %s" @%s' %
                                (steamid, str(int(elpinfo[5]) - int(weach[3])), inst), shell=True)
@@ -138,18 +138,17 @@ def playergreet(steamid, steamname, inst):
                 laston = elapsedTime(Now(), int(oplayer[2]))
                 totplay = playedTime(int(oplayer[4]))
                 try:
-                    log.debug(f'fetching [{steamname}] [{steamid}] auctions from auction api website')
+                    log.trace(f'fetching [{steamname}] [{steamid}] auctions from auction api website')
                     pauctions = fetchauctiondata(steamid)
                     totauctions, iauctions, dauctions = getauctionstats(pauctions)
                     writeauctionstats(steamid, totauctions, iauctions, dauctions)
-                    strauctions = f', {totauctions} Auctions'
+                    log.debug(f'[{steamname}] auctions found: {iauctions} items, {dauctions} dinos, {totauctions} total')
                 except:
-                    strauctions = ', 0 Auctions'
                     log.error(f'error in parsing auction data')
                 sleep(3)
                 newpoints = int(oplayer[5]) + xferpoints
-                mtxt = f'Welcome back {oplayer[1].title()}, you have {newpoints} ARc reward points on \
-{oplayer[15].capitalize()}{strauctions}, last online {laston} ago, total time played {totplay}'
+                mtxt = f'Welcome back {oplayer[1].title()}, you have {newpoints} reward points on \
+{oplayer[15].capitalize()}, last online {laston} ago, total time played {totplay}'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
                 sleep(1)
                 flast = dbquery("SELECT * FROM players WHERE server = '%s' AND steamid != '%s'" % (inst, steamid))

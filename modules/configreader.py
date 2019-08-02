@@ -18,11 +18,11 @@ config.read(configfile)
 
 hstname = gethostname().upper()
 
-shortlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: >5}</level> | <level>{level: <7}</level> | <level>{message: <72}</level> |'
+shortlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> <fg 248>|</fg 248> <level>{extra[hostname]: >5}</level> <fg 248>|</fg 248> <level>{level: <7}</level> <fg 248>|</fg 248> <level>{message: <72}</level> <fg 243>|</fg 243>'
 
 simplelogformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
 
-longlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>{extra[hostname]: >5}</level> | <level>{level: <7}</level> | <level>{message: <72}</level> | <fg 109>{name}:{function}:{line}</fg 109>'
+longlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> <fg 248>|</fg 248> <level>{extra[hostname]: >5}</level> <fg 248>|</fg 248> <level>{level: <7}</level> <fg 248>|</fg 248> <level>{message: <72}</level> <fg 243>|</fg 243> <fg 109>{name}:{function}:{line}</fg 109>'
 
 # General
 loglevel = config.get('general', 'loglevel')

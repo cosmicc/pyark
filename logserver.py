@@ -11,11 +11,10 @@ from datetime import datetime
 from queue import Queue
 from time import sleep
 from loguru import logger as log
-from sh import tail as tailer
 
-HEADERSIZE = 28
+HEADERSIZE = 30
+
 log_file = '/home/ark/shared/logs/pyark/logserver.log'
-
 pyarklog = '/home/ark/shared/logs/pyark/pyarklog.json'
 debuglog = '/home/ark/shared/logs/pyark/debuglog.json'
 
@@ -42,11 +41,10 @@ log.add(sink=log_file, level=20, enqueue=False, backtrace=True, diagnose=True, s
 def checkconnections():
     for client in client_threads:
         if not client['thread'].is_alive():
-            log.info(f'Dead thread detected. Removing: {client["address"]}')
+            log.info(f'Lost thread detected. Removing: {client["address"]}')
             client_threads.remove(client)
 
 
-@log.catch
 def logwatcher():
     count = 1
     while True:
@@ -62,7 +60,6 @@ def logwatcher():
             tlog.follow()
 
 
-@log.catch
 def debugwatcher():
     count = 1
     while True:
@@ -95,8 +92,9 @@ def clientloop(clientsocket, addr):
     argscommands = bool(int(header.split('!')[6]))
     argsvotes = bool(int(header.split('!')[7]))
     argsjoinleave = bool(int(header.split('!')[8]))
-    argsserver = header.split('!')[9].strip()
-    argsshowonly = header.split('!')[10].strip()
+    argsfollow = bool(int(header.split('!')[9]))
+    argsserver = header.split('!')[10].strip()
+    argsshowonly = header.split('!')[11].strip()
 
     newdict = {}
     for num, client in enumerate(client_threads):
@@ -108,11 +106,25 @@ def clientloop(clientsocket, addr):
 
     log.debug(f'Requested playback of {linerequest} lines')
     try:
-        for line in tailer(f"-n {linerequest}", "/home/ark/shared/logs/pyark/pyarklog.json", _iter=True):
+        f = open("/home/ark/shared/logs/pyark/pyarklog.json")
+        for line in endtail(f, lines=linerequest):
             processlogline(line.strip(), single=addr)
+        f.close()
     except:
         log.exception('SHIT')
-    log.debug('main loop started')
+    if not argsfollow:
+        for num, client in enumerate(client_threads):
+            if int(client['address']) == int(addr):
+                while not thisqueue.empty():
+                    logline = thisqueue.get()
+                    log.trace(f'got from queue: {logline}')
+                    sendmsg(clientsocket, addr, logline)
+                sleep(.1)
+                sendmsg(clientsocket, addr, '##')
+                log.info(f'Non follow connection ended. Removing: {client["address"]}')
+                client_threads.pop(num)
+                sleep(1)
+    log.trace('main loop started')
     while True:
         exitwatch = True
         for client in client_threads:
@@ -145,6 +157,11 @@ def sendmsg(clientsocket, addr, logline):
             log.trace(f'sending: {len(msg)} {msg}')
             clientsocket.send(bytes(msg, "utf-32"))
         sleep(.1)
+    except ConnectionResetError:
+        for num, client in enumerate(client_threads):
+            if int(client['address']) == int(addr):
+                log.info(f'Dropped connection detected. Removing: {client["address"]}')
+                client_threads.pop(num)
     except BrokenPipeError:
         for num, client in enumerate(client_threads):
             if int(client['address']) == int(addr):
@@ -190,14 +207,15 @@ def processlogline(line, single=False):
                 if client['debug']:
                     putqueue(data, client, single)
             else:
-                if client['extend']:
+                if client['extend'] or client['debug'] or client['trace']:
                     msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
-                    data["text"] = data["text"].strip() + msgapp
+                    data['text'] = data['text'].strip() + msgapp
+
                 if client['showonly'] != 'ALL':
                     if data["record"]["level"]["name"].lower() == client['showonly'].lower():
                         putqueue(data, client, single)
 
-                elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT":
+                elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT" or data["record"]["level"]["name"] == "GIT":
                     if client['startexit']:
                         putqueue(data, client, single)
 
