@@ -129,7 +129,7 @@ def playergreet(steamid, steamname, inst):
                     writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
                     log.log('JOIN', f'Player [{oplayer[1].title()}] has transferred from [{oplayer[3].title()}] to [{inst.title()}]')
                     #############################
-                # log.debug(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
+                log.trace(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
             else:
                 log.log('JOIN', f"Player [{oplayer[1].title()}] has joined [{inst.title()}], connections: {int(oplayer[7])+1}")

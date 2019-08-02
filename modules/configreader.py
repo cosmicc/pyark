@@ -60,6 +60,7 @@ psql_statsdb = config.get('postgresql', 'statsdb')
 generalchat_id = config.get('discord', 'general_channel')
 serverchat_id = config.get('discord', 'serverchat_channel')
 infochat_id = config.get('discord', 'info_channel')
+changelog_id = config.get('discord', 'changelog_channel')
 discordtoken = config.get('discord', 'token')
 
 # Pushover

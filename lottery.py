@@ -136,11 +136,10 @@ def lotteryloop(linfo):
 
 
 def startlottery(lottoinfo):
-    # lottoend = estshift(lottoinfo['startdate'] + timedelta(days=lottoinfo['days']))
     lend = elapsedTime(datetimeto(lottoinfo['startdate'] + timedelta(hours=lottoinfo['days']), fmt='epoch'), Now())
     if lottoinfo['announced'] is False:
-        log.log('LOTTO', f'New lottery has started. Buy-in: {lottoinfo["buyin"]}, Starting pot: {lottoinfo["payout"]}, Length: {lottoinfo["days"]} Hours, Ends in {lend}')
-        msg = f'A new lottery has started! {lottoinfo["buyin"]} points to enter in this lottery.\nStarting pot {lottoinfo["payout"]} points and grows as players enter. '
+        log.log('LOTTO', f'New lottery has started. Buyin: {lottoinfo["buyin"]} Starting: {lottoinfo["payout"]} Length: {lottoinfo["days"]}')
+        msg = f'A new lottery has started! {lottoinfo["buyin"]} points to enter in this lottery\nStarting pot {lottoinfo["payout"]} points and grows as players enter'
         msg = msg + f'Lottery Ends in {lend}\nType !lotto for more info or !lotto enter to join'
         writeglobal('ALERT', 'ALERT', msg)
         writediscord(f'{lottoinfo["payout"]}', Now(), name=f'{lend}', server='LOTTOSTART')

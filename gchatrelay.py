@@ -27,16 +27,12 @@ def gchatrelay(inst):
                                 if cplayer['server'] == inst:
                                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" Private: %s' @%s""" % (cplayer['steamid'], msg['message'], inst), shell=True)
 
-        
-
-
-
-
-
                     elif msg['server'] != inst and msg['name'] != 'ALERT' and float(msg['timestamp']) > Now() - 3:
+                        log.trace(f'Server chat: msg["server"].capitalize() - msg["name"].title() -  msg["message"]')
                         subprocess.run('arkmanager rconcmd "ServerChat %s@%s: %s" @%s' % (msg['name'].title(), msg['server'].capitalize(), msg['message'], inst), shell=True)
 
                     if float(msg['timestamp']) < Now() - 10:
+                        log.trace('clearing globalbuffer table')
                         dbupdate("DELETE FROM globalbuffer WHERE id = '%s'" % (msg['id'],))
             sleep(3)
         except:

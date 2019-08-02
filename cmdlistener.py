@@ -128,7 +128,6 @@ def whoisonline(inst, oinst, whoasked, filt, crnt):
         for row in flast:
             chktme = Now() - float(row[2])
             if chktme < potime:
-                # print(row[1],chktme)
                 pcnt += 1
                 if plist == '':
                     plist = '%s' % (row[1].title())
@@ -370,17 +369,11 @@ def startvoter(inst, whoasked):
 
 
 def getnamefromchat(chat):
-    # log.warning(chat)
     try:
-        # log.warning(len(chat))
-        # log.warning(chat)
         rawlineorg = chat.split(':')
         if len(rawlineorg) > 1:
-            # log.warning(rawlineorg)
             rawline = rawlineorg[1].split(' (')
-            # log.warning(rawline)
             rawline = rawline[1][:-1].strip()
-            # log.warning(rawline)
             return rawline.lower()
     except:
         log.error(f'GetNameFromChat Error: {chat}')
@@ -393,7 +386,6 @@ def getnamefromchaterror(inst):
 
 def isserver(line):
     rawissrv = line.split(':')
-    # print(rawissrv)
     if len(rawissrv) > 1:
         if rawissrv[1].strip() == 'SERVER':
             return True
@@ -420,7 +412,7 @@ def linker(minst, whoasked):
     else:
         pass
         # user not found in db (wierd)
-        log.error('wiredness...')
+        log.error(f'User not found in DB {whoasked}!')
 
 
 def writechatlog(inst, whos, msg, tstamp):
@@ -461,11 +453,11 @@ def processtcdata(inst, tcdata):
             welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, inst))
             welcom.start()
         if inst == pexist[15]:
-            # log.debug(f'player {playername} with steamid {steamid} was found on home server {inst}. updating info.')
+            log.trace(f'player {playername} with steamid {steamid} was found on home server {inst}. updating info.')
             dbupdate("UPDATE players SET playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
                      (playtime, rewardpoints, steamid))
         else:
-            # log.debug(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating info.')
+            log.trace(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating info.')
             if int(pexist[16]) != int(rewardpoints):
                 if int(rewardpoints) != 0:
                     if Now() - float(pexist[17]) > 60:
@@ -598,7 +590,7 @@ def checkcommands(minst):
                 processtcdata(minst, tcdata)
         else:
             whoasked = getnamefromchat(line)
-            # log.debug(f'chatline who: {whoasked}')
+            log.trace(f'chatline who: {whoasked}')
             if whoasked is None:
                 getnamefromchaterror(minst)
             else:

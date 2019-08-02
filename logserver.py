@@ -16,6 +16,9 @@ from sh import tail as tailer
 HEADERSIZE = 28
 log_file = '/home/ark/shared/logs/pyark/logserver.log'
 
+pyarklog = '/home/ark/shared/logs/pyark/pyarklog.json'
+debuglog = '/home/ark/shared/logs/pyark/debuglog.json'
+
 log_queue = Queue()
 log.remove()
 parser = argparse.ArgumentParser()
@@ -43,10 +46,36 @@ def checkconnections():
             client_threads.remove(client)
 
 
+@log.catch
 def logwatcher():
-    tlog = modules.tail.Tail('/home/ark/shared/logs/pyark/pyarklog.json')
-    tlog.register_callback(processlogline)
-    tlog.follow()
+    count = 1
+    while True:
+        if not os.path.isfile(pyarklog):
+            if count == 1 or count == 3600:
+                log.warning('pyarklog.json not found. waiting for it..')
+            sleep(1)
+            count += 1
+        else:
+            tlog = modules.tail.Tail(pyarklog)
+            tlog.register_callback(processlogline)
+            log.debug('pyarklog.json found. following it..')
+            tlog.follow()
+
+
+@log.catch
+def debugwatcher():
+    count = 1
+    while True:
+        if not os.path.isfile(debuglog):
+            if count == 1 or count == 3600:
+                log.warning('debuglog.json not found. waiting for it..')
+            sleep(1)
+            count += 1
+        else:
+            tlog = modules.tail.Tail(debuglog)
+            tlog.register_callback(processlogline)
+            log.debug('debuglog.json found. following it..')
+            tlog.follow()
 
 
 def clientloop(clientsocket, addr):
@@ -162,7 +191,7 @@ def processlogline(line, single=False):
                     putqueue(data, client, single)
 
             elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT":
-                if not client['startexit']:
+                if client['startexit']:
                     putqueue(data, client, single)
 
             elif data["record"]["level"]["name"] == "CMD":
@@ -191,6 +220,8 @@ def main():
     log.debug('Starting log tail thread')
     logwatch_thread = threading.Thread(target=logwatcher)
     logwatch_thread.start()
+    debugwatch_thread = threading.Thread(target=debugwatcher)
+    debugwatch_thread.start()
     client_threads = []
     cleanup_thread = threading.Thread(target=checkconnections)
     cleanup_thread.start()

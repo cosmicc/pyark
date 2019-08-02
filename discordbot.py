@@ -3,7 +3,7 @@ from datetime import time as dt
 from datetime import datetime
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo, iseventtime
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
-from modules.configreader import generalchat_id, serverchat_id, discordtoken, hstname, maint_hour, infochat_id
+from modules.configreader import generalchat_id, serverchat_id, discordtoken, hstname, maint_hour, infochat_id, changelog_id
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, getlastwipe, getlastrestart, writechat, writeglobal, getlastrestartreason
 from modules.players import getplayer, getplayerlastserver, getplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers, isplayeradmin, setprimordialbit
@@ -100,8 +100,6 @@ def pyarkbot():
     global serverchat
     with open('/tmp/pyark.pid', 'a') as pidfile:
         pidfile.write(f'\n{str(getpid())}')
-
-    lastupdateannounce = Now(fmt='dt') + timedelta(minutes=21)
 
     SUCCESS_COLOR = 0x00ff00
     FAIL_COLOR = 0xff0000
@@ -250,6 +248,7 @@ def pyarkbot():
         await asyncio.sleep(5)
         serverchat = client.get_channel(int(serverchat_id))
         generalchat = client.get_channel(int(generalchat_id))
+        changelogchat = client.get_channel(int(changelog_id))
         while not client.is_closed():
             try:
                 cbuff = dbquery("SELECT * FROM chatbuffer")
@@ -305,7 +304,9 @@ def pyarkbot():
                                 embed = discord.Embed(title=f"A New Update has been released!", color=INFO_COLOR)
                                 embed.set_author(name='ARK Updater for Galaxy Cluster Servers', icon_url='https://patchbot.io/images/games/ark_sm.png')
                                 embed.add_field(name=f"Update Reason: {each[2]}", value=f"{each[1]}\n\nAny applicable servers will begin a **30 min** restart countdown now", inline=False)
+                                umsg = f'* {each[2]} has been released {each[1]}'
                                 await generalchat.send(embed=embed)
+                                await changelogchat.send(umsg)
                         else:
                             if each[1] == "ALERT":
                                 msg = f'{each[3]} [{each[0].capitalize()}] {each[2]}'
@@ -783,7 +784,7 @@ def pyarkbot():
             embed.set_author(name='Galaxy Cluster Server Events', icon_url='https://library.kissclipart.com/20180903/ueq/kissclipart-party-emoji-clipart-party-popper-emoji-aa28695001083d98.png')
             embed.add_field(name=f"test", value=f"{dir(ctx.message.author)}", inline=False)
             await client.http.add_role(329659318972448771, ctx.message.author.id, 329691280412114945)
-            #await messagesend(ctx, embed, allowgeneral=False, reject=True)
+            # await messagesend(ctx, embed, allowgeneral=False, reject=True)
             # addlottomessage(msg.id)
             # await clearlottomessages()
         except:

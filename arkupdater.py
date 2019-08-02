@@ -446,7 +446,7 @@ def checkupdates():
                 # msg = f'Ark update has been released. Servers will begin restart countdown now.\n\
 # https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
                 writediscord('ARK Game Update', Now(), name='https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes', server='UPDATE')
-                # pushover('Ark Update', msg)
+                pushover('Ark Update', msg)
                 log.log('UPDATE', f'ARK update download complete. Update is staged. Notifying servers')
                 dbupdate(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
         except:
@@ -473,10 +473,8 @@ def checkupdates():
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
                 aname = f'{modname} Mod Update'
-                # msg = f'Mod {modname} has been updated. Servers will begin restart countdowns now.\n\
-# https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
                 writediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
-                # pushover('Mod Update', msg)
+                pushover('Mod Update', msg)
                 for neo in range(numinstances):
                         instancerestart(instance[neo]['name'], aname)
         else:
