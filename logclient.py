@@ -104,11 +104,12 @@ while True:
                 timeout_timer = int(datetime.now().timestamp())
                 new_msg = True
                 full_msg = ''
-            if int(datetime.now().timestamp()) - timeout_timer > 31:
-                log.warning('Dead connection timeout.  Reconnecting...')
-                sock.close()
-                sleep(10)
-                connect_to_server()
+            log.debug(int(datetime.now().timestamp()) - timeout_timer)
+            #if int(datetime.now().timestamp()) - timeout_timer > 61:
+            #    log.warning('Dead connection timeout.  Reconnecting...')
+            #    sock.close()
+            #    sleep(10)
+            #    connect_to_server()
         except BlockingIOError:
             pass
         except ValueError:
