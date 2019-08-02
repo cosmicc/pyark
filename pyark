@@ -172,12 +172,12 @@ def main():
             log.warning(f'server {instance[ins]["name"]} does not exist in the server table. adding it.')
             dbupdate("INSERT INTO instances (name, lastrestart, lastdinowipe, needsrestart, lastvote, restartreason, cfgver, restartcountdown) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (instance[ins]["name"], Now(), Now(), 'False', Now(), 'admin restart', 0, 30))
         else:
-            log.debug(f'found server {instance[ins]["name"]} in server table')
+            log.trace(f'found server {instance[ins]["name"]} in server table')
     log.debug('database initilization complete')
     checkgit = 0
     arkupdt = threading.Thread(name='arkupdater', target=arkupd)
     arkupdt.start()
-    log.debug('deleting global chat buffer')
+    log.trace('deleting global chat buffer')
     dbupdate('DELETE FROM globalbuffer')
     for each in range(numinstances):
         inst = instance[each]['name']

@@ -751,7 +751,7 @@ def checkcommands(minst):
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
 
                 else:
-                    log.debug(f'chatline elsed: {line}')
+                    log.trace(f'chatline elsed: {line}')
                     rawline = line.split('(')
                     if len(rawline) > 1:
                         rawname = rawline[1].split(')')

@@ -183,31 +183,38 @@ def processlogline(line, single=False):
         data = json.loads(line.strip(), strict=False)
         # log.trace(f'Got from log: {data["text"]}')
         for client in client_threads:
-            if client['extend']:
-                msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
-                data["text"] = data["text"].strip() + msgapp
-            if client['showonly'] != 'ALL':
-                if data["record"]["level"]["name"].lower() == client['showonly'].lower():
+            if data["record"]["level"]["name"] == 'TRACE':
+                if client['trace']:
                     putqueue(data, client, single)
-
-            elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT":
-                if client['startexit']:
+            elif data["record"]["level"]["name"] == 'DEBUG':
+                if client['debug']:
                     putqueue(data, client, single)
-
-            elif data["record"]["level"]["name"] == "CMD":
-                if client['commands']:
-                    putqueue(data, client, single)
-
-            elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
-                if client['joinleave']:
-                    putqueue(data, client, single)
-
-            elif data["record"]["level"]["name"] == "VOTE":
-                if client['votes']:
-                    putqueue(data, client, single)
-
             else:
-                putqueue(data, client, single)
+                if client['extend']:
+                    msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
+                    data["text"] = data["text"].strip() + msgapp
+                if client['showonly'] != 'ALL':
+                    if data["record"]["level"]["name"].lower() == client['showonly'].lower():
+                        putqueue(data, client, single)
+
+                elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT":
+                    if client['startexit']:
+                        putqueue(data, client, single)
+
+                elif data["record"]["level"]["name"] == "CMD":
+                    if client['commands']:
+                        putqueue(data, client, single)
+
+                elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
+                    if client['joinleave']:
+                        putqueue(data, client, single)
+
+                elif data["record"]["level"]["name"] == "VOTE":
+                    if client['votes']:
+                        putqueue(data, client, single)
+
+                else:
+                    putqueue(data, client, single)
 
     except json.decoder.JSONDecodeError:
         log.exception(f'DECODE ERROR: {repr(line)}')
