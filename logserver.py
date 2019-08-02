@@ -217,7 +217,7 @@ def processlogline(line, single=False):
                     putqueue(data, client, single)
 
     except json.decoder.JSONDecodeError:
-        log.exception(f'DECODE ERROR: {repr(line)}')
+        log.error(f'DECODE ERROR: {repr(line)}')
 
 
 def main():
