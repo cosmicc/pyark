@@ -148,7 +148,7 @@ def sendmsg(clientsocket, addr, logline):
     except BrokenPipeError:
         for num, client in enumerate(client_threads):
             if int(client['address']) == int(addr):
-                log.warning(f'Dead connection detected. Removing: {client["address"]}')
+                log.info(f'Dead connection detected. Removing: {client["address"]}')
                 client_threads.pop(num)
 
 
