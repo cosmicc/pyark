@@ -69,7 +69,7 @@ log.level("TEST", no=5, color="<black><bg 148>", icon="¤")
 
 
 def checkdebuglog(record):
-    if record['level'] != 'DEBUG' and record['level'] != 'TRACE':
+    if record['level'] == 'DEBUG' or record['level'] == 'TRACE':
         return True
     else:
         return False
