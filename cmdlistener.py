@@ -766,7 +766,7 @@ def checkcommands(minst):
                                     else:
                                         dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
                                     tstamp = dto.strftime('%m-%d %I:%M%p')
-                                    writechat(inst, whoname, cmsg.strip("'"), tstamp)
+                                    writechat(inst, whoname, cmsg.replace("'", ""), tstamp)
                                     log.log('CHAT', f'{inst} | {whoname} | {cmsg[2:]}')
                                     writechatlog(inst, whoname, cmsg, tstamp)
 
