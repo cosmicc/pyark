@@ -418,7 +418,7 @@ def linker(minst, whoasked):
 def writechatlog(inst, whos, msg, tstamp):
     isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos, ), fetch='one')
     if isindb:
-        clog = f'{tstamp} [{whos.upper()}]{msg}\n'
+        clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
         with open(f"/home/ark/shared/logs/{inst}/chatlog/chat.log", "at") as f:
             f.write(clog)
         f.close()
@@ -766,8 +766,10 @@ def checkcommands(minst):
                                     else:
                                         dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
                                     tstamp = dto.strftime('%m-%d %I:%M%p')
-                                    writechat(inst, whoname, cmsg, tstamp)
+                                    writechat(inst, whoname, cmsg.strip("'"), tstamp)
+                                    log.log('CHAT', f'{inst} | {whoname} | {cmsg}')
                                     writechatlog(inst, whoname, cmsg, tstamp)
+
                                 except:
                                     log.exception('could not parse date from chat')
 

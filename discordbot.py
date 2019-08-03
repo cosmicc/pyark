@@ -1026,7 +1026,7 @@ def pyarkbot():
         elif str(message.channel) == 'server-chat':
             whos = dbquery("SELECT playername FROM players WHERE discordid = '%s'" % (str(message.author).lower(),), fetch='one')
             if whos:
-                writeglobal('discord', whos[0], str(message.content))
+                writeglobal('discord', whos[0], str(message.content).strip("'"))
 
         elif str(message.channel) == 'server-notifications':
             if message.content.lower().find('server has crashed! - restarting server') != -1:

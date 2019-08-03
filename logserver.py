@@ -88,18 +88,19 @@ def clientloop(clientsocket, addr):
     argsdebug = bool(int(header.split('!')[2]))
     argstrace = bool(int(header.split('!')[3]))
     argsextend = bool(int(header.split('!')[4]))
-    argsstartexit = bool(int(header.split('!')[5]))
-    argscommands = bool(int(header.split('!')[6]))
-    argsvotes = bool(int(header.split('!')[7]))
-    argsjoinleave = bool(int(header.split('!')[8]))
-    argsfollow = bool(int(header.split('!')[9]))
-    argsserver = header.split('!')[10].strip()
-    argsshowonly = header.split('!')[11].strip()
+    argsadmin = bool(int(header.split('!')[5]))
+    argsstartexit = bool(int(header.split('!')[6]))
+    argscommands = bool(int(header.split('!')[7]))
+    argsvotes = bool(int(header.split('!')[8]))
+    argsjoinleave = bool(int(header.split('!')[9]))
+    argsfollow = bool(int(header.split('!')[10]))
+    argsserver = header.split('!')[11].strip()
+    argsshowonly = header.split('!')[12].strip()
 
     newdict = {}
     for num, client in enumerate(client_threads):
         if client['address'] == addr:
-            newdict = {'address': client['address'], 'thread': client['thread'], 'queue': client['queue'], 'debug': argsdebug, 'trace': argstrace, 'extend': argsextend, 'startexit': argsstartexit, 'commands': argscommands, 'votes': argsvotes, 'joinleave': argsjoinleave, 'server': argsserver, 'showonly': argsshowonly}
+            newdict = {'address': client['address'], 'thread': client['thread'], 'queue': client['queue'], 'socket': client['socket'], 'debug': argsdebug, 'trace': argstrace, 'extend': argsextend, 'admin': argsadmin, 'startexit': argsstartexit, 'commands': argscommands, 'votes': argsvotes, 'joinleave': argsjoinleave, 'server': argsserver, 'showonly': argsshowonly}
             client_threads.pop(num)
             client_threads.append(newdict)
             log.debug(newdict)
@@ -157,17 +158,19 @@ def sendmsg(clientsocket, addr, logline):
             msg = f'{len(msg):<{HEADERSIZE}}' + msg
             log.trace(f'sending: {len(msg)} {msg}')
             clientsocket.send(bytes(msg, "utf-32"))
-        sleep(.1)
+        sleep(.08)
     except ConnectionResetError:
-        for num, client in enumerate(client_threads):
+        clist = client_threads.copy()
+        for num, client in enumerate(clist):
             if int(client['address']) == int(addr):
                 log.info(f'Dropped connection detected. Removing: {client["address"]}')
                 client_threads.pop(num)
     except BrokenPipeError:
-        for num, client in enumerate(client_threads):
+        clist = client_threads.copy()
+        for num, client in enumerate(clist):
             if int(client['address']) == int(addr):
                 log.info(f'Dead connection detected. Removing: {client["address"]}')
-                client_threads.pop(num)
+                client_threads.remove(client)
 
 
 def endtail(f, lines=1, _buffer=12288):
@@ -186,6 +189,15 @@ def endtail(f, lines=1, _buffer=12288):
         block_counter -= 1
 
     return lines_found[-lines:]
+
+
+def waitallclients():
+    clist = client_threads.copy()
+    for num, client in enumerate(clist):
+        sendmsg(client["socket"], client["address"], '#!')
+        log.info(f'Ending connection. Removing: {client["address"]}')
+        sleep(.1)
+        client_threads.remove(client)
 
 
 @log.catch
@@ -226,6 +238,10 @@ def processlogline(line, single=False):
                     if client['commands']:
                         putqueue(data, client, single)
 
+                elif data["record"]["level"]["name"] == "ADMIN":
+                    if client['admin']:
+                        putqueue(data, client, single)
+
                 elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
                     if client['joinleave']:
                         putqueue(data, client, single)
@@ -260,7 +276,7 @@ def main():
         clientsocket, address = s.accept()
         log.info(f"Connection from {address[0]}:{address[1]} has been established")
         nthread = threading.Thread(target=clientloop, args=(clientsocket, address[1]))
-        client_threads.append({'address': address[1], 'thread': nthread, 'queue': Queue(), 'debug': False, 'trace': False, 'extend': False, 'startexit': True, 'commands': True, 'votes': True, 'joinleave': True, 'server': 'ALL', 'showonly': 'ALL'})
+        client_threads.append({'address': address[1], 'thread': nthread, 'queue': Queue(), 'socket': clientsocket, 'debug': False, 'trace': False, 'extend': False, 'admin': True, 'startexit': True, 'commands': True, 'votes': True, 'joinleave': True, 'server': 'ALL', 'showonly': 'ALL'})
         log.trace(client_threads)
         nthread.start()
 
@@ -281,7 +297,6 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        for client in client_threads:
-            client_threads.remove(client)
-        sleep(.5)
+        waitallclients()
+        sleep(1)
         os._exit(0)

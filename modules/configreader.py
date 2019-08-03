@@ -36,6 +36,8 @@ pointsfile = config.get('general', 'pointslogfile')
 jsondebugfile = config.get('general', 'jsondebugfile')
 crashlogfile = config.get('general', 'crashlogfile')
 critlogfile = config.get('general', 'critlogfile')
+chatlogfile = config.get('general', 'chatlogfile')
+
 maint_hour = config.get('general', 'maint_hour')
 
 is_arkupdater = config.get('general', 'is_arkupdater')
