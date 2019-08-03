@@ -8,7 +8,7 @@ from cmdlistener import clisten
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, shortlogformat, longlogformat, simplelogformat, debugfile, chatlogfile
+from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, shortlogformat, longlogformat, simplelogformat, debugfile, chatlogfile, chatlogformat
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
@@ -50,7 +50,7 @@ args = parser.parse_args()
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
 log.level("START", no=38, color="<fg 39>", icon="¤")
-log.level("ADMIN", no=19, color="<fg 15><bg 18>", icon="¤")
+log.level("ADMIN", no=19, color="<fg 15><bg 94>", icon="¤")
 log.level("JOIN", no=21, color="<fg 201>", icon="¤")
 log.level("LEAVE", no=21, color="<fg 128>", icon="¤")
 log.level("POINTS", no=22, color="<fg 118>", icon="¤")
@@ -65,7 +65,7 @@ log.level("GIT", no=30, color="<fg 229>", icon="¤")
 log.level("EXIT", no=35, color="<fg 228><bg 18>", icon="¤")
 log.level("KICK", no=20, color="<fg 216>", icon="¤")
 log.level("EVENTS", no=20, color="<fg 138>", icon="¤")
-log.level('CHAT', no=5, color="<fg 17>", icon="¤")
+log.level('CHAT', no=5, color="<fg 58>", icon="¤")
 log.level("TEST", no=5, color="<black><bg 148>", icon="¤")
 
 
@@ -143,7 +143,7 @@ log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=Fal
 # Error Logging error.log
 log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True, filter=checkerrorlog)
 # chat Logging error.log
-log.add(sink=chatlogfile, level=5, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checkchatlog)
+log.add(sink=chatlogfile, level=5, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=chatlogformat, delay=False, filter=checkchatlog)
 
 
 plock()
