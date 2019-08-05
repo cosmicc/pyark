@@ -384,6 +384,17 @@ def getnamefromchaterror(inst):
     pass
 
 
+def processadminline(line):
+    line.replace('"', '').strip()
+    newline = line[12:]
+    newlinesplit = newline.split(':')
+    if newlinesplit[0].strip() == 'AdminCmd':
+        pline = newline[10:]
+    else:
+        pline = newline
+    log.log('ADMIN', pline)
+
+
 def isserver(line):
     rawissrv = line.split(':')
     if len(rawissrv) > 1:
@@ -571,7 +582,7 @@ def checkcommands(minst):
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('[WBUI]') != -1 or line.find('Force respawning Wild Dinos!') != -1:
-            log.log('ADMIN', line.replace('"', '').strip())
+            processadminline(line.replace('"', '').strip())
         elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('joined this ARK!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('starved to death!') != -1 or line.find('left this ARK!') != -1:
             with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
                 lobber = line.replace('"', '').strip()
@@ -766,8 +777,8 @@ def checkcommands(minst):
                                     else:
                                         dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
                                     tstamp = dto.strftime('%m-%d %I:%M%p')
-                                    writechat(inst, whoname, cmsg.replace("'", ""), tstamp)
                                     log.log('CHAT', f'{inst} | {whoname} | {cmsg[2:]}')
+                                    writechat(inst, whoname, cmsg.replace("'", ""), tstamp)
                                     writechatlog(inst, whoname, cmsg, tstamp)
 
                                 except:

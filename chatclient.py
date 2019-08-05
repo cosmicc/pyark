@@ -29,7 +29,7 @@ llevel = 'DEBUG' if args.verbose else 'INFO'
 log.add(sys.stderr, level=llevel, format=simplelogformat)
 
 players = {}
-pcolors = [45, 85, 185, 115, 225, 215, 195, 175, 155, 145, 105, 165, 205]
+pcolors = [45, 85, 105, 155, 225, 215, 195, 175, 115, 145, 185, 165, 205]
 pcolorindex = 0
 
 
@@ -52,22 +52,27 @@ def processchatline(line):
     global players
     global pcolorindex
     linesplit = line.split("|")
-    ctime = linesplit[0]
-    cserver = linesplit[1].strip()
-    cplayer = linesplit[2].strip()
-    cmsg = linesplit[3].strip()
-    cdt = estshift(dtparse(ctime))
-    cdtf = cdt.strftime("%a %I:%M:%S%p")
-    if cplayer not in players:
-        ncolor = int(pcolors[pcolorindex])
-        if pcolorindex == len(pcolors) - 1:
-            pcolorindex = 0
-        pcolorindex += 1
-        players.update({cplayer: ncolor})
-    else:
-        ncolor = players[cplayer]
-    newline = '%s%s [%s] %s - %s%s' % (fg(ncolor), cdtf, cserver.title(), cplayer, cmsg, fg(0))
-    log.info(newline)
+    if len(linesplit) > 1:
+        ctime = linesplit[0]
+        cserver = linesplit[1].strip()
+        cplayer = linesplit[2].strip()
+        cmsg = linesplit[3].strip()
+        cdt = estshift(dtparse(ctime))
+        cdtf = cdt.strftime("%a %I:%M:%S%p")
+        if cplayer not in players:
+            ncolor = int(pcolors[pcolorindex])
+            if pcolorindex == len(pcolors) - 1:
+                pcolorindex = 0
+            pcolorindex += 1
+            players.update({cplayer: ncolor})
+        else:
+            ncolor = players[cplayer]
+        newline = '%s%s [%s] %s - %s%s' % (fg(ncolor), cdtf, cserver.title(), cplayer, cmsg, fg(0))
+        if args.server == 'ALL':
+            log.info(newline)
+        else:
+            if args.server.lower() == cserver.lower():
+                log.info(newline)
 
 
 def endtail(f, lines=1, _buffer=12288):

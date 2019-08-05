@@ -261,6 +261,7 @@ def maintenance():
                 checkwipe(inst)
                 lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
                 eventreboot = iseventrebootday()
+
                 if eventreboot:
                     maintrest = f"{eventreboot}"
                     instancerestart(inst, maintrest)

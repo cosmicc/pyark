@@ -231,6 +231,7 @@ def pyarkbot():
                 log.exception('error in task checker!')
                 await asyncio.sleep(10)
 
+    @log.catch
     async def chatbuffer():
         await client.wait_until_ready()
         await asyncio.sleep(5)
@@ -301,7 +302,7 @@ def pyarkbot():
                             else:
                                 msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'
                             await serverchat.send(msg)
-                            # await asyncio.sleep(2)
+                            await asyncio.sleep(1)
                     dbupdate("DELETE FROM chatbuffer")
                 now = Now()
                 cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 40, now - 44))

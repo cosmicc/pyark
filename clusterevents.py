@@ -27,7 +27,7 @@ def autoschedevolution():
         startdate = now.date()
 
         einfo = dbquery("SELECT * FROM autoevents WHERE title = 'Evolution Weekend'", fmt='dict', fetch='one')
-        dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix) VALUES (0, '%s', '%s', '%s', '%s', '%s      ')" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
+        dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix, announced) VALUES (0, '%s', '%s', '%s', '%s', '%s      ', False)" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
 
         log.log('EVENTS', f'Scheduling next Evolution Weekend Event {startdate} - {enddate}')
     else:
