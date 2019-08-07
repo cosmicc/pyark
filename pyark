@@ -131,7 +131,7 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
         lev = 10
     else:
         lev = 5
-    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=longlogformat, delay=True, filter=checkdebuglog)
+    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=shortlogformat, delay=True, filter=checkdebuglog)
     log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, serialize=False, colorize=True, format=longlogformat, delay=True)
 
 # Points Logging points.log

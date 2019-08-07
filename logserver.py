@@ -66,7 +66,7 @@ def debugwatcher():
         if not os.path.isfile(debuglog):
             if count == 1 or count == 3600:
                 log.warning('debuglog.json not found. waiting for it..')
-            sleep(1)
+            sleep(10)
             count += 1
         else:
             tlog = modules.tail.Tail(debuglog)
@@ -215,6 +215,10 @@ def processlogline(line, single=False):
         data = json.loads(line.strip(), strict=False)
         # log.trace(f'Got from log: {data["text"]}')
         for client in client_threads:
+            if client['extend'] or client['debug'] or client['trace']:
+                msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
+                data['text'] = data['text'].strip() + msgapp
+
             if data["record"]["level"]["name"] == 'TRACE':
                 if client['trace']:
                     putqueue(data, client, single)
@@ -222,10 +226,6 @@ def processlogline(line, single=False):
                 if client['debug']:
                     putqueue(data, client, single)
             else:
-                if client['extend'] or client['debug'] or client['trace']:
-                    msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
-                    data['text'] = data['text'].strip() + msgapp
-
                 if client['showonly'] != 'ALL':
                     if data["record"]["level"]["name"].lower() == client['showonly'].lower():
                         putqueue(data, client, single)

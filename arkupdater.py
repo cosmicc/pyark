@@ -475,6 +475,7 @@ def checkupdates():
                 log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
                 aname = f'{modname} Mod Update'
                 writediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
+                msg = f'{modname} Mod Update\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
                 pushover('Mod Update', msg)
                 for neo in range(numinstances):
                         instancerestart(instance[neo]['name'], aname)

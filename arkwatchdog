@@ -4,6 +4,7 @@ from modules.configreader import instance, hstname, jsonlogfile, colorlogfile, j
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
 from modules.instances import getinststatus, isinstanceenabled
+from modules.players import getliveplayersonline
 from arkupdater import restartinstnow
 from sys import exit
 from time import sleep
@@ -202,30 +203,32 @@ def main():
         isonline[seat['name']] = {}
         isonline[seat['name']].update({'isit': 0, 'count': 0})
     log.log('START', f'Watchdog Daemon is starting on [{hstname}] for [{instr.title()}]')
-    if didserverjustboot():
-        log.log('WATCH', 'server just booted, starting instances for the first time')
-        while not issharedmounted():
-            log.log('WATCH', 'Shared drive is not mounted, waiting for mount to complete...')
-            sleep(60)
-        if issharedmounted():
-            for eat in instance:
-                subprocess.run('arkmanager start @%s' % (eat['name']), stdout=subprocess.DEVNULL,
-                               stderr=subprocess.DEVNULL, shell=True)
-                sleep(120)
-            log.debug('sleeping 15 min while instances start')
-            log.sleep(Secs['10min'])
+    if len(instance) > 0:
+        if didserverjustboot():
+            log.log('WATCH', 'server just booted, starting instances for the first time')
+            while not issharedmounted():
+                log.log('WATCH', 'Shared drive is not mounted, waiting for mount to complete...')
+                sleep(60)
+            if issharedmounted():
+                for eat in instance:
+                    subprocess.run('arkmanager start @%s' % (eat['name']), stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL, shell=True)
+                    sleep(120)
+                log.debug('sleeping 15 min while instances start')
+                log.sleep(Secs['10min'])
     log.debug('starting watchdog loop')
     serverstatcount = 0
     while True:
         try:
-            if serverstatcount == 5:
-                serverstatcount = 0
-            serverstatcount += 1
-            if serverstatcount == 1:
-                log.debug(f'Updating server stats for server {hstname.upper()}')
-                memfree, memavail, swapused = getservermem()
-                cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
-                uptime = getserveruptime()
+            if hstname.upper() != 'SVRDB':
+                if serverstatcount == 5:
+                    serverstatcount = 0
+                serverstatcount += 1
+                if serverstatcount == 1:
+                    log.debug(f'Updating server stats for server {hstname.upper()}')
+                    memfree, memavail, swapused = getservermem()
+                    cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
+                    uptime = getserveruptime()
 
             for eachinst in instance:
                 if isinstanceenabled(eachinst['name']):
@@ -281,14 +284,16 @@ def main():
                     for feach in isonline:
                         if feach == eachinst['name']:
                             if isonline[feach]['count'] == 10:
+                                oplayers = getliveplayersonline()
                                 isrunning[feach].update({'isit': 0, 'count': 0})
                                 isonline[feach].update({'isit': 0, 'count': 0})
-                                log.warning(f'Instance [{eachinst["name"]}] failed online checks! Restarting Instance')
-                                pmsg = f'Instance {eachinst["name"]} failed online checks!\nRestarting Instance'
-                                pushover('Watchdog', pmsg)
-
-                                startserver(eachinst['name'], 'online')
-
+                                if int(oplayers[0]) == 0 and int(oplayers[1]) == 0:
+                                    log.warning(f'Instance [{eachinst["name"]}] failed online checks! Restarting Instance')
+                                    pmsg = f'Instance {eachinst["name"]} failed online checks!\nRestarting Instance'
+                                    pushover('Watchdog', pmsg)
+                                    startserver(eachinst['name'], 'online')
+                                else:
+                                    log.info(f'Skipping instance restart because players are actually online')
                     if serverstatcount == 1:
                         dbupdate("UPDATE instances SET serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s' WHERE name = '%s'" % (hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, eachinst['name']))
 
@@ -297,7 +302,7 @@ def main():
             exit()
         except:
             log.exception('Critical Error in Ark Watchdog!')
-        log.debug('sleeping 1 min between checks')
+        log.trace('sleeping 1 min between checks')
         try:
             sleep(Secs['1min'])
             checkpyark()
