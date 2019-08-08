@@ -254,7 +254,7 @@ def maintenance():
                 log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
                 os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
                 sleep(30)
-                log.log('MAINT', f'Running all clearnings and maintenance on server [{inst.title()}]...')
+                log.log('MAINT', f'Running all dino and map maintenance on server [{inst.title()}]...')
                 log.debug(f'Shutting down dino mating on {inst}...')
                 subprocess.run('arkmanager rconcmd "ScriptCommand MatingOff_DS" @%s' % (inst,), shell=True)
                 sleep(30)
@@ -467,9 +467,10 @@ def checkupdates():
                 # msg = f'Ark update has been released. Servers will begin restart countdown now.\n\
 # https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
                 writediscord('ARK Game Update', Now(), name='https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes', server='UPDATE')
-                pushover('Ark Update', msg)
+                msg = f'Ark Game Updare Released\nhttps://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes'
                 log.log('UPDATE', f'ARK update download complete. Update is staged. Notifying servers')
                 dbupdate(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
+                pushover('Ark Update', msg)
         except:
             log.exception(f'error in determining ark version')
 
