@@ -85,10 +85,10 @@ def playerrestartbit(inst):
 
 
 def wipeit(inst):
-    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-    sleep(3)
-    subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     resetlastwipe(inst)
+    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    # sleep(3)
+    # subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
@@ -247,21 +247,35 @@ def maintenance():
             try:
                 log.log('MAINT', f'Performing a world data save on [{inst.title()}]...')
                 subprocess.run('arkmanager saveworld @%s' % (inst,), shell=True)
-                log.log('MAINT', f'Backing up server instance [{inst.title()}]...')
+                sleep(30)
+                log.log('MAINT', f'Backing up server instance and archiving old players [{inst.title()}]...')
                 subprocess.run('arkmanager backup @%s' % (inst,), shell=True)
-                log.log('MAINT', f'Archiving player and tribe data on [{inst.title()}]...')
+                sleep(30)
+                log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
                 os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
-                sleep(5)
+                sleep(30)
+                log.log('MAINT', f'Running all clearnings and maintenance on server [{inst.title()}]...')
                 log.debug(f'Shutting down dino mating on {inst}...')
                 subprocess.run('arkmanager rconcmd "ScriptCommand MatingOff_DS" @%s' % (inst,), shell=True)
-                sleep(5)
-                log.log('MAINT', f'Clearing all unclaimed dinos on [{inst.title()}]...')
+                sleep(30)
+                log.debug(f'Clearing all unclaimed dinos on [{inst.title()}]...')
                 subprocess.run('arkmanager rconcmd "ScriptCommand DestroyUnclaimed_DS" @%s' % (inst,), shell=True)
-                sleep(5)
+                sleep(30)
+                log.debug(f'Clearing all wild wyvern eggs on [{inst.title()}]...')
+                subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsWyvern_C" @%s' % (inst,), shell=True)
+                sleep(30)
+                log.debug(f'Clearing all wild wyvern eggs on [{inst.title()}]...')
+                subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsWyvern_C" @%s' % (inst,), shell=True)
+                sleep(30)
+                log.debug(f'Clearing all wild drake eggs on [{inst.title()}]...')
+                subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_RockDrake_NoPhysics_C" @%s' % (inst,), shell=True)
+                sleep(30)
+                log.debug(f'Clearing all beehives on [{inst.title()}]...')
+                subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                sleep(30)
                 checkwipe(inst)
                 lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
                 eventreboot = iseventrebootday()
-
                 if eventreboot:
                     maintrest = f"{eventreboot}"
                     instancerestart(inst, maintrest)
