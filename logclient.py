@@ -12,8 +12,8 @@ from ansi2html import Ansi2HTMLConverter
 
 class LogClient():
     def __init__(self, lines, argsdebug, argstrace, argsextend, argsstartexit, argscommands, argsvotes, argsjoinleave, argsfollow, argsadmin, showonly, server, html):
-        self.HEADERSIZE = 30
-        self.RECVSIZE = 1024
+        HEADER = 5
+        self.HEADERSIZE = HEADER * 4 + 4
         self.PORT = 11024
         self.IP = '172.31.250.115'
         self.first_time = True
@@ -73,26 +73,25 @@ class LogClient():
     def getline(self):
         while True:
             try:
-                msg = self.sock.recv(self.RECVSIZE)
+                header = self.sock.recv(self.HEADERSIZE)
+                log.debug(header)
+                log.debug(header.decode("utf-32"))
+                msgsize = int(header.decode("utf-32"))
+                msg = self.sock.recv(msgsize)
+                log.debug(f'reported size: {msgsize}  actual size: {len(msg)}')
                 decodedmsg = msg.decode("utf-32")
-                if self.new_msg:
-                    self.new_msg = False
-                    msglen = int(msg.decode("utf-32")[:3])
-                self.full_msg += decodedmsg
-                log.debug(f'msglen: {msglen} fullmsg: {len(self.full_msg)} decoded: {len(decodedmsg)}')
-                if len(self.full_msg) - self.HEADERSIZE == msglen:
-                    self.timeout_timer = int(datetime.now().timestamp())
-                    self.new_msg = True
-                    retmsg = self.full_msg[self.HEADERSIZE:]
-                    self.full_msg = ''
-                    if msglen == 1:
-                        if retmsg == '!':
+                log.debug(f'decoded size: {len(decodedmsg)}')
+                self.timeout_timer = int(datetime.now().timestamp())
+                self.new_msg = True
+                self.full_msg = ''
+                if msgsize == 8:
+                        if decodedmsg == '!':
                             log.debug('HEARTBEAT Recieved')
                             self.timeout_timer = int(datetime.now().timestamp())
                             self.full_msg = ''
                             self.new_msg = True
-                    elif msglen == 2:
-                        if retmsg == '##':
+                elif msgsize == 16:
+                        if decodedmsg == '##':
                             log.debug('Recieved closing signal from server')
                             self.full_msg = ''
                             self.new_msg = True
@@ -101,29 +100,29 @@ class LogClient():
                                 _exit(2)
                             else:
                                 return None
-                        if retmsg == '#!':
+                        if decodedmsg == '#!':
                             log.info('Recieved a reconnect signal from log server. Reconnecting...')
                             self.full_msg = ''
                             self.new_msg = True
                             self.sock.close()
                             sleep(10)
                             self.connect()
-                    else:
+                else:
                         if self.html:
-                            return self.ansiconverter.convert(retmsg, full=False, ensure_trailing_newline=False)
+                            return self.ansiconverter.convert(decodedmsg, full=False, ensure_trailing_newline=False)
                         else:
-                            return retmsg
+                            return decodedmsg
                 if int(datetime.now().timestamp()) - self.timeout_timer > 61:
                     log.warning('Connection heartbeat timeout. Reconnecting...')
                     self.retry_count = 2
                     self.sock.close()
                     sleep(5)
                     self.connect()
-                sleep(.5)
+                sleep(.01)
             except BlockingIOError:
-                continue
+                pass
             except ValueError:
-                log.warning(f'Dead connection detected. Reconnecting')
+                log.exception(f'Dead connection detected. Reconnecting')
                 self.retry_count = 2
                 self.sock.close()
                 sleep(5)
@@ -180,15 +179,15 @@ def main():
         argsserver = f'ALL   '
     logwatch = LogClient(args.lines, argsdebug, argstrace, argsextend, argsstartexit, argscommands, argsvotes, argsjoinleave, argsfollow, argsadmin, argsshowonly, argsserver, args.html)
     # logwatch.connect()
-    line = ''
     logwatch.connect()
-    #while True:
-    while line is not None:
+    while True:
         try:
             print(logwatch.getline())
         except KeyboardInterrupt:
             logwatch.close()
             _exit(0)
+        else:
+            sleep(.05)
 
 
 if __name__ == '__main__':

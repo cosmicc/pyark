@@ -219,13 +219,13 @@ def main():
         ostat.start()
     if webserver_enabled == "True":
         log.log('START', f'Starting Web Server on IP: {webserver_ip} PORT: {webserver_port}')
-    try:
-        app = create_app('config.BaseConfig')
-        webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port}, daemon=True)
-        webserver.start()
-    except:
-        log.exception(f'Web Server failed to start.')
-    sleep(5)
+        try:
+            app = create_app('config.BaseConfig')
+            webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port}, daemon=True)
+            webserver.start()
+        except:
+            log.exception(f'Web Server failed to start.')
+        sleep(5)
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
 
     def sig_handler(signal, frame):

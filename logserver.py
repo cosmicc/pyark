@@ -12,7 +12,8 @@ from queue import Queue
 from time import sleep
 from loguru import logger as log
 
-HEADERSIZE = 30
+HEADER = 5
+HEADERSIZE = HEADER * 4 + 4
 
 log_file = '/home/ark/shared/logs/pyark/logserver.log'
 pyarklog = '/home/ark/shared/logs/pyark/pyarklog.json'
@@ -151,14 +152,14 @@ def sendmsg(clientsocket, addr, logline):
     global client_threads
     try:
         if logline == '!':
-            msg = f'{len(logline):<{HEADERSIZE}}' + logline
-            clientsocket.send(bytes(msg, "utf-32"))
+            nlogline = logline.encode("utf-32")
+            msg = f'{len(nlogline):<{HEADER}}'.encode("utf-32") + nlogline
+            clientsocket.sendall(msg)
         else:
-            msg = logline.strip()
-            msg = f'{len(msg):<{HEADERSIZE}}' + msg
-            log.trace(f'sending: {len(msg)} {msg}')
-            clientsocket.send(bytes(msg, "utf-32"))
-        sleep(.5)
+            nlogline = logline.strip().encode("utf-32")
+            msg = f'{len(nlogline):<{HEADER}}'.encode("utf-32") + nlogline
+            log.debug(f'sending: {len(nlogline)}')
+            clientsocket.sendall(msg)
     except ConnectionResetError:
         clist = client_threads.copy()
         for num, client in enumerate(clist):
