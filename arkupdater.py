@@ -12,6 +12,7 @@ from time import sleep
 from clusterevents import iseventtime, getcurrenteventext, iseventrebootday
 from discordbot import writediscord
 from loguru import logger as log
+import random
 import os
 import subprocess
 import threading
@@ -28,6 +29,21 @@ def writechat(inst, whos, msg, tstamp):
         isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,))
     elif whos == "ALERT" or isindb:
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
+
+
+def checkdirs(inst):
+    if not os.path.exists('/home/ark/shared/logs/arkmanager'):
+        log.error(f'Log directory /home/ark/shared/logs/arkmanager does not exist! creating')
+        os.mkdir('/home/ark/shared/logs/arkmanager', 0o777)
+        os.chown('/home/ark/shared/logs/arkmanager', 1001, 1005)
+    else:
+        log.trace('Log directory /home/ark/shared/logs/arkmanager exists')
+    if not os.path.exists('/home/ark/shared/logs/arkmanager/{inst}'):
+        log.error(f'Log directory /home/ark/shared/logs/arkmanager/{inst} does not exist! creating')
+        os.mkdir('/home/ark/shared/logs/arkmanager/{inst}', 0o777)
+        os.chown('/home/ark/shared/logs/arkmanager/{inst}', 1001, 1005)
+    else:
+        log.trace(f'Log directory /home/ark/shared/logs/arkmanager/{inst} exists')
 
 
 def updatetimer(inst, ctime):
@@ -85,6 +101,7 @@ def playerrestartbit(inst):
 
 
 def wipeit(inst):
+    checkdirs(inst)
     resetlastwipe(inst)
     subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     # sleep(3)
@@ -143,7 +160,8 @@ def stillneedsrestart(inst):
         return False
 
 
-def restartinstnow(inst, ext='restart'):
+def restartinstnow(inst, reboot):
+    checkdirs(inst)
     subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
     dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
@@ -158,16 +176,19 @@ def restartinstnow(inst, ext='restart'):
     subprocess.run('arkmanager update --force --no-download --update-mods --no-autostart @%s' % (inst),
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.log('UPDATE', f'Instance [{inst.title()}] is starting')
-    subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     resetlastrestart(inst)
     unsetstartbit(inst)
     playerrestartbit(inst)
-    dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
-    # subprocess.run('systemctl start arkwatchdog', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    if reboot and inst != 'coliseum' and inst != 'crystal':
+        subprocess.run('reboot', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    else:
+        subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
 
 
 @log.catch
-def restartloop(inst):
+def restartloop(inst, reboot):
+    checkdirs(inst)
     log.debug(f'{inst} restart loop has started')
     timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
     timeleft = int(timeleftraw[0])
@@ -181,7 +202,7 @@ def restartloop(inst):
         subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL, shell=True)
         pushover('Instance Restart', message)
-        restartinstnow(inst)
+        restartinstnow(inst, reboot)
     elif reason != 'configuration update':
             setrestartbit(inst)
             if timeleft == 30:
@@ -215,7 +236,7 @@ def restartloop(inst):
                                stderr=subprocess.DEVNULL, shell=True)
                 pushover('Instance Restart', message)
                 sleep(10)
-                restartinstnow(inst)
+                restartinstnow(inst, reboot)
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
                 bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n\n<RichColor Color="1,1,0,1">                    The server restart has been cancelled!</>"""
@@ -242,8 +263,14 @@ def maintenance():
         subprocess.run('apt upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
         log.debug(f'OS autoremove started for {hstname}')
         subprocess.run('apt autoremove -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        nrbt = False
+        if os.path.isfile('/var/run/reboot-required'):
+            nrbt = True
+            log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
+
         for each in range(numinstances):
             inst = instance[each]['name']
+            checkdirs(inst)
             try:
                 log.log('MAINT', f'Performing a world data save on [{inst.title()}]...')
                 subprocess.run('arkmanager saveworld @%s' % (inst,), shell=True)
@@ -264,8 +291,8 @@ def maintenance():
                 log.debug(f'Clearing all wild wyvern eggs on [{inst.title()}]...')
                 subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsWyvern_C" @%s' % (inst,), shell=True)
                 sleep(30)
-                log.debug(f'Clearing all wild wyvern eggs on [{inst.title()}]...')
-                subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsWyvern_C" @%s' % (inst,), shell=True)
+                log.debug(f'Clearing all wild Deinonychus eggs on [{inst.title()}]...')
+                subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsDeinonychus_C" @%s' % (inst,), shell=True)
                 sleep(30)
                 log.debug(f'Clearing all wild drake eggs on [{inst.title()}]...')
                 subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_RockDrake_NoPhysics_C" @%s' % (inst,), shell=True)
@@ -282,23 +309,23 @@ def maintenance():
                 checkwipe(inst)
                 lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
                 eventreboot = iseventrebootday()
+
                 if eventreboot:
                     maintrest = f"{eventreboot}"
-                    instancerestart(inst, maintrest)
+                    instancerestart(inst, maintrest, reboot=nrbt)
                 elif Now() - float(lstsv[0]) > Secs['3day'] or getcfgver(inst) < getpendingcfgver(inst):
                     maintrest = "maintenance restart"
-                    instancerestart(inst, maintrest)
+                    instancerestart(inst, maintrest, reboot=nrbt)
                 else:
                     message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
                     subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
             except:
                 log.exception(f'Error during {inst} instance daily maintenance')
-        if os.path.isfile('/var/run/reboot-required'):
-            log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
 
 
-def instancerestart(inst, reason):
+def instancerestart(inst, reason, reboot=False):
+    checkdirs(inst)
     log.debug(f'instance restart verification starting for {inst}')
     global instance
     global confupdtimer
@@ -306,7 +333,7 @@ def instancerestart(inst, reason):
     if not isrebooting(inst):
         for each in range(numinstances):
             if instance[each]['name'] == inst:
-                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst,))
+                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, reboot))
                 instance[each]['restartthread'].start()
 
 
@@ -417,6 +444,7 @@ def isnewarkver(inst):
 
 
 def performbackup(inst):
+    sleep(random.randint(1, 5) * 6)
     log.log('MAINT', f'Performing a world data backup on [{inst.title()}]')
     subprocess.run('arkmanager backup @%s' % (inst, ), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
@@ -424,6 +452,7 @@ def performbackup(inst):
 def checkbackup():
     for seach in range(numinstances):
         sinst = instance[seach]['name']
+        checkdirs(sinst)
         if not isrebooting(sinst):
             lastrestr = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (sinst, ))
             lt = Now() - float(lastrestr[0][0])
@@ -475,6 +504,7 @@ def checkupdates():
             log.exception(f'error in determining ark version')
 
     for each in range(numinstances):
+        checkdirs(instance[each]['name'])
         if not isrebooting(instance[each]['name']):
             ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']),
                                       stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)

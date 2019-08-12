@@ -2,6 +2,9 @@ from flask import Flask
 from .models import User, Role
 from .database import db, security
 from flask_security import SQLAlchemyUserDatastore
+from flask_socketio import SocketIO
+
+socketio = SocketIO()
 
 
 def create_app(config_object):
@@ -11,6 +14,7 @@ def create_app(config_object):
     register_blueprints(app)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security.init_app(app, user_datastore, register_blueprint=True)
+    socketio.init_app(app)
     return app
 
 

@@ -124,7 +124,7 @@ def playergreet(steamid, steamname, inst):
                 if oplayer[3] != inst:
                     gogo = 1
                     #############################
-                    mtxt = f'Player [{oplayer[1].title()}] has transferred here from [{oplayer[3].capitalize()}]'
+                    mtxt = f'Player {oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
                     subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
                     writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
                     log.log('JOIN', f'Player [{oplayer[1].title()}] has transferred from [{oplayer[3].title()}] to [{inst.title()}]')

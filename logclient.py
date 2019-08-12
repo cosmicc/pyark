@@ -110,7 +110,7 @@ class LogClient():
                             self.connect()
                     else:
                         if self.html:
-                            return self.ansiconverter.convert(retmsg, full=True, ensure_trailing_newline=False)
+                            return self.ansiconverter.convert(retmsg, full=False, ensure_trailing_newline=False)
                         else:
                             return retmsg
                 if int(datetime.now().timestamp()) - self.timeout_timer > 61:
@@ -182,6 +182,7 @@ def main():
     # logwatch.connect()
     line = ''
     logwatch.connect()
+    #while True:
     while line is not None:
         try:
             print(logwatch.getline())

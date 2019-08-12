@@ -17,11 +17,13 @@ from wtforms.validators import InputRequired, Length
 from clusterevents import getcurrenteventtitle, iseventtime
 from ..models import User, Role
 from ..database import db
+from .. import socketio
+from threading import Thread
+from logclient import LogClient
 import json
 import pandas as pd
 import psycopg2
 import pytz
-import os
 
 webui = Blueprint('webui', __name__)
 
@@ -32,6 +34,28 @@ class ExtendedRegisterForm(RegisterForm):
     timezone = StringField('Time Zone')
 
 
+logthread = Thread()
+
+
+class LogThread(Thread):
+    def __init__(self):
+        super(LogThread, self).__init__()
+
+    def connect(self):
+        self.logwatch = LogClient(3, 0, 0, 0, 0, 1, 1, 1, 1, 1, 'ALL', 'ALL', 1)
+        self.logwatch.connect()
+
+    def logreader(self):
+        print('## STARTING LOGLINES')
+        while True:
+            msg = self.logwatch.getline()
+            if msg is not None:
+                print(f'msg recieved: {msg}')
+                socketio.emit('logline', {'line': msg}, namespace='/logstream')
+
+    def run(self):
+        self.connect()
+        self.logreader()
 # @app.before_first_request
 # def initdb():
 # db.create_all()
@@ -86,8 +110,7 @@ def watchlog(dlog):
     elif dlog is True:
         logpath = f'/home/ark/shared/logs/pyark/debuglog.json'
 
-    logproc = tail("-f", logpath, _out=processlogline)
- 
+
 def getpyarklog():
     logfi = open('/home/ark/shared/logs/pyark/pyark.log', 'r')
     reslt = []
@@ -134,6 +157,18 @@ def getpyarklog():
     return clrs, reslt
 
 
+@socketio.on('connect', namespace='/logstream')
+def test_connect():
+    # need visibility of the global thread object
+    global logthread
+    print('Client Connected')
+
+    if not logthread.isAlive():
+        print("Starting Thread")
+        logthread = LogThread()
+        logthread.start()
+
+
 @webui.context_processor
 def _gettimezones():
     def ui_gettimezones():
@@ -167,6 +202,16 @@ def _str2time():
     def ui_str2time(strtime):
         return datetime.strptime(strtime, '%m-%d %I:%M%p')
     return dict(ui_str2time=ui_str2time)
+
+
+@webui.context_processor
+def _htmlheaders():
+    def htmlheaders():
+        c = LogClient(3, 0, 0, 0, 0, 1, 1, 1, 1, 1, 'ALL', 'ALL', 1)
+        cd = c.htmlheaders()
+        print(cd)
+        return cd
+    return dict(htmlheaders=htmlheaders)
 
 
 @webui.context_processor
@@ -859,6 +904,4 @@ def _chatlog(instance):
 @webui.route('/pyarklog')
 @login_required
 def _pyarklog():
-    clrs, reslt = getpyarklog()
-    newlog = zip(clrs, reslt)
-    return render_template('pyarklog.html', newlog=newlog)
+    return render_template('pyarklog.html')

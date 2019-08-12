@@ -261,7 +261,7 @@ def pyarkbot():
                                 embed = discord.Embed(title=f"A New Update has been released!", color=INFO_COLOR)
                                 embed.set_author(name='ARK Updater for Galaxy Cluster Servers', icon_url='https://patchbot.io/images/games/ark_sm.png')
                                 embed.add_field(name=f"Update Reason: {each[2]}", value=f"{each[1]}\n\nAny applicable servers will begin a **30 min** restart countdown now", inline=False)
-                                umsg = f'* {each[2]} has been released {each[1]}'
+                                umsg = f'* {each[2]} has been released <{each[1]}>'
                                 await generalchat.send(embed=embed)
                                 await changelogchat.send(umsg)
                         else:
@@ -680,7 +680,7 @@ def pyarkbot():
     @commands.check(logcommand)
     async def _lastwipe(ctx, *args):
         if args:
-            instr = args.lower()
+            instr = args[0].lower()
             if instr in instancelist():
                 lastwipet = elapsedTime(Now(), getlastwipe(instr))
                 msg = f'Last wild dino wipe for **{instr.capitalize()}** was **{lastwipet} ago**'

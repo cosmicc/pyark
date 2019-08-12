@@ -10,6 +10,7 @@ from loguru import logger as log
 import random
 import subprocess
 import threading
+import os
 
 lastvoter = 0.1
 votertable = []
@@ -430,7 +431,11 @@ def writechatlog(inst, whos, msg, tstamp):
     isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos, ), fetch='one')
     if isindb:
         clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
-        with open(f"/home/ark/shared/logs/{inst}/chatlog/chat.log", "at") as f:
+        if not os.path.exists('/home/ark/shared/logs/{inst}'):
+            log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
+            os.mkdir('/home/ark/shared/logs/{inst}', 0o777)
+            os.chown('/home/ark/shared/logs/{inst}', 1001, 1005)
+        with open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
             f.write(clog)
         f.close()
 
@@ -584,7 +589,11 @@ def checkcommands(minst):
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('[WBUI]') != -1 or line.find('Force respawning Wild Dinos!') != -1:
             processadminline(line.replace('"', '').strip())
         elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('joined this ARK!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('starved to death!') != -1 or line.find('left this ARK!') != -1:
-            with open(f"/home/ark/shared/logs/{minst}/gamelog/game.log", "at") as f:
+            if not os.path.exists('/home/ark/shared/logs/{minst}'):
+                log.error(f'Log directory /home/ark/shared/logs/{minst} does not exist! creating')
+                os.mkdir('/home/ark/shared/logs/{minst}', 0o777)
+                os.chown('/home/ark/shared/logs/{minst}', 1001, 1005)
+            with open(f"/home/ark/shared/logs/{minst}/game.log", "at") as f:
                 lobber = line.replace('"', '').strip()
                 if lobber != '':
                     f.write(f"""{line.replace('"','').strip()}\n""")

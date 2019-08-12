@@ -1,21 +1,22 @@
-{% extends "base.html" %}
-{% block head %}
-    {{ super() }}
-{% endblock %}
-
-{% block content %}
-<style type="text/css">
-p {
-   margin: 1px;
-   line-height: 17px;
-}
-</style>
+<head>
+<script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+<script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
+<script>
+    $(document).ready(function(){
+    //connect to the socket server.
+    var socket = io.connect('http://173.15.226.42:51501/logstream');
+    var numbers_received = [];
+    //receive details from server
+    socket.on('logline', function(msg) {
+        console.log("log line:" + msg.line);
+        //maintain a list of ten numbers
+        $('#log').append(msg.line + "<br>");
+    });
+});
+</script>
+</head>
+   
     {% if current_user.has_role('admin') %}
-    <div class="content left-pad-extra right-pad-extra is-centered">
-        {% for color,msg in newlog %} 
-            <p class="is-size-7 is-family-code {{color}}">{{msg}}</p>
-        {% endfor %}    
+    <div id="log" class="content left-pad-extra right-pad-extra">
     </div>    
     {% endif %}
-{% endblock %}
-
