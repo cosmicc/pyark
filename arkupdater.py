@@ -38,10 +38,10 @@ def checkdirs(inst):
         os.chown('/home/ark/shared/logs/arkmanager', 1001, 1005)
     else:
         log.trace('Log directory /home/ark/shared/logs/arkmanager exists')
-    if not os.path.exists('/home/ark/shared/logs/arkmanager/{inst}'):
+    if not os.path.exists(f'/home/ark/shared/logs/arkmanager/{inst}'):
         log.error(f'Log directory /home/ark/shared/logs/arkmanager/{inst} does not exist! creating')
-        os.mkdir('/home/ark/shared/logs/arkmanager/{inst}', 0o777)
-        os.chown('/home/ark/shared/logs/arkmanager/{inst}', 1001, 1005)
+        os.mkdir(f'/home/ark/shared/logs/arkmanager/{inst}', 0o777)
+        os.chown(f'/home/ark/shared/logs/arkmanager/{inst}', 1001, 1005)
     else:
         log.trace(f'Log directory /home/ark/shared/logs/arkmanager/{inst} exists')
 

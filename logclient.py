@@ -56,7 +56,7 @@ class LogClient():
                     log.warning('Connection to log server lost. Reconnecting...')
                 sleep(5)
         log.success(f'Connected to log server {self.IP}:{self.PORT}')
-        self.sock.setblocking(0)
+        self.sock.setblocking(False)
         self.retrycount = 1
         self.showonly = f'{self.showonly:<8}!'
         self.server = f'{self.server:<5}'
@@ -119,9 +119,9 @@ class LogClient():
                     self.sock.close()
                     sleep(5)
                     self.connect()
-                sleep(.01)
+                sleep(.5)
             except BlockingIOError:
-                pass
+                continue
             except ValueError:
                 log.warning(f'Dead connection detected. Reconnecting')
                 self.retry_count = 2

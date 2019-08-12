@@ -144,7 +144,7 @@ def clientloop(clientsocket, addr):
             log.trace(f'got from queue: {logline.split("|")[2]}')
             sendmsg(clientsocket, addr, logline)
         else:
-            sleep(.01)
+            sleep(.1)
 
 
 def sendmsg(clientsocket, addr, logline):
@@ -158,7 +158,7 @@ def sendmsg(clientsocket, addr, logline):
             msg = f'{len(msg):<{HEADERSIZE}}' + msg
             log.trace(f'sending: {len(msg)} {msg}')
             clientsocket.send(bytes(msg, "utf-32"))
-        sleep(.08)
+        sleep(.5)
     except ConnectionResetError:
         clist = client_threads.copy()
         for num, client in enumerate(clist):
