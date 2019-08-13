@@ -18,51 +18,69 @@ from clusterevents import getcurrenteventtitle, iseventtime
 from ..models import User, Role
 from ..database import db
 from .. import socketio
-from threading import Thread
 from logclient import LogClient
+from chatclient import ChatClient
 import json
 import pandas as pd
 import psycopg2
 import pytz
+from loguru import logger as log
 
 webui = Blueprint('webui', __name__)
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+
+logthreads = []
 
 
 class ExtendedRegisterForm(RegisterForm):
     timezone = StringField('Time Zone')
 
 
-logthread = Thread()
+def ChatThread(sid):
+    log.debug(f'Starting chat thread for {sid}')
+    chatwatch = ChatClient('ALL', 20, True)
+    chatwatch.start()
+    while True:
+        stillrun = False
+        for each in logthreads:
+            if each == sid:
+                stillrun = True
+        if not stillrun:
+            break
+        try:
+            msg = chatwatch.getline()
+            if msg is not None and msg != 'None':
+                log.debug(f'Sending chatline to: {sid}')
+                socketio.emit('chatline', {'line': msg}, namespace='/logstream', room=sid)
+        except:
+            log.exception('ERROR!!')
+        finally:
+            socketio.sleep(.1)
+    log.debug(f'Closing down chat thread for {sid}')
 
 
-class LogThread(Thread):
-    def __init__(self):
-        super(LogThread, self).__init__()
-
-    def connect(self):
-        self.logwatch = LogClient(3, 0, 0, 0, 0, 1, 1, 1, 1, 1, 'ALL', 'ALL', 1)
-        self.logwatch.connect()
-
-    def logreader(self):
-        print('## STARTING LOGLINES')
-        while True:
-            msg = self.logwatch.getline()
+def LogThread(sid):
+    log.debug(f'Starting log thread for {sid}')
+    logwatch = LogClient(100, 0, 0, 0, 0, 1, 1, 1, 1, 1, 'ALL', 'ALL', 1)
+    logwatch.connect()
+    while True:
+        stillrun = False
+        for each in logthreads:
+            if each == sid:
+                stillrun = True
+        if not stillrun:
+            break
+        try:
+            msg = logwatch.getline()
             if msg is not None:
-                print(f'msg recieved: {msg}')
-                socketio.emit('logline', {'line': msg}, namespace='/logstream')
-
-    def run(self):
-        self.connect()
-        self.logreader()
-# @app.before_first_request
-# def initdb():
-# db.create_all()
-# user_datastore.find_or_create_role(name='admin', description='Administrator')
-# user_datastore.find_or_create_role(name='player', description='Player')
-# user_datastore.add_role_to_user('admin', 'admin')
-# db.session.commit()
+                log.debug(f'Sending logline to: {sid}')
+                socketio.emit('logline', {'line': msg}, namespace='/logstream', room=sid)
+        except:
+            log.exception('ERROR!!')
+        finally:
+            socketio.sleep(.1)
+    log.debug(f'Closing down log thread for {sid}')
 
 
 class LotteryForm(FlaskForm):
@@ -79,6 +97,7 @@ class MessageForm(FlaskForm):
     message = StringField('message', validators=[InputRequired(), Length(min=1, max=30)])
 
 
+@log.catch
 def follow(stream):
     line = ''
     try:
@@ -94,9 +113,9 @@ def follow(stream):
         print('Exited.')
 
 
+@log.catch
 def processlogline(line):
     try:
-        #if not line.startswith('^@'):
             line = line.strip('\x00')
             data = json.loads(line.strip(), strict=False)
             print(f'{data["text"].strip()}')
@@ -111,6 +130,7 @@ def watchlog(dlog):
         logpath = f'/home/ark/shared/logs/pyark/debuglog.json'
 
 
+@log.catch
 def getpyarklog():
     logfi = open('/home/ark/shared/logs/pyark/pyark.log', 'r')
     reslt = []
@@ -157,16 +177,22 @@ def getpyarklog():
     return clrs, reslt
 
 
+@log.catch
 @socketio.on('connect', namespace='/logstream')
-def test_connect():
-    # need visibility of the global thread object
-    global logthread
-    print('Client Connected')
+def connect():
+    global logclients
+    log.debug(f'####### Logstream started: {request.sid}')
+    logthreads.append(request.sid)
+    socketio.start_background_task(target=LogThread, sid=request.sid)
+    socketio.start_background_task(target=ChatThread, sid=request.sid)
 
-    if not logthread.isAlive():
-        print("Starting Thread")
-        logthread = LogThread()
-        logthread.start()
+
+@log.catch
+@socketio.on('disconnect', namespace='/logstream')
+def disconnect():
+    global logclients
+    log.debug(f'####### Logstream ended: {request.sid}')
+    logthreads.remove(request.sid)
 
 
 @webui.context_processor
@@ -207,7 +233,7 @@ def _str2time():
 @webui.context_processor
 def _htmlheaders():
     def htmlheaders():
-        c = LogClient(3, 0, 0, 0, 0, 1, 1, 1, 1, 1, 'ALL', 'ALL', 1)
+        c = LogClient(20, 0, 0, 0, 0, 1, 1, 1, 1, 1, 'ALL', 'ALL', 1)
         cd = c.htmlheaders()
         print(cd)
         return cd

@@ -55,7 +55,7 @@ class LogClient():
                     self.retrycount = 2
                     log.warning('Connection to log server lost. Reconnecting...')
                 sleep(5)
-        log.success(f'Connected to log server {self.IP}:{self.PORT}')
+        log.debug(f'Connected to log server {self.IP}:{self.PORT}')
         self.sock.setblocking(False)
         self.retrycount = 1
         self.showonly = f'{self.showonly:<8}!'
@@ -71,67 +71,65 @@ class LogClient():
         self.first_time = False
 
     def getline(self):
-        while True:
-            try:
-                header = self.sock.recv(self.HEADERSIZE)
-                log.debug(header)
-                log.debug(header.decode("utf-32"))
-                msgsize = int(header.decode("utf-32"))
-                msg = self.sock.recv(msgsize)
-                log.debug(f'reported size: {msgsize}  actual size: {len(msg)}')
-                decodedmsg = msg.decode("utf-32")
-                log.debug(f'decoded size: {len(decodedmsg)}')
-                self.timeout_timer = int(datetime.now().timestamp())
-                self.new_msg = True
-                self.full_msg = ''
-                if msgsize == 8:
-                        if decodedmsg == '!':
-                            log.debug('HEARTBEAT Recieved')
-                            self.timeout_timer = int(datetime.now().timestamp())
-                            self.full_msg = ''
-                            self.new_msg = True
-                elif msgsize == 16:
-                        if decodedmsg == '##':
-                            log.debug('Recieved closing signal from server')
-                            self.full_msg = ''
-                            self.new_msg = True
-                            self.sock.close()
-                            if __name__ == '__main__':
-                                _exit(2)
-                            else:
-                                return None
-                        if decodedmsg == '#!':
-                            log.info('Recieved a reconnect signal from log server. Reconnecting...')
-                            self.full_msg = ''
-                            self.new_msg = True
-                            self.sock.close()
-                            sleep(10)
-                            self.connect()
-                else:
-                        if self.html:
-                            return self.ansiconverter.convert(decodedmsg, full=False, ensure_trailing_newline=False)
+        try:
+            header = self.sock.recv(self.HEADERSIZE)
+            log.trace(header)
+            log.trace(header.decode("utf-32"))
+            msgsize = int(header.decode("utf-32"))
+            msg = self.sock.recv(msgsize)
+            log.debug(f'reported size: {msgsize}  actual size: {len(msg)}')
+            decodedmsg = msg.decode("utf-32")
+            log.debug(f'decoded size: {len(decodedmsg)}')
+            self.timeout_timer = int(datetime.now().timestamp())
+            self.new_msg = True
+            self.full_msg = ''
+            if msgsize == 8:
+                    if decodedmsg == '!':
+                        log.trace('HEARTBEAT Recieved')
+                        self.timeout_timer = int(datetime.now().timestamp())
+                        self.full_msg = ''
+                        self.new_msg = True
+            elif msgsize == 12:
+                    if decodedmsg == '##':
+                        log.debug('Recieved closing signal from server')
+                        self.full_msg = ''
+                        self.new_msg = True
+                        self.sock.close()
+                        if __name__ == '__main__':
+                            _exit(2)
                         else:
-                            return decodedmsg
-                if int(datetime.now().timestamp()) - self.timeout_timer > 61:
-                    log.warning('Connection heartbeat timeout. Reconnecting...')
-                    self.retry_count = 2
-                    self.sock.close()
-                    sleep(5)
-                    self.connect()
-                sleep(.01)
-            except BlockingIOError:
-                pass
-            except ValueError:
-                log.exception(f'Dead connection detected. Reconnecting')
+                            return None
+                    if decodedmsg == '#!':
+                        log.info('Recieved a reconnect signal from log server. Reconnecting...')
+                        self.full_msg = ''
+                        self.new_msg = True
+                        self.sock.close()
+                        sleep(10)
+                        self.connect()
+            else:
+                    if self.html:
+                        return self.ansiconverter.convert(decodedmsg, full=False, ensure_trailing_newline=False)
+                    else:
+                        return decodedmsg
+            if int(datetime.now().timestamp()) - self.timeout_timer > 61:
+                log.warning('Connection heartbeat timeout. Reconnecting...')
                 self.retry_count = 2
                 self.sock.close()
                 sleep(5)
                 self.connect()
-            except KeyboardInterrupt:
-                self.sock.close()
-                _exit(0)
-            except:
-                log.exception('FUCK!')
+        except BlockingIOError:
+            sleep(.01)
+        except ValueError:
+            log.exception(f'Dead connection detected. Reconnecting')
+            self.retry_count = 2
+            self.sock.close()
+            sleep(5)
+            self.connect()
+        except KeyboardInterrupt:
+            self.sock.close()
+            _exit(0)
+        except:
+            log.exception('FUCK!')
 
 
 def main():
@@ -182,7 +180,9 @@ def main():
     logwatch.connect()
     while True:
         try:
-            print(logwatch.getline())
+            lline = logwatch.getline()
+            if lline is not None:
+                print(lline)
         except KeyboardInterrupt:
             logwatch.close()
             _exit(0)

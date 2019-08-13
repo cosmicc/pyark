@@ -8,7 +8,7 @@ from cmdlistener import clisten
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, is_discordbot, webserver_enabled, webserver_ip, webserver_port, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, shortlogformat, longlogformat, simplelogformat, debugfile, chatlogfile, chatlogformat
+from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, is_discordbot, webserver_enabled, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, shortlogformat, longlogformat, simplelogformat, debugfile, chatlogfile, chatlogformat
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
@@ -17,13 +17,13 @@ from statcollector import oscollect
 import sys
 from time import sleep
 from web import create_app
-from os import stat
-from os import _exit
+from webserver import webserv
+from os import stat, _exit
 import argparse
 from loguru import logger as log
 import lottery
 import subprocess
-import threading
+from threading import Thread
 import signal
 import shutil
 
@@ -46,6 +46,8 @@ parser.add_argument('-d', '--debug', action='store_true', help='verbose output (
 parser.add_argument('-t', '--trace', action='store_true', help='super verbose output (trace)')
 
 args = parser.parse_args()
+
+log.remove()
 
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
@@ -187,41 +189,43 @@ def main():
             log.trace(f'found server {instance[ins]["name"]} in server table')
     log.debug('database initilization complete')
     checkgit = 0
-    arkupdt = threading.Thread(name='arkupdater', target=arkupd)
+    arkupdt = Thread(name='arkupdater', target=arkupd)
     arkupdt.start()
     log.trace('deleting global chat buffer')
     dbupdate('DELETE FROM globalbuffer')
     for each in range(numinstances):
         inst = instance[each]['name']
-        instance[each]['kickthread'] = threading.Thread(name='%s-kicker' % inst, target=kicker, args=(inst,), daemon=True)
+        instance[each]['kickthread'] = Thread(name='%s-kicker' % inst, target=kicker, args=(inst,), daemon=True)
         instance[each]['kickthread'].start()
-        instance[each]['cmdthread'] = threading.Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst,), daemon=True)
+        instance[each]['cmdthread'] = Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst,), daemon=True)
         instance[each]['cmdthread'].start()
-        instance[each]['gchatthread'] = threading.Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst,), daemon=True)
+        instance[each]['gchatthread'] = Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst,), daemon=True)
         instance[each]['gchatthread'].start()
-        instance[each]['onlinethread'] = threading.Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst,), daemon=True)
+        instance[each]['onlinethread'] = Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst,), daemon=True)
         instance[each]['onlinethread'].start()
     if is_eventwatcher == "True":
-        eventwatcht = threading.Thread(name='event-watcher', target=eventwatcher, daemon=True)
+        eventwatcht = Thread(name='event-watcher', target=eventwatcher, daemon=True)
         eventwatcht.start()
     if is_asdatapuller == "True":
-        arkserversnt = threading.Thread(name='arksvrnet-datapuller', target=arkserversnet, daemon=True)
+        arkserversnt = Thread(name='arksvrnet-datapuller', target=arkserversnet, daemon=True)
         arkserversnt.start()
     if is_discordbot == "True":
         from discordbot import pyarkbot
         discordt = Process(target=pyarkbot)
         discordt.start()
     if is_lotterymanager == "True":
-        lotteryt = threading.Thread(name='lottery-watcher', target=lottery.lotterywatcher, daemon=True)
+        lotteryt = Thread(name='lottery-watcher', target=lottery.lotterywatcher, daemon=True)
         lotteryt.start()
     if is_statscollector == "True":
-        ostat = threading.Thread(name='stat-collector', target=oscollect, daemon=True)
+        ostat = Thread(name='stat-collector', target=oscollect, daemon=True)
         ostat.start()
     if webserver_enabled == "True":
-        log.log('START', f'Starting Web Server on IP: {webserver_ip} PORT: {webserver_port}')
         try:
-            app = create_app('config.BaseConfig')
-            webserver = threading.Thread(name='webserver', target=app.run, kwargs={'host': webserver_ip, 'port': webserver_port}, daemon=True)
+            if args.debug or args.trace or loglevel == 'DEBUG' or loglevel == 'TRACE':
+                app = create_app('config.DevelopmentConfig')
+            else:
+                app = create_app('config.BaseConfig')
+            webserver = Process(name='webserver', target=webserv, args=(app,), daemon=True)
             webserver.start()
         except:
             log.exception(f'Web Server failed to start.')

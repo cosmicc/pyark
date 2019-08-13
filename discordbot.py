@@ -16,6 +16,8 @@ from loguru import logger as log
 import signal
 from os import getpid, _exit
 from concurrent.futures._base import CancelledError
+from gtranslate import trans_to_eng
+
 
 __name__ = 'discordbot'
 
@@ -74,7 +76,7 @@ def setlastannounce(atype, tstamp):
 def savediscordtodb(author):
     didexists = dbquery("SELECT * FROM discordnames WHERE discordname = '%s'" % (str(author).strip("'"),), fetch='one')
     if not didexists:
-        dbupdate("INSERT INTO discordnames (discordname) VALUES ('%s')" % (str(author.strip("'")),))
+        dbupdate("INSERT INTO discordnames (discordname) VALUES ('%s')" % (str(author).strip("'"),))
 
 
 @log.catch
@@ -213,7 +215,7 @@ def pyarkbot():
                     for each in cbuff:
                         if each[0] == "generalchat":
                             msg = each[2]
-                            await serverchat.send(msg)
+                            await serverchat.send(trans_to_eng(msg))
                             # await asyncio.sleep(2)
 
                         elif each[0] == 'LOTTOSTART':

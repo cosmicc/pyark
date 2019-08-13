@@ -11,6 +11,8 @@ import random
 import subprocess
 import threading
 import os
+from gtranslate import trans_to_eng
+
 
 lastvoter = 0.1
 votertable = []
@@ -112,7 +114,7 @@ def whoisonlinewrapper(inst, oinst, whoasked, crnt):
         for each in slist:
             whoisonline(each, oinst, whoasked, True, crnt)
     else:
-        whoisonline(inst, oinst, whoasked, False)
+        whoisonline(inst, oinst, whoasked, False, crnt)
 
 
 def whoisonline(inst, oinst, whoasked, filt, crnt):
@@ -786,6 +788,7 @@ def checkcommands(minst):
                                     else:
                                         dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
                                     tstamp = dto.strftime('%m-%d %I:%M%p')
+                                    cmsg = trans_to_eng(cmsg)
                                     log.log('CHAT', f'{inst} | {whoname} | {cmsg[2:]}')
                                     writechat(inst, whoname, cmsg.replace("'", ""), tstamp)
                                     writechatlog(inst, whoname, cmsg, tstamp)
