@@ -1,20 +1,34 @@
 from googletrans import Translator
-import iso639
+from iso639 import languages as iso639
 
 
 def trans_to_eng(text):
-    translator = Translator()
-    lang = translator.detect(text)
-    if lang.lang != 'en':
-        trans = translator.translate(text)
-        result = trans.text + f' (Translated {iso639.to_name(trans.src)})'
+    try:
+        translator = Translator()
+        lang = translator.detect(text)
+        if lang.lang != 'en':
+            trans = translator.translate(text)
+            result = trans.text + f' (Translated {iso639.get(part1=trans.src).name})'
+            return result
+        else:
+            return text
+    except:
+        return '*' + text
+
+
+def trans_from_eng(text, lang):
+    if len(lang) == 2:
+        nlang = lang
+    elif len(lang) == 3:
+        nlang = lang
+    elif len(lang) > 3:
+        nlang = lang
+    try:
+        translator = Translator()
+        text = text + f' (Translated English)'
+        trans = translator.translate(text, dest=nlang)
+        result = {'language': iso639.get(part1=trans.src).name, 'iso639': trans.src, 'text': trans.text}
         return result
-    else:
-        return text
-
-
-def quicktranslate(text, lang='en'):
-    translator = Translator()
-    trans = translator.translate(text, dest=lang)
-    result = {'language': iso639.to_name(trans.src), 'iso639': trans.src, 'text': trans.text}
-    return result
+    except:
+        result = {'language': 'English', 'iso639': 'en', 'text': text}
+        return result

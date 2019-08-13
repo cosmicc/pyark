@@ -16,7 +16,6 @@ from loguru import logger as log
 import signal
 from os import getpid, _exit
 from concurrent.futures._base import CancelledError
-from gtranslate import trans_to_eng
 
 
 __name__ = 'discordbot'
@@ -215,7 +214,7 @@ def pyarkbot():
                     for each in cbuff:
                         if each[0] == "generalchat":
                             msg = each[2]
-                            await serverchat.send(trans_to_eng(msg))
+                            await serverchat.send(msg)
                             # await asyncio.sleep(2)
 
                         elif each[0] == 'LOTTOSTART':
@@ -1022,6 +1021,7 @@ def pyarkbot():
 
         elif str(message.channel) == 'server-notifications':
             if message.content.lower().find('server has crashed! - restarting server') != -1:
+                generalchat = client.get_channel(int(generalchat_id))
                 inst = message.content.split(':')[0].split()[3].lower()
                 log.log('CRASH', f'{inst.upper()} Server has crashed at {Now(fmt="string", est=True)} EST')
                 dbupdate("UPDATE instances SET isup = 0, lastcrash = '%s', lastrestart = '%s' where name = '%s'" % (Now(fmt='dt'), str(Now(fmt='epoch')), inst))
