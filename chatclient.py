@@ -77,7 +77,7 @@ class ChatClient():
                 self.players.update({cplayer: ncolor})
             else:
                 ncolor = self.players[cplayer]
-            newline = '%s%s [%s] %s - %s%s' % (fg(ncolor), cdtf, cserver.title(), cplayer.title(), cmsg, fg(0))
+            newline = '%s%s [%s] %s: %s%s' % (fg(ncolor), cdtf, cserver.title(), cplayer.title(), cmsg, fg(0))
             if self.server == 'ALL':
                 if self.html:
                     self.messages.append(self.ansiconverter.convert(newline, full=False, ensure_trailing_newline=False))

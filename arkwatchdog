@@ -66,19 +66,19 @@ else:
     log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=longlogformat)
 
 # Json logging pyarklog.json
-log.add(sink=jsonlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat)
+log.add(sink=jsonlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat)
 # Color logging pyark.log
-log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=longlogformat)
+log.add(sink=colorlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=longlogformat)
 # Debug json logging debuglog.json
 if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
     if loglevel == 'DEBUG' or args.debug:
         lev = 10
     else:
         lev = 5
-    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=longlogformat, delay=True)
+    log.add(sink=jsondebugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=longlogformat, delay=True)
 
 # Error Logging crit.log
-log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True)
+log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True)
 
 
 def issharedmounted():

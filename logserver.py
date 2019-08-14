@@ -36,7 +36,7 @@ elif args.verbose == 1:
 else:
     log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=True)
 
-log.add(sink=log_file, level=20, enqueue=False, backtrace=True, diagnose=True, serialize=False, colorize=False)
+log.add(sink=log_file, level=20, buffering=1, enqueue=False, backtrace=True, diagnose=True, serialize=False, colorize=False)
 
 
 def checkconnections():
@@ -253,6 +253,7 @@ def processlogline(line, single=False):
 
                 else:
                     putqueue(data, client, single)
+            sleep(.01)
 
     except json.decoder.JSONDecodeError:
         log.error(f'DECODE ERROR: {repr(line)}')

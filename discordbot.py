@@ -73,9 +73,9 @@ def setlastannounce(atype, tstamp):
 
 
 def savediscordtodb(author):
-    didexists = dbquery("SELECT * FROM discordnames WHERE discordname = '%s'" % (str(author).strip("'"),), fetch='one')
+    didexists = dbquery("SELECT * FROM discordnames WHERE discordname = '%s'" % (str(author).replace("'", ""),), fetch='one')
     if not didexists:
-        dbupdate("INSERT INTO discordnames (discordname) VALUES ('%s')" % (str(author).strip("'"),))
+        dbupdate("INSERT INTO discordnames (discordname) VALUES ('%s')" % (str(author).replace("'", ""),))
 
 
 @log.catch

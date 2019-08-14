@@ -124,28 +124,28 @@ else:
     log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=longlogformat)
 
 # Json logging pyarklog.json
-log.add(sink=jsonlogfile, level=19, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat)
+log.add(sink=jsonlogfile, level=19, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat)
 # Color logging pyark.log
-log.add(sink=colorlogfile, level=20, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=longlogformat)
+log.add(sink=colorlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=longlogformat)
 # Debug json logging debuglog.json
 if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
     if loglevel == 'DEBUG' or args.debug:
         lev = 10
     else:
         lev = 5
-    log.add(sink=jsondebugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=shortlogformat, delay=True, filter=checkdebuglog)
-    log.add(sink=debugfile, level=lev, enqueue=True, backtrace=True, diagnose=True, serialize=False, colorize=True, format=longlogformat, delay=True)
+    log.add(sink=jsondebugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=shortlogformat, delay=True, filter=checkdebuglog)
+    log.add(sink=debugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=False, colorize=True, format=longlogformat, delay=True)
 
 # Points Logging points.log
-log.add(sink=pointsfile, level=22, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogpoints)
+log.add(sink=pointsfile, level=22, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogpoints)
 # Admin Logging admin.log
-log.add(sink=adminfile, level=19, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogadmin)
+log.add(sink=adminfile, level=19, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogadmin)
 # Crash Logging crash.log
-log.add(sink=crashlogfile, level=29, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogcrash)
+log.add(sink=crashlogfile, level=29, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogcrash)
 # Error Logging error.log
-log.add(sink=critlogfile, level=40, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True, filter=checkerrorlog)
+log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True, filter=checkerrorlog)
 # chat Logging error.log
-log.add(sink=chatlogfile, level=5, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=chatlogformat, delay=False, filter=checkchatlog)
+log.add(sink=chatlogfile, level=5, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=chatlogformat, delay=False, filter=checkchatlog)
 
 
 plock()
