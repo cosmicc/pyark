@@ -56,7 +56,7 @@ def ChatThread(sid):
         except:
             log.exception('ERROR!!')
         finally:
-            socketio.sleep(.2)
+            socketio.sleep(.01)
     log.debug(f'Closing down chat thread for {sid}')
 
 
@@ -79,7 +79,7 @@ def LogThread(sid):
         except:
             log.exception('ERROR!!')
         finally:
-            socketio.sleep(.2)
+            socketio.sleep(.01)
     log.debug(f'Closing down log thread for {sid}')
 
 

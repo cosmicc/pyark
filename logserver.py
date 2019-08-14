@@ -121,7 +121,7 @@ def clientloop(clientsocket, addr):
                     logline = thisqueue.get()
                     log.trace(f'got from queue: {logline}')
                     sendmsg(clientsocket, addr, logline)
-                sleep(.1)
+                sleep(.01)
                 sendmsg(clientsocket, addr, '##')
                 log.info(f'Non follow connection ended. Removing: {client["address"]}')
                 client_threads.pop(num)
@@ -145,7 +145,7 @@ def clientloop(clientsocket, addr):
             log.trace(f'got from queue: {logline.split("|")[2]}')
             sendmsg(clientsocket, addr, logline)
         else:
-            sleep(.1)
+            sleep(.01)
 
 
 def sendmsg(clientsocket, addr, logline):
