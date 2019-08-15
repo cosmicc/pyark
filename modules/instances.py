@@ -162,7 +162,7 @@ def getlastrestartreason(inst):
 
 def writechat(inst, whos, msg, tstamp):
     isindb = False
-    if whos != 'ALERT' or whos == '*Admin':
+    if whos != 'ALERT' or whos != '*Admin':
         isindb = getplayer(whos)
     if whos == "ALERT" or isindb or whos == '*Admin':
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %

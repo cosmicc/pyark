@@ -210,7 +210,7 @@ def pyarkbot():
                 cbuff = dbquery("SELECT * FROM chatbuffer")
                 if cbuff:
                     for each in cbuff:
-                        if each[0] == "generalchat":
+                        if each[0] == "ALERT":
                             msg = each[2]
                             await serverchat.send(msg)
                             # await asyncio.sleep(2)
@@ -264,7 +264,7 @@ def pyarkbot():
                                 await generalchat.send(embed=embed)
                                 await changelogchat.send(umsg)
                         else:
-                            if each[1] == "ALERT":
+                            if each[1] == "serverchat":
                                 msg = f'{each[3]} [{each[0].capitalize()}] {each[2]}'
                             else:
                                 msg = f'{each[3]} [{each[0].capitalize()}] {each[1].capitalize()} {each[2]}'

@@ -456,6 +456,15 @@ class Servers(Resource):
             nap.append(each[0])
         return {'servers': scnt, 'names': nap}
 
+@api.route('/serverchatlo')
+class ServerInfo(Resource):
+    # @api.doc(security='apikey')
+    # @token_required
+    @api.expect(serverquery)
+    @api.marshal_with(m_serverinfo)
+    def post(self):
+        sname = api.payload['servername']
+ 
 
 @api.route('/servers/info')
 class ServerInfo(Resource):

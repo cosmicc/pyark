@@ -17,7 +17,7 @@ from clusterevents import getcurrenteventtitle, iseventtime
 from ..models import User, Role
 from ..database import db
 from .. import socketio
-from modules.logclient import LogClient
+from modules.logclient import LogClient, loggerchat
 from chatclient import ChatClient
 import json
 import pandas as pd
@@ -848,11 +848,8 @@ def _pyarklog():
 
 
 @webui.context_processor
-def _loggerchat():
-    def loggerchat(chatline):
-        cmd = chatline.split(' ')[0][:1]
-        cmdremove = len(cmd) + 1
-        msg = chatline[:cmdremove]
-
+def _logchat():
+    def logchat(chatline):
+        loggerchat(chatline)
         return True
-    return dict(loggerchat=loggerchat)
+    return dict(logchat=logchat)

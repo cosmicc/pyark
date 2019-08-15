@@ -10,7 +10,7 @@
     var socket = io.connect('http://' + document.domain + ':' + location.port + '/logstream');
     $('textarea').empty()
     socket.on('logline', function(msg) {
-        console.log(msg.line);
+        //console.log(msg.line);
         $('#log').append(msg.line + '<br>');
         $('#logbox').scrollTop($('#logbox')[0].scrollHeight);
     });
@@ -22,16 +22,11 @@
     $('#localchat').keypress(function(e) {
     if (e.which == 13)
     {
-       var lc = $('#localchat').val();
-       var lcs = lc.split(" ")
-       var msg = ""
-       if (lcs[0][0] == "@") {
-        lcs.forEach(function (item, index) {
-        if (index != 0) { 
-        msg = msg + item + " "
-        }
-        });
-       console.log(msg)
+        var lc = $('#localchat').val();
+        $.post('/serverchatline', lc, function(data, status) {
+            console.log(`${data} and status ${status}`)
+            });
+            
 
        $('#chat').append('[' + lcs[0].substr(1) + '] Admin - ' + msg + '<br>')
        $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
@@ -60,7 +55,7 @@
              <div id="chat" class="chat">
              </div>
           </div>
-          <div class="chatinput">   
+          <div class="chatinput">  
              <input id="localchat" class="input" type="text" placeholder="@all">
           </div>   
        </div>

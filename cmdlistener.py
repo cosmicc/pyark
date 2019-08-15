@@ -641,7 +641,7 @@ def checkcommands(minst):
                                                 dto = dto - tzfix
                                             tstamp = dto.strftime('%m-%d %I:%M%p')
                                             writeglobal(minst, whoname, cmsg)
-                                            writechat('Global', whoname, cmsg, tstamp)
+                                            writechat('generalchat', whoname, cmsg, tstamp)
                                         except:
                                             log.exception('could not parse date from chat')
                                 else:
