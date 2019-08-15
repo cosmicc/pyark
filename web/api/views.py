@@ -388,24 +388,8 @@ def token_required(f):
     return decorated
 
 
-@webapi.route('/admin/broadcast')
-class Broadcast(Resource):
-    @api.doc(security='apikey')
-    @token_required
-    def post(self):
-        pass
-
-
 @webapi.route('/admin/servermessage')
 class Message(Resource):
-    @api.doc(security='apikey')
-    @token_required
-    def post(self):
-        pass
-
-
-@webapi.route('/admin/playermessage')
-class DirectMessage(Resource):
     @api.doc(security='apikey')
     @token_required
     def post(self):

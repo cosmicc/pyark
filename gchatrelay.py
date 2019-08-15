@@ -1,9 +1,12 @@
 from modules.dbhelper import dbupdate, db_getall
 from modules.players import getplayer
 from modules.timehelper import Now
+from cmdlistener import writechatlog
 from time import sleep
 from loguru import logger as log
 import subprocess
+
+# globalbuffer (chat TO servers)
 
 
 @log.catch
@@ -17,19 +20,25 @@ def gchatrelay(inst):
                         msg['server'] == 'ALL'
 
                     if msg['server'] == 'ALL' or msg['server'].lower() == inst and float(msg['timestamp']) > Now() - 3:
-                        if msg['name'] == 'ALERT' and not msg['private'] and not msg['broadcast']:
-                            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg['message'], inst), shell=True)
-                        elif msg['broadcast']:
-                            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg['message'], inst), shell=True)
-                        elif msg['private']:
+                        if not msg['private'] and not msg['broadcast']:
+                            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (f"Admin: {msg['message']}", inst), shell=True)
+                            log.log('CHAT', f'{inst} | ADMIN | {msg["message"]}')
+                            writechatlog(inst, 'ADMIN', msg['message'], Now())
+
+                        elif msg['broadcast'] and not msg['private']:
+                            subprocess.run('arkmanager rconcmd "Broadcast %s" @%s' % (msg['message'], inst), shell=True)
+                            log.log('CHAT', f'{inst} | BROADCAST | {msg["message"]}')
+                            writechatlog(inst, 'BROADCAST', msg['message'], Now())
+
+                        elif msg['private'] and not msg['broadcast']:
                             cplayer = getplayer(playername=msg['name'], fmt='dict')
                             if cplayer:
                                 if cplayer['server'] == inst:
-                                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" Private: %s' @%s""" % (cplayer['steamid'], msg['message'], inst), shell=True)
+                                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" AdminPrivate: %s' @%s""" % (cplayer['steamid'], msg['message'], inst), shell=True)
 
-                    elif msg['server'] != inst and msg['name'] != 'ALERT' and float(msg['timestamp']) > Now() - 3:
-                        log.trace(f'Server chat: msg["server"].capitalize() - msg["name"].title() -  msg["message"]')
-                        subprocess.run('arkmanager rconcmd "ServerChat %s@%s: %s" @%s' % (msg['name'].title(), msg['server'].capitalize(), msg['message'], inst), shell=True)
+                    #elif msg['server'] != inst and msg['name'] != 'ALERT' and float(msg['timestamp']) > Now() - 3:
+                    #    log.trace(f'Server chat: msg["server"].capitalize() - msg["name"].title() -  msg["message"]')
+                    #    subprocess.run('arkmanager rconcmd "ServerChat %s@%s: %s" @%s' % (msg['name'].title(), msg['server'].capitalize(), msg['message'], inst), shell=True)
 
                     if float(msg['timestamp']) < Now() - 10:
                         log.trace('clearing globalbuffer table')

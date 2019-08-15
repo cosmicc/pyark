@@ -78,7 +78,6 @@ def savediscordtodb(author):
         dbupdate("INSERT INTO discordnames (discordname) VALUES ('%s')" % (str(author).replace("'", ""),))
 
 
-@log.catch
 def pyarkbot():
     global generalchat
     global serverchat
@@ -102,7 +101,7 @@ def pyarkbot():
 
     @client.event
     async def on_ready():
-        log.log('START', f'Discord logged in as {client.user.name} id {client.user.id}')
+        log.log('SUCCESS', f'Discord logged in as {client.user.name} id {client.user.id}')
         activity = discord.Game(name="!help")
         try:
             await client.change_presence(status=discord.Status.online, activity=activity)
@@ -200,7 +199,6 @@ def pyarkbot():
                 log.exception('error in task checker!')
                 await asyncio.sleep(10)
 
-    @log.catch
     async def chatbuffer():
         await client.wait_until_ready()
         await asyncio.sleep(5)

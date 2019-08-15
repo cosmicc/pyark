@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, time, date
 from flask import render_template, Response, request, redirect, url_for, flash, Blueprint
 from flask_security import login_required, logout_user, current_user, roles_required, RegisterForm, SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
-from time import sleep
 from flask_wtf import FlaskForm
 from itertools import chain, zip_longest
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
@@ -39,7 +38,7 @@ class ExtendedRegisterForm(RegisterForm):
 
 def ChatThread(sid):
     log.debug(f'Starting chat thread for {sid}')
-    chatwatch = ChatClient('ALL', 20, True)
+    chatwatch = ChatClient('ALL', 30, True)
     chatwatch.start()
     while True:
         stillrun = False
@@ -56,7 +55,7 @@ def ChatThread(sid):
         except:
             log.exception('ERROR!!')
         finally:
-            socketio.sleep(.01)
+            socketio.sleep(.03)
     log.debug(f'Closing down chat thread for {sid}')
 
 
@@ -79,7 +78,7 @@ def LogThread(sid):
         except:
             log.exception('ERROR!!')
         finally:
-            socketio.sleep(.01)
+            socketio.sleep(.03)
     log.debug(f'Closing down log thread for {sid}')
 
 
@@ -98,22 +97,6 @@ class MessageForm(FlaskForm):
 
 
 @log.catch
-def follow(stream):
-    line = ''
-    try:
-        for block in iter(lambda: stream.read(1024), None):
-            if '\n' in block:
-                for line in (line + block).splitlines(True) + ['']:
-                    if line.endswith('\n'):
-                        yield line.strip()
-            elif not block:
-                # Wait for data.
-                sleep(1.0)
-    except KeyboardInterrupt:
-        print('Exited.')
-
-
-@log.catch
 def processlogline(line):
     try:
             line = line.strip('\x00')
@@ -123,75 +106,23 @@ def processlogline(line):
         print(f'{repr(line)}')
 
 
-def watchlog(dlog):
-    if dlog is False:
-        logpath = f'/home/ark/shared/logs/pyark/pyarklog.json'
-    elif dlog is True:
-        logpath = f'/home/ark/shared/logs/pyark/debuglog.json'
-
-
-@log.catch
-def getpyarklog():
-    logfi = open('/home/ark/shared/logs/pyark/pyark.log', 'r')
-    reslt = []
-    clrs = []
-    count = 0
-    for each in reversed(list(logfi)):
-        if each.find('[CRITICAL]') != -1:
-            ar = 'has-text-danger'
-        elif each.find('[ERROR]') != -1:
-            ar = 'has-text-danger'
-        elif each.find('[WARNING]') != -1:
-            ar = f'has-text-warning'
-        elif each.find('[INFO]') != -1 or each.find('[DEBUG]'):
-            if each.find('vote') != -1:
-                ar = 'has-text-light'
-            elif each.find('maintenance') != -1:
-                ar = 'has-text-info'
-            elif each.find('arkupdater') != -1:
-                ar = 'has-text-white'
-            elif each.find('lottery') != -1:
-                ar = 'has-text-grey'
-            elif each.find('points') != -1:
-                ar = 'has-text-success'
-            elif each.find('-restart') != -1:
-                ar = 'has-text-white'
-            elif each.find('new player') != -1:
-                ar = 'has-text-warning'
-            elif each.find('left the server') != -1:
-                ar = 'has-text-link'
-            elif each.find('link') != -1:
-                ar = 'has-test-success'
-            elif each.find('has joined') != -1 or each.find('transferred') != -1:
-                ar = 'has-text-success'
-            elif each.find('responding') != -1:
-                ar = 'has-test-success'
-            elif each.find('notifying') != -1:
-                ar = 'has-text-success'
-            else:
-                ar = 'has-text-grey-lighter'
-        if count <= 100:
-            clrs.append(f"{ar}")
-            reslt.append(f"{each.strip()}")
-            count += 1
-    return clrs, reslt
-
-
 @log.catch
 @socketio.on('connect', namespace='/logstream')
 def connect():
     global logclients
-    log.debug(f'####### Logstream started: {request.sid}')
+    log.debug(f'Logstream started for: {request.sid}')
     logthreads.append(request.sid)
-    socketio.start_background_task(target=LogThread, sid=request.sid)
+    socketio.sleep(.1)
     socketio.start_background_task(target=ChatThread, sid=request.sid)
+    socketio.sleep(.5)
+    socketio.start_background_task(target=LogThread, sid=request.sid)
 
 
 @log.catch
 @socketio.on('disconnect', namespace='/logstream')
 def disconnect():
     global logclients
-    log.debug(f'####### Logstream ended: {request.sid}')
+    log.debug(f'Logstream ended for: {request.sid}')
     logthreads.remove(request.sid)
 
 
@@ -598,23 +529,6 @@ def _getlog():
     return dict(ui_getlog=ui_getlog)
 
 
-@webui.route('/WBUI-standard.json')
-def WBUI_standard():
-    with open('/home/ark/shared/config/WBUI-standard.json') as json_file:
-        rdata = json.load(json_file)
-    data = json.dumps(rdata)
-    return Response(data)
-
-
-@webui.route('/WBUI-coliseum.json')
-def WBUI_alt():
-    with open('/home/ark/shared/config/WBUI-coliseum.json') as json_file:
-        rdata = json.load(json_file)
-    data = json.dumps(rdata)
-    return Response(data)
-
-
-
 @webui.route('/manifest.json')
 def manifest():
     data = json.dumps({
@@ -931,3 +845,14 @@ def _chatlog(instance):
 @login_required
 def _pyarklog():
     return render_template('pyarklog.html')
+
+
+@webui.context_processor
+def _loggerchat():
+    def loggerchat(chatline):
+        cmd = chatline.split(' ')[0][:1]
+        cmdremove = len(cmd) + 1
+        msg = chatline[:cmdremove]
+
+        return True
+    return dict(loggerchat=loggerchat)

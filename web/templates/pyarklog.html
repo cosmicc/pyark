@@ -10,7 +10,7 @@
     var socket = io.connect('http://' + document.domain + ':' + location.port + '/logstream');
     $('textarea').empty()
     socket.on('logline', function(msg) {
-        //console.log("log line:" + msg.line);
+        console.log(msg.line);
         $('#log').append(msg.line + '<br>');
         $('#logbox').scrollTop($('#logbox')[0].scrollHeight);
     });

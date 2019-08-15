@@ -18,7 +18,7 @@ config.read(configfile)
 
 hstname = gethostname().upper()
 
-shortlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level><fg 248>|</fg 248><level>{extra[hostname]:>5}</level><fg 248>|</fg 248><level>{level:<7}</level><fg 248>|</fg 248> <level>{message}</level>'
+shortlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level><fg 248>|</fg 248><level>{extra[hostname]: >5}</level><fg 248>|</fg 248><level>{level: <7}</level><fg 248>|</fg 248> <level>{message}</level>'
 
 simplelogformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
 
