@@ -1,0 +1,12 @@
+#!/usr/bin/python3.6
+
+from modules.logclient import loggerchat
+import argparse
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('chatline', action='store', nargs='*', help='#,@,! @all this is a message')
+    args = parser.parse_args()
+    # print(' '.join(args.chatline))
+    loggerchat(''.join(args.chatline))

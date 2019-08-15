@@ -17,7 +17,7 @@ from clusterevents import getcurrenteventtitle, iseventtime
 from ..models import User, Role
 from ..database import db
 from .. import socketio
-from logclient import LogClient
+from modules.logclient import LogClient
 from chatclient import ChatClient
 import json
 import pandas as pd

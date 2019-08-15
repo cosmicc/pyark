@@ -17,7 +17,7 @@ from statcollector import oscollect
 import sys
 from time import sleep
 from web import create_app
-from webserver import webserv
+from modules.webserver import webserv
 from os import stat, _exit
 import argparse
 from loguru import logger as log

@@ -1,13 +1,26 @@
-#!/usr/bin/env python3.6
-
 import socket
 from loguru import logger as log
 from datetime import datetime
 from time import sleep
-import argparse
 from os import _exit
-import sys
 from ansi2html import Ansi2HTMLConverter
+
+
+def loggerchat(chatline):
+    from modules.instances import serverchat
+    cmd = chatline.split(' ')[0][:1].strip()
+    who = chatline.split(' ')[0][1:].strip().lower()
+    cmdremove = len(who) + 1
+    msg = chatline[cmdremove:].strip()
+    if (cmd == '@' and who == 'all') or (cmd == '#' and who == 'all'):
+        serverchat(msg, inst='ALL', whosent='Admin', private=False, broadcast=False)
+    elif cmd == '#':
+        serverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False)
+    elif cmd == '@':
+        
+        serverchat(msg, inst='ALL', whosent=who, private=True, broadcast=False)
+    elif cmd == '!':
+        serverchat(msg, inst=who, whosent='Admin', private=False, broadcast=True)
 
 
 class LogClient():
@@ -130,65 +143,3 @@ class LogClient():
             _exit(0)
         except:
             log.exception('FUCK!')
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('lines', action='store', help='number of lines in log history to show')
-    parser.add_argument('-v', '--verbose', action='store_true', help='verbose (client debug)')
-    parser.add_argument('--html', action='store_true', help='html output')
-    parser.add_argument('-s', '--server', action='store', default='ALL', help='show only this log type')
-    parser.add_argument('-d', '--debug', action='store_true', help='show debug log')
-    parser.add_argument('-t', '--trace', action='store_true', help='show trace log')
-    parser.add_argument('-e', '--extend', action='store_true', help='show extended info lines')
-    parser.add_argument('--showonly', action='store', default='ALL', help='show only this log type')
-    parser.add_argument('-nf', '--nofollow', action='store_false', help='dont follow continuous log')
-    parser.add_argument('-ra', '--noadmin', action='store_false', help='remove admin entries')
-    parser.add_argument('-rs', '--startexit', action='store_false', help='remove start/exit entries')
-    parser.add_argument('-rc', '--commands', action='store_false', help='remove command entries')
-    parser.add_argument('-rv', '--votes', action='store_false', help='remove vote entries')
-    parser.add_argument('-rj', '--joinleave', action='store_false', help='remove join/leave entries')
-
-    args = parser.parse_args()
-
-    simplelogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level> | <level>LOGGR</level> | <level>{level: <7}</level> | <level>{message}</level>'
-
-    log.remove()
-    llevel = 'DEBUG' if args.verbose else 'INFO'
-    log.add(sys.stderr, level=llevel, format=simplelogformat)
-
-    argsdebug = 1 if args.debug else 0
-    argstrace = 1 if args.trace else 0
-    argsextend = 1 if args.extend else 0
-    argsstartexit = 1 if args.startexit else 0
-    argscommands = 1 if args.commands else 0
-    argsvotes = 1 if args.votes else 0
-    argsjoinleave = 1 if args.joinleave else 0
-    argsfollow = 1 if args.nofollow else 0
-    argsadmin = 1 if args.noadmin else 0
-
-    if args.showonly != 'ALL':
-        argsshowonly = f'{args.showonly:<8}!'
-    else:
-        argsshowonly = f'ALL     !'
-    if args.server != 'ALL':
-        argsserver = f'{args.server:<5}'
-    else:
-        argsserver = f'ALL   '
-    logwatch = LogClient(args.lines, argsdebug, argstrace, argsextend, argsstartexit, argscommands, argsvotes, argsjoinleave, argsfollow, argsadmin, argsshowonly, argsserver, args.html)
-    # logwatch.connect()
-    logwatch.connect()
-    while True:
-        try:
-            lline = logwatch.getline()
-            if lline is not None:
-                print(lline)
-        except KeyboardInterrupt:
-            logwatch.close()
-            _exit(0)
-        else:
-            sleep(.05)
-
-
-if __name__ == '__main__':
-    main()

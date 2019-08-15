@@ -65,7 +65,7 @@ def newplayer(steamid, inst):
         pplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
         if not pplayer[23]:
             dbupdate("UPDATE players SET welcomeannounce = True WHERE steamid = '%s'" % (steamid,))
-            log.info(f'Sending welcome message to [{pplayer[1].title()}] on [{inst.title()}]')
+            log.debug(f'Sending welcome message to [{pplayer[1].title()}] on [{inst.title()}]')
             sleep(3)
             mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
