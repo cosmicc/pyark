@@ -38,8 +38,9 @@ def gchatrelay(inst):
                             if cplayer:
                                 if cplayer['server'] == inst:
                                     log.log('CHAT', f'{inst} | ADMINPRIVATE | {msg["message"]}')
-                                    writechatlog(inst, 'ADMIN', msg['message'], Now())
+                                    writechatlog(inst, f'Admin to {cplayer["playername"].title()}', msg['message'], Now())
                                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" AdminPrivate: %s' @%s""" % (cplayer['steamid'], msg['message'], inst), shell=True)
+                                    log.log('CHAT', f'{inst} | Admin_to_{cplayer["playername"].title()} | {msg["message"]}')
 
                     # elif msg['server'] != inst and msg['name'] != 'ALERT' and float(msg['timestamp']) > Now() - 3:
                     #    log.trace(f'Server chat: msg["server"].capitalize() - msg["name"].title() -  msg["message"]')
