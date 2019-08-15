@@ -1,3 +1,4 @@
+from modules.instances import serverchat
 
 
 def loggerchat(chatline):
@@ -8,12 +9,11 @@ def loggerchat(chatline):
     if (cmd == '@' and who == 'all') or (cmd == '#' and who == 'all'):
         serverchat(msg, inst='ALL', whosent='Admin', private=False, broadcast=False)
     elif cmd == '#':
-        serverchat(private=False, broadcast=False)
+        serverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False)
     elif cmd == '@':
-        serverchat(private=True, broadcast=False)
+        serverchat(msg, inst='ALL', whosent=who, private=True, broadcast=False)
     elif cmd == '!':
-        serverchat(private=False, broadcast=True)
-    print(f'cmd: {cmd}  who: {who}  msg: {msg}')
+        serverchat(msg, inst=who, whosent='Admin', private=False, broadcast=True)
 
-loggerchat('@ragnarok this is some bullshit')
 
+loggerchat('@admin hi')
