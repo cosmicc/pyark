@@ -178,8 +178,11 @@ def checkpyark():
             else:
                 log.critical(f'Pyark PID [{pyarkpid}] is NOT the pyark process')
         else:
-            log.critical(f'Pyark process [{pyarkpid}] is not running. Restarting.')
+            log.error(f'Pyark process [{pyarkpid}] is not running. Restarting.')
             os.system('systemctl restart pyark')
+    except FileNotFoundError:
+        log.error(f'Pyark process [{pyarkpid}] is not running. Restarting.')
+        os.system('systemctl restart pyark')
     except:
         log.exception('checkpyark error')
 

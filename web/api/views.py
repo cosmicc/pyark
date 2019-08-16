@@ -6,18 +6,12 @@ from functools import wraps
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import estshift, elapsedTime, playedTime, Now
 from modules.configreader import apilogfile
+from modules.logclient import loggerchat
 from numpy import mean
 from secrets import token_urlsafe
 import time
-import logging
+from loguru import logger as log
 
-apilog = logging.getLogger('werkzeug')
-log_format = logging.Formatter('%(asctime)s:[%(levelname)s]:%(message)s')
-log_file = logging.FileHandler(apilogfile)
-log_file.setLevel(logging.DEBUG)
-log_file.setFormatter(log_format)
-apilog.addHandler(log_file)
-# app.logger.addHandler(log_file)
 
 authorizations = {
     'apikey': {
@@ -34,6 +28,7 @@ api = Api(webapi, title='Galaxy Cluster RestAPI', version='1.0', doc='/', author
 playerquery = api.model('PlayerQuery', {'playername': fields.String('Player Name'), 'steamid': fields.Integer('Steam ID')})
 lotteryquery = api.model('LottoQuery', {'buyinpoints': fields.Integer('Buy-in Points'), 'length': fields.Integer('Length in Hours')})
 serverquery = api.model('ServerQuery', {'servername': fields.String('Server Name')})
+chatline = api.model('ChatLine', {'chatline': fields.String('chatline')})
 
 
 def generatetoken():
@@ -279,6 +274,10 @@ def whenlastplayerall():
         return 'Now'
 
 
+m_chatline = api.model('chatline', {
+    'chatline': fields.String,
+})
+
 m_serverinfo = api.model('serverinfo', {
     'hostname': fields.String,
     'instance': fields.String(attribute='name'),
@@ -456,15 +455,13 @@ class Servers(Resource):
             nap.append(each[0])
         return {'servers': scnt, 'names': nap}
 
-@api.route('/serverchatlo')
-class ServerInfo(Resource):
-    # @api.doc(security='apikey')
-    # @token_required
-    @api.expect(serverquery)
-    @api.marshal_with(m_serverinfo)
+
+@api.route('/serverchat')
+@api.doc(params={'chatline': 'string'})
+class fuckoff(Resource):
     def post(self):
-        sname = api.payload['servername']
- 
+        return request.args.get('chatline')
+
 
 @api.route('/servers/info')
 class ServerInfo(Resource):

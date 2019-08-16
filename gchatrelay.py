@@ -27,7 +27,7 @@ def gchatrelay(inst):
                             subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (f"Admin: {msg['message']}", inst), shell=True)
                             log.log('CHAT', f'{inst} | ADMIN | {msg["message"]}')
                             writechatlog(inst, 'ADMIN', msg['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
-                            writechat(inst, '*Admin', msg['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
+                            writechat(inst, 'Admin', msg['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
 
                         elif msg['broadcast'] and not msg['private'] and not Now() - float(msg['timestamp']) > 3:
                             subprocess.run('arkmanager rconcmd "Broadcast %s" @%s' % (msg['message'], inst), shell=True)

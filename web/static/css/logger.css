@@ -1,12 +1,16 @@
 body { background-color: #242424; color: #AAAAAA; font-family: 'Source Code Pro', monospace; overflow: auto; } 
 html { background-color: #242424; margin: auto; max-width: 1200px; }
-@media screen and (max-width: 800px) { .log { font-size: 12px; height: 14px } .chat { font-size: 12px; height: 16px } } 
-@media screen and (min-width: 800px) { .log { font-size: 16px; height: 18px } .chat { font-size: 16px; height: 18px } }
-@media screen and (max-height: 600px) { .logbox { height: 250px; } .chatbox { height: 75px;  } }
+@media screen and (max-width: 800px) { .log { font-size: 12px; height: 14px } .chat { font-size: 12px; height: 16px } .dashboard { display: none; } } 
+@media screen and (min-width: 800px) { .log { font-size: 16px; height: 18px } .chat { font-size: 16px; height: 18px } .toplevel { margin: 20px  } }
+@media screen and (max-height: 600px) { .logbox { height: 250px; } .chatbox { height: 75px; } .dashboard { display: none; } }
 @media screen and (min-height: 600px) { .logbox { height: 350px; } .chatbox { height: 150px;  } }
+.has-background-danger { background-color: #ff3860 } 
+.has-background-warning { background-color: #ffdd57 }
+.has-background-info { background-color: #209cee }
+.has-background-success { background-color: #23d160 }
 .ansi2html-content { display: inline; white-space: pre-wrap; word-wrap: break-word; }
-.toplevel { align: auto; max-width: 98%; }
-.dashboard { background-color: #000000; text-align: center; height: 60px; width: 100%; border: 1px solid #999; }
+.toplevel { align: auto; max-width: 100%; }
+.dashboard { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; background-color: #000000; height: 60px; width: 100%; border: 1px solid #999; }
 .log { white-space: pre-wrap; }
 .chat { white-space: pre-wrap; }
 .logbox { background-color: #000000; text-align: left; width: 100%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
@@ -14,6 +18,10 @@ html { background-color: #242424; margin: auto; max-width: 1200px; }
 .chatinput { background-color: #000000; text-align: left; height: 18px; width: 100%; border: 0px; }
 .chatinput > .input { background-color: #000000; color: #EEEEEE; height: 18px; margin-left: 5px; align: left; width: 100%; border: 0px; }
 .chatcombined { text-align: center; width: 100%; border: 1px solid #999; }
+.onlineplayers { height: 55px; width: 80px; padding-bottom: 0px; text-align: center; font-size: 40px; font-weight: normal; color: #FFFFFF; }
+.playercounts { height: 60px; width: 100px; padding-right: 5px; text-align: right; font-size: 16px; font-weight: normal; color: #FFFFFF; }
+.servers { font-size: 12px; font-weight: normal; color: #FFFFFF }
+.serverbutton { text-align: center; padding: 8px 0px; margin: 5px; display: inline-block; font-size: 16px; height: 35px; width: 150px; border: 1px solid #EEE; border-radius: 10px; text-decoration: none; }
 .body_foreground > .bold,.bold > .body_foreground, body.body_foreground > pre > .bold { color: #FFFFFF; font-weight: normal; }
 .inv_foreground { color: #000000; }
 .inv_background { background-color: #AAAAAA; }

@@ -99,9 +99,9 @@ class MessageForm(FlaskForm):
 @log.catch
 def processlogline(line):
     try:
-            line = line.strip('\x00')
-            data = json.loads(line.strip(), strict=False)
-            print(f'{data["text"].strip()}')
+        line = line.strip('\x00')
+        data = json.loads(line.strip(), strict=False)
+        print(f'{data["text"].strip()}')
     except json.decoder.JSONDecodeError:
         print(f'{repr(line)}')
 
@@ -403,7 +403,7 @@ def _statpull():
         if inst == 'all':
             statavglist = []
             for each in instancelist():
-                #print('processing instance: {}'.format(each))
+                # print('processing instance: {}'.format(each))
                 statlist = []
                 navglist = []
                 datelist = []
@@ -450,10 +450,32 @@ def _playerlastactive():
 
 
 @webui.context_processor
+def _getdailyplayercount():
+    def ui_getdailyplayercount():
+        return len(getactiveplayers(Secs['day']))
+    return dict(ui_getdailyplayercount=ui_getdailyplayercount)
+
+
+@webui.context_processor
+def _getweeklyplayercount():
+    def ui_getweeklyplayercount():
+        return len(getactiveplayers(Secs['week']))
+    return dict(ui_getweeklyplayercount=ui_getweeklyplayercount)
+
+
+@webui.context_processor
+def _getmonthlyplayercount():
+    def ui_getmonthlyplayercount():
+        return len(getactiveplayers(Secs['month']))
+    return dict(ui_getmonthlyplayercount=ui_getmonthlyplayercount)
+
+
+@webui.context_processor
 def _getannouncement():
     def ui_getannouncement():
         return dbquery("SELECT announce FROM general ", fmt='string', fetch='one')
     return dict(ui_getannouncement=ui_getannouncement)
+
 
 @webui.context_processor
 def _currenteventtitle():
@@ -513,7 +535,7 @@ def getcurrentevent():
 
 
 def getfutureevent():
-    return dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime > '%s' OR starttime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'),Now(fmt='dtd')), fmt='dict', fetch='one')
+    return dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime > '%s' OR starttime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fmt='dict', fetch='one')
 
 
 def startthelottery(buyin, length):
@@ -611,6 +633,7 @@ def startlottery():
         flash(u'New Lottery has been Started', 'info')
         return redirect(url_for('webui._lottery'))
     return render_template('startlottery.html', form=form)
+
 
 @webui.route('/startevent', methods=['POST', 'GET'])
 @login_required
@@ -844,7 +867,7 @@ def _chatlog(instance):
 @webui.route('/pyarklog')
 @login_required
 def _pyarklog():
-    return render_template('pyarklog.html')
+    return render_template('pyarklog.html', instances=instancelist())
 
 
 @webui.context_processor
