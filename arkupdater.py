@@ -475,8 +475,13 @@ def checkifalreadyrestarting(inst):
     ded = lastwipe[0]
     if ded == "True":
         if not isrebooting(inst):
+            nrbt = False
             log.debug(f'restart flag set for instance {inst}, starting restart loop')
-            restartloop(inst)
+            if os.path.isfile('/var/run/reboot-required'):
+                nrbt = True
+                log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
+
+                restartloop(inst, nrbt)
 
 
 def checkupdates():
