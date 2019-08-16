@@ -480,8 +480,10 @@ def checkifalreadyrestarting(inst):
             if os.path.isfile('/var/run/reboot-required'):
                 nrbt = True
                 log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
-
-                restartloop(inst, nrbt)
+                for each in range(numinstances):
+                    if instance[each]['name'] == inst:
+                        instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, nrbt))
+                        instance[each]['restartthread'].start()
 
 
 def checkupdates():
