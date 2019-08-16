@@ -471,6 +471,7 @@ def checkifenabled(inst):
 
 
 def checkifalreadyrestarting(inst):
+    global instance
     lastwipe = dbquery("SELECT needsrestart FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
     ded = lastwipe[0]
     if ded == "True":
@@ -480,10 +481,10 @@ def checkifalreadyrestarting(inst):
             if os.path.isfile('/var/run/reboot-required'):
                 nrbt = True
                 log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
-                for each in range(numinstances):
-                    if instance[each]['name'] == inst:
-                        instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, nrbt))
-                        instance[each]['restartthread'].start()
+            for each in range(numinstances):
+                if instance[each]['name'] == inst:
+                    instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, nrbt))
+                    instance[each]['restartthread'].start()
 
 
 def checkupdates():
