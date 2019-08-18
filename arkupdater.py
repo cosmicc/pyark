@@ -100,12 +100,17 @@ def playerrestartbit(inst):
     dbupdate("UPDATE players SET restartbit = 1 WHERE server = '%s'" % (inst, ))
 
 
-def wipeit(inst):
+def wipeit(inst, extra=False):
     checkdirs(inst)
+    if extra:
+        subprocess.run('arkmanager rconcmd "ScriptCommand MatingOff_DS" @%s' % (inst,), shell=True)
+        sleep(3)
+        subprocess.run('arkmanager rconcmd "ScriptCommand DestroyUnclaimed_DS" @%s' % (inst,), shell=True)
+        sleep(3)
     resetlastwipe(inst)
     subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-    # sleep(3)
-    # subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    sleep(3)
+    subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
@@ -162,6 +167,8 @@ def stillneedsrestart(inst):
 
 def restartinstnow(inst, reboot):
     checkdirs(inst)
+    wipeit(inst, extra=True)
+    sleep(5)
     subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
     dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
@@ -207,8 +214,7 @@ def restartloop(inst, reboot):
             setrestartbit(inst)
             if timeleft == 30:
                 log.log('UPDATE', f'Starting 30 min restart countdown for [{inst.title()}] for a [{reason}]')
-                writechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}',
-                          wcstamp())
+                writechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}', wcstamp())
             else:
                 log.log('UPDATE', f'Resuming {timeleft} min retart countdown for [{inst.title()}] for a [{reason}]')
             gotime = False
@@ -480,7 +486,6 @@ def checkifalreadyrestarting(inst):
             log.debug(f'restart flag set for instance {inst}, starting restart loop')
             if os.path.isfile('/var/run/reboot-required'):
                 nrbt = True
-                log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
             for each in range(numinstances):
                 if instance[each]['name'] == inst:
                     instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, nrbt))

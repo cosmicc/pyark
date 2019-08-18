@@ -460,7 +460,8 @@ class Servers(Resource):
 @api.doc(params={'chatline': 'string'})
 class fuckoff(Resource):
     def post(self):
-        return request.args.get('chatline')
+        loggerchat(request.form['chatline'])
+        return request.form['chatline']
 
 
 @api.route('/servers/info')

@@ -5,47 +5,40 @@
 <script>
     var pageLoader = setInterval(function(){
             $("#dashboard").load(" #dashboard");
-            starttimer();
         }, 30000);
 </script>
 <script>
     $(document).ready(function(){
-    //connect to the socket server.
-    var socket = io.connect('http://' + document.domain + ':' + location.port + '/logstream');
-    $('textarea').empty()
-    socket.on('logline', function(msg) {
-        //console.log(msg.line);
-        $('#log').append(msg.line + '<br>');
-        $('#logbox').scrollTop($('#logbox')[0].scrollHeight);
-    });
-    socket.on('chatline', function(msg) {
-        //console.log("log line:" + msg.line);
-        $('#chat').append(msg.line + '<br>');
-        $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
-    });
-    $('#localchat').keypress(function(e) {
-    if (e.which == 13)
-    {
-        var lc = $('#localchat').val();
-        $('#localchat').val("");
-        console.log(lc)
-        var lcjson = new Object();
-        lcjson.chatline = lc
-        var jsonstring = JSON.stringify(lcjson)
-        $.post('/api/serverchat', lcjson, function(data, status) {
-               console.log(`${data} and status ${status}`)
-               }) 
-     }       
-});
-
-});
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/logstream');
+        $('textarea').empty()
+            socket.on('logline', function(msg) {
+            $('#log').append(msg.line + '<br>');
+            $('#logbox').scrollTop($('#logbox')[0].scrollHeight);
+            });
+        socket.on('chatline', function(msg) {
+            $('#chat').append(msg.line + '<br>');
+            $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
+            });
+        $('#localchat').keypress(function(e) {
+            if (e.which == 13) {
+                var lc = $('#localchat').val();
+                $('#localchat').val("");
+                $.post("/api/serverchat", 
+                    { chatline: lc }, 
+                    function(data, status) {
+                        console.log(`${data} msg sent ${status}`)
+                    });
+                }});
+        });
 </script>
 
     {% if current_user.has_role('admin') %}
     <body>
+<div id="vtop" class="vtop">    
     <div id="toplevel" class="toplevel">
         <div id="dashboard" class="dashboard">
-            <div id="playercounts" class="playercounts"></div>
+            <div id="onlineplayers" class="onlineplayers"><button class="opbutton">{{ui_getplayersonline('all', 'count')}}</button></div>
+        <div id="pad" class="pad"></div>
             <div id="servers" class="servers">
                  {% for instance in instances %}
                  {% if not ui_isinstanceup(instance) %}
@@ -59,8 +52,12 @@
                 {% endif %}
                 {% endfor %}
             </div>    
-            <div id="onlineplayers" class="onlineplayers">{{ui_getplayersonline('all', 'count')}}</div>
+            <div id="lottoevents" class="lottoevents">
+            <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; text-decoration: none;"><button class="lebutton has-background-success" style="color: #FFFFFF">{{ ui_getlotteryplayers(fmt='count') }}</button></a>
+            <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; text-decoration: none;"><button class="lebutton has-background-success" style="color: #FFFFFF"></button></a> 
+            </div>
             <div id="playercounts" class="playercounts">{{ ui_getdailyplayercount() }}<br>{{ ui_getweeklyplayercount() }}<br>{{ ui_getmonthlyplayercount() }}</div>
+
         </div>
     <br>
        <div id="logbox" class="logbox">
@@ -78,5 +75,6 @@
           </div>   
        </div>
     </div>
+</div>    
     </body>
     {% endif %}

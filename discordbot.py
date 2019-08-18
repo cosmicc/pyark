@@ -590,7 +590,7 @@ def pyarkbot():
                 log.info(f'decay request from {whofor} public only, no account linked')
                 msg = msg + f'Your discord account is not linked, I cannot determine your decay time left.'
             else:
-                log.info(f'decay request from {whofor} accepted, showing detailed info')
+                log.debug(f'decay request from {whofor} accepted, showing detailed info')
                 msg = msg + f'Assuming you were in render range and no other tribe members on, decay time left since last online for **{kuser[1].capitalize()}**:\n'
                 woodtime = 1310400
                 stonetime = 1969200

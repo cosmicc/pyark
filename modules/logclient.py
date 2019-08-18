@@ -1,5 +1,6 @@
 import socket
 from loguru import logger as log
+from modules.instances import instancelist
 from datetime import datetime
 from time import sleep
 from os import _exit
@@ -17,8 +18,10 @@ def loggerchat(chatline):
     elif cmd == '#':
         serverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False)
     elif cmd == '@':
-        
-        serverchat(msg, inst='ALL', whosent=who, private=True, broadcast=False)
+        if who in instancelist():
+            serverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False)
+        else:
+            serverchat(msg, inst='ALL', whosent=who, private=True, broadcast=False)
     elif cmd == '!':
         serverchat(msg, inst=who, whosent='Admin', private=False, broadcast=True)
 
