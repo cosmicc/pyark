@@ -22,7 +22,7 @@
                             <select name="player" onchange="javascript: if(this.value != '0') this.form.submit();">
                             <option value="">Select Player</option>
                             {% for player in players %}
-                            <option value="{{ player }}">{{ player.title() }}</option>
+                            <option value="{{ player[0] }}">{{ player[1].title() }}</option>
                             {% endfor %}
                             </select>
                         </div> 
@@ -35,15 +35,15 @@
          <div class='container top-pad-15'>
             <div class="columns is-centered is-mobile has-text-white">
             <div class="column is-8 is-mobile">
-            <b>&nbsp;Discord ID's ({{ ui_len(discordplayers) }}):</b>
-            <form action="/discordsearch" method="POST">
+            <b>&nbsp;Players by Discord ID ({{ ui_len(discordplayers) }}):</b>
+            <form action="/playersearch" method="POST">
                 <div class="field">
                     <div class="control">
                         <div class="select is-rounded is-success is-medium has-text-white" id="player">
                             <select name="player" onchange="javascript: if(this.value != '0') this.form.submit();">
                             <option value="">Select Player</option>
                             {% for player in discordplayers %}
-                            <option value="{{ player }}">{{ player.title() }}</option>
+                            <option value="{{ player[0] }}">{{ player[1] }}</option>
                             {% endfor %}
                             </select>
                         </div> 
@@ -54,7 +54,31 @@
             </div>
         </div>
         
+
           <div class='container top-pad-15 is-mobile'>
+             <div class='container top-pad-15'>
+                 <div class="columns is-centered is-mobile">
+                     <div class="column is-8 is-mobile has-tect-white">
+             <b>&nbsp;Players by Steam Name ({{ ui_len(steamplayers) }}):</b>:
+            <form action="/playersearch" method="POST">
+                <div class="field">
+                    <div class="control">
+                        <div class="select is-rounded is-medium" id="player">
+                            <select name="player" onchange="javascript: if(this.value != '0') this.form.submit();">
+                            <option value="">Select Player</option>
+                            {% for player in steamplayers %}
+                            <option value="{{ player[0] }}">{{ player[1] }}</option>
+                            {% endfor %}
+                            </select>
+                        </div> 
+                    </div>
+                </div>
+            </form>
+        </div>
+                 </div>
+             </div>
+
+        <div class='container top-pad-15 is-mobile'>
               <div class='container top-pad-15'>
                   <div class="columns is-centered is-mobile">
                       <div class="column is-8 is-mobile has-text-white">
@@ -66,7 +90,7 @@
                             <select name="player" onchange="javascript: if(this.value != '0') this.form.submit();">
                             <option value="">Select Player</option>
                             {% for player in newplayers %}
-                            <option value="{{ player }}">{{ player.title() }}</option>
+                            <option value="{{ player[0] }}">{{ player[1].title() }}</option>
                             {% endfor %}
                             </select>
                         </div> 
@@ -77,30 +101,7 @@
                   </div>
               </div>
     </div>
- 
-          <div class='container top-pad-15 is-mobile'>
-             <div class='container top-pad-15'>
-                 <div class="columns is-centered is-mobile">
-                     <div class="column is-8 is-mobile has-tect-white">
-             <b>&nbsp;Expired Players ({{ ui_len(expiredplayers) }}):</b>:
-            <form action="/playersearch" method="POST">
-                <div class="field">
-                    <div class="control">
-                        <div class="select is-rounded is-medium" id="player">
-                            <select name="player" onchange="javascript: if(this.value != '0') this.form.submit();">
-                            <option value="">Select Player</option>
-                            {% for player in expiredplayers %}
-                            <option value="{{ player }}">{{ player.title() }}</option>
-                            {% endfor %}
-                            </select>
-                        </div> 
-                    </div>
-                </div>
-            </form>
-        </div>
-                 </div>
-             </div>
-       
+        
         <div class='container top-pad-15 is-mobile'>
             <div class='container top-pad-15'>
             <div class="columns is-centered is-mobile">
@@ -113,7 +114,7 @@
                             <select name="player" onchange="javascript: if(this.value != '0') this.form.submit();">
                             <option value="">Select Player</option>
                             {% for player in bannedplayers %}
-                            <option value="{{ player }}">{{ player.title() }}</option>
+                            <option value="{{ player[0] }}">{{ player[1].title() }}</option>
                             {% endfor %}
                             </select>
                         </div> 

@@ -725,7 +725,7 @@ def pyarkbot():
             embed = discord.Embed(description=msg, color=INFO_COLOR)
             await messagesend(ctx, embed, allowgeneral=True, reject=True)
 
-    @client.command(name='who', aliases=['whoson', 'whosonline', 'online'])
+    @client.command(name='who', aliases=['players', 'whosonline', 'online'])
     @commands.check(logcommand)
     async def _who(ctx):
         tcnt = 0
@@ -981,7 +981,7 @@ def pyarkbot():
 
         elif message.content.lower().find('join the server') != -1 or message.content.lower().find('how do i join') != -1 or message.content.lower().find('server link') != -1 or message.content.lower().find('mod collection') != -1 or message.content.lower().find('mod list') != -1 or message.content.lower().find('link to server') != -1:
             log.info(f'Responding to [join server] chat for [{message.author}] on [{message.channel}]')
-            msg = f'The **`#join-servers`** channel has information and links to the servers and mods, **`!help`** for commands'
+            msg = f'The **`#mods-rates-servers`** channel has information and links to the servers, mods and rates, **`!help`** for commands'
             embed = discord.Embed(description=msg, color=HELP_COLOR)
             await message.channel.send(embed=embed)
 

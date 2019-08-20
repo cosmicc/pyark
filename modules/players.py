@@ -8,7 +8,7 @@ def getliveplayersonline(inst):
 
 
 def getbannedplayers():
-    return dbquery("SELECT playername FROM players WHERE banned != '' ORDER BY playername ASC", fmt='list', single=True)
+    return dbquery("SELECT steamid, playername FROM players WHERE banned != '' ORDER BY playername ASC", fmt='tuple', single=True)
 
 
 def gethitnruns(atime):
@@ -19,8 +19,16 @@ def getactiveplayers(atime):
     return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' and playedtime > 15 and connects > 1 ORDER BY playername ASC" % (Now() - atime,), fmt='list', single=True)
 
 
+def getplayernames():
+    return dbquery("SELECT steamid, playername FROM players ORDER BY playername ASC", fmt='tuple', single=True)
+
+
 def getdiscordplayers():
-    return dbquery("SELECT discordid FROM players WHERE discordid != '' ORDER BY playername ASC", fmt='list', single=True)
+    return dbquery("SELECT steamid, discordid FROM players WHERE discordid != '' ORDER BY discordid ASC", fmt="tuple", single=True)
+
+
+def getsteamnameplayers():
+    return dbquery("SELECT steamid, steamname FROM players WHERE steamname != '' ORDER BY steamname ASC", fmt='tuple', single=True)
 
 
 def getexpiredplayers():
@@ -28,7 +36,7 @@ def getexpiredplayers():
 
 
 def getnewplayers(atime):
-    return dbquery("SELECT playername FROM players WHERE banned = '' AND firstseen >= '%s' ORDER BY playername ASC" % (Now() - atime,), fmt='list', single=True)
+    return dbquery("SELECT steamid, playername FROM players WHERE banned = '' AND firstseen >= '%s' ORDER BY playername ASC" % (Now() - atime,), fmt='tuple', single=True)
 
 
 def isplayeradmin(steamid):

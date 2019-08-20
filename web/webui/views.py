@@ -9,7 +9,7 @@ from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, ps
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance, getlastcrash
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
-from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getexpiredplayers, getbannedplayers, getnewplayers, getdiscordplayers
+from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getexpiredplayers, getbannedplayers, getnewplayers, getdiscordplayers, getsteamnameplayers, getplayernames
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto, joinedTime
 from wtforms import StringField, IntegerField
 from wtforms.validators import InputRequired, Length
@@ -369,7 +369,7 @@ def _isplayerold():
 @webui.context_processor
 def _length():
     def ui_len(alist):
-        return len(alist)
+        return len(list(alist))
     return dict(ui_len=ui_len)
 
 
@@ -503,9 +503,6 @@ def instanceinfo(inst):
     return dbquery("SELECT * FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='dict', fetch='one')
 
 
-def getplayernames():
-    return dbquery("SELECT playername FROM players ORDER BY playername ASC", fmt='list', single=True)
-
 
 def getautoevents():
     return dbquery("SELECT title FROM autoevents", fmt='list', single=True)
@@ -613,7 +610,7 @@ def serverinfo(instance):
 @login_required
 def result():
     if request.method == 'POST':
-        return render_template("playerinfo.html", playerinfo=getplayer(playername=request.form['player'].lower(), fmt='dict'))
+        return render_template("playerinfo.html", playerinfo=getplayer(steamid=request.form['player'], fmt='dict'))
 
 
 @webui.route('/discordsearch', methods=['POST', 'GET'])
@@ -773,7 +770,7 @@ def webinfo(steamid):
 @webui.route('/playerinfo')
 @login_required
 def _players():
-    return render_template('playerselect.html', players=getplayernames(), bannedplayers=getbannedplayers(), expiredplayers=getexpiredplayers(), newplayers=getnewplayers(Secs['week']), discordplayers=getdiscordplayers())
+    return render_template('playerselect.html', players=getplayernames(), bannedplayers=getbannedplayers(), newplayers=getnewplayers(Secs['week']), discordplayers=getdiscordplayers(), steamplayers=getsteamnameplayers())
 
 
 @webui.route('/events')
