@@ -262,6 +262,7 @@ def processlogline(line, single=False):
 @log.catch
 def main():
     global client_threads
+    os.nice(15)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(('172.31.250.115', 11024))
     log.debug('Starting log tail thread')

@@ -12,6 +12,14 @@ def stripansi(stripstr):
     return(ansi_escape.sub('', stripstr))
 
 
+def getinstpid(inst):
+    pidfile = f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid'
+    file = open(pidfile, 'r')
+    arkpid = file.read()
+    file.close()
+    return int(arkpid)
+
+
 def getinststatus(inst):
     rawrun = serverexec(['arkmanager', 'status', f'@{inst}'], nice=15)
     rawrun2 = rawrun.stdout.decode('utf-8').split('\n')

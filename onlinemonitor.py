@@ -74,7 +74,7 @@ def lottodeposits(steamid, inst):
                 log.log('POINTS', f'{weach[3]} lottery win points added to [{elpinfo[1].title()}]')
                 msg = f'{weach[3]} Reward points have been deposited into your account for a lottery win!'
                 serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {msg}', f'@{inst}'], nice=19, null=True)
-                serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {weach[3]}', f'@{inst}'], nice=19, null=True)
+                serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {int(weach[3])}', f'@{inst}'], nice=19, null=True)
             elif weach[4] == 0:
                 log.log('POINTS', f'{weach[3]} lottery entry points removed from [{elpinfo[1].title()}]')
                 msg = f'{weach[3]} Reward points have been withdrawn from your account for a lottery entry'

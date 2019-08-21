@@ -19,7 +19,7 @@ import sys
 from time import sleep
 from web import create_app
 from modules.webserver import webserv
-from os import stat, _exit
+from os import nice, stat, _exit
 import argparse
 from loguru import logger as log
 import lottery
@@ -162,6 +162,8 @@ log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, d
 
 
 plock()
+
+nice(10)
 
 if loglevel == 'DEBUG' or args.debug:
     log.log('START', f'Pyark daemon is starting on {hstname} in **DEBUG MODE**')
