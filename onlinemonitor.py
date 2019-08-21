@@ -4,8 +4,8 @@ from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.timehelper import elapsedTime, playedTime, wcstamp, Now
 from loguru import logger as log
-import subprocess
 import threading
+import subprocess
 from time import sleep
 
 welcomthreads = []

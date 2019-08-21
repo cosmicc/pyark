@@ -287,7 +287,7 @@ def main():
                     for feach in isonline:
                         if feach == eachinst['name']:
                             if isonline[feach]['count'] == 10:
-                                oplayers = getliveplayersonline()
+                                oplayers = getliveplayersonline({eachinst["name"]})
                                 isrunning[feach].update({'isit': 0, 'count': 0})
                                 isonline[feach].update({'isit': 0, 'count': 0})
                                 if int(oplayers[0]) == 0 and int(oplayers[1]) == 0:

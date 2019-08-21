@@ -1,9 +1,9 @@
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.timehelper import Now
+from modules.servertools import serverexec
 from sys import exit
 from loguru import logger as log
-import subprocess
 from re import compile as rcompile
 
 
@@ -13,8 +13,7 @@ def stripansi(stripstr):
 
 
 def getinststatus(inst):
-    rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
-                            stderr=subprocess.DEVNULL, shell=True)
+    rawrun = serverexec(['arkmanager', 'status', f'@{inst}'], nice=15)
     rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
     serverrunning = 0
     serveronline = 0

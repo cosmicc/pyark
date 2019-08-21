@@ -8,10 +8,11 @@ from cmdlistener import clisten
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, is_discordbot, webserver_enabled, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, shortlogformat, longlogformat, simplelogformat, debugfile, chatlogfile, chatlogformat
+from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, is_discordbot, webserver_enabled, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, shortlogformat, longlogformat, simplelogformat, debugfile, chatlogfile, chatlogformat, gamelogfile, gamelogformat
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
+from modules.servertools import serverexec
 from onlinemonitor import onlineupdate
 from statcollector import oscollect
 import sys
@@ -22,7 +23,6 @@ from os import stat, _exit
 import argparse
 from loguru import logger as log
 import lottery
-import subprocess
 from threading import Thread
 import signal
 import shutil
@@ -49,10 +49,9 @@ args = parser.parse_args()
 
 log.remove()
 
-log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
+log.configure(extra={'hostname': hstname, 'instance': 'MAIN', })
 
 log.level("START", no=38, color="<fg 39>", icon="¤")
-log.level("ADMIN", no=19, color="<fg 15><bg 94>", icon="¤")
 log.level("JOIN", no=21, color="<fg 201>", icon="¤")
 log.level("LEAVE", no=21, color="<fg 128>", icon="¤")
 log.level("POINTS", no=22, color="<fg 118>", icon="¤")
@@ -67,12 +66,24 @@ log.level("GIT", no=30, color="<fg 229>", icon="¤")
 log.level("EXIT", no=35, color="<fg 228><bg 18>", icon="¤")
 log.level("KICK", no=20, color="<fg 216>", icon="¤")
 log.level("EVENTS", no=20, color="<fg 138>", icon="¤")
-log.level('CHAT', no=5, color="<fg 58>", icon="¤")
+log.level('CHAT', no=3, color="<fg 58>", icon="¤")
+log.level('TRAP', no=3, color="<fg 58>", icon="¤")
+log.level('DEATH', no=3, color="<fg 68>", icon="¤")
+log.level('TAME', no=3, color="<fg 78>", icon="¤")
+log.level('DECAY', no=3, color="<fg 78>", icon="¤")
+log.level("ADMIN", no=3, color="<fg 15><bg 94>", icon="¤")
 log.level("TEST", no=5, color="<black><bg 148>", icon="¤")
 
 
 def checkdebuglog(record):
     if record['level'] == 'DEBUG' or record['level'] == 'TRACE':
+        return True
+    else:
+        return False
+
+
+def checkgamelog(record):
+    if record['level'] == 'TRAP' or record['level'] == 'ADMIN' or record['level'] == 'DEATH' or record['level'] == 'TAME' or record['level'] == 'DECAY':
         return True
     else:
         return False
@@ -139,13 +150,15 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
 # Points Logging points.log
 log.add(sink=pointsfile, level=22, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogpoints)
 # Admin Logging admin.log
-log.add(sink=adminfile, level=19, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogadmin)
+log.add(sink=adminfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogadmin)
 # Crash Logging crash.log
 log.add(sink=crashlogfile, level=29, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogcrash)
 # Error Logging error.log
 log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True, filter=checkerrorlog)
 # chat Logging error.log
 log.add(sink=chatlogfile, level=5, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=chatlogformat, delay=False, filter=checkchatlog)
+# game Logging game.log
+log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=gamelogformat, delay=False, filter=checkgamelog)
 
 
 plock()
@@ -169,7 +182,7 @@ def gitupdatecheck():
         log.log('GIT', f'New Pyark version found. Updating and Restarting...')
         origin.pull()
         # origin.push()
-        subprocess.run('systemctl restart pyark', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        serverexec(['systemctl', 'restart', 'pyark'], nice=0, null=True)
 
 
 def main():
@@ -251,8 +264,8 @@ def main():
         try:
             if shutil.disk_usage('/').free < 2000000000:
                 log.critical('Root Disk under 2Gig. Shutting instance and script down')
-                subprocess.run('arkmanager stop --warn @all', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-                subprocess.run('/home/ark/pyark/pyarlcli stop', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                serverexec(['arkmanager', 'stop', '--warn', '@all'], null=True)
+                serverexec(['/home/ark/pyark/pyarlcli', 'stop'], null=True)
                 _exit(1)
         except:
             log.critical('unable to determine root freespace')
@@ -261,7 +274,7 @@ def main():
         try:
             if stat('/home/ark/shared/logs/pyark/pyark.log').st_size > 1000000000:
                 log.critical('Pyark log over 1Gig. Shutting script down')
-                subprocess.run('/home/ark/pyark/pyarkcli stop', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                serverexec(['/home/ark/pyark/pyarkcli', 'stop'], null=True)
                 _exit(0)
         except:
             log.critical('unable to determine pyark log filesize')

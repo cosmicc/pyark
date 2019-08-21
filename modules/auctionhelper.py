@@ -1,21 +1,22 @@
 from modules.dbhelper import dbupdate
 from urllib.request import urlopen, Request
 import json
+from loguru import logger as log
 
 
 def fetchauctiondata(steamid):
     try:
         url = f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}"
-        #print(url)
+        log.trace(url)
         req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         data = urlopen(req).read()
-        #print(data)
+        log.trace(data)
         data = data.decode().encode()
-        #print(data)
+        log.trace(data)
         adata = json.loads(data)
-        #print(adata)
+        log.trace(adata)
         auctions = adata['Auctions']
-        #print(auctions)
+        log.trace(auctions)
         if auctions:
             return auctions
         else:
