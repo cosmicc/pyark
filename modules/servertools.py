@@ -8,7 +8,7 @@ def serverexec(cmdlist, nice=10, null=False):
         fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     if null:
         sproc = subprocess.run(fullcmdlist, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=False)
-        return sproc['returncode']
+        return sproc.returncode
     else:
         sproc = subprocess.run(fullcmdlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
         return sproc
