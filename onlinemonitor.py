@@ -3,9 +3,9 @@ from clusterevents import iseventtime, getcurrenteventinfo
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.timehelper import elapsedTime, playedTime, wcstamp, Now
+from modules.servertools import serverexec
 from loguru import logger as log
 import threading
-import subprocess
 from time import sleep
 
 welcomthreads = []
@@ -50,7 +50,7 @@ def serverisinrestart(steamid, inst, oplayer):
     if rbt[3] == "True":
         log.info(f'Notifying player [{oplayer[1].title()}] that [{inst.title()}] will be restarting in {rbt[7]} min')
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes for a {rbt[5]}'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+        serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@''{inst}'], nice=19, null=True)
 
 
 def isinlottery(steamid):
@@ -73,15 +73,13 @@ def lottodeposits(steamid, inst):
             if weach[4] == 1:
                 log.log('POINTS', f'{weach[3]} lottery win points added to [{elpinfo[1].title()}]')
                 msg = f'{weach[3]} Reward points have been deposited into your account for a lottery win!'
-                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
-                subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
-                               (steamid, weach[3], inst), shell=True)
+                serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {msg}', f'@{inst}'], nice=19, null=True)
+                serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {weach[3]}', f'@{inst}'], nice=19, null=True)
             elif weach[4] == 0:
                 log.log('POINTS', f'{weach[3]} lottery entry points removed from [{elpinfo[1].title()}]')
                 msg = f'{weach[3]} Reward points have been withdrawn from your account for a lottery entry'
-                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
-                subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s %s" @%s' %
-                               (steamid, str(int(elpinfo[5]) - int(weach[3])), inst), shell=True)
+                serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {msg}', f'@{inst}'], nice=19, null=True)
+                serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar setarctotal {steamid} {int(elpinfo[5]) - int(weach[3])}', f'@{inst}'], nice=19, null=True)
         dbupdate("DELETE FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
 
 
@@ -101,7 +99,7 @@ def playergreet(steamid, steamname, inst):
     xferpoints = 0
     if checkifbanned(steamid):
         log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
-        subprocess.run("""arkmanager rconcmd 'kickplayer %s' @%s""" % (steamid, inst), shell=True)
+        serverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
         # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
         oplayer = getplayer(steamid)
@@ -118,14 +116,13 @@ def playergreet(steamid, steamname, inst):
                 log.log('POINTS', f'Transferred {xferpoints} non-home server points for \
 [{oplayer[1].title()}] on [{inst.title()}]')
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
-                subprocess.run('arkmanager rconcmd "ScriptCommand tcsar addarctotal %s %s" @%s' %
-                               (steamid, xferpoints, inst), shell=True)
+                serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {xferpoints}', f'@{inst}'], nice=19, null=True)
             if int(oplayer[2]) + 600 > Now():
                 if oplayer[3] != inst:
                     gogo = 1
                     #############################
                     mtxt = f'Player {oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
-                    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+                    serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
                     writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
                     log.log('JOIN', f'Player [{oplayer[1].title()}] has transferred from [{oplayer[3].title()}] to [{inst.title()}]')
                     #############################
@@ -149,7 +146,7 @@ def playergreet(steamid, steamname, inst):
                 newpoints = int(oplayer[5]) + xferpoints
                 mtxt = f'Welcome back {oplayer[1].title()}, you have {newpoints} reward points on \
 {oplayer[15].capitalize()}, last online {laston} ago, total time played {totplay}'
-                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
+                serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
                 sleep(1)
                 flast = dbquery("SELECT * FROM players WHERE server = '%s' AND steamid != '%s'" % (inst, steamid))
                 pcnt = 0
@@ -167,47 +164,41 @@ def playergreet(steamid, steamname, inst):
                     msg = f'There are {pcnt} other players online: {plist}'
                 else:
                     msg = f'There are no other players are online on this server.'
-                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
+                serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {msg}', f'@{inst}'], nice=19, null=True)
                 sleep(2)
                 if int(oplayer[14]) == 1 and int(oplayer[13]) == 1 and oplayer[3] == inst and inst != 'extiction':
                     mtxt = f'WARNING: Server has restarted since you logged in, vivarium your primordials!'
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                                   (steamid, mtxt, inst), shell=True)
+                    serverexec([f'arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
                     resetplayerbit(steamid)
                 if oplayer[8] == '':
                     sleep(5)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                                   (steamid, mtxt, inst), shell=True)
+                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
                 if not isinlottery(steamid):
                     sleep(3)
                     mtxt = f'A lottery you have not entered yet is underway. Type !lotto for more information'
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                                   (steamid, mtxt, inst), shell=True)
+                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
 
             if xferpoints != 0:
                     sleep(2)
                     mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                                   (steamid, mtxt, inst), shell=True)
+                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
             lottodeposits(steamid, inst)
             if int(oplayer[2]) + 60 < Now() and gogo == 0:
                 mtxt = f'{oplayer[1].capitalize()} has joined the server'
-                subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
+                serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
                 writechat(inst, 'ALERT', f'<<< {oplayer[1].capitalize()} has joined the server', wcstamp())
                 serverisinrestart(steamid, inst, oplayer)
                 if iseventtime():
                     eventinfo = getcurrenteventinfo()
                     sleep(2)
                     mtxt = f'{eventinfo[4]} event is currently active!'
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                                   (steamid, mtxt, inst), shell=True)
+                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
                 annc = dbquery("SELECT announce FROM general", fetch='one')
                 if annc and annc[0] is not None:
                     sleep(2)
                     mtxt = annc[0]
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                                   (steamid, mtxt, inst), shell=True)
+                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
 
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
@@ -218,9 +209,8 @@ def onlineupdate(inst):
     log.debug(f'starting online player watcher on {inst}')
     while True:
         try:
-            cmdpipe = subprocess.Popen('arkmanager rconcmd ListPlayers @%s' % inst, stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE, shell=True)
-            b = cmdpipe.stdout.read().decode("utf-8")
+            cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
+            b = cmdpipe.stdout.decode("utf-8")
             for line in iter(b.splitlines()):
                 if line.startswith('Running command') or line.startswith('"') or line.startswith(' "') \
                    or line.startswith('Error:'):
