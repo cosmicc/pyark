@@ -64,7 +64,7 @@ def isinlottery(steamid):
     else:
         return True
 
-
+@log.catch
 def lottodeposits(steamid, inst):
     lottocheck = dbquery("SELECT * FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
     elpinfo = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
