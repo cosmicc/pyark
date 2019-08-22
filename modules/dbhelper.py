@@ -5,6 +5,10 @@ import psycopg2
 from time import sleep
 
 
+def cleanstring(name):
+    return name.replace('"', '').replace("'", "").replace("(", "").replace(")", "")
+
+
 @log.catch
 def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):
     if qtype == 'tuple':
