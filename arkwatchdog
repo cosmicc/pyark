@@ -3,13 +3,14 @@
 from modules.configreader import instance, hstname, jsonlogfile, colorlogfile, jsondebugfile, critlogfile, loglevel, instr, shortlogformat, longlogformat
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
-from modules.instances import getinststatus, isinstanceenabled, getinstpid
+from modules.instances import getinststatus, isinstanceenabled
+from modules.servertools import getinstpid
 from modules.players import getliveplayersonline
 from arkupdater import restartinstnow
 from sys import exit
 from time import sleep
 from modules.timehelper import Secs, Now, elapsedTime
-from modules.servertools import serverexec
+from modules.servertools import serverexec, setarknice
 import psutil
 import argparse
 from loguru import logger as log
@@ -94,6 +95,7 @@ def float_trunc_1dec(num):
         return tnum
 
 
+@log.catch
 def serverneedsrestart():
     if os.path.isfile('/var/run/reboot-required'):
         return True
@@ -101,20 +103,24 @@ def serverneedsrestart():
         return False
 
 
+@log.catch
 def arkprocesscpu(inst):
     arkprocess = psutil.Process(getinstpid(inst))
     return arkprocess.cpu_percent(interval=2)
 
 
+@log.catch
 def getlaststart(inst):
     laststart = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one', single=True)
     return laststart
 
 
+@log.catch
 def getserveruptime():
     return elapsedTime(Now(), psutil.boot_time())
 
 
+@log.catch
 def getcpustats():
     rawcpuload = psutil.getloadavg()
     numcores = psutil.cpu_count()
@@ -125,6 +131,7 @@ def getcpustats():
     return numcores, float_trunc_1dec(cpufreq), float_trunc_1dec(load1), float_trunc_1dec(load5), float_trunc_1dec(load15)
 
 
+@log.catch
 def getservermem():
     process = serverexec(['free', '-m'], nice=19, null=False)
     lines = process.stdout.decode().split('\n')
@@ -136,6 +143,7 @@ def getservermem():
     return memfree, memavailable, swapused
 
 
+@log.catch
 def didserverjustboot():
     rawuptime = serverexec(['tail', '/proc/uptime'], nice=19, null=False)
     rawup = rawuptime.stdout.decode('utf-8').split(' ')
@@ -145,6 +153,7 @@ def didserverjustboot():
         return False
 
 
+@log.catch
 def getinstmem(inst):
     instpid = getinstpid(inst)
     rawsts = serverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, null=False)
@@ -154,6 +163,7 @@ def getinstmem(inst):
     return instrss, instvsz
 
 
+@log.catch
 def checkpyark():
     try:
         for line in open('/tmp/pyark.pid', 'r'):
@@ -176,6 +186,7 @@ def checkpyark():
         log.exception('checkpyark error')
 
 
+@log.catch
 def startserver(inst, restart=False):
     if issharedmounted():
         if loglevel != 'DEBUG' or loglevel != 'TRACE' or not args.debug or not args.trace:
@@ -186,6 +197,7 @@ def startserver(inst, restart=False):
         log.warning(f'Server {hstname} is waiting for drives to mount')
 
 
+@log.catch
 def main():
     isrunning = {}
     isonline = {}

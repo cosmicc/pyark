@@ -1,6 +1,26 @@
 import subprocess
+from psutil import Process
+from loguru import logger as log
 
 
+@log.catch
+def getinstpid(inst):
+    pidfile = f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid'
+    file = open(pidfile, 'r')
+    arkpid = file.read()
+    file.close()
+    return int(arkpid)
+
+
+@log.catch
+def setarknice(inst):
+    proc = Process(getinstpid(inst))
+    if proc.nice() != -10:
+        log.debug(f'Setting priority for ark server instance [{inst}]')
+        proc.nice(-10)
+
+
+@log.catch
 def serverexec(cmdlist, nice=10, null=False):
     if type(cmdlist) is not list:
         raise TypeError

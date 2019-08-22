@@ -175,6 +175,7 @@ else:
 checkgit = 0
 
 
+@log.catch
 def gitupdatecheck():
     localdir = '/home/ark/pyark'
     repo = Repo(localdir)
@@ -187,6 +188,7 @@ def gitupdatecheck():
         serverexec(['systemctl', 'restart', 'pyark'], nice=0, null=True)
 
 
+@log.catch
 def main():
     global checkgit
     global instance

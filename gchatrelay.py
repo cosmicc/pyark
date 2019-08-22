@@ -3,9 +3,9 @@ from modules.players import getplayer
 from modules.timehelper import Now
 from cmdlistener import writechatlog
 from modules.instances import writechat
+from modules.servertools import serverexec
 from time import sleep
 from loguru import logger as log
-import subprocess
 
 # globalbuffer (chat TO servers)
 
@@ -22,15 +22,15 @@ def gchatrelay(inst):
 
                     if (msg['server'] == 'ALL' or msg['server'].lower() == inst) and not Now() - float(msg['timestamp']) > 3:
                         if msg['name'] == 'ALERT':
-                            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (f"{msg['message']}", inst), shell=True)
+                            serverexec(['arkmanager', 'rconcmd', f'ServerChat {msg["message"]}', f'@{inst}'], nice=19, null=True)
                         elif not msg['private'] and not msg['broadcast'] and not Now() - float(msg['timestamp']) > 3:
-                            subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (f"Admin: {msg['message']}", inst), shell=True)
+                            serverexec(['arkmanager', 'rconcmd', f'ServerChat Admin: {msg["message"]}', f'@{inst}'], nice=19, null=True)
                             log.log('CHAT', f'{inst} | ADMIN | {msg["message"]}')
                             writechatlog(inst, 'ADMIN', msg['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
                             writechat(inst, 'Admin', msg['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
 
                         elif msg['broadcast'] and not msg['private'] and not Now() - float(msg['timestamp']) > 3:
-                            subprocess.run('arkmanager rconcmd "Broadcast %s" @%s' % (msg['message'], inst), shell=True)
+                            serverexec(['arkmanager', 'rconcmd', f'Broadcast {msg["message"]}', f'@{inst}'], nice=19, null=True)
                             log.log('CHAT', f'{inst} | BROADCAST | {msg["message"]}')
                             writechatlog(inst, 'BROADCAST', msg['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
                             writechat(inst, 'Broadcast', msg['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
@@ -41,7 +41,7 @@ def gchatrelay(inst):
                                 if cplayer['server'] == inst:
                                     log.log('CHAT', f'{inst} | Admin_to_{cplayer["playername"].title()} | {msg["message"]}')
                                     writechatlog(inst, f'Admin to {cplayer["playername"].title()}', msg['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
-                                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" AdminPrivate: %s' @%s""" % (cplayer['steamid'], msg['message'], inst), shell=True)
+                                    serverexec(['arkmanager', 'rconcmd', f"""ServerChatTo "{cplayer['steamid']}" AdminPrivate: {msg['message']}""", f'@{inst}'], nice=19, null=True)
                                     log.log('CHAT', f'{inst} | Admin_to_{cplayer["playername"].title()} | {msg["message"]}')
 
                     # elif msg['server'] != inst and msg['name'] != 'ALERT' and float(msg['timestamp']) > Now() - 3:

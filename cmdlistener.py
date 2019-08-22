@@ -4,6 +4,7 @@ from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
+from modules.servertools import serverexec
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
@@ -435,6 +436,7 @@ def writeglobal(inst, whos, msg):
     dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, Now()))
 
 
+@log.catch
 def processtcdata(inst, tcdata):
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
@@ -577,7 +579,6 @@ def processadminline(inst, line):
         pline = newline[10:]
     else:
         pline = newline
-        
     log.log('ADMIN', pline)
 
 
@@ -585,17 +586,28 @@ def processgameline(inst, ltype, line):
     pass
 
 
+def playerjoin(line, inst):
+    newline = line.replace(' joined this ARK!', '').split(':')
+    newline[1]
+
+
+def playerleave(line, inst):
+    newline = line.replace(' left this ARK!', '').split(':')
+    player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
+    log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}]')
+
+
+@log.catch
 def checkcommands(minst):
     inst = minst
-    cmdpipe = subprocess.Popen('arkmanager rconcmd getgamelog @%s' % (minst), stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, shell=True)
-    b = cmdpipe.stdout.read().decode("utf-8")
+    cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{minst}'], nice=5, null=False)
+    b = cmdpipe.stdout.decode("utf-8")
     for line in iter(b.splitlines()):
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('[WBUI]') != -1 or line.find('Force respawning Wild Dinos!') != -1:
             processadminline(inst, line.replace('"', '').strip())
-        elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('joined this ARK!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('starved to death!') != -1 or line.find('left this ARK!') != -1:
+        elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('starved to death!') != -1:
             if not os.path.exists(f'/home/ark/shared/logs/{minst}'):
                 log.error(f'Log directory /home/ark/shared/logs/{minst} does not exist! creating')
                 os.mkdir(f'/home/ark/shared/logs/{minst}', 0o777)
@@ -605,7 +617,10 @@ def checkcommands(minst):
                 if lobber != '':
                     f.write(f"""{line.replace('"','').strip()}\n""")
             f.close()
-
+        elif line.find('left this ARK!') != -1:
+            playerjoin(line, minst)
+        elif line.find('joined this ARK!') != -1:
+            playerleave(line, minst)
         elif line.find('[TCsAR]') != -1:
             dfg = line.split('||')
             dfh = dfg[1].split('|')

@@ -14,10 +14,12 @@ greetthreads = []
 global instance
 
 
+@log.catch
 def resetplayerbit(steamid):
     dbupdate("UPDATE players SET restartbit = 0 WHERE steamid = '%s'" % (steamid,))
 
 
+@log.catch
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
@@ -27,6 +29,7 @@ def writechat(inst, whos, msg, tstamp):
                  (inst, whos, msg, tstamp))
 
 
+@log.catch
 def iswelcoming(steamid):
     for each in welcomthreads:
         if each['steamid'] == steamid:
@@ -36,6 +39,7 @@ def iswelcoming(steamid):
                 return False
 
 
+@log.catch
 def isgreeting(steamid):
     for each in greetthreads:
         if each['steamid'] == steamid:
@@ -45,6 +49,7 @@ def isgreeting(steamid):
                 return False
 
 
+@log.catch
 def serverisinrestart(steamid, inst, oplayer):
     rbt = dbquery("SELECT * FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     if rbt[3] == "True":
@@ -53,6 +58,7 @@ def serverisinrestart(steamid, inst, oplayer):
         serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@''{inst}'], nice=19, null=True)
 
 
+@log.catch
 def isinlottery(steamid):
     isinlotto = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
     if isinlotto:
@@ -64,6 +70,7 @@ def isinlottery(steamid):
     else:
         return True
 
+
 @log.catch
 def lottodeposits(steamid, inst):
     lottocheck = dbquery("SELECT * FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
@@ -73,10 +80,8 @@ def lottodeposits(steamid, inst):
             if weach[4] == 1:
                 log.log('POINTS', f'{weach[3]} lottery win points added to [{elpinfo[1].title()}]')
                 msg = f'{weach[3]} Reward points have been deposited into your account for a lottery win!'
-                a = serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {msg}', f'@{inst}'], nice=19, null=True)
-                log.info(a)
-                b = serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {int(weach[3])}', f'@{inst}'], nice=19, null=True)
-                log.info(b)
+                serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {msg}', f'@{inst}'], nice=19, null=True)
+                serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {int(weach[3])}', f'@{inst}'], nice=19, null=True)
             elif weach[4] == 0:
                 log.log('POINTS', f'{weach[3]} lottery entry points removed from [{elpinfo[1].title()}]')
                 msg = f'{weach[3]} Reward points have been withdrawn from your account for a lottery entry'
@@ -85,6 +90,7 @@ def lottodeposits(steamid, inst):
         dbupdate("DELETE FROM lotterydeposits WHERE steamid = '%s'" % (steamid,))
 
 
+@log.catch
 def checkifbanned(steamid):
     oplayer = dbquery("SELECT steamid FROM players WHERE steamid = '%s' AND banned != ''" % (steamid,), fetch='one')
     bplayer = dbquery("SELECT steamid FROM banlist WHERE steamid = '%s'" % (steamid,), fetch='one')
@@ -94,6 +100,7 @@ def checkifbanned(steamid):
         return False
 
 
+@log.catch
 def playergreet(steamid, steamname, inst):
     global greetthreads
     global welcomthreads
