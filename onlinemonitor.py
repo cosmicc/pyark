@@ -1,6 +1,6 @@
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import iseventtime, getcurrenteventinfo
-from modules.dbhelper import dbquery, dbupdate
+from modules.dbhelper import dbquery, dbupdate, cleanstring
 from modules.players import getplayer
 from modules.timehelper import elapsedTime, playedTime, wcstamp, Now
 from modules.servertools import serverexec
@@ -232,7 +232,7 @@ def onlineupdate(inst):
                         if len(rawline) > 1:
                             nsteamid = rawline[1].strip()
                             log.debug(f'rawline')
-                            steamname = rawline[0].split('. ')[1]
+                            steamname = cleanstring(rawline[0].split('. ')[1])
                             if f'greet-{nsteamid}' not in greetthreads:
                                 if not isgreeting(nsteamid):
                                     gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet,

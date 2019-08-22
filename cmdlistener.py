@@ -646,7 +646,7 @@ def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
     if player:
-        log.info('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}] (testing)')
+        log.info(f'Player [{player["playername"].title()}] has left [{inst.title()}] (testing)')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayer, args=(player, inst))
         leaving.start()
     else:
