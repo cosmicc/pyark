@@ -603,11 +603,13 @@ def processgameline(inst, ptype, line):
     wglog(inst, line)
 
 
+@log.watch
 def playerjoin(line, inst):
     newline = line[:-17].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict', fetch='one')
     if player:
-        dbupdate(f"""UPDATE players SET online = True WHERE steamid = 'player["steamid"]'""")
+        steamid = player['steamid']
+        dbupdate(f"UPDATE players SET online = True WHERE steamid = '{steamid}'")
         log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
 
 
@@ -625,7 +627,8 @@ def leavingplayer(player, inst):
             killthread = True
         sleep(1)
     if not transferred:
-        dbupdate(f"""UPDATE players SET online = False WHERE steamid = 'player["steamid"]'""")
+        steamid = player["steamid"]
+        dbupdate(f"UPDATE players SET online = False WHERE steamid = '{steamid}'")
         log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
 
 
