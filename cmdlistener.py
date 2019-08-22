@@ -603,7 +603,7 @@ def processgameline(inst, ptype, line):
     wglog(inst, line)
 
 
-@log.watch
+@log.catch
 def playerjoin(line, inst):
     newline = line[:-17].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict', fetch='one')
