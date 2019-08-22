@@ -606,7 +606,7 @@ def processgameline(inst, ptype, line):
 @log.catch
 def playerjoin(line, inst):
     newline = line[:-17].split(':')
-    player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict', fetch='one')
+    player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].replace("'", "").strip()), single=True, fmt='dict', fetch='one')
     if player:
         steamid = player['steamid']
         dbupdate(f"UPDATE players SET online = True, server = '{inst}'  WHERE steamid = '{steamid}'")
@@ -636,7 +636,7 @@ def leavingplayer(player, inst):
 @log.catch
 def playerleave(line, inst):
     newline = line[:-15].split(':')
-    player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict', fetch='one')
+    player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].replace("'", "").strip()), single=True, fmt='dict', fetch='one')
     if player:
         log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}] (testing)')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayer, args=(player, inst))
