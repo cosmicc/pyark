@@ -586,8 +586,8 @@ def processadminline(inst, line):
     log.log('ADMIN', pline)
 
 
-def processgameline(inst, ltype, line):
-    pass
+def processgameline(inst, line):
+    log.debug(f'{inst}, {line}')
 
 
 def playerjoin(line, inst):
@@ -615,6 +615,7 @@ def checkcommands(minst):
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('[WBUI]') != -1 or line.find('Force respawning Wild Dinos!') != -1:
             processadminline(inst, line.replace('"', '').strip())
         elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('starved to death!') != -1:
+            processgameline(inst, line.replace('"', '').strip())
             if not os.path.exists(f'/home/ark/shared/logs/{minst}'):
                 log.error(f'Log directory /home/ark/shared/logs/{minst} does not exist! creating')
                 os.mkdir(f'/home/ark/shared/logs/{minst}', 0o777)
