@@ -588,7 +588,8 @@ def processgameline(inst, ltype, line):
 
 def playerjoin(line, inst):
     newline = line.replace(' joined this ARK!', '').split(':')
-    newline[1]
+    player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
+    log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
 
 
 def playerleave(line, inst):
