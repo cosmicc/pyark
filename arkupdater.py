@@ -179,20 +179,18 @@ def restartinstnow(inst, reboot):
     buildconfig(inst)
     shutil.copyfile(f'{sharedpath}/stagedconfig/Game-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
     subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
-    #shutil.copyfile(f'', f'')
-    subprocess.run('cp %s/stagedconfig/GameUserSettings-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini' % (sharedpath, inst.lower(), arkroot), stdout=subprocess.DEVNULL, shell=True)
+    shutil.copyfile(f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
     log.debug(f'server {inst} built and updated config files')
     log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
-    subprocess.run('arkmanager update --force --no-download --update-mods --no-autostart @%s' % (inst),
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    serverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'], nice=0, null=True),
     log.log('UPDATE', f'Instance [{inst.title()}] is starting')
     resetlastrestart(inst)
     unsetstartbit(inst)
     playerrestartbit(inst)
     if reboot and inst != 'coliseum' and inst != 'crystal':
-        subprocess.run('reboot', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        serverexec(['reboot'], nice=0, null=True)
     else:
-        subprocess.run('arkmanager start @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        serverexec(['arkmanager', 'start', f'@{inst}'], nice=0, null=True)
         dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
 
 
@@ -209,8 +207,7 @@ def restartloop(inst, reboot):
         log.log('UPDATE', f'Server [{inst.title()}] is empty and restarting now for a [{reason}]')
         writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
         message = f'server {inst.capitalize()} is restarting now for a {reason}'
-        subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL, shell=True)
+        serverexec(['arkmanager', f'notify "{message}"', f'@{inst}'], nice=19, null=True)
         pushover('Instance Restart', message)
         restartinstnow(inst, reboot)
     elif reason != 'configuration update':
@@ -241,8 +238,7 @@ def restartloop(inst, reboot):
                 bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">Ark Game Update</>\n\n<RichColor Color="1,1,0,1">                     !! THE SERVER IS RESTARTING</><RichColor Color="1,0,0,1">NOW</><RichColor Color="1,1,0,1"> !!</>\n\n     The server will be back up in 10 minutes, you can check status in Discord"""
                 subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
                 writechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
-                subprocess.run('arkmanager notify "%s" @%s' % (message, inst), stdout=subprocess.DEVNULL,
-                               stderr=subprocess.DEVNULL, shell=True)
+                serverexec(['arkmanager', f'notify "{message}"', f'@{inst}'], nice=19, null=True)
                 pushover('Instance Restart', message)
                 sleep(10)
                 restartinstnow(inst, reboot)
@@ -267,11 +263,11 @@ def maintenance():
             subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
         log.log('MAINT', f'Running server os maintenance on [{hstname.upper()}]...')
         log.debug(f'OS update started for {hstname}')
-        subprocess.run('apt update', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        serverexec(['apt', 'update'], nice=5, null=True)
         log.debug(f'OS upgrade started for {hstname}')
-        subprocess.run('apt upgrade -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        serverexec(['apt', 'upgrade', '-y'], nice=5, null=True)
         log.debug(f'OS autoremove started for {hstname}')
-        subprocess.run('apt autoremove -y', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        serverexec(['apt', 'autoremove', '-y'], nice=5, null=True)
         nrbt = False
         if os.path.isfile('/var/run/reboot-required'):
             nrbt = True
@@ -282,38 +278,38 @@ def maintenance():
             checkdirs(inst)
             try:
                 log.log('MAINT', f'Performing a world data save on [{inst.title()}]...')
-                subprocess.run('arkmanager saveworld @%s' % (inst,), shell=True)
+                serverexec(['arkmanager', 'saveworld', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 log.log('MAINT', f'Backing up server instance and archiving old players [{inst.title()}]...')
-                subprocess.run('arkmanager backup @%s' % (inst,), shell=True)
+                serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
                 os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
                 sleep(30)
                 log.log('MAINT', f'Running all dino and map maintenance on server [{inst.title()}]...')
                 log.debug(f'Shutting down dino mating on {inst}...')
-                subprocess.run('arkmanager rconcmd "ScriptCommand MatingOff_DS" @%s' % (inst,), shell=True)
+                serverexec(['arkmanager', 'rconcmd', 'ScriptCommand MatingOff_DS', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 log.debug(f'Clearing all unclaimed dinos on [{inst.title()}]...')
-                subprocess.run('arkmanager rconcmd "ScriptCommand DestroyUnclaimed_DS" @%s' % (inst,), shell=True)
+                serverexec(['arkmanager', 'rconcmd', 'ScriptCommand DestroyUnclaimed_DS', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 log.debug(f'Clearing all wild wyvern eggs on [{inst.title()}]...')
-                subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsWyvern_C" @%s' % (inst,), shell=True)
+                serverexec(['arkmanager', 'rconcmd', 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsWyvern_C', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 log.debug(f'Clearing all wild Deinonychus eggs on [{inst.title()}]...')
-                subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsDeinonychus_C" @%s' % (inst,), shell=True)
+                serverexec(['arkmanager', 'rconcmd', 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsDeinonychus_C', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 log.debug(f'Clearing all wild drake eggs on [{inst.title()}]...')
-                subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_RockDrake_NoPhysics_C" @%s' % (inst,), shell=True)
+                serverexec(['arkmanager', 'rconcmd', 'destroyall DroppedItemGeneric_FertilizedEgg_RockDrake_NoPhysics_C', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 log.debug(f'Clearing all beehives on [{inst.title()}]...')
-                subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                serverexec(['arkmanager', 'rconcmd', 'Destroyall BeeHive_C', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 log.debug(f'Clearing all wild Deinonychus eggs on [{inst.title()}]...')
-                subprocess.run('arkmanager rconcmd "destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsDeinonychus_C" @%s' % (inst,), shell=True)
+                serverexec(['arkmanager', 'rconcmd', 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsDeinonychus_C', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 log.debug(f'Clearing all beaver dams on [{inst.title()}]...')
-                subprocess.run('arkmanager rconcmd "destroyall BeaverDam_C" @%s' % (inst,), shell=True)
+                serverexec(['arkmanager', 'rconcmd', 'destroyall BeaverDam_C', f'@{inst}'], nice=0, null=True)
                 sleep(30)
                 checkwipe(inst)
                 lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
@@ -327,7 +323,7 @@ def maintenance():
                     instancerestart(inst, maintrest, reboot=nrbt)
                 else:
                     message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
-                    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (message, inst), shell=True)
+                    serverexec(['arkmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}'], nice=19, null=True)
             except:
                 log.exception(f'Error during {inst} instance daily maintenance')
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
@@ -348,7 +344,7 @@ def instancerestart(inst, reason, reboot=False):
 
 def compareconfigs(config1, config2):
     if not os.path.isfile(config2):
-        subprocess.run('touch "%s"' % (config2), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+        serverexec(['touch', '{config2}'], nice=15, null=True)
     try:
         f1 = open(config1)
         text1Lines = f1.readlines()
@@ -435,8 +431,7 @@ def checkconfig():
 
 
 def isnewarkver(inst):
-    isarkupd = subprocess.run('arkmanager checkupdate @%s' % (inst), stdout=subprocess.PIPE,
-                              stderr=subprocess.DEVNULL, shell=True)
+    isarkupd = serverexec(['arkmanager', 'checkupdate', f'@{inst}'], nice=19, null=False)
     for each in isarkupd.stdout.decode('utf-8').split('\n'):
         if each.find('Current version:') != -1:
             m = each.split(':')
@@ -455,7 +450,7 @@ def isnewarkver(inst):
 def performbackup(inst):
     sleep(random.randint(1, 5) * 6)
     log.log('MAINT', f'Performing a world data backup on [{inst.title()}]')
-    subprocess.run('arkmanager backup @%s' % (inst, ), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    serverexec(['arkmanager', 'backup', f'@{inst}'], nice=19, null=True)
 
 
 def checkbackup():
@@ -506,8 +501,7 @@ def checkupdates():
             else:
                 updgennotify = Now()
                 log.log('UPDATE', f'ARK update found ({curver}>{avlver}) downloading update.')
-                subprocess.run('arkmanager update --downloadonly @%s' % (instance[0]['name']),
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                serverexec(['arkmanager', 'update', '--downloadonly', f'@{instance[0]["name"]}'], nice=0, null=True)
                 log.debug('ark update downloaded to staging area')
                 # msg = f'Ark update has been released. Servers will begin restart countdown now.\n\
 # https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
@@ -522,9 +516,8 @@ def checkupdates():
     for each in range(numinstances):
         checkdirs(instance[each]['name'])
         if not isrebooting(instance[each]['name']):
-            ismodupd = subprocess.run('arkmanager checkmodupdate @%s' % (instance[each]['name']),
-                                      stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-            ismodupd = ismodupd.stdout.decode('utf-8')
+            ismodupdd = serverexec(['arkmanager', 'checkmodupdate', f'@{instance[each]["name"]}'], nice=19, null=False)
+            ismodupd = ismodupdd.stdout.decode('utf-8')
             modchk = 0
             ismodupd = ismodupd.split('\n')
             for teach in ismodupd:
@@ -537,8 +530,7 @@ def checkupdates():
                 ugennotify = Now()
                 log.log('UPDATE', f'ARK mod update [{modname}] id [{modid}] detected for instance [{instance[each]["name"].title()}]')
                 log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
-                subprocess.run('arkmanager update --downloadonly --update-mods @%s' % (instance[each]['name']),
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+                serverexec(['arkmanager', 'update', '--downloadonly', '--update-mods', f'@{instance[each]["name"]}'], nice=0, null=True)
                 log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
                 aname = f'{modname} Mod Update'
                 writediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')

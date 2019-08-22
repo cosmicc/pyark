@@ -587,7 +587,7 @@ def processgameline(inst, ltype, line):
 
 
 def playerjoin(line, inst):
-    newline = line[:-17].split(':')
+    newline = line[:-19].split(':')
     player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
     log.info(newline[0])
     if player:
@@ -595,7 +595,7 @@ def playerjoin(line, inst):
 
 
 def playerleave(line, inst):
-    newline = line[:-15].split(':')
+    newline = line[:-13].split(':')
     player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
     log.info(newline)
     if player:
