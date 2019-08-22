@@ -607,6 +607,7 @@ def playerjoin(line, inst):
     newline = line[:-17].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict', fetch='one')
     if player:
+        dbupdate(f"""UPDATE players SET online = True WHERE steamid = 'player["steamid"]'""")
         log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
 
 
@@ -617,6 +618,7 @@ def leavingplayer(player, inst):
     killthread = False
     while Now() - timerstart < 300 and not killthread:
         sleep(1)
+    dbupdate(f"""UPDATE players SET online = False WHERE steamid = 'player["steamid"]'""")
     log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
 
 
