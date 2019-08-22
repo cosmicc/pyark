@@ -8,15 +8,15 @@ from modules.players import getliveplayersonline, getplayersonline
 from modules.instances import getlastwipe, instancelist, isinstancerunning, isinstanceup
 from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
+from modules.servertools import serverexec
 from time import sleep
 from clusterevents import iseventtime, getcurrenteventext, iseventrebootday
 from discordbot import writediscord
 from loguru import logger as log
 import random
 import os
-import subprocess
 import threading
-
+import subprocess
 
 confupdtimer = 0
 dwtimer = 0
@@ -100,17 +100,18 @@ def playerrestartbit(inst):
     dbupdate("UPDATE players SET restartbit = 1 WHERE server = '%s'" % (inst, ))
 
 
+@log.catch
 def wipeit(inst, extra=False):
     checkdirs(inst)
     if extra:
-        subprocess.run('arkmanager rconcmd "ScriptCommand MatingOff_DS" @%s' % (inst,), shell=True)
+        serverexec(['arkmanager', 'rconcmd', f'ScriptCommand MatingOff_DS', f'@{inst}'], nice=0, null=True)
         sleep(3)
-        subprocess.run('arkmanager rconcmd "ScriptCommand DestroyUnclaimed_DS" @%s' % (inst,), shell=True)
+        serverexec(['arkmanager', 'rconcmd', f'ScriptCommand DestroyUnclaimed_DS', f'@{inst}'], nice=0, null=True)
         sleep(3)
     resetlastwipe(inst)
-    subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    serverexec(['arkmanager', 'rconcmd', 'DestroyWildDinos', f'@{inst}'], nice=0, null=True)
     sleep(3)
-    subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    serverexec(['arkmanager', 'rconcmd', 'Destroyall BeeHive_C' f'@{inst}'], nice=0, null=True)
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
@@ -169,7 +170,7 @@ def restartinstnow(inst, reboot):
     checkdirs(inst)
     wipeit(inst, extra=True)
     sleep(5)
-    subprocess.run('arkmanager stop --saveworld @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    serverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'], nice=0, null=True)
     log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
     dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
     subprocess.run('arkmanager backup @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
