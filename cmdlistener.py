@@ -587,13 +587,15 @@ def processgameline(inst, ltype, line):
 
 
 def playerjoin(line, inst):
-    newline = line.replace(' joined this ARK!', '').split(':')
+    newlinee = line.replace(' joined this ARK!', '')
+    newline = newlinee.split(':')
     player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
     log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
 
 
 def playerleave(line, inst):
-    newline = line.replace(' left this ARK!', '').split(':')
+    newlinee = line.replace(' left this ARK!', '')
+    newline = newlinee.split(':')
     player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
     log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}]')
 
