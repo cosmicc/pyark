@@ -86,7 +86,7 @@ def getplayerlastserver(steamid='', playername=''):
     return dbdata
 
 
-def getplayersonline2(inst, fmt='list', case='normal'):
+def getplayersonline(inst, fmt='list', case='normal'):
     if inst == 'all':
         dbdata = dbquery("SELECT playername FROM players WHERE online = True ORDER BY playername")
     else:
@@ -94,7 +94,7 @@ def getplayersonline2(inst, fmt='list', case='normal'):
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
 
 
-def getplayersonline(inst, fmt='list', case='normal'):
+def getplayersonline2(inst, fmt='list', case='normal'):
     if inst == 'all':
         dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' ORDER BY playername" % (Now() - 40))
     else:
