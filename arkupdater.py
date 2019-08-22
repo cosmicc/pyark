@@ -16,6 +16,7 @@ from loguru import logger as log
 import random
 import os
 import threading
+import shutil
 import subprocess
 
 confupdtimer = 0
@@ -173,11 +174,12 @@ def restartinstnow(inst, reboot):
     serverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'], nice=0, null=True)
     log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
     dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
-    subprocess.run('arkmanager backup @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
     log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
     buildconfig(inst)
-    subprocess.run('cp %s/stagedconfig/Game-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (sharedpath, inst.lower(), arkroot), stdout=subprocess.DEVNULL, shell=True)
+    shutil.copyfile(f'{sharedpath}/stagedconfig/Game-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
     subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
+    #shutil.copyfile(f'', f'')
     subprocess.run('cp %s/stagedconfig/GameUserSettings-%s.ini %s/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini' % (sharedpath, inst.lower(), arkroot), stdout=subprocess.DEVNULL, shell=True)
     log.debug(f'server {inst} built and updated config files')
     log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
