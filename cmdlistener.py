@@ -62,6 +62,7 @@ def getlastseen(seenname):
             return f'{seenname.capitalize()} is online now on {flast[3]}'
 
 
+@log.catch
 def newplayer(steamid, inst):
         pplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
         if not pplayer[23]:
@@ -118,6 +119,7 @@ def whoisonlinewrapper(inst, oinst, whoasked, crnt):
         whoisonline(inst, oinst, whoasked, False, crnt)
 
 
+@log.catch
 def whoisonline(inst, oinst, whoasked, filt, crnt):
     try:
         if crnt == 1:
@@ -287,6 +289,7 @@ def howmanyvotes():
     return vcnt, tvoters
 
 
+@log.catch
 def wipeit(inst):
     yesvoters, totvoters = howmanyvotes()
     log.log('VOTE', f'YES has won ({yesvoters}/{totvoters}), wild dinos are wiping on [{inst.title()}] in 15 seconds')
@@ -419,6 +422,7 @@ def linker(minst, whoasked):
         log.error(f'User not found in DB {whoasked}!')
 
 
+@log.catch
 def writechatlog(inst, whos, msg, tstamp):
     isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos, ), fetch='one')
     if isindb:
@@ -588,7 +592,7 @@ def processgameline(inst, ltype, line):
 
 def playerjoin(line, inst):
     newline = line[:-17].split(':')
-    player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
+    player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict')
     log.info(newline[0])
     if player:
         log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
@@ -596,7 +600,7 @@ def playerjoin(line, inst):
 
 def playerleave(line, inst):
     newline = line[:-15].split(':')
-    player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
+    player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict')
     log.info(newline)
     if player:
         log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}]')
