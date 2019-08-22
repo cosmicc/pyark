@@ -609,20 +609,20 @@ def playerjoin(line, inst):
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict', fetch='one')
     if player:
         steamid = player['steamid']
-        dbupdate(f"UPDATE players SET online = True WHERE steamid = '{steamid}'")
+        dbupdate(f"UPDATE players SET online = True, server = '{inst}'  WHERE steamid = '{steamid}'")
         log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
 
 
 @log.catch
 def leavingplayer(player, inst):
-    log.debug(f'Thread started for leaving player [{player["playername"].title()}]')
+    log.debug(f'Thread started for leaving player [{player["playername"].title()}] on [{inst.title()}]')
     timerstart = Now()
     killthread = False
     transferred = False
-    while Now() - timerstart < 180 and not killthread:
+    while Now() - timerstart < 240 and not killthread:
         lplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (player['steamid']), single=True, fmt='dict', fetch='one')
         if lplayer['server'] != inst:
-            log.info(f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{lplayer["server"]}.title()]')
+            log.info(f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{lplayer["server"].title()}]')
             transferred = True
             killthread = True
         sleep(1)
