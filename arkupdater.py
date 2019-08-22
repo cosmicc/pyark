@@ -177,9 +177,9 @@ def restartinstnow(inst, reboot):
     serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
     log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
     buildconfig(inst)
-    shutil.copyfile(f'{sharedpath}/stagedconfig/Game-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
+    shutil.copy(f'{sharedpath}/stagedconfig/Game-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
     subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
-    shutil.copyfile(f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
+    shutil.copy(f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
     log.debug(f'server {inst} built and updated config files')
     log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
     serverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'], nice=0, null=True),
@@ -402,8 +402,8 @@ def buildconfig(inst):
             gamebasefile = f'{sharedpath}/config/Game-base.ini'
 
         if compareconfigs(newcfgfile, stgcfgfile) or compareconfigs(gamebasefile, stggamefile):
-            subprocess.run('mv "%s" "%s"' % (newcfgfile, stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            subprocess.run('cp "%s" "%s"' % (gamebasefile, stggamefile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+            shutil.move(newcfgfile, stgcfgfile)
+            shutil.copy(gamebasefile, stggamefile)
             subprocess.run('chown ark.ark "%s"' % (stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             subprocess.run('chown ark.ark "%s"' % (stggamefile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             return True

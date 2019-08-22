@@ -587,7 +587,7 @@ def processgameline(inst, ltype, line):
 
 
 def playerjoin(line, inst):
-    newline = line[:-19].split(':')
+    newline = line[:-17].split(':')
     player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
     log.info(newline[0])
     if player:
@@ -595,7 +595,7 @@ def playerjoin(line, inst):
 
 
 def playerleave(line, inst):
-    newline = line[:-13].split(':')
+    newline = line[:-15].split(':')
     player = dbquery('SELECT * FROM players WHERE steamname = "%s"' % (newline[1].strip()), single=True, fmt='dict')
     log.info(newline)
     if player:
@@ -623,9 +623,9 @@ def checkcommands(minst):
                     f.write(f"""{line.replace('"','').strip()}\n""")
             f.close()
         elif line.find('left this ARK!') != -1:
-            playerjoin(line, minst)
-        elif line.find('joined this ARK!') != -1:
             playerleave(line, minst)
+        elif line.find('joined this ARK!') != -1:
+            playerjoin(line, minst)
         elif line.find('[TCsAR]') != -1:
             dfg = line.split('||')
             dfh = dfg[1].split('|')
