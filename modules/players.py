@@ -86,6 +86,14 @@ def getplayerlastserver(steamid='', playername=''):
     return dbdata
 
 
+def getplayersonline2(inst, fmt='list', case='normal'):
+    if inst == 'all':
+        dbdata = dbquery("SELECT playername FROM players WHERE online = True ORDER BY playername")
+    else:
+        dbdata = dbquery("SELECT playername FROM players WHERE online = True AND server = '%s' ORDER BY playername" % (inst.lower(),))
+    return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
+
+
 def getplayersonline(inst, fmt='list', case='normal'):
     if inst == 'all':
         dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' ORDER BY playername" % (Now() - 40))
@@ -96,9 +104,9 @@ def getplayersonline(inst, fmt='list', case='normal'):
 
 def isplayeronline(playername='', steamid=''):
     if steamid != '':
-        dbdata = dbquery("SELECT playername FROM players WHERE steamid = '%s' AND lastseen > '%s'" % (steamid, Now() - 40), fetch='one')
+        dbdata = dbquery("SELECT playername FROM players WHERE steamid = '%s' AND online = True" % (steamid,), fetch='one')
     elif playername != '':
-        dbdata = dbquery("SELECT playername FROM players WHERE playername = '%s' AND lastseen > '%s'" % (playername, Now() - 40), fetch='one')
+        dbdata = dbquery("SELECT playername FROM players WHERE playername = '%s' AND online = True" % (playername,), fetch='one')
     if dbdata:
         return True
     else:
@@ -126,9 +134,9 @@ def isplayerold(playername='', steamid=''):
 
 def getlastplayersonline(inst, fmt='list', last=5, case='normal'):
     if inst == 'all':
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen < %s ORDER BY lastseen DESC LIMIT %s" % (Now() - Secs['1min'], last))
+        dbdata = dbquery("SELECT playername FROM players WHERE online = False AND lastseen < %s ORDER BY lastseen DESC LIMIT %s" % (Now() - Secs['1min'], last))
     else:
-        dbdata = dbquery("SELECT playername FROM players WHERE server = '%s' AND lastseen < %s ORDER BY lastseen DESC LIMIT %s" % (inst.lower(), Now() - 60, last))
+        dbdata = dbquery("SELECT playername FROM players WHERE server = '%s' AND online = False AND lastseen < %s ORDER BY lastseen DESC LIMIT %s" % (inst.lower(), Now() - 60, last))
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
 
 

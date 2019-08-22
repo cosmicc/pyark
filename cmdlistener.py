@@ -616,10 +616,17 @@ def leavingplayer(player, inst):
     log.debug(f'Thread started for leaving player [{player["playername"].title()}]')
     timerstart = Now()
     killthread = False
-    while Now() - timerstart < 300 and not killthread:
+    transferred = False
+    while Now() - timerstart < 180 and not killthread:
+        lplayer = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (player['steamid']), single=True, fetch='one')
+        if lplayer['server'] != inst:
+            log.info(f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{lplayer["server"]}.title()]')
+            transferred = True
+            killthread = True
         sleep(1)
-    dbupdate(f"""UPDATE players SET online = False WHERE steamid = 'player["steamid"]'""")
-    log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
+    if not transferred:
+        dbupdate(f"""UPDATE players SET online = False WHERE steamid = 'player["steamid"]'""")
+        log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
 
 
 @log.catch
