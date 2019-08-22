@@ -415,6 +415,7 @@ def buildconfig(inst):
         return False
 
 
+@log.catch
 def checkconfig():
     for each in range(numinstances):
         inst = instance[each]['name']
@@ -430,6 +431,7 @@ def checkconfig():
                 log.debug(f'no config changes detected for instance {inst}')
 
 
+@log.catch
 def isnewarkver(inst):
     isarkupd = serverexec(['arkmanager', 'checkupdate', f'@{inst}'], nice=19, null=False)
     for each in isarkupd.stdout.decode('utf-8').split('\n'):
@@ -453,6 +455,7 @@ def performbackup(inst):
     serverexec(['arkmanager', 'backup', f'@{inst}'], nice=19, null=True)
 
 
+@log.catch
 def checkbackup():
     for seach in range(numinstances):
         sinst = instance[seach]['name']
@@ -474,6 +477,7 @@ def checkifenabled(inst):
         instancerestart(inst, 'admin restart', ext='stop')
 
 
+@log.catch
 def checkifalreadyrestarting(inst):
     global instance
     lastwipe = dbquery("SELECT needsrestart FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
@@ -490,6 +494,7 @@ def checkifalreadyrestarting(inst):
                     instance[each]['restartthread'].start()
 
 
+@log.catch
 def checkupdates():
     global updgennotify
     global ugennotify
@@ -542,6 +547,7 @@ def checkupdates():
             log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
 
 
+@log.catch
 def restartcheck():
     for each in range(numinstances):
         # checkifenabled(instance[each]['name'])
@@ -549,6 +555,7 @@ def restartcheck():
             checkifalreadyrestarting(instance[each]['name'])
 
 
+@log.catch
 def arkupd():
     log.debug('arkupdater thread started')
     if numinstances > 0:

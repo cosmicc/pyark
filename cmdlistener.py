@@ -370,8 +370,7 @@ def startvoter(inst, whoasked):
     else:
         for each in range(numinstances):
             if instance[each]['name'] == inst:
-                instance[each]['votethread'] = threading.Thread(name='%s-voter' % inst, target=voting,
-                                                                args=(inst, whoasked))
+                instance[each]['votethread'] = threading.Thread(name='%s-voter' % inst, target=voting, args=(inst, whoasked))
                 instance[each]['votethread'].start()
 
 
@@ -586,8 +585,22 @@ def processadminline(inst, line):
     log.log('ADMIN', pline)
 
 
-def processgameline(inst, line):
+def wglog(minst, line):
+    if not os.path.exists(f'/home/ark/shared/logs/{minst}'):
+        log.error(f'Log directory /home/ark/shared/logs/{minst} does not exist! creating')
+        os.mkdir(f'/home/ark/shared/logs/{minst}', 0o777)
+        os.chown(f'/home/ark/shared/logs/{minst}', 1001, 1005)
+    with open(f"/home/ark/shared/logs/{minst}/game.log", "at") as f:
+        lobber = line.replace('"', '').strip()
+        if lobber != '':
+            f.write(f"""{line.replace('"','').strip()}\n""")
+    f.close()
+
+
+def processgameline(inst, ptype, line):
     log.debug(f'{inst}, {line}')
+    log.log(ptype, line)
+    wglog(inst, line)
 
 
 def playerjoin(line, inst):
@@ -597,11 +610,24 @@ def playerjoin(line, inst):
         log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
 
 
+def leavingplayer(player, inst):
+    log.debug(f'Thread started for leaving player [{player["playername"].title()}]')
+    timerstart = Now()
+    killthread = False
+    while Now() - timerstart < 300 and not killthread:
+        sleep(1)
+    log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
+
+
 def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict', fetch='one')
     if player:
         log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}]')
+        leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayer, args=(player, inst))
+        leaving.start()
+    else:
+        log.error(f'Player with steam name [{newline[1].strip()}] was not found while leaving server')
 
 
 @log.catch
@@ -614,17 +640,18 @@ def checkcommands(minst):
             pass
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('[WBUI]') != -1 or line.find('Force respawning Wild Dinos!') != -1:
             processadminline(inst, line.replace('"', '').strip())
-        elif line.find('released:') != -1 or line.find('trapped:') != -1 or line.find(' was killed!') != -1 or line.find('Tamed a') != -1 or line.find('</>') != -1 or line.startswith('Error:') or line.find('starved to death!') != -1:
-            processgameline(inst, line.replace('"', '').strip())
-            if not os.path.exists(f'/home/ark/shared/logs/{minst}'):
-                log.error(f'Log directory /home/ark/shared/logs/{minst} does not exist! creating')
-                os.mkdir(f'/home/ark/shared/logs/{minst}', 0o777)
-                os.chown(f'/home/ark/shared/logs/{minst}', 1001, 1005)
-            with open(f"/home/ark/shared/logs/{minst}/game.log", "at") as f:
-                lobber = line.replace('"', '').strip()
-                if lobber != '':
-                    f.write(f"""{line.replace('"','').strip()}\n""")
-            f.close()
+        elif line.find('released:') != -1:
+            processgameline(inst, 'RELEASE', line.replace('"', '').strip())
+        elif line.find('trapped:') != -1:
+            processgameline(inst, 'TRAP', line.replace('"', '').strip())
+        elif line.find(' was killed!') != -1:
+            processgameline(inst, 'DEATH', line.replace('"', '').strip())
+        elif line.find('Tamed a') != -1:
+            processgameline(inst, 'TAME', line.replace('"', '').strip())
+        elif line.startswith('Error:') or line.find('</>') != -1:
+            processadminline(inst, line.replace('"', '').strip())
+        elif line.find('starved to death!') != -1:
+            processgameline(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('left this ARK!') != -1:
             playerleave(line, minst)
         elif line.find('joined this ARK!') != -1:
