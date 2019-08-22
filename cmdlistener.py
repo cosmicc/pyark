@@ -618,7 +618,7 @@ def leavingplayer(player, inst):
     killthread = False
     transferred = False
     while Now() - timerstart < 180 and not killthread:
-        lplayer = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (player['steamid']), single=True, fetch='one')
+        lplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (player['steamid']), single=True, fetch='one')
         if lplayer['server'] != inst:
             log.info(f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{lplayer["server"]}.title()]')
             transferred = True

@@ -272,6 +272,7 @@ def pyarkbot():
                             await asyncio.sleep(1)
                     dbupdate("DELETE FROM chatbuffer")
                 now = Now()
+                ### change this to online = true and lastseen > 180
                 cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 40, now - 44))
                 if cbuffr:
                     for reach in cbuffr:
