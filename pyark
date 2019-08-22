@@ -156,7 +156,7 @@ log.add(sink=crashlogfile, level=29, buffering=1, enqueue=True, backtrace=False,
 # Error Logging error.log
 log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True, filter=checkerrorlog)
 # chat Logging error.log
-log.add(sink=chatlogfile, level=5, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=chatlogformat, delay=False, filter=checkchatlog)
+log.add(sink=chatlogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=chatlogformat, delay=False, filter=checkchatlog)
 # game Logging game.log
 log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=gamelogformat, delay=False, filter=checkgamelog)
 
