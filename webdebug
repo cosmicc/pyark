@@ -1,9 +1,0 @@
-#!/usr/bin/python3.6
-
-
-from modules.configreader import webserver_ip
-from web import create_app, socketio
-from loguru import logger as log
-
-app = create_app('config.DevelopmentConfig')
-socketio.run(app, host=webserver_ip, port=51501)

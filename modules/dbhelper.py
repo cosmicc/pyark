@@ -1,11 +1,11 @@
 from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 from datetime import datetime
 from loguru import logger as log
-from sys import exit
 import psycopg2
 from time import sleep
 
 
+@log.catch
 def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):
     if qtype == 'tuple':
         return data
@@ -76,6 +76,7 @@ def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='nor
         return nlist
 
 
+@log.catch
 def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
     try:
         if db == 'sqldb':
@@ -114,6 +115,7 @@ def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
             return None
 
 
+@log.catch
 def statsupdate(inst, value):
     conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     c = conn.cursor()
@@ -123,6 +125,7 @@ def statsupdate(inst, value):
     conn.close()
 
 
+@log.catch
 def dbupdate(query, db='sqldb'):
     try:
         if db == 'sqldb':
@@ -149,6 +152,7 @@ def dbupdate(query, db='sqldb'):
         return True
 
 
+@log.catch
 def db_getcolumns(table, raw=False):
     dbdata = dbquery("SELECT column_name, ordinal_position, data_type  FROM information_schema.columns WHERE table_schema = 'public' and table_name = '%s'" % (table,))
     nt = ''
@@ -164,20 +168,19 @@ def db_getcolumns(table, raw=False):
         return ntl
 
 
+@log.catch
 def db_gettables(db, fmt='tuple'):
     dbdata = dbquery("SELECT table_schema || '.' || table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema')")
     return formatdbdata(dbdata, '', qtype=fmt)
 
 
+@log.catch
 def db_getall(table, fmt='tuple', fetch='all'):
     dbdata = dbquery("SELECT * FROM %s" % (table,), fetch=fetch)
     return formatdbdata(dbdata, table, qtype=fmt)
 
 
+@log.catch
 def db_getvalue(select, table, fmt='tuple', fetch='one'):
     dbdata = dbquery("SELECT %s FROM %s" % (select, table), fetch=fetch)
     return formatdbdata(dbdata, table, qtype=fmt, single=True)
-
-
-if __name__ == '__main__':
-    exit()

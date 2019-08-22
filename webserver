@@ -1,0 +1,27 @@
+#!/usr/bin/python3.6
+
+import argparse
+from modules.configreader import webserver_ip, webserver_port
+from web import create_app, socketio
+from os import nice
+from loguru import logger as log
+from modules.processlock import plock
+import modules.logging
+
+__name__ = 'webserver'
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')
+
+args = parser.parse_args()
+
+plock()
+
+nice(12)
+
+if args.debug:
+    app = create_app('config.DevelopmentConfig')
+    socketio.run(app, host=webserver_ip, port=51501)
+else:
+    app = create_app('config.BaseConfig')
+    socketio.run(app, host=webserver_ip, port=webserver_port)

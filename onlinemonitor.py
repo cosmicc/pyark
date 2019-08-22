@@ -130,10 +130,10 @@ def playergreet(steamid, steamname, inst):
                 if oplayer[3] != inst:
                     gogo = 1
                     #############################
-                    mtxt = f'Player {oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
-                    serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
-                    writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
-                    log.log('JOIN', f'Player [{oplayer[1].title()}] has transferred from [{oplayer[3].title()}] to [{inst.title()}]')
+                    #mtxt = f'Player {oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
+                    #serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
+                    #writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
+                    #log.log('JOIN', f'Player [{oplayer[1].title()}] has transferred from [{oplayer[3].title()}] to [{inst.title()}]')
                     #############################
                 log.trace(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
@@ -194,9 +194,9 @@ def playergreet(steamid, steamname, inst):
                     serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
             lottodeposits(steamid, inst)
             if int(oplayer[2]) + 60 < Now() and gogo == 0:
-                mtxt = f'{oplayer[1].capitalize()} has joined the server'
-                serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
-                writechat(inst, 'ALERT', f'<<< {oplayer[1].capitalize()} has joined the server', wcstamp())
+                # mtxt = f'{oplayer[1].capitalize()} has joined the server'
+                # serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
+                # writechat(inst, 'ALERT', f'<<< {oplayer[1].capitalize()} has joined the server', wcstamp())
                 serverisinrestart(steamid, inst, oplayer)
                 if iseventtime():
                     eventinfo = getcurrenteventinfo()

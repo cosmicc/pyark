@@ -569,7 +569,7 @@ def lottery(whoasked, lchoice, inst):
             log.log('CMD', f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
             lotteryinfo(linfo, lpinfo, inst)
     else:
-        log.info(f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
+        log.log('CMD', f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
         msg = f'There are no current lotterys underway.'
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg, inst), shell=True)
 
@@ -609,8 +609,12 @@ def playerjoin(line, inst):
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].replace("'", "").strip()), single=True, fmt='dict', fetch='one')
     if player:
         steamid = player['steamid']
-        dbupdate(f"UPDATE players SET online = True, server = '{inst}'  WHERE steamid = '{steamid}'")
-        log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
+        dbupdate(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}'  WHERE steamid = '{steamid}'")
+        if Now() - player['lastseen'] > 240:
+            log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
+            mtxt = f'{player["playername"].title()} has joined the server'
+            serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
+            writechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp())
 
 
 @log.catch
@@ -622,6 +626,10 @@ def leavingplayer(player, inst):
     while Now() - timerstart < 240 and not killthread:
         lplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (player['steamid']), single=True, fmt='dict', fetch='one')
         if lplayer['server'] != inst:
+            fromtxt = f'Player {player["playername"].title()} has transferred here from {inst.title()}'
+            totxt = f'Player {player["playername"].title()} has transferred to {lplayer["server"].title()}'
+            serverexec(['arkmanager', 'rconcmd', f'ServerChat {totxt}', f'@{inst}'], nice=19, null=True)
+            writechat(inst, 'ALERT', f'>><< {player["playername"].title()} has transferred from {inst.title()} to {lplayer["server"].title()}', wcstamp())
             log.info(f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{lplayer["server"].title()}]')
             transferred = True
             killthread = True

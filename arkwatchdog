@@ -15,6 +15,7 @@ import argparse
 from loguru import logger as log
 import os
 import sys
+import modules.logging
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -34,26 +35,6 @@ parser.add_argument('-q', '--quiet', action='store_true',
 parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')
 parser.add_argument('-t', '--trace', action='store_true', help='super verbose output (trace)')
 args = parser.parse_args()
-
-log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
-
-log.level("START", no=38, color="<fg 39>", icon="¤")
-log.level("ADMIN", no=15, color="<fg 15><bg 18>", icon="¤")
-log.level("JOIN", no=21, color="<fg 201>", icon="¤")
-log.level("LEAVE", no=21, color="<fg 128>", icon="¤")
-log.level("POINTS", no=22, color="<fg 118>", icon="¤")
-log.level("LOTTO", no=23, color="<fg 70>", icon="¤")
-log.level("VOTE", no=20, color="<fg 208>", icon="¤")
-log.level("CMD", no=20, color="<fg 147>", icon="¤")
-log.level("CRASH", no=29, color="<fg 15><bg 166>", icon="¤")
-log.level("WIPE", no=20, color="<fg 86>", icon="¤")
-log.level("UPDATE", no=20, color="<light-cyan>", icon="¤")
-log.level("MAINT", no=20, color="<fg 121>", icon="¤")
-log.level("GIT", no=30, color="<fg 229>", icon="¤")
-log.level("EXIT", no=35, color="<fg 228><bg 18>", icon="¤")
-log.level("KICK", no=20, color="<fg 216>", icon="¤")
-log.level("TEST", no=5, color="<black><bg 148>", icon="¤")
-log.level("WATCH", no=38, color="<light-yellow>", icon="¤")
 
 # Console Logging
 if args.quiet:
@@ -174,7 +155,7 @@ def checkpyark():
                 pyarkstatus = pyarkproc.status()
                 log.trace(f'Pyark process [{pyarkpid}] is running with status [{pyarkstatus}]')
             else:
-                log.critical(f'Pyark PID [{pyarkpid}] is NOT the pyark process')
+                log.critical(f'Pyark PID [{pyarkpid}] is NOT the pyark process [{pyarkproc.name()}]')
         else:
             log.error(f'Pyark process [{pyarkpid}] is not running. Restarting.')
             os.system('systemctl restart pyark')

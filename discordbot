@@ -1,0 +1,45 @@
+#!/usr/bin/env python3.6
+
+import argparse
+from loguru import logger as log
+from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, debugfile
+from discordbot import pyarkbot
+from modules.processlock import plock
+import modules.logging
+from os import nice
+import sys
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')
+parser.add_argument('-t', '--trace', action='store_true', help='verbose output (trace)')
+
+args = parser.parse_args()
+
+# Console Logging
+if args.trace:
+    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat)
+elif args.debug:
+    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat)
+else:
+    log.add(sink=sys.stdout, level=50, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat)
+
+# Json logging pyarklog.json
+log.add(sink=jsonlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=modules.logging.shortlogformat)
+# Color logging pyark.log
+log.add(sink=colorlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=modules.logging.longlogformat)
+# Debug json logging debuglog.json
+if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
+    if loglevel == 'DEBUG' or args.debug:
+        lev = 10
+    else:
+        lev = 5
+    log.add(sink=jsondebugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=modules.logging.longlogformat, delay=True)
+
+# Error Logging crit.log
+log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat, delay=True)
+
+plock()
+
+nice(10)
+
+pyarkbot()
