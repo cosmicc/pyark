@@ -610,6 +610,7 @@ def playerjoin(line, inst):
         log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
 
 
+@log.catch
 def leavingplayer(player, inst):
     log.debug(f'Thread started for leaving player [{player["playername"].title()}]')
     timerstart = Now()
@@ -619,6 +620,7 @@ def leavingplayer(player, inst):
     log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
 
 
+@log.catch
 def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict', fetch='one')
