@@ -629,6 +629,7 @@ def leavingplayer(player, inst):
     if not transferred:
         steamid = player["steamid"]
         dbupdate(f"UPDATE players SET online = False WHERE steamid = '{steamid}'")
+        log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}]')
         log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
 
 
@@ -637,7 +638,7 @@ def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (newline[1].strip()), single=True, fmt='dict', fetch='one')
     if player:
-        log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}]')
+        log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}] (testing)')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayer, args=(player, inst))
         leaving.start()
     else:

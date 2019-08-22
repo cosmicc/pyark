@@ -276,7 +276,7 @@ def pyarkbot():
                 cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 40, now - 44))
                 if cbuffr:
                     for reach in cbuffr:
-                        log.log('LEAVE', f'Player [{reach[1].title()}] has left [{reach[3].title()}]')
+                        #log.log('LEAVE', f'Player [{reach[1].title()}] has left [{reach[3].title()}]')
                         mt = f'{reach[1].capitalize()} has left the server'
                         writeglobal(reach[3], 'ALERT', mt)
                         writechat(reach[3], 'ALERT', f'>>> {reach[1].title()} has left the server', wcstamp())
