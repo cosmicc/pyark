@@ -4,13 +4,12 @@ from modules.configreader import instance, hstname, jsonlogfile, colorlogfile, j
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
 from modules.instances import getinststatus, isinstanceenabled
-from modules.servertools import getinstpid
 from modules.players import getliveplayersonline
 from arkupdater import restartinstnow
 from sys import exit
 from time import sleep
 from modules.timehelper import Secs, Now, elapsedTime
-from modules.servertools import serverexec, setarknice
+from modules.servertools import serverexec, setarknice, getinstpid
 import psutil
 import argparse
 from loguru import logger as log
@@ -238,6 +237,7 @@ def main():
                     isitrunning, isitlistening, isitonline = getinststatus(eachinst['name'])
                     if isitrunning:
                         log.debug(f'{eachinst["name"]} passed instance running check')
+                        setarknice(eachinst["name"])
                         try:
                             log.debug(f'updating process stats for {eachinst["name"]}')
                             arkservercpu = float_trunc_1dec(arkprocesscpu(eachinst["name"]))
