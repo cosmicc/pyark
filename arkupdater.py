@@ -167,7 +167,7 @@ def stillneedsrestart(inst):
         return False
 
 
-def restartinstnow(inst, reboot):
+def restartinstnow(inst, reboot=False):
     checkdirs(inst)
     wipeit(inst, extra=True)
     sleep(5)

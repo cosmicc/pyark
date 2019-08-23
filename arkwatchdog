@@ -171,7 +171,7 @@ def checkpyark():
 def startserver(inst, restart=False):
     if issharedmounted():
         if loglevel != 'DEBUG' or loglevel != 'TRACE' or not args.debug or not args.trace:
-            restartinstnow(inst)
+            restartinstnow(inst, reboot=restart)
         else:
             log.log('WATCH', f'Instance [{inst.title()}] Debug mode stops start/restart...')
     else:
