@@ -476,12 +476,12 @@ def processtcdata(inst, tcdata):
                         subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
                                        (steamid, inst), shell=True)
                     else:
-                        log.debug(f'reward points not past threshold for wait (to avoid duplicates) for \
+                        log.trace(f'reward points not past threshold for wait (to avoid duplicates) for \
 {playername} on {inst}, skipping')
                 else:
-                    log.debug(f'zero reward points to account for {playername} on {inst}, skipping')
+                    log.trace(f'zero reward points to account for {playername} on {inst}, skipping')
             else:
-                log.debug(f'duplicate reward points to account for {playername} on {inst}, skipping')
+                log.trace(f'duplicate reward points to account for {playername} on {inst}, skipping')
 
 
 def homeserver(inst, whoasked, ext):
