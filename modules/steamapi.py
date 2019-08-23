@@ -10,6 +10,7 @@ def fetchurldata(url):
     html = urlopen(req).read()
     return json.loads(html)
 
+
 @log.catch
 def getsteaminfo(steamid):
     try:
@@ -23,13 +24,18 @@ def getsteaminfo(steamid):
             realname = player['realname']
         else:
             realname = 'None'
-        dbupdate(f"""UPDATE players SET steamname = '{player["personaname"]}', steamrealname = '{realname}', steamlastlogoff = {player["lastlogoff"]}, steamcreated = {player["timecreated"]}, steamcountry = '{steamcountry}' WHERE steamid = '{steamid}'""")
+        if 'steamcreated' in player:
+            steamcreated = player['steamcreated']
+        else:
+            steamcreated = 0
+        dbupdate(f"""UPDATE players SET steamname = '{player["personaname"]}', steamrealname = '{realname}', steamlastlogoff = {player["lastlogoff"]}, steamcreated = {steamcreated}, steamcountry = '{steamcountry}' WHERE steamid = '{steamid}'""")
     except:
-        log.error(f'Error fetching steam api player data for [{steamid}]')
+        log.error(f'Error fetching steam api player data for [{steamid}]: {player}')
         return False
     else:
         log.debug(f'Updated steam API player information for steamid [{steamid}]')
         return player["personaname"]
+
 
 @log.catch
 def getsteambans(steamid):
@@ -42,7 +48,7 @@ def getsteambans(steamid):
             economyban = True
         dbupdate(f"""UPDATE players SET steamcommunityban = {player["CommunityBanned"]}, steamvacban = {player["VACBanned"]}, steamvacbannum = {player["NumberOfVACBans"]}, steamgamesbannum = {player["NumberOfGameBans"]}, steamlastbandays = {player["DaysSinceLastBan"]}, steameconomyban = {economyban} WHERE steamid = '{steamid}'""")
     except:
-        log.error(f'Error fetching steam api ban data for [{steamid}]')
+        log.error(f'Error fetching steam api ban data for [{steamid}]: {player}')
         return False
     else:
         log.debug(f'Updated Steam API ban information for steamid [{steamid}]')
