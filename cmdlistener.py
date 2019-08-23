@@ -4,7 +4,7 @@ from modules.dbhelper import dbquery, dbupdate, cleanstring
 from modules.players import getplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
-from modules.servertools import serverexec
+from modules.servertools import serverexec, removerichtext
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
@@ -578,7 +578,7 @@ def processadminline(inst, line):
         pline = newline[10:]
     else:
         pline = newline
-    log.log('ADMIN', pline)
+    log.log('ADMIN', removerichtext(pline))
 
 
 def wglog(minst, line):
@@ -595,7 +595,7 @@ def wglog(minst, line):
 
 def processgameline(inst, ptype, line):
     log.debug(f'{inst}, {line[21:]}')
-    log.log(ptype, line[21:])
+    log.log(removerichtext(ptype), line[21:])
     wglog(inst, line[21:])
 
 

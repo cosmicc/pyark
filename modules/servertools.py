@@ -1,6 +1,11 @@
 import subprocess
 from psutil import Process
 from loguru import logger as log
+from re import sub
+
+
+def removerichtext(text):
+    return sub('<.*?>', '', text)
 
 
 @log.catch
