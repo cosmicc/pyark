@@ -218,6 +218,7 @@ def playergreet(steamid, steamname, inst):
 def doublecheckonline(inst):
     players = dbquery(f"SELECT * FROM players WHERE online = True AND lastseen < {Now() - 240}", fmt='dict', fetch='all')
     for player in players:
+        log.warning(f'Player [{player["playername"].title()}] wasnt found logging off. Clearing player from online status')
         steamid = player["steamid"]
         steamname = getsteaminfo(steamid)
         getsteambans(steamid)
