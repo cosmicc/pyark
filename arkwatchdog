@@ -235,7 +235,7 @@ def main():
                             if neach == eachinst['name']:
                                 isrunning[neach].update({'isit': 0, 'count': isrunning[neach]['count'] + 1})
                                 if isrunning[neach]['count'] > 2:
-                                    log.warning(f'[{eachinst["name"].title()}] failed instance running check ({isrunning[neach]["count"]}/3)')
+                                    log.warning(f'[{eachinst["name"].title()}] failed instance running check ({isrunning[neach]["count"]}/5)')
                                     dbupdate("UPDATE instances SET isup = 0 WHERE name = '%s'" % (eachinst['name'],))
                     else:
                         log.debug(f'skipping running check for 3 min startup for {eachinst["name"]}')
@@ -265,7 +265,7 @@ def main():
                                 log.warning(f'Instance [{eachinst["name"]}] failed running checks! Starting Instance')
                                 pmsg = f'Instance {eachinst["name"]} failed running checks!\nStarting Instance'
                                 pushover('Watchdog', pmsg)
-                                startserver(eachinst['name'], restart=False)
+                                startserver(eachinst['name'], restart)
                     for feach in isonline:
                         if feach == eachinst['name']:
                             if isonline[feach]['count'] == 10:
