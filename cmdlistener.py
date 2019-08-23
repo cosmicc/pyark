@@ -606,7 +606,7 @@ def playerjoin(line, inst):
     if player:
         steamid = player['steamid']
         dbupdate(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}'  WHERE steamid = '{steamid}'")
-        if Now() - player['lastseen'] > 240:
+        if Now() - player['lastseen'] > 250:
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             mtxt = f'{player["playername"].title()} has joined the server'
             serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
@@ -619,7 +619,7 @@ def leavingplayer(player, inst):
     timerstart = Now()
     killthread = False
     transferred = False
-    while Now() - timerstart < 240 and not killthread:
+    while Now() - timerstart < 250 and not killthread:
         lplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (player['steamid']), single=True, fmt='dict', fetch='one')
         if lplayer['server'] != inst:
             fromtxt = f'{player["playername"].title()} has transferred here from {inst.title()}'
