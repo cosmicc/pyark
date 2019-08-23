@@ -25,6 +25,7 @@ def getsteaminfo(steamid):
     else:
         realname = 'None'
     dbupdate(f"""UPDATE players SET steamname = '{player["personaname"]}', steamrealname = '{realname}', steamlastlogoff = {player["lastlogoff"]}, steamcreated = {player["timecreated"]}, steamcountry = '{steamcountry}' WHERE steamid = '{steamid}'""")
+    log.debug(f'Updated steam API player information for steamid [{steamid}]')
     return player["personaname"]
 
 
@@ -37,3 +38,4 @@ def getsteambans(steamid):
     else:
         economyban = True
     dbupdate(f"""UPDATE players SET steamcommunityban = {player["CommunityBanned"]}, steamvacban = {player["VACBanned"]}, steamvacbannum = {player["NumberOfVACBans"]}, steamgamesbannum = {player["NumberOfGameBans"]}, steamlastbandays = {player["DaysSinceLastBan"]}, steameconomyban = {economyban} WHERE steamid = '{steamid}'""")
+    log.debug(f'Updated Steam API ban information for steamid [{steamid}]')
