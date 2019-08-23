@@ -247,6 +247,7 @@ def onlineupdate(inst):
                                 log.debug(f'greeting already running for {steamname}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
+            doublecheckonline(inst)
             sleep(15)
         except:
             log.exception('Critical Error in Online Updater!')
