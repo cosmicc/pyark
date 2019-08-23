@@ -218,7 +218,13 @@ def playergreet(steamid, steamname, inst):
 def doublecheckonline(inst):
     players = dbquery(f"SELECT * FROM players WHERE online = True AND lastseen < {Now() - 240}", fmt='dict', fetch='all')
     for player in players:
-        dbupdate(f"""UPDATE players SET online = False WHERE steamid = '{player["steamid"]}'""")
+        steamid = player["steamid"]
+        steamname = getsteaminfo(steamid)
+        getsteambans(steamid)
+        if not steamname:
+            dbupdate("UPDATE players SET online = False, lastseen = %s, server = '%s', WHERE steamid = '%s'" % (Now(), inst, steamid))
+        else:
+            dbupdate("UPDATE players SET online = False, lastseen = %s, server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
 
 
 @log.catch
