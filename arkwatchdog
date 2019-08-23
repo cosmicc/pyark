@@ -265,7 +265,7 @@ def main():
                                 log.warning(f'Instance [{eachinst["name"]}] failed running checks! Starting Instance')
                                 pmsg = f'Instance {eachinst["name"]} failed running checks!\nStarting Instance'
                                 pushover('Watchdog', pmsg)
-                                startserver(eachinst['name'], restart)
+                                startserver(eachinst['name'], False)
                     for feach in isonline:
                         if feach == eachinst['name']:
                             if isonline[feach]['count'] == 10:
@@ -276,7 +276,7 @@ def main():
                                     log.warning(f'Instance [{eachinst["name"]}] failed online checks! Restarting Instance')
                                     pmsg = f'Instance {eachinst["name"]} failed online checks!\nRestarting Instance'
                                     pushover('Watchdog', pmsg)
-                                    startserver(eachinst['name'], 'online')
+                                    startserver(eachinst['name'], False)
                                 else:
                                     log.info(f'Skipping instance restart because players are actually online')
                     if serverstatcount == 1:
