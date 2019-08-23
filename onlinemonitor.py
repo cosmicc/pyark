@@ -222,9 +222,9 @@ def doublecheckonline(inst):
         steamname = getsteaminfo(steamid)
         getsteambans(steamid)
         if not steamname:
-            dbupdate("UPDATE players SET online = False, lastseen = %s, server = '%s', WHERE steamid = '%s'" % (Now(), inst, steamid))
+            dbupdate("UPDATE players SET online = False, server = '%s', WHERE steamid = '%s'" % (inst, steamid))
         else:
-            dbupdate("UPDATE players SET online = False, lastseen = %s, server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
+            dbupdate("UPDATE players SET online = False, server = '%s', steamname = '%s' WHERE steamid = '%s'" % (inst, steamname, steamid))
 
 
 @log.catch
