@@ -631,7 +631,7 @@ def leavingplayer(player, inst):
             transferred = True
             killthread = True
         sleep(1)
-    if not transferred:
+    if not transferred and Now() - lplayer['lastseen'] >= 240:
         steamid = player["steamid"]
         dbupdate(f"UPDATE players SET online = False WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] has left the cluster from [{inst.title()}]')
@@ -642,7 +642,6 @@ def leavingplayer(player, inst):
 
 @log.catch
 def playerleave(line, inst):
-    log.debug(line)
     newline = line[:-15].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
     if player:
