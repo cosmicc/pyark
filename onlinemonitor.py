@@ -132,6 +132,7 @@ def playergreet(steamid, steamname, inst):
                 dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
             else:  # new player connection
                 if not oplayer[26]:
+                    pass
                     #log.log('JOIN', f'Player [{oplayer[1].title()}] has joined [{inst.title()}] Connections: {oplayer[7]}')
                     #mtxt = f'{oplayer[1].title()} has joined the server'
                     #serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
