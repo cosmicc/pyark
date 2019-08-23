@@ -1,15 +1,6 @@
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.configreader import steamapikey
 from modules.timehelper import Now, Secs
-from steam import WebAPI
-
-
-def getsteaminfo(steamid):
-    steamcall = WebAPI(steamapikey)
-    steamcall.ISteamUser.steamids = steamid
-    print(dir(steamcall.ISteamUser.GetPlayerSummaries()))
-    player = steamcall.ISteamUser.GetPlayerSummaries()
-    print(player)
 
 
 def getliveplayersonline(inst):
