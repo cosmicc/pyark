@@ -621,8 +621,8 @@ def leavingplayer(player, inst):
     while Now() - timerstart < 240 and not killthread:
         lplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (player['steamid']), single=True, fmt='dict', fetch='one')
         if lplayer['server'] != inst:
-            fromtxt = f'Player {player["playername"].title()} has transferred here from {inst.title()}'
-            totxt = f'Player {player["playername"].title()} has transferred to {lplayer["server"].title()}'
+            fromtxt = f'{player["playername"].title()} has transferred here from {inst.title()}'
+            totxt = f'{player["playername"].title()} has transferred to {lplayer["server"].title()}'
             serverexec(['arkmanager', 'rconcmd', f'ServerChat {totxt}', f'@{inst}'], nice=19, null=True)
             writeglobal(inst, 'ALERT', fromtxt)
             writechat(inst, 'ALERT', f'>><< {player["playername"].title()} has transferred from {inst.title()} to {lplayer["server"].title()}', wcstamp())
@@ -634,7 +634,7 @@ def leavingplayer(player, inst):
         steamid = player["steamid"]
         dbupdate(f"UPDATE players SET online = False WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}]')
-        mtxt = f'Player {player["playername"].title()} has logged off the cluster'
+        mtxt = f'{player["playername"].title()} has logged off the cluster'
         serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
         log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
 
