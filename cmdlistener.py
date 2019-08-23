@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from modules.configreader import instance, numinstances
 from modules.dbhelper import dbquery, dbupdate, cleanstring
 from modules.players import getplayer
-from modules.instances import homeablelist, getlastwipe, getlastrestart
+from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from modules.servertools import serverexec
 from lottery import getlastlotteryinfo
@@ -13,7 +13,6 @@ import subprocess
 import threading
 import os
 from gtranslate import trans_to_eng
-
 
 lastvoter = 0.1
 votertable = []
@@ -435,10 +434,6 @@ def writechatlog(inst, whos, msg, tstamp):
         f.close()
 
 
-def writeglobal(inst, whos, msg):
-    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, Now()))
-
-
 @log.catch
 def processtcdata(inst, tcdata):
     steamid = tcdata['SteamID']
@@ -629,6 +624,7 @@ def leavingplayer(player, inst):
             fromtxt = f'Player {player["playername"].title()} has transferred here from {inst.title()}'
             totxt = f'Player {player["playername"].title()} has transferred to {lplayer["server"].title()}'
             serverexec(['arkmanager', 'rconcmd', f'ServerChat {totxt}', f'@{inst}'], nice=19, null=True)
+            writeglobal(inst, 'ALERT', fromtxt)
             writechat(inst, 'ALERT', f'>><< {player["playername"].title()} has transferred from {inst.title()} to {lplayer["server"].title()}', wcstamp())
             log.log('XFER', f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{lplayer["server"].title()}]')
             transferred = True
@@ -638,6 +634,8 @@ def leavingplayer(player, inst):
         steamid = player["steamid"]
         dbupdate(f"UPDATE players SET online = False WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}]')
+        mtxt = f'Player {player["playername"].title()} has logged off the cluster'
+        serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
         log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
 
 
