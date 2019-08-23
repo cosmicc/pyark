@@ -126,10 +126,10 @@ def playergreet(steamid, steamname, inst):
 [{oplayer[1].title()}] on [{inst.title()}]')
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                 serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {xferpoints}', f'@{inst}'], nice=19, null=True)
-            if int(oplayer[2]) + 600 > Now():
+            if int(oplayer[2]) + 300 > Now():  # existing online player
                 log.trace(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
-            else:
+            else:  # new player connection
                 if not oplayer[26]:
                     log.log('JOIN', f'Player [{oplayer[1].title()}] has joined [{inst.title()}] Connections: {oplayer[7]}')
                     mtxt = f'{oplayer[1].title()} has joined the server'

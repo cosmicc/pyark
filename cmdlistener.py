@@ -594,9 +594,9 @@ def wglog(minst, line):
 
 
 def processgameline(inst, ptype, line):
-    log.debug(f'{inst}, {line}')
-    log.log(ptype, line)
-    wglog(inst, line)
+    log.debug(f'{inst}, {line[22:]}')
+    log.log(ptype, line[22:])
+    wglog(inst, line[22:])
 
 
 @log.catch
