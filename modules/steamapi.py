@@ -24,7 +24,7 @@ def getsteaminfo(steamid):
         realname = player['realname']
     else:
         realname = 'None'
-    dbupdate(f"""UPDATE players SET steamname = '{player["personaname"]}', steamrealname = '{realname}', steamlastlogoff = {player["lastlogoff"]}, steamcreated = {player["timecreated"]}, steamcountry = {steamcountry} WHERE steamid = '{steamid}'""")
+    dbupdate(f"""UPDATE players SET steamname = '{player["personaname"]}', steamrealname = '{realname}', steamlastlogoff = {player["lastlogoff"]}, steamcreated = {player["timecreated"]}, steamcountry = '{steamcountry}' WHERE steamid = '{steamid}'""")
     return player["personaname"]
 
 
