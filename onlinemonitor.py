@@ -4,6 +4,7 @@ from modules.dbhelper import dbquery, dbupdate, cleanstring
 from modules.players import getplayer
 from modules.timehelper import elapsedTime, playedTime, wcstamp, Now
 from modules.servertools import serverexec
+from modules.steamapi import getsteaminfo, getsteambans
 from loguru import logger as log
 import threading
 from time import sleep
@@ -135,8 +136,9 @@ def playergreet(steamid, steamname, inst):
                     mtxt = f'{oplayer[1].title()} has joined the server'
                     serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
                     writechat(inst, 'ALERT', f'<<< {oplayer[1].title()} has joined the server', wcstamp())
-
-                dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
+                steamname = getsteaminfo(steamid)
+                getsteambans(steamid)
+                dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, newsteamname, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
                 totplay = playedTime(int(oplayer[4]))
                 try:

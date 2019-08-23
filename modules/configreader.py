@@ -42,6 +42,9 @@ is_discordbot = config.get('general', 'is_discordbot')
 is_statscollector = config.get('general', 'is_statscollector')
 is_lotterymanager = config.get('general', 'is_lotterymanager')
 
+# SteamAPI
+steamapikey = config.get('steam', 'steamapikey')
+
 # RestAPI
 apilogfile = config.get('restapi', 'logfile')
 
