@@ -14,7 +14,6 @@ def checkiftableexists(inst):
 
 def addvalue(inst, value):
     statsupdate(inst, value)
-    # dbupdate("INSERT INTO %s (date, value) VALUES ('%s', '%s')" % (inst, ldate, value), db='statsdb')
 
 
 def flushold(tinst):  # not implimented

@@ -606,7 +606,7 @@ def playerjoin(line, inst):
         steamid = player['steamid']
         dbupdate(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}'  WHERE steamid = '{steamid}'")
         if Now() - player['lastseen'] > 240:
-            log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}]')
+            log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}] Connections: {player["connects"]}')
             mtxt = f'{player["playername"].title()} has joined the server'
             serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
             writechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp())
@@ -644,7 +644,7 @@ def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
     if player:
-        log.info(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}] (testing)')
+        log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}] (testing)')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayer, args=(player, inst))
         leaving.start()
     else:
