@@ -118,6 +118,15 @@
         <p class='is-2'>Total Auctions: <b>{{ playerinfo['totalauctions'] }} auctions</b></p>
         <p class='is-2'>Item Auctions: <b>{{ playerinfo['itemauctions'] }} auctions</b></p>
         <p class='is-2'>Dino Auctions: <b>{{ playerinfo['dinoauctions'] }} auctions</b></p>
+        <p class='is-2'>Steam Realname: <b>{{ playerinfo['steamrealname'] }}</b></p>
+        <p class='is-2'>Steam Country: <b>{{ ui_convcountry(playerinfo['steamcountry']) }}</b></p>
+        <p class='is-2'>Steam LastLogoff: <b>{{ ui_epochto(playerinfo['steamlastlogoff'], fmt='string', est=True) }}</b></p>
+        <p class='is-2'>Steam Created: <b>{{ ui_epochto(playerinfo['steamcreated'], fmt='string', est=True) }}</b></p>
+        <p class='is-2'>Steam Community Ban: <b>{{ playerinfo['steamcommunityban'] }}</b></p>
+        <p class='is-2'>Steam VAC Ban: <b>{{ playerinfo['steamvacban'] }} / {{ playerinfo['steamvacbannum'] }}</b></p>
+        <p class='is-2'>Steam Game Bans: <b>{{ playerinfo['steamgamesbannum'] }}</b></p>
+        <p class='is-2'>Steam Economy Ban: <b>{{ playerinfo['steameconomyban'] }}</b></p>
+
         <p class='is-2'>Online Since Restart: <b>
         {% if playerinfo['restartbit'] == 1 %}
         No

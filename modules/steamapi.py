@@ -28,7 +28,11 @@ def getsteaminfo(steamid):
             steamcreated = player['steamcreated']
         else:
             steamcreated = 0
-        dbupdate(f"""UPDATE players SET steamname = '{player["personaname"]}', steamrealname = '{realname}', steamlastlogoff = {player["lastlogoff"]}, steamcreated = {steamcreated}, steamcountry = '{steamcountry}' WHERE steamid = '{steamid}'""")
+        if 'lastlogoff' in player:
+            lastlogoff = player['lastlogoff']
+        else:
+            lastlogoff = 0
+        dbupdate(f"""UPDATE players SET steamname = '{player["personaname"]}', steamrealname = '{realname}', steamlastlogoff = {lastlogoff}, steamcreated = {steamcreated}, steamcountry = '{steamcountry}' WHERE steamid = '{steamid}'""")
     except:
         log.error(f'Error fetching steam api player data for [{steamid}]: {player}')
         return False

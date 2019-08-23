@@ -19,9 +19,9 @@ def datetimeto(dt, fmt, est=False):
         return int(dt.timestamp())
     elif fmt == 'string':
         if est:
-            return estshift(dt).strftime('%a, %b %d %I:%M %p')
+            return estshift(dt).strftime('%a, %b %d, %Y %I:%M %p')
         else:
-            return dt.strftime('%a, %b %d %I:%M %p')
+            return dt.strftime('%a, %b %d, %Y %I:%M %p')
 
 
 def Now(fmt='epoch', est=False):

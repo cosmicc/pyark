@@ -19,6 +19,7 @@ from ..database import db
 from .. import socketio
 from modules.logclient import LogClient, loggerchat
 from chatclient import ChatClient
+from pycountry import countries
 import json
 import pandas as pd
 import psycopg2
@@ -182,6 +183,19 @@ def _getmessages():
 
 
 @webui.context_processor
+def database_processor778():
+    def ui_convcountry(c):
+        if c is not None:
+            if len(c) == 2:
+                return countries.get(alpha_2=c).name
+            else:
+                return c
+        else:
+            return 'N/A'
+    return dict(ui_convcountry=ui_convcountry)
+
+
+@webui.context_processor
 def database_processor():
     def ui_getplayersonline(instance, fmt):
         return getplayersonline(instance, fmt=fmt, case='title')
@@ -263,8 +277,8 @@ def database_processor7():
 
 @webui.context_processor
 def database_processor77():
-    def ui_datetimeto(dt, fmt):
-        return datetimeto(dt, fmt)
+    def ui_datetimeto(dt, fmt, est=False):
+        return datetimeto(dt, fmt, est=False)
     return dict(ui_datetimeto=ui_datetimeto)
 
 
@@ -340,8 +354,8 @@ def _joinedTime():
 
 @webui.context_processor
 def _epochto():
-    def ui_epochto(epoch, fmt=''):
-        return epochto(int(epoch))
+    def ui_epochto(epoch, fmt='', est=False):
+        return epochto(int(epoch), fmt=fmt, est=est)
     return dict(ui_epochto=ui_epochto)
 
 
