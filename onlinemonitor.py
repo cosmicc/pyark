@@ -127,18 +127,10 @@ def playergreet(steamid, steamname, inst):
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                 serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {xferpoints}', f'@{inst}'], nice=19, null=True)
             if int(oplayer[2]) + 600 > Now():
-                if oplayer[3] != inst:
-                    gogo = 1
-                    #############################
-                    #mtxt = f'Player {oplayer[1].title()} has transferred here from {oplayer[3].capitalize()}'
-                    #serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
-                    #writechat(inst, 'ALERT', f'>><< {oplayer[1].capitalize()} has transferred from {oplayer[3].capitalize()} to {inst.capitalize()}', wcstamp())
-                    #log.log('JOIN', f'Player [{oplayer[1].title()}] has transferred from [{oplayer[3].title()}] to [{inst.title()}]')
-                    #############################
                 log.trace(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
             else:
-                log.log('JOIN', f"Player [{oplayer[1].title()}] has joined [{inst.title()}], connections: {int(oplayer[7])+1}")
+                # log.log('JOIN', f"Player [{oplayer[1].title()}] has joined [{inst.title()}], connections: {int(oplayer[7])+1}")
                 dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" %
                          (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
