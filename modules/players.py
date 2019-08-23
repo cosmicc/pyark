@@ -135,9 +135,9 @@ def isplayerold(playername='', steamid=''):
 
 def getlastplayersonline(inst, fmt='list', last=5, case='normal'):
     if inst == 'all':
-        dbdata = dbquery("SELECT playername FROM players WHERE online = False AND lastseen < %s ORDER BY lastseen DESC LIMIT %s" % (Now() - Secs['1min'], last))
+        dbdata = dbquery("SELECT playername FROM players WHERE online = False ORDER BY lastseen DESC LIMIT %s" % (last,))
     else:
-        dbdata = dbquery("SELECT playername FROM players WHERE server = '%s' AND online = False AND lastseen < %s ORDER BY lastseen DESC LIMIT %s" % (inst.lower(), Now() - 60, last))
+        dbdata = dbquery("SELECT playername FROM players WHERE server = '%s' AND online = False ORDER BY lastseen DESC LIMIT %s" % (inst.lower(), last))
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
 
 
