@@ -140,9 +140,9 @@ def playergreet(steamid, steamname, inst):
                 steamname = getsteaminfo(steamid)
                 getsteambans(steamid)
                 if not steamname:
-                    dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', connects = %s, WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamid))
+                    dbupdate("UPDATE players SET online = True, lastseen = %s, server = '%s', connects = %s, WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamid))
                 else:
-                    dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', connects = %s, steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
+                    dbupdate("UPDATE players SET online = True, lastseen = %s, server = '%s', connects = %s, steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
                 totplay = playedTime(int(oplayer[4]))
                 try:
