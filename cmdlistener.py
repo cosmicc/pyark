@@ -607,7 +607,7 @@ def playerjoin(line, inst):
         steamid = player['steamid']
         dbupdate(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}'  WHERE steamid = '{steamid}'")
         if Now() - player['lastseen'] > 240:
-            log.log('JOIN', f'Player [{player["playername"].title()}] has joined [{inst.title()}] Connections: {player["connects"]}')
+            log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             mtxt = f'{player["playername"].title()} has joined the server'
             serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
             writechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp())
@@ -634,7 +634,7 @@ def leavingplayer(player, inst):
     if not transferred and Now() - lplayer['lastseen'] >= 240:
         steamid = player["steamid"]
         dbupdate(f"UPDATE players SET online = False WHERE steamid = '{steamid}'")
-        log.log('LEAVE', f'Player [{player["playername"].title()}] has left the cluster from [{inst.title()}]')
+        log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
         log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
@@ -645,7 +645,7 @@ def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
     if player:
-        log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}] (testing)')
+        log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayer, args=(player, inst))
         leaving.start()
     else:

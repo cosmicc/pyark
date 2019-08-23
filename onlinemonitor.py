@@ -117,26 +117,26 @@ def playergreet(steamid, steamname, inst):
             log.info(f'Player steamname: [{steamname}] on [{inst.title()}] was not found. Adding new player')
             dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                        firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, lotterywinnings, steamname, welcomeannounce) VALUES \
-                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, 0, steamname, False))
+                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, lotterywinnings, welcomeannounce) VALUES \
+                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, 0, False))
+            steamname = getsteaminfo(steamid)
+            getsteambans(steamid)
+            if not steamname:
+                dbupdate("UPDATE players SET online = True WHERE steamid = '%s'" % (steamid,))
+            else:
+                dbupdate("UPDATE players SET online = True, steamname = '%s' WHERE steamid = '%s'" % (steamname, steamid))
         else:
-            # elif len(oplayer) > 2:
             if oplayer[16] != 0 and oplayer[15] == inst:
                 xferpoints = int(oplayer[16])
                 log.log('POINTS', f'Transferred {xferpoints} non-home server points for \
 [{oplayer[1].title()}] on [{inst.title()}]')
                 dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
                 serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {xferpoints}', f'@{inst}'], nice=19, null=True)
-            if int(oplayer[2]) + 300 > Now():  # existing online player
-                log.trace(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
+            if Now() - int(oplayer[2]) < 300:  # existing online player
+                log.trace(f'Existing online player [{oplayer[1].title()}] was found on [{inst.title()}]. updating info.')
                 dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
             else:  # new player connection
-                if not oplayer[26]:
-                    pass
-                    #log.log('JOIN', f'Player [{oplayer[1].title()}] has joined [{inst.title()}] Connections: {oplayer[7]}')
-                    #mtxt = f'{oplayer[1].title()} has joined the server'
-                    #serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
-                    #writechat(inst, 'ALERT', f'<<< {oplayer[1].title()} has joined the server', wcstamp())
+                log.debug(f'New online player [{oplayer[1].title()}] was found on [{inst.title()}]. updating info.')
                 steamname = getsteaminfo(steamid)
                 getsteambans(steamid)
                 if not steamname:
