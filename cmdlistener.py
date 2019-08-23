@@ -668,6 +668,8 @@ def checkcommands(minst):
             processgameline(inst, 'TRAP', line.replace('"', '').strip())
         elif line.find(' was killed!') != -1:
             processgameline(inst, 'DEATH', line.replace('"', '').strip())
+        elif line.find(' was killed by ') != -1:
+            processgameline(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('Tamed a') != -1:
             processgameline(inst, 'TAME', line.replace('"', '').strip())
         elif line.startswith('Error:') or line.find('</>') != -1:
