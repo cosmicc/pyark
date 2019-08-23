@@ -7,6 +7,7 @@ from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import estshift, elapsedTime, playedTime, Now
 from modules.configreader import apilogfile
 from modules.logclient import loggerchat
+from modules.players import getplayersonline
 from numpy import mean
 from secrets import token_urlsafe
 import time
@@ -402,10 +403,10 @@ class PlayersOnline(Resource):
     def get(self):
         nap = []
         pcnt = 0
-        pps = dbquery("SELECT playername FROM players WHERE lastseen > %s ORDER BY lastseen" % (Now(fmt='epoch') - 40,))
+        pps = getplayersonline('all')
         for each in pps:
             pcnt += 1
-            nap.append(each[0])
+            nap.append(each)
         return {'players': pcnt, 'names': nap}
 
 

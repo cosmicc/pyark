@@ -624,7 +624,7 @@ def leavingplayer(player, inst):
             fromtxt = f'{player["playername"].title()} has transferred here from {inst.title()}'
             totxt = f'{player["playername"].title()} has transferred to {lplayer["server"].title()}'
             serverexec(['arkmanager', 'rconcmd', f'ServerChat {totxt}', f'@{inst}'], nice=19, null=True)
-            writeglobal(inst, 'ALERT', fromtxt)
+            writeglobal(lplayer["server"].lower(), 'ALERT', fromtxt)
             writechat(inst, 'ALERT', f'>><< {player["playername"].title()} has transferred from {inst.title()} to {lplayer["server"].title()}', wcstamp())
             log.log('XFER', f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{lplayer["server"].title()}]')
             transferred = True
