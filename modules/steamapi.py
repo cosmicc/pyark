@@ -10,7 +10,7 @@ def fetchurldata(url):
     html = urlopen(req).read()
     return json.loads(html)
 
-
+@log.catch
 def getsteaminfo(steamid):
     try:
         url = f'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={steamapikey}&steamids={steamid}'
@@ -31,7 +31,7 @@ def getsteaminfo(steamid):
         log.debug(f'Updated steam API player information for steamid [{steamid}]')
         return player["personaname"]
 
-
+@log.catch
 def getsteambans(steamid):
     try:
         url = f'http://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key={steamapikey}&steamids={steamid}'
