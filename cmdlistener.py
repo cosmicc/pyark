@@ -375,6 +375,7 @@ def startvoter(inst, whoasked):
 
 def getnamefromchat(chat):
     try:
+        log.debug(f'getnamefromchat: {chat}')
         rawlineorg = chat.split(':')
         if len(rawlineorg) > 1:
             rawline = rawlineorg[1].split(' (')
@@ -633,7 +634,7 @@ def leavingplayer(player, inst):
     if not transferred:
         steamid = player["steamid"]
         dbupdate(f"UPDATE players SET online = False WHERE steamid = '{steamid}'")
-        log.log('LEAVE', f'Player [{player["playername"].title()}] has left [{inst.title()}]')
+        log.log('LEAVE', f'Player [{player["playername"].title()}] has left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
         log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
@@ -854,7 +855,7 @@ def checkcommands(minst):
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
 
                 else:
-                    log.trace(f'chatline elsed: {line}')
+                    log.debug(f'chatline elsed: {line}')
                     rawline = line.split('(')
                     if len(rawline) > 1:
                         rawname = rawline[1].split(')')

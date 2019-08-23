@@ -128,11 +128,15 @@ def playergreet(steamid, steamname, inst):
                 serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {xferpoints}', f'@{inst}'], nice=19, null=True)
             if int(oplayer[2]) + 600 > Now():
                 log.trace(f'online player {oplayer[1].title()} steamid {steamid} was found. updating info.')
-                dbupdate("UPDATE players SET lastseen = '%s', server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
+                dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, steamname, steamid))
             else:
-                # log.log('JOIN', f"Player [{oplayer[1].title()}] has joined [{inst.title()}], connections: {int(oplayer[7])+1}")
-                dbupdate("UPDATE players SET lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" %
-                         (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
+                if not oplayer[26]:
+                    log.log('JOIN', f'Player [{oplayer[1].title()}] has joined [{inst.title()}] Connections: {oplayer[7]}')
+                    mtxt = f'{oplayer[1].title()} has joined the server'
+                    serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
+                    writechat(inst, 'ALERT', f'<<< {oplayer[1].title()} has joined the server', wcstamp())
+
+                dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
                 totplay = playedTime(int(oplayer[4]))
                 try:
@@ -224,7 +228,6 @@ def onlineupdate(inst):
                         if len(rawline) > 1:
                             nsteamid = rawline[1].strip()
                             steamname = cleanstring(rawline[0].split('. ', 1)[1])
-                            log.debug(f'{steamname}')
                             if f'greet-{nsteamid}' not in greetthreads:
                                 if not isgreeting(nsteamid):
                                     gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet,
