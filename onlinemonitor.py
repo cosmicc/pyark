@@ -138,7 +138,10 @@ def playergreet(steamid, steamname, inst):
                     writechat(inst, 'ALERT', f'<<< {oplayer[1].title()} has joined the server', wcstamp())
                 steamname = getsteaminfo(steamid)
                 getsteambans(steamid)
-                dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
+                if not steamname:
+                    dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', connects = '%s', WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamid))
+                else:
+                    dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s', connects = '%s', steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
                 totplay = playedTime(int(oplayer[4]))
                 try:
