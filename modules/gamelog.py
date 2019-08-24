@@ -50,8 +50,8 @@ def processgameline(inst, ptype, line):
                     clog.log(ptype, f'{logheader}[{playername.title()}] {playerlevel} was killed by [{killedby}]')
                     # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] {playerlevel} was killed by [{killedby}]')
                 elif deathsplit[1].find('killed!') != -1:
-                    clog.log(ptype, f'{logheader}[{playername.title()}] has died')
-                    log.debug(f'dt: {deathsplit}')
+                    clog.log(ptype, f'{logheader}[{playername.title()}] has been killed')
+                    log.info(f'dt: {deathsplit}')
                     # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has died')
                 else:
                     log.warning(f'not found gameparse death: {deathsplit}')
