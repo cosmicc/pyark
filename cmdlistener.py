@@ -540,6 +540,7 @@ def processadminline(inst, line):
     line.replace('"', '').strip()
     newline = line[12:]
     newlinesplit = newline.split(':')
+    log.warning('adminline')
     if newlinesplit[0].strip() == 'AdminCmd':
         pline = newline[10:]
     else:
