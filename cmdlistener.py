@@ -679,7 +679,18 @@ def checkcommands(minst):
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('[WBUI]') != -1 or line.find('Force respawning Wild Dinos!') != -1:
-            processadminline(inst, line.replace('"', '').strip())
+            if line.find('demolished a') != -1:
+                processgameline(inst, 'DEMO', line.replace('"', '').strip())
+            elif line.find('was auto-decay destroyed!') != -1:
+                processgameline(inst, 'DECAY', line.replace('"', '').strip())
+            elif line.find(' claimed ') != -1:
+                processgameline(inst, 'CLAIM', line.replace('"', '').strip())
+            elif line.find('was added to the Tribe!') != -1 or line.find('was promoted to') != -1 or line.find('was demoted from') != -1:
+                processgameline(inst, 'TRIBE', line.replace('"', '').strip())
+            elif line.find('Your Tribe killed') != -1:
+                processgameline(inst, 'DEATH', line.replace('"', '').strip())
+            else:
+                processadminline(inst, line.replace('"', '').strip())
         elif line.find('released:') != -1:
             processgameline(inst, 'RELEASE', line.replace('"', '').strip())
         elif line.find('trapped:') != -1:
