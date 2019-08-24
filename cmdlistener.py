@@ -589,10 +589,10 @@ def processgameline(inst, ptype, line):
                 playername = deathsplit[0].strip()
                 if deathsplit[1].find('was killed by') != -1:
                     killedby = deathsplit[1].split('was killed by')[1].strip()[:-1]
+                    playerlevel = deathsplit[1].split('was killed by')[0].strip()
                     log.log(ptype, f'[{playername.title()}] was killed by {killedby}')
-                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] was killed by {killedby}')
+                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] {playerlevel} was killed by {killedby}')
                     log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
-                    log.info(f'killtest: {deathsplit}')
                 elif deathsplit[1].find('killed!') != -1:
                     log.log(ptype, f'[{playername.title()}] was killed')
                     wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] was killed')
