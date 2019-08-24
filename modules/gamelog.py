@@ -58,7 +58,8 @@ def processgameline(inst, ptype, line):
         elif ptype == 'TAME':
                 tribename = gettribeinfo(linesplit)
                 if tribename is None:
-                    clog.log(ptype, f'SINGLETAME: {inst}, {linesplit}')
+                    tamed = linesplit[0].split(' tamed ')[1].strip(')').strip('!')
+                    clog.log(ptype, f'{logheader}A tribe has tamed [{tamed}]')
                 else:
                     log.debug(f'TRIBETAME: {inst}, {linesplit}')
                     playername = linesplit[2][10:].split(' Tamed')[0].strip()
