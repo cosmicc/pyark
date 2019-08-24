@@ -624,6 +624,15 @@ def processgameline(inst, ptype, line):
             decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
             clog.log(ptype, f'{logheader}{tribename} {decayitem}')
             wglog(inst, removerichtext(line[21:]))
+        elif ptype == 'DEMO':
+            log.debug(f'{inst}, {ptype}, {linesplit}')
+            tribename = linesplit[0][6:].strip()
+            tribeid = linesplit[1].split(':')[0][3:].strip()
+            demoitem = linesplit[2].split('demolished a')[1].split("'", 1)[1].split("'")[0]
+            playername = linesplit[2][9:].split('demolished a')[0]
+            clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
+            wglog(inst, removerichtext(line[21:]))
+ 
         else:
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{logheader}{line} ## {linesplit}')
@@ -689,7 +698,7 @@ def checkcommands(minst):
     cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{minst}'], nice=5, null=False)
     b = cmdpipe.stdout.decode("utf-8")
     for line in iter(b.splitlines()):
-        if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
+        if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
             pass
         elif line.find('[TCsAR]') != -1:
             dfg = line.split('||')
@@ -705,18 +714,16 @@ def checkcommands(minst):
             playerleave(line, minst)
         elif line.find('joined this ARK!') != -1:
             playerjoin(line, minst)
-        elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('Force respawning Wild Dinos!') != -1:
+        elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
             log.info('ADMIN LINE')
             processadminline(inst, line.replace('"', '').strip())
-        elif line.find(' demolished a') != -1 or line.find('Your Tribe killed') != -1:
+        elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
             processgameline(inst, 'DEMO', line.replace('"', '').strip())
         elif line.find('released:') != -1:
             processgameline(inst, 'RELEASE', line.replace('"', '').strip())
         elif line.find('trapped:') != -1:
             processgameline(inst, 'TRAP', line.replace('"', '').strip())
-        elif line.find(' was killed!') != -1:
-            processgameline(inst, 'DEATH', line.replace('"', '').strip())
-        elif line.find(' was killed by ') != -1:
+        elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
             processgameline(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('Tamed a') != -1:
             processgameline(inst, 'TAME', line.replace('"', '').strip())
