@@ -5,6 +5,11 @@ from modules.servertools import removerichtext
 
 
 @log.catch
+def putplayerintribe():
+    pass
+
+
+@log.catch
 def gettribeinfo(linesplit, inst, ptype):
     if len(linesplit) == 3 and linesplit[0].strip().startswith('Tribe'):
         tribename = linesplit[0][6:].strip()
@@ -82,7 +87,7 @@ def processgameline(inst, ptype, line):
                 else:
                     log.debug(f'TRIBEDEMO: {inst}, {linesplit}')
                     playername = linesplit[2][10:].split(' demolished a ')[0].strip()
-                    demoitem = linesplit[2].split(' demolished a ')[1].strip(')').strip('!').strip()
+                    demoitem = linesplit[2].split(' demolished a ')[1].replace("'", "").strip(')').strip('!').strip()
                     clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
  
         elif ptype == 'DECAY':
