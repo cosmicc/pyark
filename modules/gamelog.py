@@ -36,12 +36,11 @@ def processgameline(inst, ptype, line):
             clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has released [{dino}]')
             # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released [{dino}]')
         elif ptype == 'DEATH':
-            if linesplit[0].startswith('Tribe '):
-                log.debug(f'DEATH: {linesplit[0]}')
-                tribename = gettribeinfo(linesplit)
-                playername = linesplit[2][21:].split('-', 1)[0].strip()
-                # clog.log(ptype, f'tribe information collected for [{tribename}]')
-            else:
+            log.debug(f'DEATH: {linesplit[0]}')
+            tribename = gettribeinfo(linesplit)
+            playername = linesplit[2][21:].split('-', 1)[0].strip()
+            # clog.log(ptype, f'tribe information collected for [{tribename}]')
+           if tribename is None:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
                 playername = deathsplit[0].strip()
                 if deathsplit[1].find('was killed by') != -1:
