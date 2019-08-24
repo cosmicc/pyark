@@ -560,7 +560,7 @@ def wglog(minst, line):
 
 def processgameline(inst, ptype, line):
     linesplit = removerichtext(line[21:]).split(", ")
-    if ptype == 'TRAP':
+    if ptype == 'TRAP' or ptype == 'RELEASE':
         tribename = linesplit[0][6:]
         tribeid = linesplit[1].split(':')[0][3:]
         msg = linesplit[2][10:]
