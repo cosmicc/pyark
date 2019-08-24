@@ -567,14 +567,16 @@ def processgameline(inst, ptype, line):
             msgsplit = linesplit[2][10:].split('trapped:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip()
-            log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
+            log.log(ptype, f'[{playername.title()}] has trapped {dino}')
+            wglog(inst, f'[{playername.title()}] has trapped {dino}')
         elif ptype == 'RELEASE':
             tribename = linesplit[0][6:].strip()
             tribeid = linesplit[1].split(':')[0][3:].strip()
             msgsplit = linesplit[2][10:].split('released:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip()
-            log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
+            log.log(ptype, f'[{playername.title()}] has released {dino}')
+            wglog(inst, f'[{playername.title()}] has released {dino}')
         elif ptype == 'DEATH':
             if linesplit[0].startswith('Tribe '):
                 tribename = linesplit[0][6:].strip()
@@ -584,8 +586,13 @@ def processgameline(inst, ptype, line):
             else:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
                 playername = deathsplit[0].strip()
-                killedby = deathsplit[1].split('was killed by')[1].strip()[:-1]
-                log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
+                if deathsplit[1].split().find('was killed by') != -1:
+                    killedby = deathsplit[1].split('was killed by')[1].strip()[:-1]
+                    log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
+                elif deathsplit[1].split().find('killed!') != -1:
+                    log.debug(f'{inst}, {ptype}, {playername}, WAS KILLED!')
+                else:
+                    log.warning(f'not found gameparse death: {deathsplit}')
         else:
             log.debug(f'{inst}, {ptype}, {linesplit}')
         log.log(ptype, removerichtext(line[21:]))
