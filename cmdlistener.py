@@ -540,7 +540,6 @@ def processadminline(inst, line):
     line.replace('"', '').strip()
     newline = line[12:]
     newlinesplit = newline.split(':')
-    log.warning('adminline')
     if newlinesplit[0].strip() == 'AdminCmd':
         pline = newline[10:]
     else:
@@ -692,6 +691,16 @@ def checkcommands(minst):
     for line in iter(b.splitlines()):
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
+        elif line.find('[TCsAR]') != -1:
+            dfg = line.split('||')
+            dfh = dfg[1].split('|')
+            tcdata = {}
+            for each in dfh:
+                ee = each.strip().split(': ')
+                if len(ee) > 1:
+                    tcdata.update({ee[0]: ee[1]})
+            if 'SteamID' in tcdata:
+                processtcdata(minst, tcdata)
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('Force respawning Wild Dinos!') != -1:
             log.warning('ADMIN LINE')
             processadminline(inst, line.replace('"', '').strip())
@@ -710,10 +719,7 @@ def checkcommands(minst):
                 processgameline(inst, 'TAME', line.replace('"', '').strip())
             elif line.startswith('Error:') != -1:
                 processadminline(inst, line.replace('"', '').strip())
-            elif line.find('starved to death!') != -1:
-                processgameline(inst, 'DEATH', line.replace('"', '').strip())
-            elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
-                processgameline(inst, 'DECAY', line.replace('"', '').strip())
+
             elif line.find(" claimed '") != -1:
                 processgameline(inst, 'CLAIM', line.replace('"', '').strip())
             elif line.find('was added to the Tribe!') != -1 or line.find('was promoted to') != -1 or line.find('was demoted from') != -1 or line.find(' uploaded a') != -1:
@@ -721,22 +727,16 @@ def checkcommands(minst):
             else:
                 log.warning('CAUGHT3333!!!!')
                 processadminline(inst, line.replace('"', '').strip())
+        elif line.find('starved to death!') != -1:
+            processgameline(inst, 'DEATH', line.replace('"', '').strip())
+        elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
+            processgameline(inst, 'DECAY', line.replace('"', '').strip())
         elif line.startswith('Error:') != -1:
             processadminline(inst, line.replace('"', '').strip())
         elif line.find('left this ARK!') != -1:
             playerleave(line, minst)
         elif line.find('joined this ARK!') != -1:
             playerjoin(line, minst)
-        elif line.find('[TCsAR]') != -1:
-            dfg = line.split('||')
-            dfh = dfg[1].split('|')
-            tcdata = {}
-            for each in dfh:
-                ee = each.strip().split(': ')
-                if len(ee) > 1:
-                    tcdata.update({ee[0]: ee[1]})
-            if 'SteamID' in tcdata:
-                processtcdata(minst, tcdata)
         else:
             whoasked = getnamefromchat(line)
             log.trace(f'chatline who: {whoasked}')
