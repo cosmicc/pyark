@@ -1,10 +1,20 @@
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.timehelper import Now, Secs, wcstamp
-from modules.instances import writechat
 from modules.servertools import serverexec
 from modules.steamapi import getsteaminfo, getsteambans
 from loguru import logger as log
 from time import sleep
+
+
+def writechat(inst, whos, msg, tstamp):
+    isindb = False
+    if whos != 'ALERT':
+        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
+        if isindb:
+            dbupdate("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')""" % (inst, whos, msg.replace("'", ""), tstamp))
+
+    elif whos == "ALERT":
+        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
 @log.catch
