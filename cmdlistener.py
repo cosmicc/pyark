@@ -608,10 +608,10 @@ def processgameline(inst, ptype, line):
                 if tribename.startswith('Tamed'):
                     pass
                 else:
-                tribeid = linesplit[1].split(':')[0][3:].strip()
-                playername = linesplit[2][21:].split('-', 1)[0].strip()
-                log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
-                clog.log(ptype, f'TRIBETAME: {inst}, {ptype}, {linesplit}')
+                    tribeid = linesplit[1].split(':')[0][3:].strip()
+                    playername = linesplit[2][21:].split('-', 1)[0].strip()
+                    log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
+                    clog.log(ptype, f'TRIBETAME: {inst}, {ptype}, {linesplit}')
             else:
                 log.info(f'TAME: {linesplit}')
                 clog.log(ptype, f'TAME: {linesplit}')
