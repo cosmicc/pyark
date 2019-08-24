@@ -47,10 +47,12 @@ def processgameline(inst, ptype, line):
             if linesplit[0].startswith('Tribe '):
                 tribename = linesplit[0][6:].strip()
                 if tribename.startswith('Tamed'):
-                    pass
+                    log.debug(f'SINGLETRIBETAME: {inst}, {linesplit}')
                 else:
-                    # tribeid = linesplit[1].split(':')[0][3:].strip()
-                    # playername = linesplit[2][21:].split('-', 1)[0].strip()
-                    # clog.log(ptype, f'TRIBETAME: tribe information collected for [{tribename}]')
+                    log.debug(f'TRIBETAME: {inst}, {linesplit}')
+                    tribeid = linesplit[1].split(':')[0][3:].strip()
+                    playername = linesplit[2][10:].split(' Tamed')[0].strip()
+                    tamed = linesplit[2].split(' Tamed')[1].strip(')').strip('!').strip()
+                    clog.log(ptype, f'{logheader}[{playername.title()}] tamed [{tamed}]')
                     # log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
                     clog.log(ptype, f'{logheader}TRIBETAME: {linesplit}')
