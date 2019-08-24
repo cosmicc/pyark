@@ -237,7 +237,7 @@ def main():
             if checkgit == 0:
                 gitupdatecheck()
                 checkgit += 1
-            elif checkgit == 6:
+            elif checkgit == 12:
                 checkgit = 0
             else:
                 checkgit += 1
