@@ -565,7 +565,7 @@ def processgameline(inst, ptype, line):
         tribeid = linesplit[1].split(':')[0][3:].strip()
         msgsplit = linesplit[2][10:].split('trapped:')
         playername = msgsplit[0].strip()
-        dino = msgsplit[1].strip()[:1]
+        dino = msgsplit[1].strip()
         log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
     elif ptype == 'RELEASE':
         tribename = linesplit[0][6:].strip()
