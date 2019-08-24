@@ -13,7 +13,7 @@ def gettribeinfo(linesplit, inst):
             tribeid = linesplit[1].split(':')[0][3:].strip()
             indb = dbquery(f'SELECT tribeid from tribes where tribeid = {tribeid}', fetch='one', single=True)
             if not indb:
-                dbupdate(f"INSERT INTO tribes (tribename, tribeid, lastseen, server) VALUES ('{tribename}', {tribeid}, {Now(fmt='dt')}, '{inst}')")
+                dbupdate(f"INSERT INTO tribes (tribename, tribeid, lastseen, server) VALUES ('{tribename}', '{tribeid}', {Now(fmt='dt')}, '{inst}')")
             log.debug(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
         return tribename
     else:
