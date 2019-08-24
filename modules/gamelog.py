@@ -59,7 +59,7 @@ def processgameline(inst, ptype, line):
                 else:
                     log.warning(f'not found gameparse death: {deathsplit}')
             else:
-                log.info('deathskip: {linesplit}')
+                log.info(f'deathskip: {linesplit}')
         elif ptype == 'TAME':
                 tribename = gettribeinfo(linesplit, inst, ptype)
                 if tribename is None:
