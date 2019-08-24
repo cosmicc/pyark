@@ -17,7 +17,9 @@ def gettribeinfo(linesplit, inst, ptype):
                 dbupdate(f"""UPDATE tribes SET lastseen = '{Now(fmt="dt")}' WHERE tribeid = '{tribeid}'""")
 
             log.debug(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
-        return tribename
+            return tribename
+        else:
+            return None
     else:
         return None
 
