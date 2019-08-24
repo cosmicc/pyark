@@ -561,7 +561,6 @@ def wglog(minst, line):
           
 @log.catch
 def processgameline(inst, ptype, line):
-    try:
         clog = log.patch(lambda record: record["extra"].update(instance=inst))
         linesplit = removerichtext(line[21:]).split(", ")
         if ptype == 'TRAP':
@@ -587,14 +586,13 @@ def processgameline(inst, ptype, line):
                 tribeid = linesplit[1].split(':')[0][3:].strip()
                 playername = linesplit[2][21:].split('-', 1)[0].strip()
                 clog.log(ptype, f'tribe information collected for [{tribename}]')
-                #log.debug(f'DEATHTEST! {inst}, {tribename}, {tribeid}, {playername}')
             else:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
                 playername = deathsplit[0].strip()
                 if deathsplit[1].find('was killed by') != -1:
-                    killedby = deathsplit[1].split('was killed by')[1].strip()[:-1]
+                    killedby = deathsplit[1].split('was killed by')[1].strip()[:-1].replace('()', '')
                     playerlevel = deathsplit[1].split('was killed by')[0].strip()
-                    clog.log(ptype, f'{Now(fmt="string")}: [{playername.title()}] was killed by [{killedby}] on [{inst.title()}]')
+                    clog.log(ptype, f'{Now(fmt="string")}: [{playername.title()}] {playerlevel} was killed by [{killedby}] on [{inst.title()}]')
                     wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] {playerlevel} was killed by [{killedby}]')
                 elif deathsplit[1].find('killed!') != -1:
                     clog.log(ptype, f'{Now(fmt="string")}: [{playername.title()}] has died on [{inst.title()}]')
@@ -613,8 +611,10 @@ def processgameline(inst, ptype, line):
                     # log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
                     # clog.log(ptype, f'TRIBETAME: {inst}, {ptype}, {linesplit}')
             else:
-                log.info(f'TAME: {linesplit}')
-                clog.log(ptype, f'TAME: {linesplit}')
+                playername = linesplit[0].split('of Tribe')[0].strip()
+                tribename = linesplit[0].split('of Tribe')[1].split(' Tamed a')[0]
+                dino = linesplit[0].split(' Tamed ')[1].replace('!', '')
+                clog.log(ptype, f'TAME: [{playername.title()}] ({tribename}) tamed [{dino}] on [{inst.title()}]')
         elif ptype == 'DECAY':
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{line} ## {linesplit}')
@@ -622,14 +622,12 @@ def processgameline(inst, ptype, line):
             tribeid = linesplit[1].split(':')[0][3:].strip()
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-            clog.log(ptype, f'{tribename} {decayitem}')
+            clog.log(ptype, f'{ptype}: {tribename} {decayitem}')
             wglog(inst, removerichtext(line[21:]))
         else:
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{line} ## {linesplit}')
             wglog(inst, removerichtext(line[21:]))
-    except:
-        log.critical(f'GAME LOG ERROR IN LINE: {line} ## {linesplit}')
 
       
 @log.catch
