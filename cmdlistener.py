@@ -571,7 +571,7 @@ def processgameline(inst, ptype, line):
         tribename = linesplit[0][6:].strip()
         tribeid = linesplit[1].split(':')[0][3:].strip()
         msgsplit = linesplit[2][10:].split('released:')
-        playername = msgsplit[0].strip()[:1].strip()
+        playername = msgsplit[0].strip()
         dino = msgsplit[1].strip()
         log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
     elif ptype == 'DEATH':
@@ -583,7 +583,7 @@ def processgameline(inst, ptype, line):
         else:
             deathsplit = removerichtext(line[21:]).split(" - ", 1)
             playername = deathsplit[0].strip()
-            killedby = deathsplit[1].split('was killed by')[1][:1]
+            killedby = deathsplit[1].split('was killed by')[1]
             log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
     else:
         log.debug(f'{inst}, {ptype}, {linesplit}')
