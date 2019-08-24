@@ -820,7 +820,7 @@ def pyarkbot():
             if args:
                 reqs = dbquery("SELECT * FROM linkrequests WHERE reqcode = '%s'" % (args[0],), fetch='one')
                 if reqs:
-                    log.info(f'Link on discord from [{whofor.title()}] successful for player [{reqs[1].title()}]')
+                    log.success(f'Link on discord from [{whofor.title()}] successful for player [{reqs[1].title()}]')
                     dbupdate("UPDATE players SET discordid = '%s' WHERE steamid = '%s'" % (whofor, reqs[0]))
                     dbupdate("DELETE FROM linkrequests WHERE reqcode = '%s'" % (args[0],))
                     msg = f'Your discord account *[{whofor}]* is now linked to your player **{reqs[1].title()}**\n\nYou can now use discord commands like:\n**`!kickme`** to kick your player off the server so you dont have to wait\n**`!myinfo`** to see all your cluster player information\n**`!help`** for a list of all the commands'
