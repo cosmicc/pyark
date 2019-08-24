@@ -704,29 +704,30 @@ def checkcommands(minst):
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('Force respawning Wild Dinos!') != -1:
             log.warning('ADMIN LINE')
             processadminline(inst, line.replace('"', '').strip())
-        elif len(line.split(',')) == 3:
-            if line.find(' demolished a') != -1 or line.find('Your Tribe killed') != -1:
-                processgameline(inst, 'DEMO', line.replace('"', '').strip())
-            elif line.find('released:') != -1:
-                processgameline(inst, 'RELEASE', line.replace('"', '').strip())
-            elif line.find('trapped:') != -1:
-                processgameline(inst, 'TRAP', line.replace('"', '').strip())
-            elif line.find(' was killed!') != -1:
-                processgameline(inst, 'DEATH', line.replace('"', '').strip())
-            elif line.find(' was killed by ') != -1:
-                processgameline(inst, 'DEATH', line.replace('"', '').strip())
-            elif line.find('Tamed a') != -1:
-                processgameline(inst, 'TAME', line.replace('"', '').strip())
-            elif line.startswith('Error:') != -1:
-                processadminline(inst, line.replace('"', '').strip())
+        #elif len(line.split(',')) == 3:
+        elif line.find(' demolished a') != -1 or line.find('Your Tribe killed') != -1:
+            processgameline(inst, 'DEMO', line.replace('"', '').strip())
+        elif line.find('released:') != -1:
+            processgameline(inst, 'RELEASE', line.replace('"', '').strip())
+        elif line.find('trapped:') != -1:
+            processgameline(inst, 'TRAP', line.replace('"', '').strip())
+        elif line.find(' was killed!') != -1:
+            processgameline(inst, 'DEATH', line.replace('"', '').strip())
+        elif line.find(' was killed by ') != -1:
+            processgameline(inst, 'DEATH', line.replace('"', '').strip())
+        elif line.find('Tamed a') != -1:
+            processgameline(inst, 'TAME', line.replace('"', '').strip())
+        elif line.startswith('Error:') != -1:
+            processadminline(inst, line.replace('"', '').strip())
 
-            elif line.find(" claimed '") != -1:
-                processgameline(inst, 'CLAIM', line.replace('"', '').strip())
-            elif line.find('was added to the Tribe!') != -1 or line.find('was promoted to') != -1 or line.find('was demoted from') != -1 or line.find(' uploaded a') != -1:
-                processgameline(inst, 'TRIBE', line.replace('"', '').strip())
-            else:
-                log.warning('CAUGHT3333!!!!')
-                processadminline(inst, line.replace('"', '').strip())
+        elif line.find(" claimed '") != -1:
+            processgameline(inst, 'CLAIM', line.replace('"', '').strip())
+        elif line.find('was added to the Tribe!') != -1 or line.find('was promoted to') != -1 or line.find('was demoted from') != -1 or line.find(' uploaded a') != -1:
+            processgameline(inst, 'TRIBE', line.replace('"', '').strip())
+        #else:
+        
+        #log.warning('CAUGHT3333!!!!')
+        #    processadminline(inst, line.replace('"', '').strip())
         elif line.find('starved to death!') != -1:
             processgameline(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
