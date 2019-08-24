@@ -568,7 +568,7 @@ def processgameline(inst, ptype, line):
             tribeid = linesplit[1].split(':')[0][3:].strip()
             msgsplit = linesplit[2][10:].split('trapped:')
             playername = msgsplit[0].strip()
-            dino = msgsplit[1].strip()
+            dino = msgsplit[1].strip().replace(')', '').replace('(', '')
             clog.log(ptype, f'[{playername.title()}] has trapped {dino}')
             wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has trapped {dino}')
         elif ptype == 'RELEASE':
@@ -576,7 +576,7 @@ def processgameline(inst, ptype, line):
             tribeid = linesplit[1].split(':')[0][3:].strip()
             msgsplit = linesplit[2][10:].split('released:')
             playername = msgsplit[0].strip()
-            dino = msgsplit[1].strip()
+            dino = msgsplit[1].strip().replace(')', '').replace('(', '')
 
             clog.log(ptype, f'[{playername.title()}] has released {dino}')
             wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released {dino}')
@@ -690,7 +690,7 @@ def checkcommands(minst):
             elif line.find('was added to the Tribe!') != -1 or line.find('was promoted to') != -1 or line.find('was demoted from') != -1:
                 processgameline(inst, 'TRIBE', line.replace('"', '').strip())
             elif line.find('Your Tribe killed') != -1:
-                processgameline(inst, 'DEATH', line.replace('"', '').strip())
+                processgameline(inst, 'DEMO', line.replace('"', '').strip())
             else:
                 processadminline(inst, line.replace('"', '').strip())
         elif line.find('released:') != -1:
