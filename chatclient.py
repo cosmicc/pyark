@@ -68,7 +68,7 @@ class ChatClient():
             cplayer = linesplit[2].strip()
             cmsg = linesplit[3].strip()
             cdt = estshift(dtparse(ctime))
-            cdtf = cdt.strftime("%a %I:%M:%S%p")
+            cdtf = cdt.strftime("%a %I:%M%p")
             if cplayer not in self.players:
                 ncolor = int(self.pcolors[self.pcolorindex])
                 if self.pcolorindex == len(self.pcolors) - 1:

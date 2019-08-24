@@ -562,7 +562,7 @@ def wglog(minst, line):
 @log.catch
 def processgameline(inst, ptype, line):
         clog = log.patch(lambda record: record["extra"].update(instance=inst))
-        logheader = f'{Now(fmt="dt").strftime("%m-%d %I:%M%p")}|{inst.upper():>8}|{ptype:<7}| '
+        logheader = f'{Now(fmt="dt").strftime("%a %I:%M%p")}|{inst.upper():>8}|{ptype:<7}| '
         linesplit = removerichtext(line[21:]).split(", ")
         if ptype == 'TRAP':
             tribename = linesplit[0][6:].strip()
@@ -585,7 +585,7 @@ def processgameline(inst, ptype, line):
                 tribename = linesplit[0][6:].strip()
                 tribeid = linesplit[1].split(':')[0][3:].strip()
                 playername = linesplit[2][21:].split('-', 1)[0].strip()
-                clog.log(ptype, f'tribe information collected for [{tribename}]')
+                #clog.log(ptype, f'tribe information collected for [{tribename}]')
             else:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
                 playername = deathsplit[0].strip()
