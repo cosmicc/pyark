@@ -26,7 +26,7 @@ def newplayer(steamid, playername, inst):
              ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, playername, Now(), inst, 0, 0, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, True, True, 0, 0))
     getsteaminfo(steamid)
     getsteambans(steamid)
-    pplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fmt='dict', fetch='one')
+    pplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     dbupdate("UPDATE players SET welcomeannounce = True WHERE steamid = '%s'" % (steamid,))
     log.debug(f'Sending welcome message to [{pplayer[1].title()}] on [{inst.title()}]')
     sleep(3)

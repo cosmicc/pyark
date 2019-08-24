@@ -585,6 +585,7 @@ def processgameline(inst, ptype, line):
                 tribename = linesplit[0][6:].strip()
                 tribeid = linesplit[1].split(':')[0][3:].strip()
                 playername = linesplit[2][21:].split('-', 1)[0].strip()
+                clog.log(ptype, f'tribe information collected for [{tribename}]')
                 #log.debug(f'DEATHTEST! {inst}, {tribename}, {tribeid}, {playername}')
             else:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
@@ -594,11 +595,9 @@ def processgameline(inst, ptype, line):
                     playerlevel = deathsplit[1].split('was killed by')[0].strip()
                     clog.log(ptype, f'[{playername.title()}] was killed by [{killedby}]')
                     wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] {playerlevel} was killed by [{killedby}]')
-                    log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
                 elif deathsplit[1].find('killed!') != -1:
-                    clog.log(ptype, f'[{playername.title()}] died')
-                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] was killed')
-                    log.debug(f'{inst}, {ptype}, {playername}, WAS KILLED!')
+                    clog.log(ptype, f'[{playername.title()}] has died')
+                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has died')
                 else:
                     log.warning(f'not found gameparse death: {deathsplit}')
         elif ptype == 'TAME':
@@ -609,6 +608,7 @@ def processgameline(inst, ptype, line):
                 else:
                     tribeid = linesplit[1].split(':')[0][3:].strip()
                     playername = linesplit[2][21:].split('-', 1)[0].strip()
+                    clog.log(ptype, f'tribe information collected for [{tribename}]')
                     log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
                     clog.log(ptype, f'TRIBETAME: {inst}, {ptype}, {linesplit}')
             else:
