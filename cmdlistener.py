@@ -559,36 +559,39 @@ def wglog(minst, line):
 
           
 def processgameline(inst, ptype, line):
-    linesplit = removerichtext(line[21:]).split(", ")
-    if ptype == 'TRAP':
-        tribename = linesplit[0][6:].strip()
-        tribeid = linesplit[1].split(':')[0][3:].strip()
-        msgsplit = linesplit[2][10:].split('trapped:')
-        playername = msgsplit[0].strip()
-        dino = msgsplit[1].strip()[:-1]
-        log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
-    elif ptype == 'RELEASE':
-        tribename = linesplit[0][6:].strip()
-        tribeid = linesplit[1].split(':')[0][3:].strip()
-        msgsplit = linesplit[2][10:].split('released:')
-        playername = msgsplit[0].strip()
-        dino = msgsplit[1].strip()[:-1]
-        log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
-    elif ptype == 'DEATH':
-        if linesplit[0].startswith('Tribe '):
+    try:
+        linesplit = removerichtext(line[21:]).split(", ")
+        if ptype == 'TRAP':
             tribename = linesplit[0][6:].strip()
             tribeid = linesplit[1].split(':')[0][3:].strip()
-            playername = linesplit[2][21:].split('-', 1)[0].strip()
-            log.debug(f'DEATHTEST! {inst}, {tribename}, {tribeid}, {playername}')
+            msgsplit = linesplit[2][10:].split('trapped:')
+            playername = msgsplit[0].strip()
+            dino = msgsplit[1].strip()
+            log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
+        elif ptype == 'RELEASE':
+            tribename = linesplit[0][6:].strip()
+            tribeid = linesplit[1].split(':')[0][3:].strip()
+            msgsplit = linesplit[2][10:].split('released:')
+            playername = msgsplit[0].strip()
+            dino = msgsplit[1].strip()
+            log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
+        elif ptype == 'DEATH':
+            if linesplit[0].startswith('Tribe '):
+                tribename = linesplit[0][6:].strip()
+                tribeid = linesplit[1].split(':')[0][3:].strip()
+                playername = linesplit[2][21:].split('-', 1)[0].strip()
+                log.debug(f'DEATHTEST! {inst}, {tribename}, {tribeid}, {playername}')
+            else:
+                deathsplit = removerichtext(line[21:]).split(" - ", 1)
+                playername = deathsplit[0].strip()
+                killedby = deathsplit[1].split('was killed by')[1].strip()[:-1]
+                log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
         else:
-            deathsplit = removerichtext(line[21:]).split(" - ", 1)
-            playername = deathsplit[0].strip()
-            killedby = deathsplit[1].split('was killed by')[1]
-            log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
-    else:
-        log.debug(f'{inst}, {ptype}, {linesplit}')
-    log.log(ptype, removerichtext(line[21:]))
-    wglog(inst, removerichtext(line[21:]))
+            log.debug(f'{inst}, {ptype}, {linesplit}')
+        log.log(ptype, removerichtext(line[21:]))
+        wglog(inst, removerichtext(line[21:]))
+    except:
+        log.critical(f'GAME LOG ERROR IN LINE: {line} ## {linesplit}')
 
       
 @log.catch
