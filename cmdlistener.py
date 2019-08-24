@@ -582,7 +582,7 @@ def processgameline(inst, ptype, line):
                 tribename = linesplit[0][6:].strip()
                 tribeid = linesplit[1].split(':')[0][3:].strip()
                 playername = linesplit[2][21:].split('-', 1)[0].strip()
-                log.debug(f'DEATHTEST! {inst}, {tribename}, {tribeid}, {playername}')
+                #log.debug(f'DEATHTEST! {inst}, {tribename}, {tribeid}, {playername}')
             else:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
                 playername = deathsplit[0].strip()
