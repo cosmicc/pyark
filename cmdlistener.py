@@ -696,6 +696,7 @@ def checkcommands(minst):
             log.warning('CAUGHT!')
             processadminline(inst, line.replace('"', '').strip())
         elif line.find('AdminCmd:') != -1:
+            log.warning('CAUGHT2222!!!!')
             if line.find(' demolished a') != -1 or line.find('Your Tribe killed') != -1:
                 processgameline(inst, 'DEMO', line.replace('"', '').strip())
             elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
@@ -705,6 +706,7 @@ def checkcommands(minst):
             elif line.find('was added to the Tribe!') != -1 or line.find('was promoted to') != -1 or line.find('was demoted from') != -1 or line.find(' uploaded a') != -1:
                 processgameline(inst, 'TRIBE', line.replace('"', '').strip())
             else:
+                log.warning('CAUGHT3333!!!!')
                 processadminline(inst, line.replace('"', '').strip())
         elif line.find('released:') != -1:
             processgameline(inst, 'RELEASE', line.replace('"', '').strip())
