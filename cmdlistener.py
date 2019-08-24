@@ -590,7 +590,7 @@ def processgameline(inst, ptype, line):
                 if deathsplit[1].split().find('was killed by') != -1:
                     killedby = deathsplit[1].split('was killed by')[1].strip()[:-1]
                     log.log(ptype, f'[{playername.title()}] was killed by {killedby}')
-                     wglog(inst, f'[{playername.title()}] was killed by {killedby}'))
+                    wglog(inst, f'[{playername.title()}] was killed by {killedby}')
                     log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
                 elif deathsplit[1].split().find('killed!') != -1:
                     log.debug(f'{inst}, {ptype}, {playername}, WAS KILLED!')
