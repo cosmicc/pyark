@@ -560,11 +560,26 @@ def wglog(minst, line):
 
 def processgameline(inst, ptype, line):
     linesplit = removerichtext(line[21:]).split(", ")
-    if ptype == 'TRAP' or ptype == 'RELEASE':
+    if ptype == 'TRAP':
         tribename = linesplit[0][6:]
         tribeid = linesplit[1].split(':')[0][3:]
-        msg = linesplit[2][10:]
-        log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {msg}')
+        msgsplit = linesplit[2][10:].split('trapped:')
+        playername = msgsplit[0].strip()
+        dino = msgsplit[1].strip()
+        log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
+    elif ptype == 'RELEASE':
+        tribename = linesplit[0][6:]
+        tribeid = linesplit[1].split(':')[0][3:]
+        msgsplit = linesplit[2][10:].split('released:')
+        playername = msgsplit[0].strip()
+        dino = msgsplit[1].strip()
+        log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
+    elif ptype == 'DEATH':
+        if linesplit[0].startswith('Tribe '):
+            tribename = linesplit[0][6:]
+            tribeid = linesplit[1].split(':')[0][3:]
+        else:
+            log.debug(f'{inst}, {ptype}, {linesplit}')
     else:
         log.debug(f'{inst}, {ptype}, {linesplit}')
     log.log(ptype, removerichtext(line[21:]))
