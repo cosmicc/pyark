@@ -56,10 +56,9 @@ def processgameline(inst, ptype, line):
                 else:
                     log.warning(f'not found gameparse death: {deathsplit}')
         elif ptype == 'TAME':
-            if linesplit[0].startswith('Tribe '):
                 tribename = gettribeinfo(linesplit)
                 if tribename is None:
-                    log.debug(f'SINGLETRIBETAME: {inst}, {linesplit}')
+                    clog.log(ptype, f'SINGLETAME: {inst}, {linesplit}')
                 else:
                     log.debug(f'TRIBETAME: {inst}, {linesplit}')
                     playername = linesplit[2][10:].split(' Tamed')[0].strip()
@@ -68,9 +67,6 @@ def processgameline(inst, ptype, line):
                         clog.log(ptype, f'{logheader}[{tribename}] tamed [{tamed}]')
                     else:
                         clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) tamed [{tamed}]')
-            else:
-                log.debug(f'TAME: {linesplit}')
-                clog.log(ptype, f'TAME: {linesplit}')
         elif ptype == 'DECAY':
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{line} ## {linesplit}')
