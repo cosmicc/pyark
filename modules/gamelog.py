@@ -5,11 +5,14 @@ import re
 
 
 @log.catch
-def gettribeinfo(linesplit):
+def gettribeinfo(linesplit, inst):
     if len(linesplit) == 3 and linesplit[0].strip().startswith('Tribe'):
         tribename = linesplit[0][6:].strip()
         if linesplit[1].strip().startswith('ID'):
             tribeid = linesplit[1].split(':')[0][3:].strip()
+            indb = dbquery(f'SELECT tribeid from tribes where tribeid = {tribeid}', fetch='one', single=True)
+            if not inbd:
+                dbupdate(f"INSERT INTO tribes (tribename, tribeid, lastseen, server) VALUES ('{tribename}', {tribeid}, {Now(fmt='dt')}, '{inst}')")
             log.debug(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
         return tribename
     else:
@@ -22,14 +25,14 @@ def processgameline(inst, ptype, line):
         logheader = f'{Now(fmt="dt").strftime("%a %I:%M%p")}|{inst.upper():>8}|{ptype:<7}| '
         linesplit = removerichtext(line[21:]).split(", ")
         if ptype == 'TRAP':
-            tribename = gettribeinfo(linesplit)
+            tribename = gettribeinfo(linesplit, inst)
             msgsplit = linesplit[2][10:].split('trapped:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
             clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has trapped [{dino}]')
             # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has trapped [{dino}]')
         elif ptype == 'RELEASE':
-            tribename = gettribeinfo(linesplit)
+            tribename = gettribeinfo(linesplit, inst)
             msgsplit = linesplit[2][10:].split('released:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
@@ -37,9 +40,7 @@ def processgameline(inst, ptype, line):
             # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released [{dino}]')
         elif ptype == 'DEATH':
             log.debug(f'DEATH: {linesplit[0]}')
-            tribename = gettribeinfo(linesplit)
-            playername = linesplit[2][21:].split('-', 1)[0].strip()
-            # clog.log(ptype, f'tribe information collected for [{tribename}]')
+            tribename = gettribeinfo(linesplit, inst)
             if tribename is None:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
                 playername = deathsplit[0].strip()
@@ -54,8 +55,10 @@ def processgameline(inst, ptype, line):
                     # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has died')
                 else:
                     log.warning(f'not found gameparse death: {deathsplit}')
+            else:
+                log.info('deathskip')
         elif ptype == 'TAME':
-                tribename = gettribeinfo(linesplit)
+                tribename = gettribeinfo(linesplit, inst)
                 if tribename is None:
                     tamed = linesplit[0].split(' Tamed ')[1].strip(')').strip('!')
                     clog.log(ptype, f'{logheader}A tribe has tamed [{tamed}]')
@@ -70,7 +73,7 @@ def processgameline(inst, ptype, line):
         elif ptype == 'DECAY':
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{line} ## {linesplit}')
-            tribename = gettribeinfo(linesplit)
+            tribename = gettribeinfo(linesplit, inst)
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
             clog.log(ptype, f'{logheader}{tribename} {decayitem}')
