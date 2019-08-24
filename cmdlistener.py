@@ -569,8 +569,8 @@ def processgameline(inst, ptype, line):
             msgsplit = linesplit[2][10:].split('trapped:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
-            clog.log(ptype, f'[{playername.title()}] has trapped {dino}')
-            wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has trapped {dino}')
+            clog.log(ptype, f'[{playername.title()}] has trapped [{dino}]')
+            wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has trapped [{dino}]')
         elif ptype == 'RELEASE':
             tribename = linesplit[0][6:].strip()
             tribeid = linesplit[1].split(':')[0][3:].strip()
@@ -578,8 +578,8 @@ def processgameline(inst, ptype, line):
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
 
-            clog.log(ptype, f'[{playername.title()}] has released {dino}')
-            wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released {dino}')
+            clog.log(ptype, f'[{playername.title()}] has released [{dino}]')
+            wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released [{dino}]')
         elif ptype == 'DEATH':
             if linesplit[0].startswith('Tribe '):
                 tribename = linesplit[0][6:].strip()
@@ -592,8 +592,8 @@ def processgameline(inst, ptype, line):
                 if deathsplit[1].find('was killed by') != -1:
                     killedby = deathsplit[1].split('was killed by')[1].strip()[:-1]
                     playerlevel = deathsplit[1].split('was killed by')[0].strip()
-                    clog.log(ptype, f'[{playername.title()}] was killed by {killedby}')
-                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] {playerlevel} was killed by {killedby}')
+                    clog.log(ptype, f'[{playername.title()}] was killed by [{killedby}]')
+                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] {playerlevel} was killed by [{killedby}]')
                     log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
                 elif deathsplit[1].find('killed!') != -1:
                     log.log(ptype, f'[{playername.title()}] was killed')
@@ -605,11 +605,16 @@ def processgameline(inst, ptype, line):
         elif ptype == 'TAME':
             if linesplit[0].startswith('Tribe '):
                 tribename = linesplit[0][6:].strip()
-                #tribeid = linesplit[1].split(':')[0][3:].strip()
-                #playername = linesplit[2][21:].split('-', 1)[0].strip()
-                log.debug(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
+                if tribename.startswith('Tamed'):
+                    pass
+                else:
+                tribeid = linesplit[1].split(':')[0][3:].strip()
+                playername = linesplit[2][21:].split('-', 1)[0].strip()
+                log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
+                clog.log(ptype, f'TRIBETAME: {inst}, {ptype}, {linesplit}')
             else:
-                log.debug(f'TAME: {linesplit}')
+                log.info(f'TAME: {linesplit}')
+                clog.log(ptype, f'TAME: {linesplit}')
  
         else:
             log.debug(f'{inst}, {ptype}, {linesplit}')
