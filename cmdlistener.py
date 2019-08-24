@@ -12,6 +12,7 @@ import random
 import subprocess
 import threading
 import os
+import re
 from gtranslate import trans_to_eng
 
 lastvoter = 0.1
@@ -609,15 +610,23 @@ def processgameline(inst, ptype, line):
                     tribeid = linesplit[1].split(':')[0][3:].strip()
                     playername = linesplit[2][21:].split('-', 1)[0].strip()
                     clog.log(ptype, f'tribe information collected for [{tribename}]')
-                    log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
-                    clog.log(ptype, f'TRIBETAME: {inst}, {ptype}, {linesplit}')
+                    # log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
+                    # clog.log(ptype, f'TRIBETAME: {inst}, {ptype}, {linesplit}')
             else:
                 log.info(f'TAME: {linesplit}')
                 clog.log(ptype, f'TAME: {linesplit}')
- 
+        elif ptype == 'DECAY':
+            log.debug(f'{inst}, {ptype}, {linesplit}')
+            clog.log(ptype, f'{line} ## {linesplit}')
+            tribename = linesplit[0][6:].strip()
+            tribeid = linesplit[1].split(':')[0][3:].strip()
+            decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
+            decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
+            clog.log(ptype, f'{tribename} {decayitem}')
+            wglog(inst, removerichtext(line[21:]))
         else:
             log.debug(f'{inst}, {ptype}, {linesplit}')
-            clog.log(ptype, removerichtext(line[21:]))
+            clog.log(ptype, f'{line} ## {linesplit}')
             wglog(inst, removerichtext(line[21:]))
     except:
         log.critical(f'GAME LOG ERROR IN LINE: {line} ## {linesplit}')
