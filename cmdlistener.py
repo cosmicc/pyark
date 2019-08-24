@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from modules.configreader import instance, numinstances
 from modules.dbhelper import dbquery, dbupdate, cleanstring
-from modules.players import getplayer
+from modules.players import getplayer, newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from modules.servertools import serverexec, removerichtext
@@ -59,30 +59,6 @@ def getlastseen(seenname):
             return f'{seenname.capitalize()} was last seen {plasttime} ago on {flast[3]}'
         else:
             return f'{seenname.capitalize()} is online now on {flast[3]}'
-
-
-@log.catch
-def newplayer(steamid, inst):
-        pplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
-        if not pplayer[23]:
-            dbupdate("UPDATE players SET welcomeannounce = True WHERE steamid = '%s'" % (steamid,))
-            log.debug(f'Sending welcome message to [{pplayer[1].title()}] on [{inst.title()}]')
-            sleep(3)
-            mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-            sleep(3)
-            mtxt = 'Rewards points earned as you play, Public teleporters, crafting area, Build a rewards vault, free starter items inside.'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-            sleep(3)
-            mtxt = 'Press F1 or Discord at anytime for help. Have Fun!'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, mtxt, inst), shell=True)
-            sleep(3)
-            mtxt = 'Everyone welcome a new player to the cluster!'
-            subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (mtxt, inst), shell=True)
-            log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
-            writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
-        else:
-            log.warning('Skipping welcome message, player already marked announced')
 
 
 def respmyinfo(inst, whoasked):
@@ -439,33 +415,22 @@ def writechatlog(inst, whos, msg, tstamp):
 def processtcdata(inst, tcdata):
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
-    playtime = int(float(tcdata['TotalPlayed'].replace(',', '')))
-    rewardpoints = int(tcdata['Points'].replace(',', ''))
     pexist = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid, ), fetch='one')
-    if not pexist:
-        if steamid != '':
-            log.info(f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
-            dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
-                      firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-                      primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce) VALUES \
-                      ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
-                     (steamid, playername, Now(), inst, int(playtime), rewardpoints, Now(), 1, '', '', 0, 0, 0, 0,
-                      0, inst, 0, Now(), 0, False))
-            welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, inst))
-            welcom.start()
+    if not pexist and steamid != '':
+        welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, playername, inst))
+        welcom.start()
     elif steamid != '':
+        playtime = int(float(tcdata['TotalPlayed'].replace(',', '')))
+        rewardpoints = int(tcdata['Points'].replace(',', ''))
         if playername.lower() != pexist[1].lower():
             log.info(f'Player name update for [{pexist[1]}] to [{playername}]')
             dbupdate("UPDATE players SET playername = '%s' WHERE steamid = '%s'" % (playername, steamid))
-        if not pexist[23]:
-            welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, inst))
-            welcom.start()
         if inst == pexist[15]:
-            log.trace(f'player {playername} with steamid {steamid} was found on home server {inst}. updating info.')
+            log.trace(f'player {playername} with steamid {steamid} was found on HOME server {inst}. updating info.')
             dbupdate("UPDATE players SET playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
                      (playtime, rewardpoints, steamid))
         else:
-            log.trace(f'player {playername} with steamid {steamid} was found on NON home server {inst}. updating info.')
+            log.trace(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info.')
             if int(pexist[16]) != int(rewardpoints):
                 if int(rewardpoints) != 0:
                     if Now() - float(pexist[17]) > 60:

@@ -1,6 +1,38 @@
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
-from modules.configreader import steamapikey
-from modules.timehelper import Now, Secs
+from modules.timehelper import Now, Secs, wcstamp
+from modules.instances import writechat
+from modules.servertools import serverexec
+from modules.steamapi import getsteaminfo, getsteambans
+from loguru import logger as log
+from time import sleep
+
+
+@log.catch
+def newplayer(steamid, playername, inst):
+    log.info(f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
+    dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
+             firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
+             primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated) VALUES \
+             ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, playername, Now(), inst, 0, 0, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, True, True, 0, 0))
+    getsteaminfo(steamid)
+    getsteambans(steamid)
+    pplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fmt='dict', fetch='one')
+    dbupdate("UPDATE players SET welcomeannounce = True WHERE steamid = '%s'" % (steamid,))
+    log.debug(f'Sending welcome message to [{pplayer[1].title()}] on [{inst.title()}]')
+    sleep(3)
+    mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
+    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
+    sleep(3)
+    mtxt = 'Rewards points earned as you play, Public teleporters, crafting area, Build a rewards vault, free starter items inside.'
+    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
+    sleep(3)
+    mtxt = 'Press F1 or Discord at anytime for help. Have Fun!'
+    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
+    sleep(3)
+    mtxt = 'Everyone welcome a new player to the cluster!'
+    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
+    log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
+    writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
 
 
 def getliveplayersonline(inst):
@@ -198,5 +230,3 @@ def gettopplayedplayers(inst, fmt='list', case='normal', last=5):
     else:
         dbdata = dbquery("SELECT playername from players WHERE homeserver = '%s' ORDER BY playedtime DESC LIMIT %s" % (inst, last))
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
-
-

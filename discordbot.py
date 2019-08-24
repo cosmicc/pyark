@@ -458,7 +458,7 @@ def pyarkbot():
         embed = discord.Embed(description=msg, color=HELP_COLOR)
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
 
-    @client.command(name='servers', aliases=['server'])
+    @client.command(name='servers', aliases=['server', 'status'])
     @commands.check(logcommand)
     async def _servers(ctx):
         await serversinfo(ctx)

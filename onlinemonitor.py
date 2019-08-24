@@ -1,8 +1,8 @@
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import iseventtime, getcurrenteventinfo
 from modules.dbhelper import dbquery, dbupdate, cleanstring
-from modules.players import getplayer
-from modules.timehelper import elapsedTime, playedTime, wcstamp, Now
+from modules.players import getplayer, newplayer
+from modules.timehelper import elapsedTime, playedTime, Now
 from modules.servertools import serverexec
 from modules.steamapi import getsteaminfo, getsteambans
 from loguru import logger as log
@@ -114,17 +114,8 @@ def playergreet(steamid, steamname, inst):
     else:
         oplayer = getplayer(steamid)
         if not oplayer:
-            log.info(f'Player steamname: [{steamname}] on [{inst.title()}] was not found. Adding new player')
-            dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
-                       firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-                       primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, lotterywinnings, welcomeannounce) VALUES \
-                       ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, 'newplayer', Now(), inst, '1', 50, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, 0, False))
-            steamname = getsteaminfo(steamid)
-            getsteambans(steamid)
-            if not steamname:
-                dbupdate("UPDATE players SET online = True WHERE steamid = '%s'" % (steamid,))
-            else:
-                dbupdate("UPDATE players SET online = True, steamname = '%s' WHERE steamid = '%s'" % (steamname, steamid))
+            welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, steamname, inst))
+            welcom.start()
         else:
             if oplayer[16] != 0 and oplayer[15] == inst:
                 xferpoints = int(oplayer[16])

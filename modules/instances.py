@@ -7,6 +7,17 @@ from loguru import logger as log
 from re import compile as rcompile
 
 
+def writechat(inst, whos, msg, tstamp):
+    isindb = False
+    if whos != 'ALERT':
+        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
+        if isindb:
+            dbupdate("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')""" % (inst, whos, msg.replace("'", ""), tstamp))
+
+    elif whos == "ALERT":
+        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
+
+
 def stripansi(stripstr):
     ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     return(ansi_escape.sub('', stripstr))
