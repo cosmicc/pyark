@@ -77,9 +77,17 @@ def processgameline(inst, ptype, line):
             tribename = gettribeinfo(linesplit)
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-            clog.log(ptype, f'{tribename} {decayitem}')
+            clog.log(ptype, f'{logheader}{tribename} {decayitem}')
             # wglog(inst, removerichtext(line[21:]))
-        else:
+        elif ptype == 'CLAIM':
             log.debug(f'{inst}, {ptype}, {linesplit}')
+            clog.log(ptype, f'{line} ## {linesplit}')
+            tribename = gettribeinfo(linesplit)
+            decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
+            # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
+            clog.log(ptype, f'{logheader}{tribename} {decayitem}')
+ 
+        else:
+            log.debug(f'UNKNOWN: {inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{linesplit}')
             # wglog(inst, removerichtext(line[21:]))
