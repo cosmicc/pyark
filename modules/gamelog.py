@@ -5,8 +5,10 @@ from modules.servertools import removerichtext
 
 
 @log.catch
-def putplayerintribe():
-    pass
+def putplayerintribe(tribeid, playername):
+    tribeid = dbquery(f"SELECT tribeid, players from tribes where tribeid = '{tribeid}'", fetch='one', single=True)
+    if tribeid:
+        log.info(f'tribeid: {tribeid[0]}, players: {tribeid[1]} < {playername}')
 
 
 @log.catch
@@ -22,7 +24,7 @@ def gettribeinfo(linesplit, inst, ptype):
                 dbupdate(f"""UPDATE tribes SET lastseen = '{Now(fmt="dt")}' WHERE tribeid = '{tribeid}'""")
 
             log.debug(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
-            return tribename
+            return tribename, tribeid
         else:
             return None
     else:
@@ -35,22 +37,24 @@ def processgameline(inst, ptype, line):
         logheader = f'{Now(fmt="dt").strftime("%a %I:%M%p")}|{inst.upper():>8}|{ptype:<7}| '
         linesplit = removerichtext(line[21:]).split(", ")
         if ptype == 'TRAP':
-            tribename = gettribeinfo(linesplit, inst, ptype)
+            tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             msgsplit = linesplit[2][10:].split('trapped:')
             playername = msgsplit[0].strip()
+            putplayerintribe(tribeid, playername)
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
             clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has trapped [{dino}]')
             # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has trapped [{dino}]')
         elif ptype == 'RELEASE':
-            tribename = gettribeinfo(linesplit, inst, ptype)
+            tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             msgsplit = linesplit[2][10:].split('released:')
             playername = msgsplit[0].strip()
+            putplayerintribe(tribeid, playername)
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
             clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has released [{dino}]')
             # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released [{dino}]')
         elif ptype == 'DEATH':
             log.debug(f'DEATH: {linesplit[0]}')
-            tribename = gettribeinfo(linesplit, inst, ptype)
+            tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             if tribename is None:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
                 playername = deathsplit[0].strip()
@@ -68,41 +72,44 @@ def processgameline(inst, ptype, line):
             else:
                 log.info(f'deathskip: {linesplit}')
         elif ptype == 'TAME':
-                tribename = gettribeinfo(linesplit, inst, ptype)
+                tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
                 if tribename is None:
                     tamed = linesplit[0].split(' Tamed ')[1].strip(')').strip('!')
                     clog.log(ptype, f'{logheader}A tribe has tamed [{tamed}]')
                 else:
                     log.debug(f'TRIBETAME: {inst}, {linesplit}')
                     playername = linesplit[2][10:].split(' Tamed')[0].strip()
+                    putplayerintribe(tribeid, playername)
                     tamed = linesplit[2].split(' Tamed')[1].strip(')').strip('!').strip()
                     if playername.title() == 'Your Tribe':
                         clog.log(ptype, f'{logheader}[{tribename}] tamed [{tamed}]')
                     else:
                         clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) tamed [{tamed}]')
         elif ptype == 'DEMO':
-                tribename = gettribeinfo(linesplit, inst, ptype)
+                tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
                 if tribename is None:
                     clog.log(ptype, f'{logheader}SINGLDEMO: [{linesplit}]')
                 else:
                     log.debug(f'TRIBEDEMO: {inst}, {linesplit}')
                     playername = linesplit[2][10:].split(' demolished a ')[0].strip()
+                    putplayerintribe(tribeid, playername)
                     demoitem = linesplit[2].split(' demolished a ')[1].replace("'", "").strip(')').strip('!').strip()
                     clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
  
         elif ptype == 'DECAY':
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{line} ## {linesplit}')
-            tribename = gettribeinfo(linesplit, inst, ptype)
+            tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
             clog.log(ptype, f'{logheader}{tribename} {decayitem}')
             # wglog(inst, removerichtext(line[21:]))
         elif ptype == 'CLAIM':
             log.debug(f'{inst}, {ptype}, {linesplit}')
-            tribename = gettribeinfo(linesplit, inst, ptype)
+            tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             if tribename:
                 playername = linesplit[2][10:].split(' claimed ')[0].strip()
+                putplayerintribe(tribeid, playername)
                 claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
                 clog.log(ptype, f'{logheader} [{playername}] ({tribename}) has claimed [{claimitem}]')
