@@ -12,7 +12,7 @@ def gettribeinfo(linesplit, inst, ptype):
             tribeid = linesplit[1].split(':')[0][3:].strip()
             indb = dbquery(f'SELECT tribeid from tribes where tribeid = {tribeid}', fetch='one', single=True)
             if not indb:
-                dbupdate(f"INSERT INTO tribes (tribename, tribeid, lastseen, server) VALUES ('{tribename}', {int(tribeid)}, {Now(fmt='dt')}, '{inst}')")
+                dbupdate(f"INSERT INTO tribes (tribename, tribeid, lastseen, server) VALUES ('{tribename}', '{int(tribeid)}', {Now(fmt='dt')}, '{inst}')")
             elif ptype != 'DECAY' or ptype != 'DEATH':
                 dbupdate(f"UPDATE tribes SET lastseen = {Now(fmt='dt')} WHERE tribeid = '{tribeid}'")
 
