@@ -143,7 +143,7 @@ def checkwipe(inst):
         wipeit(inst)
         dwtimer = 0
     else:
-        log.debug(f'no dino wipe is needed for {inst}')
+        log.trace(f'no dino wipe is needed for {inst}')
 
 
 def isrebooting(inst):
@@ -428,7 +428,7 @@ def checkconfig():
                 maintrest = "configuration update"
                 instancerestart(inst, maintrest)
             else:
-                log.debug(f'no config changes detected for instance {inst}')
+                log.trace(f'no config changes detected for instance {inst}')
 
 
 @log.catch

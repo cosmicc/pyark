@@ -600,6 +600,15 @@ def processgameline(inst, ptype, line):
                     log.info(f'deathtest: {deathsplit}')
                 else:
                     log.warning(f'not found gameparse death: {deathsplit}')
+        elif ptype == 'TAME':
+            if linesplit[0].startswith('Tribe '):
+                tribename = linesplit[0][6:].strip()
+                tribeid = linesplit[1].split(':')[0][3:].strip()
+                playername = linesplit[2][21:].split('-', 1)[0].strip()
+                log.debug(f'TRIBETAME: {inst}, {ptype}, {playername}, {linesplit}')
+            else:
+                log.debug(f'TAME: {linesplit}')
+ 
         else:
             log.debug(f'{inst}, {ptype}, {linesplit}')
             log.log(ptype, removerichtext(line[21:]))
