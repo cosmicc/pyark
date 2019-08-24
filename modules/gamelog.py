@@ -6,7 +6,7 @@ import re
 
 @log.catch
 def gettribeinfo(linesplit):
-    if len(linesplit) == 3 and linesplit[0].strip().strartswith('Tribe'):
+    if len(linesplit) == 3 and linesplit[0].strip().startswith('Tribe'):
         tribename = linesplit[0][6:].strip()
         if linesplit[1].strip().startswith('ID'):
             tribeid = linesplit[1].split(':')[0][3:].strip()
