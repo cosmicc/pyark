@@ -1,4 +1,5 @@
 from loguru import logger as log
+from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now
 from modules.servertools import removerichtext
 import re
@@ -11,7 +12,7 @@ def gettribeinfo(linesplit, inst):
         if linesplit[1].strip().startswith('ID'):
             tribeid = linesplit[1].split(':')[0][3:].strip()
             indb = dbquery(f'SELECT tribeid from tribes where tribeid = {tribeid}', fetch='one', single=True)
-            if not inbd:
+            if not indb:
                 dbupdate(f"INSERT INTO tribes (tribename, tribeid, lastseen, server) VALUES ('{tribename}', {tribeid}, {Now(fmt='dt')}, '{inst}')")
             log.debug(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
         return tribename
