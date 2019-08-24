@@ -561,6 +561,7 @@ def wglog(minst, line):
 @log.catch
 def processgameline(inst, ptype, line):
     try:
+        log.patch(lambda record: record["extra"].update(instance=inst))
         linesplit = removerichtext(line[21:]).split(", ")
         if ptype == 'TRAP':
             tribename = linesplit[0][6:].strip()
@@ -576,6 +577,7 @@ def processgameline(inst, ptype, line):
             msgsplit = linesplit[2][10:].split('released:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip()
+
             log.log(ptype, f'[{playername.title()}] has released {dino}')
             wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released {dino}')
         elif ptype == 'DEATH':
