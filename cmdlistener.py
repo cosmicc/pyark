@@ -562,7 +562,7 @@ def wglog(minst, line):
 @log.catch
 def processgameline(inst, ptype, line):
         clog = log.patch(lambda record: record["extra"].update(instance=inst))
-        logheader = f'{Now(fmt="dt").strftime("%m-%d %I:%M%p")}| {inst.upper():>8}|{ptype:<7}| '
+        logheader = f'{Now(fmt="dt").strftime("%m-%d %I:%M%p")}|{inst.upper():>8}|{ptype:<7}| '
         linesplit = removerichtext(line[21:]).split(", ")
         if ptype == 'TRAP':
             tribename = linesplit[0][6:].strip()
@@ -609,7 +609,7 @@ def processgameline(inst, ptype, line):
                     #playername = linesplit[2][21:].split('-', 1)[0].strip()
                     #clog.log(ptype, f'TRIBETAME: tribe information collected for [{tribename}]')
                     # log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
-                    clog.log(ptype, f'TRIBETAME: {inst}, {ptype}, {linesplit}')
+                    clog.log(ptype, f'{logheader}TRIBETAME: {linesplit}')
             else:
                 playername = linesplit[0].split('of Tribe')[0].strip()
                 tribename = linesplit[0].split('of Tribe')[1].split(' Tamed a')[0]
@@ -622,11 +622,11 @@ def processgameline(inst, ptype, line):
             tribeid = linesplit[1].split(':')[0][3:].strip()
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-            clog.log(ptype, f'{ptype}: {tribename} {decayitem}')
+            clog.log(ptype, f'{logheader}{tribename} {decayitem}')
             wglog(inst, removerichtext(line[21:]))
         else:
             log.debug(f'{inst}, {ptype}, {linesplit}')
-            clog.log(ptype, f'{ptype}: {line} ## {linesplit}')
+            clog.log(ptype, f'{logheader}{line} ## {linesplit}')
             wglog(inst, removerichtext(line[21:]))
 
       
