@@ -40,7 +40,7 @@ def processgameline(inst, ptype, line):
             tribename = gettribeinfo(linesplit)
             playername = linesplit[2][21:].split('-', 1)[0].strip()
             # clog.log(ptype, f'tribe information collected for [{tribename}]')
-           if tribename is None:
+            if tribename is None:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
                 playername = deathsplit[0].strip()
                 if deathsplit[1].find('was killed by') != -1:
