@@ -94,10 +94,13 @@ def processgameline(inst, ptype, line):
         elif ptype == 'CLAIM':
             log.debug(f'{inst}, {ptype}, {linesplit}')
             tribename = gettribeinfo(linesplit, inst, ptype)
-            playername = linesplit[2][10:].split(' claimed ')[0].strip()
-            claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
+            if tribename:
+                playername = linesplit[2][10:].split(' claimed ')[0].strip()
+                claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-            clog.log(ptype, f'{logheader} [{playername}] ({tribename}) has claimed [{claimitem}]')
+                clog.log(ptype, f'{logheader} [{playername}] ({tribename}) has claimed [{claimitem}]')
+            else:
+                clog.log(ptype, f'{logheader} SINGLECLAIM: {linesplit}')
  
         else:
             log.debug(f'UNKNOWN: {inst}, {ptype}, {linesplit}')
