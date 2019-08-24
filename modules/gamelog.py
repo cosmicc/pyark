@@ -6,12 +6,16 @@ from modules.servertools import removerichtext
 
 @log.catch
 def putplayerintribe(tribeid, playername):
-    tribeid = dbquery(f"SELECT tribeid, players FROM tribes WHERE tribeid = '{tribeid}'", fetch='one', single=True)
-    player = dbquery(f"SELECT steamid FROM players WHERE playername = '{playername.lower()}' AND online = True", fetch='one', single=True)
-    if tribeid:
+    tribeid = dbquery(f"SELECT tribeid, players FROM tribes WHERE tribeid = '{tribeid}'", fetch='one')
+    steamid = dbquery(f"SELECT steamid FROM players WHERE playername = '{playername.lower()}' AND online = True", fetch='one', single=True)
+    if tribeid and steamid:
         log.info(f'tribeid: {tribeid[0]}, {len(tribeid)}  players: {type(tribeid[1])} < {playername}')
-        #if playername.lower() not in tribeid[1]:
-        #    log.info(f'{playername} not in!')
+        if tribeid[1] is None:
+            plist = [steamid]
+            dbupdate(f"UPDATE tribes SET players = {plist} WHERE tribeid = 'tribeid[0]'")
+        elif tribeid[1] is list:
+            if playername.lower() not in tribeid[1]:
+                log.info(f'{playername} not in!')
 
 
 @log.catch
