@@ -570,7 +570,7 @@ def processgameline(inst, ptype, line):
             msgsplit = linesplit[2][10:].split('trapped:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
-            clog.log(ptype, f'{logheader}[{playername.title()}] has trapped [{dino}] on [{inst.title()}]')
+            clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has trapped [{dino}]')
             wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has trapped [{dino}]')
         elif ptype == 'RELEASE':
             tribename = linesplit[0][6:].strip()
@@ -578,7 +578,7 @@ def processgameline(inst, ptype, line):
             msgsplit = linesplit[2][10:].split('released:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
-            clog.log(ptype, f'{logheader}[{playername.title()}] has released [{dino}] on [{inst.title()}]')
+            clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has released [{dino}]')
             wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released [{dino}]')
         elif ptype == 'DEATH':
             if linesplit[0].startswith('Tribe '):
