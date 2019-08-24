@@ -12,9 +12,9 @@ html, body, #vtop { margin: 0; padding: 0; height: 100%; width: 100%; }
 .log { white-space: pre-wrap; }
 .game { white-space: pre-wrap; }
 .chat { white-space: pre-wrap; }
-.logbox { margin-bottom: 10px; margin-top: 10px; background-color: #000000; text-align: left; width: 100%; height: 49%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
-.gamebox { margin-bottom: 10px; background-color: #000000; text-align: left; width: 100%; height: 24%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
-.chatbox { padding-bottom: 5px; background-color: #000000; text-align: left; width: 100%; height: 24%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
+.logbox { margin-bottom: 10px; margin-top: 10px; background-color: #000000; text-align: left; width: 100%; height: 40%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
+.gamebox { margin-bottom: 10px; background-color: #000000; text-align: left; width: 100%; height: 20%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
+.chatbox { padding-bottom: 5px; background-color: #000000; text-align: left; width: 100%; height: 20%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
 .chatinput { background-color: #000000; text-align: left; height: 18px; width: 100%; border: 0px; }
 .chatinput > .input { background-color: #000000; color: #EEEEEE; height: 18px; margin-left: 5px; align: left; width: 100%; border: 0px; }
 .chatcombined { text-align: center; width: 100%; border: 1px solid #999; }
@@ -26,8 +26,8 @@ html, body, #vtop { margin: 0; padding: 0; height: 100%; width: 100%; }
 .opbutton { align-items: center; vertical-align: middle; text-align: center; font-size: 40px; padding-bottom: 5px; height: 40px; width: 80px; border: 2px solid #333; border-radius: 35px; color: #FFFFFF; background-color: #002054; text-decoration: none; }
 .lebutton { text-align: center; display: inline-block; margin-top: 2px; margin-bottom: 2px; padding-bottom: 2px; font-size: 15px; height: 15px; width: 40px; border: 1px solid #AAA; border-radius: 10px; text-decoration: none; }
 .pad { height: 40px; width: 50px; }
-@media screen and (max-width: 800px) { .log { font-size: 12px; height: 14px } .chat { font-size: 12px; height: 16px } .logbox { height: 50px; } .chatbox { height: 30px; } }
-@media screen and (min-width: 800px) { .log { font-size: 16px; height: 18px } .chat { font-size: 16px; height: 18px } .toplevel { margin: 20px } .logbox { height: 325px; } .chatbox { height: 125px; } .gamebox { height: 150px; }}
+@media screen and (max-width: 800px) { .log { font-size: 12px; height: 14px } .chat { font-size: 12px; height: 16px } }
+@media screen and (min-width: 800px) { .log { font-size: 16px; height: 18px } .chat { font-size: 16px; height: 18px } .toplevel { margin: 20px } }
 @media screen and (max-width: 1000px) { .serverbutton { width: 105px; } }
 .body_foreground > .bold,.bold > .body_foreground, body.body_foreground > pre > .bold { color: #FFFFFF; font-weight: normal; }
 .inv_foreground { color: #000000; }
