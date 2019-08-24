@@ -565,14 +565,14 @@ def processgameline(inst, ptype, line):
         tribeid = linesplit[1].split(':')[0][3:].strip()
         msgsplit = linesplit[2][10:].split('trapped:')
         playername = msgsplit[0].strip()
-        dino = msgsplit[1].strip()
+        dino = msgsplit[1].strip()[:-1]
         log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
     elif ptype == 'RELEASE':
         tribename = linesplit[0][6:].strip()
         tribeid = linesplit[1].split(':')[0][3:].strip()
         msgsplit = linesplit[2][10:].split('released:')
         playername = msgsplit[0].strip()
-        dino = msgsplit[1].strip()
+        dino = msgsplit[1].strip()[:-1]
         log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
     elif ptype == 'DEATH':
         if linesplit[0].startswith('Tribe '):
