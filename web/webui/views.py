@@ -19,6 +19,7 @@ from ..database import db
 from .. import socketio
 from modules.logclient import LogClient, loggerchat
 from chatclient import ChatClient
+from gameclient import GameClient
 from pycountry import countries
 import json
 import pandas as pd
@@ -35,6 +36,29 @@ logthreads = []
 
 class ExtendedRegisterForm(RegisterForm):
     timezone = StringField('Time Zone')
+
+
+def GameThread(sid):
+    log.debug(f'Starting game thread for {sid}')
+    gamewatch = GameClient('ALL', 30, True)
+    gamewatch.start()
+    while True:
+        stillrun = False
+        for each in logthreads:
+            if each == sid:
+                stillrun = True
+        if not stillrun:
+            break
+        try:
+            msg = gamewatch.getline()
+            if msg is not None and msg != 'None':
+                log.debug(f'Sending gameline to: {sid}')
+                socketio.emit('gameline', {'line': msg}, namespace='/logstream', room=sid)
+        except:
+            log.exception('ERROR!!')
+        finally:
+            socketio.sleep(.03)
+    log.debug(f'Closing down game thread for {sid}')
 
 
 def ChatThread(sid):
@@ -115,8 +139,10 @@ def connect():
     logthreads.append(request.sid)
     socketio.sleep(.1)
     socketio.start_background_task(target=ChatThread, sid=request.sid)
-    socketio.sleep(.5)
+    socketio.sleep(.1)
     socketio.start_background_task(target=LogThread, sid=request.sid)
+    socketio.sleep(.1)
+    socketio.start_background_task(target=GameThread, sid=request.sid)
 
 
 @log.catch
@@ -515,7 +541,6 @@ def instances():
 
 def instanceinfo(inst):
     return dbquery("SELECT * FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='dict', fetch='one')
-
 
 
 def getautoevents():
