@@ -53,6 +53,7 @@ def processgameline(inst, ptype, line):
                     tribeid = linesplit[1].split(':')[0][3:].strip()
                     playername = linesplit[2][10:].split(' Tamed')[0].strip()
                     tamed = linesplit[2].split(' Tamed')[1].strip(')').strip('!').strip()
-                    clog.log(ptype, f'{logheader}[{playername.title()}] tamed [{tamed}]')
-                    # log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
-                    clog.log(ptype, f'{logheader}TRIBETAME: {linesplit}')
+                    if playername.title() == 'Your Tribe':
+                        clog.log(ptype, f'{logheader}[{tribename}] tamed [{tamed}]')
+                    else:
+                        clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) tamed [{tamed}]')
