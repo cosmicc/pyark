@@ -13,6 +13,7 @@ import sys
 from ansi2html import Ansi2HTMLConverter
 
 
+@log.catch
 class GameClient():
     def __init__(self, server, lines, html):
         self.gamelog = '/home/ark/shared/logs/pyark/game.log'
@@ -57,14 +58,10 @@ class GameClient():
                 tlog.follow()
 
     def processgameline(self, line):
-        linesplit = line.split("|")
-        if len(linesplit) > 1:
-            ctime = linesplit[0]
-            cserver = linesplit[1].strip()
             # cplayer = linesplit[2].strip()
-            cmsg = linesplit[2].strip()
-            cdt = estshift(dtparse(ctime))
-            cdtf = cdt.strftime("%a %I:%M:%S%p")
+            #cmsg = linesplit[2].strip()
+            #cdt = estshift(dtparse(ctime))
+            #cdtf = cdt.strftime("%a %I:%M:%S%p")
             # if cplayer not in self.players:
             #    ncolor = int(self.pcolors[self.pcolorindex])
             #    if self.pcolorindex == len(self.pcolors) - 1:
@@ -73,7 +70,7 @@ class GameClient():
             #    self.players.update({cplayer: ncolor})
             # else:
             #    ncolor = self.players[cplayer]
-            newline = f'{cdtf} [{cserver.title()}] {cmsg}'
+            newline = f'{line.strip()}'
             if self.html:
                 self.messages.append(self.ansiconverter.convert(newline, full=False, ensure_trailing_newline=False))
             else:

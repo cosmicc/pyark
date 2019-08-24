@@ -40,7 +40,7 @@ class ExtendedRegisterForm(RegisterForm):
 
 def GameThread(sid):
     log.debug(f'Starting game thread for {sid}')
-    gamewatch = GameClient('ALL', 30, True)
+    gamewatch = GameClient('ALL', 10, True)
     gamewatch.start()
     while True:
         stillrun = False
@@ -139,10 +139,10 @@ def connect():
     logthreads.append(request.sid)
     socketio.sleep(.1)
     socketio.start_background_task(target=ChatThread, sid=request.sid)
-    socketio.sleep(.1)
-    socketio.start_background_task(target=LogThread, sid=request.sid)
-    socketio.sleep(.1)
+    socketio.sleep(.2)
     socketio.start_background_task(target=GameThread, sid=request.sid)
+    socketio.sleep(.2)
+    socketio.start_background_task(target=LogThread, sid=request.sid)
 
 
 @log.catch
