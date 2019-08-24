@@ -559,7 +559,13 @@ def wglog(minst, line):
 
 
 def processgameline(inst, ptype, line):
-    log.debug(f'{inst}, {ptype}, {removerichtext(line[21:])}')
+    linesplit = removerichtext(line[21:]).split(", ")
+    log.debug(f'{inst}, {ptype}, {linesplit}')
+    if ptype == 'TRAP':
+        tribename = linesplit[0][6:]
+        tribeid = linesplit[1].split(':')[0][4:]
+        msg = linesplit[2][11:]
+        log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {msg}')
     log.log(ptype, removerichtext(line[21:]))
     wglog(inst, removerichtext(line[21:]))
 
