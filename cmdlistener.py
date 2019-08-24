@@ -569,7 +569,7 @@ def processgameline(inst, ptype, line):
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip()
             log.log(ptype, f'[{playername.title()}] has trapped {dino}')
-            wglog(inst, f'[{playername.title()}] has trapped {dino}')
+            wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has trapped {dino}')
         elif ptype == 'RELEASE':
             tribename = linesplit[0][6:].strip()
             tribeid = linesplit[1].split(':')[0][3:].strip()
@@ -577,7 +577,7 @@ def processgameline(inst, ptype, line):
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip()
             log.log(ptype, f'[{playername.title()}] has released {dino}')
-            wglog(inst, f'[{playername.title()}] has released {dino}')
+            wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released {dino}')
         elif ptype == 'DEATH':
             if linesplit[0].startswith('Tribe '):
                 tribename = linesplit[0][6:].strip()
@@ -590,10 +590,14 @@ def processgameline(inst, ptype, line):
                 if deathsplit[1].find('was killed by') != -1:
                     killedby = deathsplit[1].split('was killed by')[1].strip()[:-1]
                     log.log(ptype, f'[{playername.title()}] was killed by {killedby}')
-                    wglog(inst, f'[{playername.title()}] was killed by {killedby}')
+                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] was killed by {killedby}')
                     log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
+                    log.info(f'killtest: {deathsplit}')
                 elif deathsplit[1].find('killed!') != -1:
+                    log.log(ptype, f'[{playername.title()}] was killed')
+                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] was killed')
                     log.debug(f'{inst}, {ptype}, {playername}, WAS KILLED!')
+                    log.info(f'deathtest: {deathsplit}')
                 else:
                     log.warning(f'not found gameparse death: {deathsplit}')
         else:
