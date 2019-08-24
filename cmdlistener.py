@@ -561,7 +561,7 @@ def wglog(minst, line):
 @log.catch
 def processgameline(inst, ptype, line):
     try:
-        log.patch(lambda record: record["extra"].update(instance=inst))
+        log = log.patch(lambda record: record["extra"].update(instance=inst))
         linesplit = removerichtext(line[21:]).split(", ")
         if ptype == 'TRAP':
             tribename = linesplit[0][6:].strip()
