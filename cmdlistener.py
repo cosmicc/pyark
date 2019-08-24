@@ -681,7 +681,7 @@ def checkcommands(minst):
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('[WBUI]') != -1 or line.find('Force respawning Wild Dinos!') != -1:
             if line.find('demolished a') != -1:
                 processgameline(inst, 'DEMO', line.replace('"', '').strip())
-            elif line.find('was auto-decay destroyed!') != -1:
+            elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
                 processgameline(inst, 'DECAY', line.replace('"', '').strip())
             elif line.find(' claimed ') != -1:
                 processgameline(inst, 'CLAIM', line.replace('"', '').strip())
