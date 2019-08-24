@@ -25,6 +25,7 @@ def processgameline(inst, ptype, line):
             # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released [{dino}]')
         elif ptype == 'DEATH':
             if linesplit[0].startswith('Tribe '):
+                log.debug(f'DEATH: {linesplit[0]}')
                 tribename = linesplit[0][6:].strip()
                 tribeid = linesplit[1].split(':')[0][3:].strip()
                 playername = linesplit[2][21:].split('-', 1)[0].strip()
@@ -33,7 +34,7 @@ def processgameline(inst, ptype, line):
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
                 playername = deathsplit[0].strip()
                 if deathsplit[1].find('was killed by') != -1:
-                    killedby = deathsplit[1].split('was killed by')[1].strip()[:-1].replace('()', '')
+                    killedby = deathsplit[1].split('was killed by')[1].strip()[:-1].replace('()', '').strip()
                     playerlevel = deathsplit[1].split('was killed by')[0].strip().replace('()', '')
                     clog.log(ptype, f'{logheader}[{playername.title()}] {playerlevel} was killed by [{killedby}] on [{inst.title()}]')
                     # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] {playerlevel} was killed by [{killedby}]')
