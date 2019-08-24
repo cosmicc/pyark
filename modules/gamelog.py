@@ -73,6 +73,16 @@ def processgameline(inst, ptype, line):
                         clog.log(ptype, f'{logheader}[{tribename}] tamed [{tamed}]')
                     else:
                         clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) tamed [{tamed}]')
+        elif ptype == 'DEMO':
+                tribename = gettribeinfo(linesplit, inst, ptype)
+                if tribename is None:
+                    clog.log(ptype, f'{logheader}SINGLDEMO: [{linesplit}]')
+                else:
+                    log.debug(f'TRIBEDEMO: {inst}, {linesplit}')
+                    playername = linesplit[2][10:].split(' demolished a ')[0].strip()
+                    demoitem = linesplit[2].split(' demolished a ')[1].strip(')').strip('!').strip()
+                    clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
+ 
         elif ptype == 'DECAY':
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{line} ## {linesplit}')
