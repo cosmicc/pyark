@@ -558,6 +558,7 @@ def wglog(minst, line):
     f.close()
 
           
+@log.catch
 def processgameline(inst, ptype, line):
     try:
         linesplit = removerichtext(line[21:]).split(", ")
@@ -588,6 +589,8 @@ def processgameline(inst, ptype, line):
                 playername = deathsplit[0].strip()
                 if deathsplit[1].split().find('was killed by') != -1:
                     killedby = deathsplit[1].split('was killed by')[1].strip()[:-1]
+                    log.log(ptype, f'[{playername.title()}] was killed by {killedby}')
+                     wglog(inst, f'[{playername.title()}] was killed by {killedby}'))
                     log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
                 elif deathsplit[1].split().find('killed!') != -1:
                     log.debug(f'{inst}, {ptype}, {playername}, WAS KILLED!')
@@ -595,8 +598,8 @@ def processgameline(inst, ptype, line):
                     log.warning(f'not found gameparse death: {deathsplit}')
         else:
             log.debug(f'{inst}, {ptype}, {linesplit}')
-        log.log(ptype, removerichtext(line[21:]))
-        wglog(inst, removerichtext(line[21:]))
+            log.log(ptype, removerichtext(line[21:]))
+            wglog(inst, removerichtext(line[21:]))
     except:
         log.critical(f'GAME LOG ERROR IN LINE: {line} ## {linesplit}')
 
