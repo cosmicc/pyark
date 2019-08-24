@@ -692,14 +692,26 @@ def checkcommands(minst):
     for line in iter(b.splitlines()):
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line):
             pass
-
-        elif line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('Force respawning Wild Dinos!') != -1:
-            log.warning('CAUGHT!')
+        elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('Force respawning Wild Dinos!') != -1:
+            log.warning('ADMIN LINE')
             processadminline(inst, line.replace('"', '').strip())
-        elif line.find('AdminCmd:') != -1:
-            log.warning('CAUGHT2222!!!!')
+        elif len(line.split(',')) == 3:
             if line.find(' demolished a') != -1 or line.find('Your Tribe killed') != -1:
                 processgameline(inst, 'DEMO', line.replace('"', '').strip())
+            elif line.find('released:') != -1:
+                processgameline(inst, 'RELEASE', line.replace('"', '').strip())
+            elif line.find('trapped:') != -1:
+                processgameline(inst, 'TRAP', line.replace('"', '').strip())
+            elif line.find(' was killed!') != -1:
+                processgameline(inst, 'DEATH', line.replace('"', '').strip())
+            elif line.find(' was killed by ') != -1:
+                processgameline(inst, 'DEATH', line.replace('"', '').strip())
+            elif line.find('Tamed a') != -1:
+                processgameline(inst, 'TAME', line.replace('"', '').strip())
+            elif line.startswith('Error:') != -1:
+                processadminline(inst, line.replace('"', '').strip())
+            elif line.find('starved to death!') != -1:
+                processgameline(inst, 'DEATH', line.replace('"', '').strip())
             elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
                 processgameline(inst, 'DECAY', line.replace('"', '').strip())
             elif line.find(" claimed '") != -1:
@@ -709,20 +721,8 @@ def checkcommands(minst):
             else:
                 log.warning('CAUGHT3333!!!!')
                 processadminline(inst, line.replace('"', '').strip())
-        elif line.find('released:') != -1:
-            processgameline(inst, 'RELEASE', line.replace('"', '').strip())
-        elif line.find('trapped:') != -1:
-            processgameline(inst, 'TRAP', line.replace('"', '').strip())
-        elif line.find(' was killed!') != -1:
-            processgameline(inst, 'DEATH', line.replace('"', '').strip())
-        elif line.find(' was killed by ') != -1:
-            processgameline(inst, 'DEATH', line.replace('"', '').strip())
-        elif line.find('Tamed a') != -1:
-            processgameline(inst, 'TAME', line.replace('"', '').strip())
-        elif line.startswith('Error:') or line.find('</>') != -1:
+        elif line.startswith('Error:') != -1:
             processadminline(inst, line.replace('"', '').strip())
-        elif line.find('starved to death!') != -1:
-            processgameline(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('left this ARK!') != -1:
             playerleave(line, minst)
         elif line.find('joined this ARK!') != -1:
