@@ -14,7 +14,7 @@ def gettribeinfo(linesplit, inst, ptype):
             if not indb:
                 dbupdate(f"INSERT INTO tribes (tribename, tribeid, server) VALUES ('{tribename}', '{int(tribeid)}', '{inst}')")
             if ptype != 'DECAY' or ptype != 'DEATH':
-                dbupdate(f"UPDATE tribes SET lastseen = {Now(fmt='dt')} WHERE tribeid = '{tribeid}'")
+                dbupdate(f"""UPDATE tribes SET lastseen = '{Now(fmt="dt")}' WHERE tribeid = '{tribeid}'""")
 
             log.debug(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
         return tribename
