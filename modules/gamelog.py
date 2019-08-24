@@ -23,7 +23,6 @@ def processgameline(inst, ptype, line):
         linesplit = removerichtext(line[21:]).split(", ")
         if ptype == 'TRAP':
             tribename = gettribeinfo(linesplit)
-            tribeid = linesplit[1].split(':')[0][3:].strip()
             msgsplit = linesplit[2][10:].split('trapped:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
@@ -31,7 +30,6 @@ def processgameline(inst, ptype, line):
             # wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has trapped [{dino}]')
         elif ptype == 'RELEASE':
             tribename = gettribeinfo(linesplit)
-            tribeid = linesplit[1].split(':')[0][3:].strip()
             msgsplit = linesplit[2][10:].split('released:')
             playername = msgsplit[0].strip()
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
@@ -41,7 +39,6 @@ def processgameline(inst, ptype, line):
             if linesplit[0].startswith('Tribe '):
                 log.debug(f'DEATH: {linesplit[0]}')
                 tribename = gettribeinfo(linesplit)
-                tribeid = linesplit[1].split(':')[0][3:].strip()
                 playername = linesplit[2][21:].split('-', 1)[0].strip()
                 # clog.log(ptype, f'tribe information collected for [{tribename}]')
             else:
@@ -61,11 +58,10 @@ def processgameline(inst, ptype, line):
         elif ptype == 'TAME':
             if linesplit[0].startswith('Tribe '):
                 tribename = gettribeinfo(linesplit)
-                if tribename.startswith('Tamed'):
+                if tribename is None:
                     log.debug(f'SINGLETRIBETAME: {inst}, {linesplit}')
                 else:
                     log.debug(f'TRIBETAME: {inst}, {linesplit}')
-                    tribeid = linesplit[1].split(':')[0][3:].strip()
                     playername = linesplit[2][10:].split(' Tamed')[0].strip()
                     tamed = linesplit[2].split(' Tamed')[1].strip(')').strip('!').strip()
                     if playername.title() == 'Your Tribe':
@@ -79,7 +75,6 @@ def processgameline(inst, ptype, line):
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{line} ## {linesplit}')
             tribename = gettribeinfo(linesplit)
-            tribeid = linesplit[1].split(':')[0][3:].strip()
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
             clog.log(ptype, f'{tribename} {decayitem}')
