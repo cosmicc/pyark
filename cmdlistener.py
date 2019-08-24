@@ -605,9 +605,9 @@ def processgameline(inst, ptype, line):
         elif ptype == 'TAME':
             if linesplit[0].startswith('Tribe '):
                 tribename = linesplit[0][6:].strip()
-                tribeid = linesplit[1].split(':')[0][3:].strip()
-                playername = linesplit[2][21:].split('-', 1)[0].strip()
-                log.debug(f'TRIBETAME: {inst}, {ptype}, {playername}, {linesplit}')
+                #tribeid = linesplit[1].split(':')[0][3:].strip()
+                #playername = linesplit[2][21:].split('-', 1)[0].strip()
+                log.debug(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
             else:
                 log.debug(f'TAME: {linesplit}')
  
