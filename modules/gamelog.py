@@ -81,11 +81,11 @@ def processgameline(inst, ptype, line):
             # wglog(inst, removerichtext(line[21:]))
         elif ptype == 'CLAIM':
             log.debug(f'{inst}, {ptype}, {linesplit}')
-            clog.log(ptype, f'{line} ## {linesplit}')
             tribename = gettribeinfo(linesplit)
-            decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
+            playername = linesplit[2][10:].split(' claimed ')[0].strip()
+            claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-            clog.log(ptype, f'{logheader}{tribename} {decayitem}')
+            clog.log(ptype, f'{logheader} [{playername}] ({tribename}) has claimed [{claimitem}]')
  
         else:
             log.debug(f'UNKNOWN: {inst}, {ptype}, {linesplit}')
