@@ -5,6 +5,7 @@ from modules.players import getplayer, newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from modules.servertools import serverexec, removerichtext
+from modules.gamelog import processgameline
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
@@ -558,87 +559,7 @@ def wglog(minst, line):
             f.write(f"""{line.replace('"','').strip()}\n""")
     f.close()
 
-          
-@log.catch
-def processgameline(inst, ptype, line):
-        clog = log.patch(lambda record: record["extra"].update(instance=inst))
-        logheader = f'{Now(fmt="dt").strftime("%a %I:%M%p")}|{inst.upper():>8}|{ptype:<7}| '
-        linesplit = removerichtext(line[21:]).split(", ")
-        if ptype == 'TRAP':
-            tribename = linesplit[0][6:].strip()
-            tribeid = linesplit[1].split(':')[0][3:].strip()
-            msgsplit = linesplit[2][10:].split('trapped:')
-            playername = msgsplit[0].strip()
-            dino = msgsplit[1].strip().replace(')', '').replace('(', '')
-            clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has trapped [{dino}]')
-            wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has trapped [{dino}]')
-        elif ptype == 'RELEASE':
-            tribename = linesplit[0][6:].strip()
-            tribeid = linesplit[1].split(':')[0][3:].strip()
-            msgsplit = linesplit[2][10:].split('released:')
-            playername = msgsplit[0].strip()
-            dino = msgsplit[1].strip().replace(')', '').replace('(', '')
-            clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has released [{dino}]')
-            wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has released [{dino}]')
-        elif ptype == 'DEATH':
-            if linesplit[0].startswith('Tribe '):
-                tribename = linesplit[0][6:].strip()
-                tribeid = linesplit[1].split(':')[0][3:].strip()
-                playername = linesplit[2][21:].split('-', 1)[0].strip()
-                #clog.log(ptype, f'tribe information collected for [{tribename}]')
-            else:
-                deathsplit = removerichtext(line[21:]).split(" - ", 1)
-                playername = deathsplit[0].strip()
-                if deathsplit[1].find('was killed by') != -1:
-                    killedby = deathsplit[1].split('was killed by')[1].strip()[:-1].replace('()', '')
-                    playerlevel = deathsplit[1].split('was killed by')[0].strip()
-                    clog.log(ptype, f'{logheader}[{playername.title()}] {playerlevel} was killed by [{killedby}] on [{inst.title()}]')
-                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] {playerlevel} was killed by [{killedby}]')
-                elif deathsplit[1].find('killed!') != -1:
-                    clog.log(ptype, f'{logheader}[{playername.title()}] has died on [{inst.title()}]')
-                    wglog(inst, f'{Now(fmt="string")}: [{playername.title()}] has died')
-                else:
-                    log.warning(f'not found gameparse death: {deathsplit}')
-        elif ptype == 'TAME':
-            if linesplit[0].startswith('Tribe '):
-                tribename = linesplit[0][6:].strip()
-                if tribename.startswith('Tamed'):
-                    pass
-                else:
-                    #tribeid = linesplit[1].split(':')[0][3:].strip()
-                    #playername = linesplit[2][21:].split('-', 1)[0].strip()
-                    #clog.log(ptype, f'TRIBETAME: tribe information collected for [{tribename}]')
-                    # log.info(f'TRIBETAME: {inst}, {ptype}, {linesplit}')
-                    clog.log(ptype, f'{logheader}TRIBETAME: {linesplit}')
-            else:
-                playername = linesplit[0].split('of Tribe')[0].strip()
-                tribename = linesplit[0].split('of Tribe')[1].split(' Tamed a')[0]
-                dino = linesplit[0].split(' Tamed ')[1].replace('!', '')
-                clog.log(ptype, f'TAME: [{playername.title()}] ({tribename}) tamed [{dino}] on [{inst.title()}]')
-        elif ptype == 'DECAY':
-            log.debug(f'{inst}, {ptype}, {linesplit}')
-            clog.log(ptype, f'{line} ## {linesplit}')
-            tribename = linesplit[0][6:].strip()
-            tribeid = linesplit[1].split(':')[0][3:].strip()
-            decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
-            decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-            clog.log(ptype, f'{logheader}{tribename} {decayitem}')
-            wglog(inst, removerichtext(line[21:]))
-        elif ptype == 'DEMO':
-            log.debug(f'{inst}, {ptype}, {linesplit}')
-            tribename = linesplit[0][6:].strip()
-            tribeid = linesplit[1].split(':')[0][3:].strip()
-            demoitem = linesplit[2].split('demolished a')[1].split("'", 1)[1].split("'")[0]
-            playername = linesplit[2][9:].split('demolished a')[0]
-            clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
-            wglog(inst, removerichtext(line[21:]))
- 
-        else:
-            log.debug(f'{inst}, {ptype}, {linesplit}')
-            clog.log(ptype, f'{logheader}{line} ## {linesplit}')
-            wglog(inst, removerichtext(line[21:]))
 
-      
 @log.catch
 def playerjoin(line, inst):
     newline = line[:-17].split(':')
@@ -729,7 +650,7 @@ def checkcommands(minst):
             processgameline(inst, 'TAME', line.replace('"', '').strip())
         elif line.find(" claimed '") != -1:
             processgameline(inst, 'CLAIM', line.replace('"', '').strip())
-        elif line.find('was added to the Tribe!') != -1 or line.find('was promoted to') != -1 or line.find('was demoted from') != -1 or line.find(' uploaded a') != -1:
+        elif line.find(' was added to the Tribe') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 or line.find(' uploaded a') != -1:
             processgameline(inst, 'TRIBE', line.replace('"', '').strip())
         elif line.find('starved to death!') != -1:
             processgameline(inst, 'DEATH', line.replace('"', '').strip())
