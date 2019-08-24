@@ -557,35 +557,40 @@ def wglog(minst, line):
             f.write(f"""{line.replace('"','').strip()}\n""")
     f.close()
 
-
+          
 def processgameline(inst, ptype, line):
     linesplit = removerichtext(line[21:]).split(", ")
     if ptype == 'TRAP':
-        tribename = linesplit[0][6:]
-        tribeid = linesplit[1].split(':')[0][3:]
+        tribename = linesplit[0][6:].strip()
+        tribeid = linesplit[1].split(':')[0][3:].strip()
         msgsplit = linesplit[2][10:].split('trapped:')
         playername = msgsplit[0].strip()
-        dino = msgsplit[1].strip()
+        dino = msgsplit[1].strip()[:1]
         log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
     elif ptype == 'RELEASE':
-        tribename = linesplit[0][6:]
-        tribeid = linesplit[1].split(':')[0][3:]
+        tribename = linesplit[0][6:].strip()
+        tribeid = linesplit[1].split(':')[0][3:].strip()
         msgsplit = linesplit[2][10:].split('released:')
-        playername = msgsplit[0].strip()
+        playername = msgsplit[0].strip()[:1].strip()
         dino = msgsplit[1].strip()
         log.debug(f'{inst}, {ptype}, {tribename}, {tribeid}, {playername}, {dino}')
     elif ptype == 'DEATH':
         if linesplit[0].startswith('Tribe '):
-            tribename = linesplit[0][6:]
-            tribeid = linesplit[1].split(':')[0][3:]
+            tribename = linesplit[0][6:].strip()
+            tribeid = linesplit[1].split(':')[0][3:].strip()
+            playername = linesplit[2][21:].split('-', 1)[0].strip()
+            log.debug(f'DEATHTEST! {inst}, {tribename}, {tribeid}, {playername}')
         else:
-            log.debug(f'{inst}, {ptype}, {linesplit}')
+            deathsplit = removerichtext(line[21:]).split(" - ", 1)
+            playername = deathsplit[0].strip()
+            killedby = deathsplit[1].split('was killed by')[1][:1]
+            log.debug(f'{inst}, {ptype}, {playername}, {killedby}')
     else:
         log.debug(f'{inst}, {ptype}, {linesplit}')
     log.log(ptype, removerichtext(line[21:]))
     wglog(inst, removerichtext(line[21:]))
 
-
+      
 @log.catch
 def playerjoin(line, inst):
     newline = line[:-17].split(':')
