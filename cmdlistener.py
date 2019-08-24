@@ -706,7 +706,7 @@ def checkcommands(minst):
         elif line.find('joined this ARK!') != -1:
             playerjoin(line, minst)
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1 or line.find('Force respawning Wild Dinos!') != -1:
-            log.warning('ADMIN LINE')
+            log.info('ADMIN LINE')
             processadminline(inst, line.replace('"', '').strip())
         elif line.find(' demolished a') != -1 or line.find('Your Tribe killed') != -1:
             processgameline(inst, 'DEMO', line.replace('"', '').strip())
@@ -728,7 +728,7 @@ def checkcommands(minst):
             processgameline(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
             processgameline(inst, 'DECAY', line.replace('"', '').strip())
-        elif line.startswith('Error:') != -1:
+        elif line.startswith('Error:'):
             processadminline(inst, line.replace('"', '').strip())
         else:
             whoasked = getnamefromchat(line)
