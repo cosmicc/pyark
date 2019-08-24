@@ -18,7 +18,6 @@ def gettribeinfo(linesplit):
 
 @log.catch
 def processgameline(inst, ptype, line):
-    try:
         clog = log.patch(lambda record: record["extra"].update(instance=inst))
         logheader = f'{Now(fmt="dt").strftime("%a %I:%M%p")}|{inst.upper():>8}|{ptype:<7}| '
         linesplit = removerichtext(line[21:]).split(", ")
@@ -74,7 +73,7 @@ def processgameline(inst, ptype, line):
                     else:
                         clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) tamed [{tamed}]')
             else:
-                log.info(f'TAME: {linesplit}')
+                log.debug(f'TAME: {linesplit}')
                 clog.log(ptype, f'TAME: {linesplit}')
         elif ptype == 'DECAY':
             log.debug(f'{inst}, {ptype}, {linesplit}')
@@ -89,5 +88,3 @@ def processgameline(inst, ptype, line):
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{linesplit}')
             # wglog(inst, removerichtext(line[21:]))
-    except:
-        log.critical(f'GAME LOG ERROR IN LINE: {line} ## {linesplit}')
