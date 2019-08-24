@@ -8,7 +8,9 @@ from modules.servertools import removerichtext
 def putplayerintribe(tribeid, playername):
     tribeid = dbquery(f"SELECT tribeid, players from tribes where tribeid = '{tribeid}'", fetch='one', single=True)
     if tribeid:
-        log.info(f'tribeid: {tribeid[0]}, players: {tribeid[1]} < {playername}')
+        log.info(f'tribeid: {tribeid[0]}, players: {type(tribeid[1])} < {playername}')
+        if playername.lower() not in tribeid[1]:
+            log.info(f'{playername} not in!')
 
 
 @log.catch
@@ -26,9 +28,9 @@ def gettribeinfo(linesplit, inst, ptype):
             log.debug(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
             return tribename, tribeid
         else:
-            return None
+            return None, None
     else:
-        return None
+        return None, None
 
 
 @log.catch
