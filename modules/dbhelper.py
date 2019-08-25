@@ -10,12 +10,6 @@ def cleanstring(name):
 
 
 @log.catch
-def as_array(l):
-    l2str = ','.join('"{}"'.format(x) for x in l)
-    return '{{{}}}'.format(l2str)
-
-
-@log.catch
 def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):
     if qtype == 'tuple':
         return data

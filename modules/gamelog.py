@@ -12,7 +12,7 @@ def putplayerintribe(tribeid, playername):
         log.info(f'tribeid: {tribeidb[0]}, {len(tribeidb)}  players: {type(tribeidb[1])} < {playername}')
         if tribeidb[1] is None:
             steamids = [steamid[0]]
-            dbupdate(f"UPDATE tribes SET players = %s WHERE tribeid = '{tribeidb[0]}'", array=steamids)
+            dbupdate(f"UPDATE tribes SET players = ARRAY{steamids} WHERE tribeid = '{tribeidb[0]}'")
             log.info(f'Adding [{playername}] to database tribe [{tribeidb[2]}]')
         elif tribeid[1] is list:
             if playername.lower() not in tribeid[1]:
