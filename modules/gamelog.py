@@ -13,12 +13,13 @@ def putplayerintribe(tribeid, playername):
         if tribeidb[1] is None:
             steamids = [steamid[0]]
             dbupdate(f"UPDATE tribes SET players = ARRAY{steamids} WHERE tribeid = '{tribeidb[0]}'")
-            log.info(f'Adding [{playername}] to database tribe [{tribeidb[2]}]')
+            log.info(f'Adding [{playername}] to first player in database tribe [{tribeidb[2]}]')
         elif isinstance(tribeidb[1], list):
             if steamid[0] not in tribeidb[1]:
+                log.info(f'existing players: {tribeidb[1]}')
                 steamids = tribeidb[1].append(steamid[0])
                 dbupdate(f"UPDATE tribes SET players = ARRAY({steamids}) WHERE tribeid = '{tribeidb[0]}'")
-                log.info(f'Adding [{playername}] to database tribe [{tribeidb[2]}]')
+                log.info(f'Adding [{playername}] as additional player to database tribe [{tribeidb[2]}]')
         else:
             log.info('shouldnt go this far')
 
