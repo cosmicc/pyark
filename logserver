@@ -231,7 +231,7 @@ def processlogline(line, single=False):
                     if data["record"]["level"]["name"].lower() == client['showonly'].lower():
                         putqueue(data, client, single)
 
-                elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT":
+                elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT" or data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL" or data["record"]["level"]["name"] == "GIT":
                     if client['startexit']:
                         putqueue(data, client, single)
 

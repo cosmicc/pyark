@@ -203,7 +203,7 @@ def main():
     if is_statscollector == "True":
         ostat = Thread(name='stat-collector', target=oscollect, daemon=True)
         ostat.start()
-    log.log('SUCCESS', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
+    log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
 
     def sig_handler(signal, frame):
         log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
