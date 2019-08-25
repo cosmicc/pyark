@@ -378,6 +378,13 @@ def pyarkbot():
             else:
                 return await ctx.message.channel.send(content=msg)
 
+    async def serverrules(ctx):
+        embed = discord.Embed(title='Current Galaxy Cluster Server Rules:', color=INFO_COLOR)
+        msg = f"#1 No Griefing of any kind.  This includes all forms.\n#2 DO NOT DROP EGGS YOU DONT WANT, EAT THEM!\n#3  DO NOT SELL/GIVE AWAY BOSSES & PRIMORDIALS. People have to progress on their own.\n#4 Don't build to block.  Don't block dence resource areas or caves.  Don't block player spawn in areas.\n#5 Don't pillar reserve areas.  There is no reason to here.\n#6 Do not leave dinos auto mating/breeding while offline.\n#7 This cluster only has one small PvP server, and its for fun between friends.  It is not Deathmatch there.  It's for events, light RP, and fun only.  See Rule #1"
+        embed.add_field(name=f"If unsure about anything, ever, ask in Discord.  Ignorance is not an excuse.", value=msg, inline=True)
+        await messagesend(ctx, embed, allowgeneral=True, reject=False)
+
+
     async def serverrates(ctx, refresher=False):
         rates = getrates()
         cevent = getcurrenteventinfo()
@@ -403,6 +410,7 @@ def pyarkbot():
         msg = msg + "**`!mods`**  - Link to all the mods for this cluster\n"
         msg = msg + "**`!servers`**  - Status and links to all the servers in the cluster\n"
         msg = msg + "**`!rates`**  - Current ARK game rates for all the cluster servers\n"
+        msg = msg + "**`!rules`**  - List of all the cluster rules\n"
         msg = msg + "**`!events`**  - Current and upcomming cluster events\n"
         msg = msg + "**`!decay`**  - Cluster dino & structure decay rates and expire timers\n"
         msg = msg + "**`!who`**  - List all players currently online on all the servers\n"
@@ -747,6 +755,11 @@ def pyarkbot():
     @commands.check(logcommand)
     async def _rates(ctx):
         await serverrates(ctx)
+
+    @client.command(name='rules', aliases=['serverrules', 'clusterrules'])
+    @commands.check(logcommand)
+    async def _rules(ctx):
+        await serverrules(ctx)
 
     @client.command(name='tip', aliases=['tips', 'protip', 'justthetip'])
     @commands.check(logcommand)
