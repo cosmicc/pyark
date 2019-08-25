@@ -26,7 +26,7 @@ def processgameline(inst, ptype, line):
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
             clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has released [{dino}]')
         elif ptype == 'DEATH':
-            log.debug(f'DEATH: {linesplit[0]}')
+            clog.debug(ptype, f'{ptype}: {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             if tribename is None:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
@@ -43,6 +43,7 @@ def processgameline(inst, ptype, line):
             else:
                 log.debug(f'deathskip: {linesplit}')
         elif ptype == 'TAME':
+                clog.debug(ptype, f'{ptype}: {linesplit}')
                 tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
                 if tribename is None:
                     tamed = linesplit[0].split(' Tamed ')[1].strip(')').strip('!')
@@ -57,6 +58,7 @@ def processgameline(inst, ptype, line):
                     else:
                         clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) tamed [{tamed}]')
         elif ptype == 'DEMO':
+                clog.debug(ptype, f'{ptype}: {linesplit}')
                 tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
                 if tribename is None:
                     clog.log(ptype, f'{logheader}SINGLDEMO: [{linesplit}]')
@@ -67,14 +69,14 @@ def processgameline(inst, ptype, line):
                     demoitem = linesplit[2].split(' demolished a ')[1].replace("'", "").strip(')').strip('!').strip()
                     clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
         elif ptype == 'DECAY':
-            clog.debug(ptype, f'{line} ## {linesplit}')
+            clog.debug(ptype, f'{ptype}: {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
             clog.log(ptype, f'{logheader}Tribe ({tribename}) auto-decayed [{decayitem}]')
             # wglog(inst, removerichtext(line[21:]))
         elif ptype == 'CLAIM':
-            log.debug(f'{inst}, {ptype}, {linesplit}')
+            log.debug(f'{ptype}: {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             if tribename:
                 playername = linesplit[2][10:].split(' claimed ')[0].strip()
@@ -86,6 +88,6 @@ def processgameline(inst, ptype, line):
                 clog.log(ptype, f'{logheader} SINGLECLAIM: {linesplit}')
  
         else:
-            log.debug(f'UNKNOWN: {inst}, {ptype}, {linesplit}')
+            log.debug(f'UNKNOWN {ptype}: {linesplit}')
             clog.log(ptype, f'{linesplit}')
             # wglog(inst, removerichtext(line[21:]))

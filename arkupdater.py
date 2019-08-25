@@ -187,11 +187,13 @@ def restartinstnow(inst, reboot):
     resetlastrestart(inst)
     unsetstartbit(inst)
     playerrestartbit(inst)
+    os.nice(-19)
     if reboot and inst != 'coliseum' and inst != 'crystal':
         serverexec(['reboot'], nice=0, null=True)
     else:
-        serverexec(['arkmanager', 'start', f'@{inst}'], nice=0, null=True)
+        serverexec(['arkmanager', 'start', f'@{inst}'], nice=-10, null=True)
         dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
+        os.nice(10)
 
 
 @log.catch
