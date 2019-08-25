@@ -86,8 +86,7 @@ def processgameline(inst, ptype, line):
                     demoitem = linesplit[2].split(' demolished a ')[1].replace("'", "").strip(')').strip('!').strip()
                     clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
         elif ptype == 'DECAY':
-            log.debug(f'{inst}, {ptype}, {linesplit}')
-            clog.log(ptype, f'{line} ## {linesplit}')
+            clog.debug(ptype, f'{line} ## {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
