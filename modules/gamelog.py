@@ -14,7 +14,7 @@ def putplayerintribe(tribeid, playername):
             steamids = [steamid[0]]
             dbupdate(f"UPDATE tribes SET players = ARRAY{steamids} WHERE tribeid = '{tribeidb[0]}'")
             log.info(f'Adding [{playername}] to database tribe [{tribeidb[2]}]')
-        elif isinstance(tribeid[1], list):
+        elif isinstance(tribeidb[1], list):
             if playername.lower() not in tribeid[1]:
                 steamids = tribeidb[1].append(steamid[0])
                 dbupdate(f"UPDATE tribes SET players = ARRAY({steamids}) WHERE tribeid = '{tribeidb[0]}'")
