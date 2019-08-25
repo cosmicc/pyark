@@ -13,7 +13,7 @@ from modules.players import getplayersonline, getlastplayersonline, isplayerbann
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto, joinedTime
 from wtforms import StringField, IntegerField
 from wtforms.validators import InputRequired, Length
-from clusterevents import getcurrenteventtitle, iseventtime
+from clusterevents import getcurrenteventtitle, iseventtime, getcurrenteventtitleabv
 from ..models import User, Role
 from ..database import db
 from .. import socketio
@@ -521,6 +521,13 @@ def _currenteventtitle():
     def ui_currenteventtitle():
         return getcurrenteventtitle()
     return dict(ui_currenteventtitle=ui_currenteventtitle)
+
+
+@webui.context_processor
+def _currenteventtitleabv():
+    def ui_currenteventtitleabv():
+        return getcurrenteventtitleabv()
+    return dict(ui_currenteventtitleabv=ui_currenteventtitleabv)
 
 
 @webui.context_processor

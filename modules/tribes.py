@@ -8,7 +8,7 @@ def putplayerintribe(tribeid, playername):
     tribeidb = dbquery(f"SELECT tribeid, players, tribename FROM tribes WHERE tribeid = '{tribeid}'", fetch='one')
     steamid = dbquery(f"SELECT steamid FROM players WHERE playername = '{playername.lower()}' AND online = True", fetch='one', single=True)
     if tribeidb and steamid:
-        log.debug(f'tribeid: {tribeidb[0]}, {len(tribeidb)}  players: {type(tribeidb[1])} < {playername}')
+        log.trace(f'tribeid: {tribeidb[0]}, {len(tribeidb)}  players: {type(tribeidb[1])} < {playername}')
         if tribeidb[1] is None:
             steamids = [steamid[0]]
             dbupdate(f"UPDATE tribes SET players = ARRAY{steamids} WHERE tribeid = '{tribeidb[0]}'")
@@ -27,6 +27,24 @@ def putplayerintribe(tribeid, playername):
 def getplayertribes(steamid):
     tribe = dbquery(f"SELECT tribename, server FROM tribes WHERE '{steamid}'=ANY(players)", fetch='all')
     return tribe
+
+
+@log.catch
+def gettribesplayers(tribeid, fmt='steamids'):
+    players = dbquery(f"SELECT players FROM tribes WHERE tribeid = '{tribeid}'", fetch='one', single=True)
+    if players is not None:
+        if fmt == 'steamids':
+            return players[0]
+        elif fmt == 'names' or fmt == 'playernames':
+            playerlist = []
+            for player in players[0]:
+                playername = dbquery(f"SELECT playername FROM players WHERE steamid = '{player[0]}'", fetch='one', single=True)
+                playerlist.append(playername[0])
+            return playerlist
+        else:
+            return None
+    else:
+        return None
 
 
 @log.catch

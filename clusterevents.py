@@ -71,6 +71,13 @@ def getcurrenteventtitle():
             return inevent[0]
 
 
+def getcurrenteventtitleabv():
+    if iseventtime():
+        inevent = dbquery("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+        if inevent:
+            return inevent[0]
+
+
 def getcurrenteventinfo():
     if iseventtime():
         inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
