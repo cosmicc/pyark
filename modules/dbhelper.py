@@ -154,7 +154,7 @@ def dbupdate(query, db='sqldb', array=None):
     else:
         try:
             if array:
-                log.info(as_array(array))
+                log.info(f'{query}', array)
                 c.execute(f'{query}', array)
             else:
                 c.execute(query)
