@@ -11,11 +11,10 @@ def putplayerintribe(tribeid, playername):
     if tribeid and steamid:
         log.info(f'tribeid: {tribeid[0]}, {len(tribeid)}  players: {type(tribeid[1])} < {playername}')
         if tribeid[1] is None:
-            plist = [steamid]
-            dbupdate(f"UPDATE tribes SET players = {plist} WHERE tribeid = '{tribeid[0]}'")
+            dbupdate(f"UPDATE tribes SET players = array_cat(players, '{steamid}') WHERE tribeid = '{tribeid[0]}'")
         elif tribeid[1] is list:
             if playername.lower() not in tribeid[1]:
-                log.info(f'{playername} not in!')
+                dbupdate(f"UPDATE tribes SET players = array_cat(players, '{steamid}') WHERE tribeid = '{tribeid[0]}'")
 
 
 @log.catch
