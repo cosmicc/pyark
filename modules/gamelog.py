@@ -10,7 +10,7 @@ def putplayerintribe(tribeid, playername):
     steamid = dbquery(f"SELECT steamid FROM players WHERE playername = '{playername.lower()}' AND online = True", fetch='one', single=True)
     if tribeidb and steamid:
         log.info(f'tribeid: {tribeidb[0]}, {len(tribeidb)}  players: {type(tribeidb[1])} < {playername}')
-        if tribeid[1] is None:
+        if isinstance(tribeid[1], type(None)):
             steamids = [steamid[0]]
             dbupdate(f"UPDATE tribes SET players = {steamids} WHERE tribeid = '{tribeidb[0]}'")
             log.info(f'Adding [{playername}] to database tribe [{tribeidb[3]}]')
