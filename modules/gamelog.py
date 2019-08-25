@@ -2,27 +2,8 @@ from loguru import logger as log
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now
 from modules.servertools import removerichtext
-from modules.tribes import putplayerintribe
+from modules.tribes import putplayerintribe, gettribeinfo
 
-
-@log.catch
-def gettribeinfo(linesplit, inst, ptype):
-    if len(linesplit) == 3 and linesplit[0].strip().startswith('Tribe'):
-        tribename = linesplit[0][6:].strip()
-        if linesplit[1].strip().startswith('ID'):
-            tribeid = linesplit[1].split(':')[0][3:].strip()
-            indb = dbquery(f"SELECT tribeid from tribes where tribeid = '{tribeid}'", fetch='one', single=True)
-            if not indb:
-                dbupdate(f"INSERT INTO tribes (tribename, tribeid, server) VALUES ('{tribename}', '{int(tribeid)}', '{inst}')")
-            if ptype != 'DECAY' or ptype != 'DEATH':
-                dbupdate(f"""UPDATE tribes SET lastseen = '{Now(fmt="dt")}' WHERE tribeid = '{tribeid}'""")
-
-            log.debug(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
-            return tribename, tribeid
-        else:
-            return None, None
-    else:
-        return None, None
 
 
 @log.catch
