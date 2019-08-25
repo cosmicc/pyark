@@ -100,14 +100,13 @@ def processgameline(inst, ptype, line):
                     putplayerintribe(tribeid, playername)
                     demoitem = linesplit[2].split(' demolished a ')[1].replace("'", "").strip(')').strip('!').strip()
                     clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
- 
         elif ptype == 'DECAY':
             log.debug(f'{inst}, {ptype}, {linesplit}')
             clog.log(ptype, f'{line} ## {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-            clog.log(ptype, f'{logheader}{tribename} {decayitem}')
+            clog.log(ptype, f'{logheader}Tribe ({tribename}) auto-decayed [{decayitem}]')
             # wglog(inst, removerichtext(line[21:]))
         elif ptype == 'CLAIM':
             log.debug(f'{inst}, {ptype}, {linesplit}')
