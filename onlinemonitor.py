@@ -205,7 +205,6 @@ def playergreet(steamid, steamname, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
-@log.catch
 def doublecheckonline(inst):
     players = dbquery(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 280}", fmt='dict', fetch='all')
     for player in players:
