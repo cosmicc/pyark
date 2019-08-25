@@ -10,6 +10,12 @@ def cleanstring(name):
 
 
 @log.catch
+def as_array(l):
+    l2str = ','.join('"{}"'.format(x) for x in l)
+    return '{{{}}}'.format(l2str)
+
+
+@log.catch
 def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):
     if qtype == 'tuple':
         return data
@@ -81,15 +87,15 @@ def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='nor
 
 
 @log.catch
-def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False, exe=''):
+def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False, array=None):
     try:
         if db == 'sqldb':
             conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         elif db == 'statsdb':
             conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         c = conn.cursor()
-        if exe != '':
-            c.execute(query, exe)
+        if array is not None:
+            c.execute(query, as_array(array))
         else:
             c.execute(query)
     except psycopg2.OperationalError:
@@ -133,7 +139,7 @@ def statsupdate(inst, value):
 
 
 @log.catch
-def dbupdate(query, db='sqldb', exe=''):
+def dbupdate(query, db='sqldb', array=None):
     try:
         if db == 'sqldb':
             conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
@@ -147,8 +153,8 @@ def dbupdate(query, db='sqldb', exe=''):
         return False
     else:
         try:
-            if exe != '':
-                c.execute(query, exe)
+            if array:
+                c.execute(query, as_array(array))
             else:
                 c.execute(query)
             conn.commit()
