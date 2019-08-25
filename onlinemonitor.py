@@ -54,7 +54,7 @@ def isgreeting(steamid):
 def serverisinrestart(steamid, inst, oplayer):
     rbt = dbquery("SELECT * FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     if rbt[3] == "True":
-        log.info(f'Notifying player [{oplayer[1].title()}] that [{inst.title()}] will be restarting in {rbt[7]} min')
+        log.log('UPDATE', f'Notifying player [{oplayer[1].title()}] that [{inst.title()}] will be restarting in {rbt[7]} min')
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes for a {rbt[5]}'
         serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@''{inst}'], nice=19, null=True)
 

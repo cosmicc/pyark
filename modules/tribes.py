@@ -32,14 +32,17 @@ def getplayertribes(steamid):
 @log.catch
 def gettribesplayers(tribeid, fmt='steamids'):
     players = dbquery(f"SELECT players FROM tribes WHERE tribeid = '{tribeid}'", fetch='one', single=True)
-    if players is not None:
+    if players[0] is not None:
         if fmt == 'steamids':
             return players[0]
         elif fmt == 'names' or fmt == 'playernames':
-            playerlist = []
+            playerlist = ''
             for player in players[0]:
-                playername = dbquery(f"SELECT playername FROM players WHERE steamid = '{player[0]}'", fetch='one', single=True)
-                playerlist.append(playername[0])
+                playername = dbquery(f"SELECT playername FROM players WHERE steamid = '{player}'", fetch='one', single=True)
+                if playerlist == '':
+                    playerlist = playername[0]
+                else:
+                    playerlist = playerlist + f', {playername[0]}'
             return playerlist
         else:
             return None
@@ -65,3 +68,13 @@ def gettribeinfo(linesplit, inst, ptype):
             return None, None
     else:
         return None, None
+
+
+@log.catch
+def gettribesreport():
+    tribes = dbquery(f"SELECT * FROM tribes ORDER BY lastseen DESC", fetch='all', fmt='dict', single=True)
+    for tribe in tribes:
+        players = gettribesplayers(tribe['tribeid'], fmt='playernames')
+        print(f"Tribe: {tribe['tribename']} ({tribe['tribeid']}) of {tribe['server']} Lastseen: {tribe['lastseen']} Players: {players}")
+
+

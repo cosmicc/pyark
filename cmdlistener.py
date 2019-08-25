@@ -211,7 +211,7 @@ def castedvote(inst, whoasked, myvote):
                 mtxt = 'Your NO vote has been cast'
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                (getsteamid(whoasked), mtxt, inst), shell=True)
-                log.info(f'Voting NO has won, NO wild dino wipe will be performed for {inst}')
+                log.log('VOTE', f'Voting NO has won, NO wild dino wipe will be performed for {inst}')
                 sleep(1)
                 bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
                 subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
@@ -384,13 +384,13 @@ def linker(minst, whoasked):
     if dplayer:
         if dplayer[8] is None or dplayer[8] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
-            log.info(f'Generated code [{rcode}] for link request from [{dplayer[1].title()}] on [{minst.title()}]')
+            log.log('PLAYER', f'Generated code [{rcode}] for link request from [{dplayer[1].title()}] on [{minst.title()}]')
             dbupdate("DELETE from linkrequests WHERE steamid = '%s'" % (dplayer[0],))
             dbupdate("INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('%s', '%s', '%s')" % (dplayer[0], dplayer[1], str(rcode)))
             msg = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0], msg, minst), shell=True)
         else:
-            log.info(f'link request for {dplayer[1]} denied, already linked')
+            log.warning(f'link request for {dplayer[1]} denied, already linked')
             msg = f'You already have a discord account linked to this account'
             subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0], msg, minst), shell=True)
     else:
@@ -425,7 +425,7 @@ def processtcdata(inst, tcdata):
         playtime = int(float(tcdata['TotalPlayed'].replace(',', '')))
         rewardpoints = int(tcdata['Points'].replace(',', ''))
         if playername.lower() != pexist[1].lower():
-            log.info(f'Player name update for [{pexist[1]}] to [{playername}]')
+            log.log('UPDATE', f'Player name update for [{pexist[1]}] to [{playername}]')
             dbupdate("UPDATE players SET playername = '%s' WHERE steamid = '%s'" % (playername, steamid))
         if inst == pexist[15]:
             log.trace(f'player {playername} with steamid {steamid} was found on HOME server {inst}. updating info.')
@@ -461,7 +461,7 @@ def homeserver(inst, whoasked, ext):
         if ext in tservers:
             if ext != pinfo[15]:
                 if inst == pinfo[15]:
-                    log.info(f'[{whoasked.title()}] has transferred home servers from [{pinfo[15].title()}] to [{ext.title()}] \
+                    log.log('PLAYER', f'[{whoasked.title()}] has transferred home servers from [{pinfo[15].title()}] to [{ext.title()}] \
 with {pinfo[5]} points')
                     subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
                                    (steamid, inst), shell=True)
@@ -697,7 +697,7 @@ def checkcommands(minst):
                     except:
                         log.exception('Critical Error in global chat writer!')
                 elif line.lower().find('/kit') != -1 or line.lower().find('!kit') != -1 or line.lower().find('\\kit') != -1:
-                    log.info(f'Responding to a kit request from [{whoasked.title()}] on [{minst.title()}]')
+                    log.log('CMD', f'Responding to a kit request from [{whoasked.title()}] on [{minst.title()}]')
                     steamid = getsteamid(whoasked)
                     msg = f'To view kits you must make a level 1 rewards vault and hang it on a wall or foundation. Free starter items and over 80 kits available. !help for more commands'
                     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)

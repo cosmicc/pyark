@@ -19,7 +19,7 @@ def writechat(inst, whos, msg, tstamp):
 
 @log.catch
 def newplayer(steamid, playername, inst):
-    log.info(f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
+    log.log('NEW', f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
     dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
              firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
              primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated) VALUES \

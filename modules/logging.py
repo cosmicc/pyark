@@ -31,7 +31,9 @@ log.level('DEMO', no=3, color="<fg 209>", icon="¤")
 log.level('CLAIM', no=3, color="<fg 122>", icon="¤")
 log.level('TRIBE', no=3, color="<fg 178>", icon="¤")
 log.level("ADMIN", no=3, color="<fg 15><bg 94>", icon="¤")
-log.level("TEST", no=5, color="<black><bg 148>", icon="¤")
+log.level("NEW", no=20, color="<fg 230>", icon="¤")
+log.level("PLAYER", no=20, color="<fg 180>", icon="¤")
+
 
 shortlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level><fg 248>|</fg 248><level>{extra[hostname]: >5}</level><fg 248>|</fg 248><level>{level: <7}</level><fg 248>|</fg 248> <level>{message}</level>'
 
