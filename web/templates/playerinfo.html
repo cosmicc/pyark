@@ -141,7 +141,7 @@
         {% endif %}
         </b><p class='is-2'>Cluster Tribes:  <b><br>
         {% for tribe in tribes %}
-        {{ tribe['tribename'] }} ({{ tribe['server'].capitalize() }}) [{{ tribe['tribeid'] }}]<br>
+        <a href="/tribeinfo/{{tribe['tribeid']}}">{{ tribe['tribename'] }} ({{ tribe['server'].capitalize() }}) [{{ tribe['tribeid'] }}]</a><br>
         {% endfor %}
         </b></p>
     </div>

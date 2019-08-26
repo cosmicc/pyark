@@ -21,7 +21,9 @@ def gchatrelay(inst):
                         msg['server'] == 'ALL'
 
                     if (msg['server'] == 'ALL' or msg['server'].lower() == inst) and not Now() - float(msg['timestamp']) > 3:
-                        if msg['name'] == 'ALERT':
+                        if msg['name'] == 'LOTTERY':
+                            serverexec(['arkmanager', 'rconcmd', '''{msg['message']}''', f'@{inst}'], nice=19, null=True)
+                        elif msg['name'] == 'ALERT':
                             serverexec(['arkmanager', 'rconcmd', f'ServerChat {msg["message"]}', f'@{inst}'], nice=19, null=True)
                         elif not msg['private'] and not msg['broadcast'] and not Now() - float(msg['timestamp']) > 3:
                             serverexec(['arkmanager', 'rconcmd', f'ServerChat Admin: {msg["message"]}', f'@{inst}'], nice=19, null=True)

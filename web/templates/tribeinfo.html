@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <script>
+    setInterval(function(){ 
+            $("#tribeinfo").load(" #tribeinfo");
+            starttimer();
+        }, 60000);
+    </script>
+{% endblock %}
+
+{% block content %}
+<div id="tribetitle">
+    <div class='container has-background-success bottom-pad-10'>
+    <div>
+        <h1 class='title is-mobile top-pad-10 left-pad has-text-white'>&nbsp;{{ tribe['tribename'] }}</h1>
+        {% if tribe['lastseen'] == None %}
+        <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active: Unknown</h2>
+        {% else %}
+        <h2 class='subtitle is-mobile left-pad has-text-white'>&nbsp;&nbsp;Active: {{ ui_tribelastactive(tribe['lastseen']) }}</h2>
+        {% endif %}
+    </div>
+    </div>
+</div>
+
+<div class='container top-pad-10 left-pad-extra right-pad-extra'>
+    <div class="box left-pad-extra top-pad-5 bottom-pad-5 right-pad-extra">
+    <div id="tribeinfo" class="container">
+        <br>
+        <p class='is-2'>Tribe on Server: <b>{{ tribe['server'].capitalize() }}</b></p>
+        <p class='is-2'>Tribe Last Seen: <b>{{ tribe['lastseen'] }}</b></p>
+        <br>
+     </div>
+     </div>
+        <p class='is-2 has-text-white'>Tribe Members:
+
+
+        {% if tribe['players'] == None %}
+        <p class='is-2 has-text-white'>Unknown</p>
+        {% else %}
+        {% for player in tribe['players'] %}
+        {% if ui_isplayeronline(player) %}
+        <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
+        {{ ui_getplayer(player, steamid=True)['playername'].title() }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).title() }}
+        </a>
+        {% else %}
+        <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player }}">{{ ui_getplayer(player, steamid=True)['playername'].title() }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).title() }}&nbsp;{{ ui_getplayerlasttime(player) }} ago
+        </a>
+
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+
+
+</div>
+{% endblock %}
+

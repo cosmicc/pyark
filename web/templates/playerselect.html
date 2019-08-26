@@ -10,7 +10,7 @@
 
 {% block content %}
     <div class='container is-mobile top-pad-15 has-text-white'>
-        <center><p class="title">Player Search</p></center>
+        <center><p class="title has-text-white">Player Search</p></center>
         <div class='container top-pad-15'>
             <div class="columns is-centered is-mobile has-text-white">
             <div class="column is-8 is-mobile">
@@ -76,16 +76,16 @@
             </form>
         </div>
         </div>
-          <div class='container top-pad-15 is-mobile'>
+          <div class='container top-pad-15 is-m:obile'>
              <div class='container top-pad-15'>
                  <div class="columns is-centered is-mobile">
                      <div class="column is-8 is-mobile has-tect-white">
              <b>&nbsp;Tribes ({{ ui_len(tribes) }}):</b>:
-            <form action="/playersearch" method="POST">
+            <form action="/tribesearch" method="POST">
                 <div class="field">
                     <div class="control">
                         <div class="select is-rounded is-medium" id="player">
-                            <select name="player" onchange="javascript: if(this.value != '0') this.form.submit();">
+                            <select name="tribeid" onchange="javascript: if(this.value != '0') this.form.submit();">
                             <option value="">Select Tribe</option>
                             {% for tribe in tribes %}
                             <option value="{{ tribe['tribeid'] }}">{{ tribe['tribename']}} ({{ tribe['server'] }})</option>

@@ -8,9 +8,9 @@ from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, psql_port
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance, getlastcrash
-from modules.tribes import getplayertribes, gettribes
+from modules.tribes import getplayertribes, gettribes, gettribe
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
-from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getexpiredplayers, getbannedplayers, getnewplayers, getdiscordplayers, getsteamnameplayers, getplayernames
+from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getbannedplayers, getnewplayers, getdiscordplayers, getsteamnameplayers, getplayernames
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto, joinedTime
 from wtforms import StringField, IntegerField
 from wtforms.validators import InputRequired, Length
@@ -480,9 +480,20 @@ def _statpull():
 
 
 @webui.context_processor
+def _tribelastactive():
+    def ui_tribelastactive(lastseen):
+        ls = datetimeto(lastseen, fmt='epoch')
+        if Now() - ls > 240:
+            return f'{elapsedTime(Now(), ls)} ago'
+        else:
+            return 'Now'
+    return dict(ui_tribelastactive=ui_tribelastactive)
+
+
+@webui.context_processor
 def _playerlastactive():
     def ui_playerlastactive(lastseen):
-        if Now() - lastseen > 40:
+        if Now() - lastseen > 240:
             return f'{elapsedTime(Now(), lastseen)} ago'
         else:
             return 'Now'
@@ -659,6 +670,13 @@ def result():
         return render_template("playerinfo.html", playerinfo=getplayer(steamid=request.form['player'], fmt='dict'))
 
 
+@webui.route('/tribesearch', methods=['POST', 'GET'])
+@login_required
+def result454():
+    if request.method == 'POST':
+        return render_template("tribeinfo.html", tribe=gettribe(request.form['tribeid']))
+
+
 @webui.route('/discordsearch', methods=['POST', 'GET'])
 @login_required
 def result2():
@@ -706,6 +724,13 @@ def sendchat(server):
         return redirect(url_for('webui._chatlog', instance=server))
     flash(f'Message failed to {server.title()}', 'error')
     return redirect(url_for('webui._chatlog', instance=server))
+
+
+@webui.route('/tribeinfo/<tribeid>', methods=['GET'])
+@login_required
+def tribeinfo(tribeid):
+    if request.method == 'GET':
+        return render_template('tribeinfo.html', tribe=gettribe(tribeid=tribeid))
 
 
 @webui.route('/playerinfo/<steamid>', methods=['POST', 'GET'])
