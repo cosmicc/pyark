@@ -1,5 +1,5 @@
 <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500,700&display=swap&subset=latin-ext" rel="stylesheet">
-<link rel="stylesheet" href="/static/css/logger.css?v=1.71">
+<link rel="stylesheet" href="/static/css/logger.css?v=1.73">
 <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
 <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
 <script>
@@ -42,9 +42,9 @@
 <div id="vtop" class="vtop">    
     <div id="toplevel" class="toplevel">
         <div id="dashboard" class="dashboard">
-            <div id="onlineplayers" class="onlineplayers"><button class="opbutton">{{ui_getplayersonline('all', 'count')}}</button></div>
-        <div id="pad" class="pad"></div>
-            <div id="servers" class="servers">
+        <div id="newcounts" class="newcounts">{{ ui_getdailyplayercount() }}<br>{{ ui_getweeklyplayercount() }}</div>
+        <div id="onlineplayers" class="onlineplayers"><button class="opbutton">{{ui_getplayersonline('all', 'count')}}</button></div>
+        <div id="servers" class="servers">
                  {% for instance in instances %}
                  {% if not ui_isinstanceup(instance) %}
                  <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; text-decoration: none;"><button class="serverbutton has-background-danger" style="color: #FFFFFF">{{ instance.capitalize() }}</button></a>
@@ -57,7 +57,7 @@
                 {% endif %}
                 {% endfor %}
             </div>    
-            <div id="lottoevents" class="lottoevents">
+        <div id="lottoevents" class="lottoevents">
             {% if ui_isinlottery() %}
             <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; text-decoration: none;"><button class="lbutton has-background-success" style="color: #FFFFFF">{{ ui_getlotteryplayers(fmt='count') }}</button></a>
             {% else %}
@@ -69,7 +69,7 @@
             <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; text-decoration: none;"><button class="ebutton has-background-warning" style="color: #FFFFFF"></button></a>
             {% endif %}
             </div>
-            <div id="playercounts" class="playercounts">{{ ui_getdailyplayercount() }}<br>{{ ui_getweeklyplayercount() }}<br>{{ ui_getmonthlyplayercount() }}</div>
+        <div id="playercounts" class="playercounts">{{ ui_getdailyplayercount() }}<br>{{ ui_getweeklyplayercount() }}<br>{{ ui_getmonthlyplayercount() }}</div>
 
         </div>
        <div id="logbox" class="logbox">

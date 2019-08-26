@@ -130,10 +130,10 @@ def getplayerlastserver(steamid='', playername=''):
 
 
 def getplayersonline(inst, fmt='list', case='normal'):
-    if inst == 'all':
-        dbdata = dbquery("SELECT playername FROM players WHERE online = True ORDER BY lastseen DESC")
+    if inst == 'all' or inst == 'ALL':
+        dbdata = dbquery("SELECT * FROM players WHERE online = True ORDER BY lastseen DESC")
     else:
-        dbdata = dbquery("SELECT playername FROM players WHERE online = True AND server = '%s' ORDER BY lastseen DESC" % (inst.lower(),))
+        dbdata = dbquery("SELECT * FROM players WHERE online = True AND server = '%s' ORDER BY lastseen DESC" % (inst.lower(),))
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
 
 
@@ -177,9 +177,9 @@ def isplayerold(playername='', steamid=''):
 
 def getlastplayersonline(inst, fmt='list', last=5, case='normal'):
     if inst == 'all':
-        dbdata = dbquery("SELECT playername FROM players WHERE online = False ORDER BY lastseen DESC LIMIT %s" % (last,))
+        dbdata = dbquery("SELECT * FROM players WHERE online = False ORDER BY lastseen DESC LIMIT %s" % (last,))
     else:
-        dbdata = dbquery("SELECT playername FROM players WHERE server = '%s' AND online = False ORDER BY lastseen DESC LIMIT %s" % (inst.lower(), last))
+        dbdata = dbquery("SELECT * FROM players WHERE server = '%s' AND online = False ORDER BY lastseen DESC LIMIT %s" % (inst.lower(), last))
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
 
 

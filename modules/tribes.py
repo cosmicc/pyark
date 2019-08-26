@@ -25,8 +25,8 @@ def putplayerintribe(tribeid, playername):
 
 @log.catch
 def getplayertribes(steamid):
-    tribe = dbquery(f"SELECT tribename, server FROM tribes WHERE '{steamid}'=ANY(players)", fetch='all')
-    return tribe
+    tribes = dbquery(f"SELECT * FROM tribes WHERE '{steamid}'=ANY(players)", fmt='dict', fetch='all')
+    return tribes
 
 
 @log.catch
@@ -71,10 +71,14 @@ def gettribeinfo(linesplit, inst, ptype):
 
 
 @log.catch
+def gettribes():
+    tribes = dbquery(f"SELECT * FROM tribes ORDER BY tribename DESC", fetch='all', fmt='dict', single=True)
+    return tribes
+
+
+@log.catch
 def gettribesreport():
     tribes = dbquery(f"SELECT * FROM tribes ORDER BY lastseen DESC", fetch='all', fmt='dict', single=True)
     for tribe in tribes:
         players = gettribesplayers(tribe['tribeid'], fmt='playernames')
         print(f"Tribe: {tribe['tribename']} ({tribe['tribeid']}) of {tribe['server']} Lastseen: {tribe['lastseen']} Players: {players}")
-
-

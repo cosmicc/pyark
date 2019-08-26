@@ -81,7 +81,7 @@ class LogClient():
         else:
             plines = 0
         head = f'!{plines:>3}!{self.debug}!{self.trace}!{self.extend}!{self.admin}!{self.startexit}!{self.commands}!{self.votes}!{self.joinleave}!{self.follow}!{self.server}!{self.showonly}'
-        log.debug(f'Header: {head}')
+        log.trace(f'Header: {head}')
         self.sock.send(bytes(head, "utf-8"))
         self.timeout_timer = int(datetime.now().timestamp())
         self.first_time = False
@@ -93,9 +93,9 @@ class LogClient():
             log.trace(header.decode("utf-32"))
             msgsize = int(header.decode("utf-32"))
             msg = self.sock.recv(msgsize)
-            log.debug(f'reported size: {msgsize}  actual size: {len(msg)}')
+            log.trace(f'reported size: {msgsize}  actual size: {len(msg)}')
             decodedmsg = msg.decode("utf-32")
-            log.debug(f'decoded size: {len(decodedmsg)}')
+            log.trace(f'decoded size: {len(decodedmsg)}')
             self.timeout_timer = int(datetime.now().timestamp())
             self.new_msg = True
             self.full_msg = ''

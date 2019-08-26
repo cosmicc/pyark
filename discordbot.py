@@ -893,17 +893,17 @@ def pyarkbot():
         kuser = getplayer(discordid=whofor)
         if kuser:
             if args:
-                log.info(f'home server change request for {kuser[1]}')
+                log.log('PLAYER', f'home server change request for {kuser[1]}')
                 msg = f'You must type **!myhome <newserver>** in-game chat on your current home server **{kuser[15].capitalize()}** to change home servers'
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=False)
             else:
-                log.info(f'Home server request granted for [{kuser[1].title()}]')
+                log.log('PLAYER', f'Home server request granted for [{kuser[1].title()}]')
                 msg = f'Your current home server is: **{kuser[15].capitalize()}**\nThis is the server all your points go to'
                 embed = discord.Embed(description=msg, color=SUCCESS_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=False)
         else:
-            log.info(f'Home server request from [{whofor.title()}] denied, no account linked')
+            log.warning(f'Home server request from [{whofor.title()}] denied, no account linked')
             msg = f"Your discord account is not linked to your in-game player, Type **`!linkme`** in-game to do this"
             embed = discord.Embed(description=msg, color=FAIL_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=False)
@@ -919,7 +919,7 @@ def pyarkbot():
                     if args[0].lower() == 'enter' or args[0].lower() == 'join':
                         lpinfo = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (whofor,), fetch='one')
                         if not lpinfo:
-                            log.info(f'Lottery join request from [{whofor.title()}] denied, account not linked')
+                            log.warning(f'Lottery join request from [{whofor.title()}] denied, account not linked')
                             msg = f'Your discord account must be linked to your in-game player account to join a lottery from discord.\nType !linkme in-game to do this'
                             embed = discord.Embed(description=msg, color=FAIL_COLOR)
                             if str(ctx.message.channel) == 'bot-channel':
@@ -994,35 +994,35 @@ def pyarkbot():
             log.trace('skipping processing of bots own on_message trigger')
 
         elif message.content.lower().find('join the server') != -1 or message.content.lower().find('how do i join') != -1 or message.content.lower().find('server link') != -1 or message.content.lower().find('mod collection') != -1 or message.content.lower().find('mod list') != -1 or message.content.lower().find('link to server') != -1:
-            log.info(f'Responding to [join server] chat for [{message.author}] on [{message.channel}]')
+            log.log('CMD', f'Responding to [join server] chat for [{message.author}] on [{message.channel}]')
             msg = f'The **`#mods-rates-servers`** channel has information and links to the servers, mods and rates, **`!help`** for commands'
             embed = discord.Embed(description=msg, color=HELP_COLOR)
             await message.channel.send(embed=embed)
 
         elif message.content.lower().find('what are the rates') != -1 or message.content.lower().find('server rates') != -1 or message.content.lower().find('tame rate') != -1 or message.content.lower().find('harvest rate') != -1 or message.content.lower().find('current rates') != -1 or message.content.lower().find('breeding rate') != -1 or message.content.lower().find('rates here') != -1:
-            log.info(f'Responding to [server rates] chat for [{message.author}] on [{message.channel}]')
+            log.log('CMD', f'Responding to [server rates] chat for [{message.author}] on [{message.channel}]')
             msg = 'Try using the **`!rates`** command to get current server rates, **`!help`** for more information'
             embed = discord.Embed(description=msg, color=HELP_COLOR)
             await message.channel.send(embed=embed)
 
         elif message.content.lower().find('servers up') != -1 or message.content.lower().find('servers down') != -1 or message.content.lower().find('server up') != -1 or message.content.lower().find('server down') != -1 or message.content.lower().find('server status') != -1:
-            log.info(f'Responding to [server up/down] chat for [{message.author}] on [{message.channel}]')
+            log.log('CMD', f'Responding to [server up/down] chat for [{message.author}] on [{message.channel}]')
             msg = 'Try using the **`!servers`** command to get all the current servers statuses, **`!help`** for more information'
             embed = discord.Embed(description=msg, color=HELP_COLOR)
             await message.channel.send(embed=embed)
 
         elif message.content.lower().find("isn't that right bot") != -1 or message.content.lower().find('isnt that right bot') != -1 or message.content.lower().find('right bot?') != -1:
-            log.info(f'Responding to [right bot?] chat from [{message.author}] on [{message.channel}]')
+            log.log('CMD', f'Responding to [right bot?] chat from [{message.author}] on [{message.channel}]')
             msg = 'I dont know shit.'
             await message.channel.send(msg)
 
         elif message.content.lower().find("hi bot") != -1 or message.content.lower().find('hello bot') != -1:
-            log.info(f'Responding to [hello bot] chat from [{message.author}] on [{message.channel}]')
+            log.log('CMD', f'Responding to [hello bot] chat from [{message.author}] on [{message.channel}]')
             msg = 'Hello'
             await message.channel.send(msg)
 
         elif message.content.lower().find("wb bot") != -1 or message.content.lower().find('welcome back bot') != -1:
-            log.info(f'Responding to [wb bot] chat from [{message.author}] on [{message.channel}]')
+            log.log('CMD', f'Responding to [wb bot] chat from [{message.author}] on [{message.channel}]')
             msg = "It's great to be back"
             await message.channel.send(msg)
 

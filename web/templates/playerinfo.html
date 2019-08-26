@@ -126,7 +126,6 @@
         <p class='is-2'>Steam VAC Ban: <b>{{ playerinfo['steamvacban'] }} / {{ playerinfo['steamvacbannum'] }}</b></p>
         <p class='is-2'>Steam Game Bans: <b>{{ playerinfo['steamgamesbannum'] }}</b></p>
         <p class='is-2'>Steam Economy Ban: <b>{{ playerinfo['steameconomyban'] }}</b></p>
-
         <p class='is-2'>Online Since Restart: <b>
         {% if playerinfo['restartbit'] == 1 %}
         No
@@ -140,6 +139,10 @@
         {% else %}
         Yes
         {% endif %}
+        </b><p class='is-2'>Cluster Tribes:  <b><br>
+        {% for tribe in tribes %}
+        {{ tribe['tribename'] }} ({{ tribe['server'].capitalize() }}) [{{ tribe['tribeid'] }}]<br>
+        {% endfor %}
         </b></p>
     </div>
     </div>

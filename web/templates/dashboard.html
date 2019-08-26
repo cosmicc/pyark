@@ -82,9 +82,9 @@
         <div>
             <p class='subtitle has-text-weight-bold top-pad-10 is-size-5 has-text-centered has-text-white'>{{ui_getplayersonline('all', 'count')}} Players Online </p>
         </div>
-        {% for player in ui_getplayersonline('all', 'list') %}
-        <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player }}">
-        {{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}
+        {% for player in ui_getplayersonline('all', 'dict') %}
+        <a class='button is-centered has-background-success has-text-white is-mobile is-rounded is-fullwidth' href="/playerinfo/{{ player['steamid'] }}">
+        {{ player['playername'].title() }}&nbsp;on&nbsp;{{ ui_getplayerserver(player['steamid']).title() }}
         </a>
         {% endfor %}
         <center><small>
@@ -120,8 +120,8 @@
         <div>
             <p class= 'subtitle top-pad-dbl is-size-5 has-text-weight-bold has-text-centered has-text-grey-lighter'>Last 5 Players Online:</p>
         </div>
-        {% for player in ui_getlastplayersonline('all', 'list') %}
-        <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player }}">{{ player }}&nbsp;on&nbsp;{{ ui_getplayerserver(player).capitalize() }}&nbsp;{{ ui_getplayerlasttime(player) }} ago
+        {% for player in ui_getlastplayersonline('all', 'dict') %}
+        <a class='button has-background-grey has-text-white is-centered is-rounded is-mobile is-fullwidth' href="/playerinfo/{{ player['steamid'] }}">{{ player['playername'].title() }}&nbsp;on&nbsp;{{ ui_getplayerserver(player['steamid']).title() }}&nbsp;{{ ui_getplayerlasttime(player['steamid']) }} ago
         </a>
         {% endfor %}
     </div>

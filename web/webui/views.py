@@ -8,6 +8,7 @@ from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, psql_port
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance, getlastcrash
+from modules.tribes import getplayertribes, gettribes
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getexpiredplayers, getbannedplayers, getnewplayers, getdiscordplayers, getsteamnameplayers, getplayernames
 from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto, joinedTime
@@ -98,7 +99,7 @@ def LogThread(sid):
         try:
             msg = logwatch.getline()
             if msg is not None:
-                log.debug(f'Sending logline to: {sid}')
+                log.trace(f'Sending logline to: {sid}')
                 socketio.emit('logline', {'line': msg}, namespace='/logstream', room=sid)
         except:
             log.exception('ERROR!!')
@@ -236,15 +237,15 @@ def database_processor2():
 
 @webui.context_processor
 def database_processor3():
-    def ui_getplayerserver(player):
-        return dbquery("SELECT server FROM players WHERE playername = '%s'" % (player.lower(),), fmt='string', fetch='one')
+    def ui_getplayerserver(steamid):
+        return dbquery("SELECT server FROM players WHERE steamid = '%s'" % (steamid,), fmt='string', fetch='one')
     return dict(ui_getplayerserver=ui_getplayerserver)
 
 
 @webui.context_processor
 def database_processor4():
-    def ui_getplayerlasttime(player):
-        return elapsedTime(Now(), int(dbquery("SELECT lastseen FROM players WHERE playername = '%s'" % (player.lower(),), fmt='string', fetch='one')))
+    def ui_getplayerlasttime(steamid):
+        return elapsedTime(Now(), int(dbquery("SELECT lastseen FROM players WHERE steamid = '%s'" % (steamid,), fmt='string', fetch='one')))
     return dict(ui_getplayerlasttime=ui_getplayerlasttime)
 
 
@@ -707,14 +708,14 @@ def sendchat(server):
     return redirect(url_for('webui._chatlog', instance=server))
 
 
-@webui.route('/playerinfo/<player>', methods=['POST', 'GET'])
+@webui.route('/playerinfo/<steamid>', methods=['POST', 'GET'])
 @login_required
-def playerinfo(player):
+def playerinfo(steamid):
     if request.method == 'POST':
-        serverchat(request.form["message"], whosent=player.lower(), inst=getplayer(playername=player.lower(), fmt='dict')['server'], private=True)
+        serverchat(request.form["message"], whosent=steamid, inst=getplayer(steamid=steamid, fmt='dict')['server'], private=True)
         flash(f'Message Sent', 'info')
-        return redirect(url_for('webui.playerinfo', player=player))
-    return render_template('playerinfo.html', playerinfo=getplayer(playername=player.lower(), fmt='dict'))
+        return redirect(url_for('webui.playerinfo', steamid=steamid))
+    return render_template('playerinfo.html', playerinfo=getplayer(steamid=steamid, fmt='dict'), tribes=getplayertribes(steamid))
 
 
 @webui.route('/messages/delete/<messageid>', methods=['POST'])
@@ -815,7 +816,7 @@ def webinfo(steamid):
 @webui.route('/playerinfo')
 @login_required
 def _players():
-    return render_template('playerselect.html', players=getplayernames(), bannedplayers=getbannedplayers(), newplayers=getnewplayers(Secs['week']), discordplayers=getdiscordplayers(), steamplayers=getsteamnameplayers())
+    return render_template('playerselect.html', players=getplayernames(), bannedplayers=getbannedplayers(), newplayers=getnewplayers(Secs['week']), discordplayers=getdiscordplayers(), steamplayers=getsteamnameplayers(), tribes=gettribes())
 
 
 @webui.route('/events')
