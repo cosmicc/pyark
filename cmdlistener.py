@@ -653,7 +653,7 @@ def checkcommands(minst):
             processgameline(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('Tamed a') != -1:
             processgameline(inst, 'TAME', line.replace('"', '').strip())
-        elif line.find(" claimed '") != -1:
+        elif line.find(" claimed '") != -1 or line.find(" unclaimed '") != -1:
             processgameline(inst, 'CLAIM', line.replace('"', '').strip())
         elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 \
         or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 \

@@ -65,7 +65,7 @@ def processgameline(inst, ptype, line):
                     log.debug(f'TRIBEDEMO: {inst}, {linesplit}')
                     playername = linesplit[2][10:].split(' demolished a ')[0].strip()
                     putplayerintribe(tribeid, playername)
-                    if len(linesplit[2].split(' demolished a ')) > 0:
+                    if len(linesplit[2].split(' demolished a ')) > 0 and linesplit[2].find(' demolished a ') != -1:
                         demoitem = linesplit[2].split(' demolished a ')[1].replace("'", "").strip(')').strip('!').strip()
                         clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
         elif ptype == 'DECAY':
@@ -79,11 +79,16 @@ def processgameline(inst, ptype, line):
             log.debug(f'{ptype} : {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             if tribename:
-                playername = linesplit[2][10:].split(' claimed ')[0].strip()
-                putplayerintribe(tribeid, playername)
-                claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
-            # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-                clog.log(ptype, f'{logheader}[{playername}] of ({tribename}) has claimed [{claimitem}]')
+                if linesplit[2].find(" claimed '") != -1:
+                    playername = linesplit[2][10:].split(' claimed ')[0].strip()
+                    putplayerintribe(tribeid, playername)
+                    claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
+                    clog.log(ptype, f'{logheader}[{playername}] of ({tribename}) has claimed [{claimitem}]')
+                elif linesplit[2].find(" unclaimed '") != -1:
+                    playername = linesplit[2][10:].split(' claimed ')[0].strip()
+                    putplayerintribe(tribeid, playername)
+                    claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
+                    clog.log(ptype, f'{logheader}[{playername}] of ({tribename}) has un-claimed [{claimitem}]')
             else:
                 clog.log(ptype, f'{logheader} SINGLECLAIM: {linesplit}')
         elif ptype == 'TRIBE':
