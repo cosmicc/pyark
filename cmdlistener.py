@@ -762,7 +762,6 @@ def checkcommands(minst):
              
                 elif line.lower().find('!ltest') != -1:
                     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
-                    lend = elapsedTime(datetimeto(lottoinfo['startdate'] + timedelta(hours=lottoinfo['days']), fmt='epoch'), Now())
                     #bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="0,1,0,1">           The lottery has ended, and the winner is {lwinner[1].upper()}!</>\n\n<RichColor Color="1,1,0,1">    {lwinner[1].capitalize()} has won {linfo["payout"]} Reward       Points\n<RichColor Color="1,1,0,1">                             Next lottery begins in 1 hour.</>"""
                     lwinner = ['', 'admin']
  
