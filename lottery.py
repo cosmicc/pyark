@@ -139,7 +139,8 @@ def startlottery(lottoinfo):
     lend = elapsedTime(datetimeto(lottoinfo['startdate'] + timedelta(hours=lottoinfo['days']), fmt='epoch'), Now())
     if lottoinfo['announced'] is False:
         log.log('LOTTO', f'New lottery has started. Buyin: {lottoinfo["buyin"]} Starting: {lottoinfo["payout"]} Length: {lottoinfo["days"]}')
-        bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="0,1,0,1">           A new lottery has started! {lottoinfo["buyin"]} points to enter in this lottery</>\n\n<RichColor Color="1,1,0,1">    Starting pot {lottoinfo["payout"]} points and grows as players enter\n<RichColor Color="1,1,0,1">            Lottery Ends in {lend}\nType !lotto for more info or !lotto enter to join</>"""
+        bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">       A new points lottery has started! {lottoinfo['buyin']} points to enter in this lottery </>\n\n<RichColor Color="1,1,0,1">             Starting pot {lottoinfo['payout']} points and grows as players enter </>\n                   Lottery Ends in {lend}\n\n             Type !lotto for more info or !lotto enter to join"""
+
         writeglobal('ALERT', 'LOTTERY', bcast)
         writediscord(f'{lottoinfo["payout"]}', Now(), name=f'{lend}', server='LOTTOSTART')
         dbupdate("UPDATE lotteryinfo SET announced = True WHERE id = %s" % (lottoinfo["id"],))
