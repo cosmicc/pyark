@@ -764,7 +764,7 @@ def checkcommands(minst):
                     lottoinfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
                     lend = elapsedTime(datetimeto(lottoinfo['startdate'] + timedelta(hours=lottoinfo['days']), fmt='epoch'), Now())
 
-                    bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">       A new points lottery has started! {lottoinfo["buyin"]} points to enter in this lottery</>\n\n<RichColor Color="1,1,0,1">         Starting pot {lottoinfo["payout"]} points and grows as players enter </>\n<RichColor Color="1,1,0,1">                                 Lottery Ends in {lend}\n\nType !lotto for more info or !lotto enter to join</>"""
+                    bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">       A new points lottery has started! {lottoinfo['buyin']} points to enter in this lottery </>\n\n<RichColor Color="1,1,0,1">                Starting pot {lottoinfo['payout']} points and grows as players enter </>\n<RichColor Color="1,1,0,1">                                 Lottery Ends in {lend}\n\nType !lotto for more info or !lotto enter to join </>"""
                     serverexec(['arkmanager', 'rconcmd', f'''{bcast}''', f'@{inst}'], nice=19, null=True)
              
 
