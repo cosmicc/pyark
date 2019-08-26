@@ -17,6 +17,15 @@ def d2dt_maint(dtme):
     return datetime.combine(dtme, tme)
 
 
+def schedholidayevent(startdate, enddate):
+    if not getnexteventinfo():
+        einfo = dbquery("SELECT * FROM autoevents WHERE title = 'Holiday'", fmt='dict', fetch='one')
+        dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix, announced) VALUES (0, '%s', '%s', '%s', '%s', '%s', False)" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
+        log.log('EVENTS', f'Scheduling next Evolution Weekend Event {startdate} - {enddate}')
+    else:
+        log.log('EVENTS', f'Skipping auto-schedule of next Evo weekend to do existing next event')
+
+
 def autoschedevolution():
     if not getnexteventinfo():
         now = Now(fmt='dt')
@@ -27,7 +36,7 @@ def autoschedevolution():
         startdate = now.date()
 
         einfo = dbquery("SELECT * FROM autoevents WHERE title = 'Evolution Weekend'", fmt='dict', fetch='one')
-        dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix, announced) VALUES (0, '%s', '%s', '%s', '%s', '%s      ', False)" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
+        dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix, announced) VALUES (0, '%s', '%s', '%s', '%s', '%s', False)" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
 
         log.log('EVENTS', f'Scheduling next Evolution Weekend Event {startdate} - {enddate}')
     else:
