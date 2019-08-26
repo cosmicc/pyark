@@ -192,6 +192,9 @@ def pyarkbot():
                     log.error('Cant find rates info messages to refresh')
                 except:
                     log.exception('some other error')
+                if Now(fmt='dt') - getlastannounce('lasttipannounce') > timedelta(hours=4):
+                    await protip('', refresher=True)
+                    setlastannounce('lasttipannounce', Now(fmt='dt'))
                 await asyncio.sleep(10)
             except CancelledError:
                 _exit(0)

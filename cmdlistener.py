@@ -79,6 +79,12 @@ def gettimeplayed(seenname):
         return f'{seenname.capitalize()} total playtime is {plasttime} on {flast[3]}'
 
 
+def gettip():
+    tip = dbquery("SELECT * FROM tips WHERE active = True ORDER BY count ASC, random()", fetch='one', fmt='dict')
+    dbupdate("UPDATE tips set count = %s WHERE id = %s" % (int(tip['count']) + 1, tip['id']))
+    return tip['tip']
+
+
 def getserverlist():
     newlist = []
     flast = dbquery("SELECT name FROM instances")
@@ -759,16 +765,10 @@ def checkcommands(minst):
                     log.log('CMD', f'Responding to a [!today] request for [{whoasked.title()}] on [{minst.title()}]')
                     whoisonlinewrapper(ninst, minst, whoasked, 3)
 
-             
-                elif line.lower().find('!ltest') != -1:
-                    linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
-                    #bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="0,1,0,1">           The lottery has ended, and the winner is {lwinner[1].upper()}!</>\n\n<RichColor Color="1,1,0,1">    {lwinner[1].capitalize()} has won {linfo["payout"]} Reward       Points\n<RichColor Color="1,1,0,1">                             Next lottery begins in 1 hour.</>"""
-                    lwinner = ['', 'admin']
- 
-                    bcast = f"""Broadcast <RichColor Color="0,1,0,1"> </>\n<RichColor Color="0,1,0,1">                The current lottery has ended, and the winner is...</>\n<RichColor Color="1,1,0,1">                                  {lwinner[1].upper()}!</>\n                      {lwinner[1].capitalize()} has won {linfo["payout"]} Reward Points!\n\n                         Next lottery begins in 1 hour."""
-                    serverexec(['arkmanager', 'rconcmd', f'''{bcast}''', f'@{inst}'], nice=19, null=True)
-             
-
+                elif line.lower().find('!tip') != -1 or line.lower().find('!justthetip') != -1:
+                    log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
+                    tip = gettip()
+                    serverexec(['arkmanager', 'rconcmd', f'ServerChat {tip}', f'@{minst}'], nice=19, null=True)
                 elif line.lower().find('!mypoints') != -1 or line.lower().find('!myinfo') != -1:
                     log.log('CMD', f'Responding to a [!myinfo] request from [{whoasked.title()}] on [{minst.title()}]')
                     respmyinfo(minst, whoasked)
