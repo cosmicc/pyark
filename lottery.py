@@ -98,7 +98,7 @@ def determinewinner(linfo):
                 kk = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (ueach,), fetch='one')
                 dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
                            ('%s', '%s', '%s', '%s', '%s')" % (kk[0], kk[1], Now(), linfo['buyin'], 0))
-            bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="0,1,0,1">           The lottery has ended, and the winner is {lwinner[1].upper()}!</>\n\n<RichColor Color="1,1,0,1">    {lwinner[1].capitalize()} has won {linfo["payout"]} Reward       Points\n<RichColor Color="1,1,0,1">                             Next lottery begins in 1 hour.</>"""
+            bcast = f"""Broadcast <RichColor Color="0,1,0,1"> </>\n<RichColor Color="0,1,0,1">                The current lottery has ended, and the winner is...</>\n<RichColor Color="1,1,0,1">                                  {lwinner[1].upper()}!</>\n                      {lwinner[1].capitalize()} has won {linfo["payout"]} Reward Points!\n\n                         Next lottery begins in 1 hour."""
             writeglobal('ALERT', 'LOTTERY', bcast)
             writediscord(f'{lwinner[1].title()}', Now(), name=f'{linfo["payout"]}', server='LOTTOEND')
             dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
