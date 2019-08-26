@@ -16,11 +16,29 @@ def putplayerintribe(tribeid, playername):
         elif isinstance(tribeidb[1], list):
             if steamid[0] not in tribeidb[1]:
                 tribeidb[1].append(steamid[0])
-                log.debug(f'existing players new: {tribeidb[1]}')
                 dbupdate(f"UPDATE tribes SET players = ARRAY{tribeidb[1]} WHERE tribeid = '{tribeidb[0]}'")
                 log.log('PLAYER', f'Adding [{playername}] as additional player to tribe database [{tribeidb[2]}]')
         else:
-            log.info('shouldnt go this far')
+            log.error('error1 putting player [{playername}] {steamid} in tribe [{tribeid}]')
+    else:
+        log.error('error2 putting player [{playername}] {steamid} in tribe [{tribeid}]')
+
+
+@log.catch
+def removeplayerintribe(tribeid, playername):
+    tribeidb = dbquery(f"SELECT tribeid, players, tribename FROM tribes WHERE tribeid = '{tribeid}'", fetch='one')
+    steamid = dbquery(f"SELECT steamid FROM players WHERE playername = '{playername.lower()}' AND online = True", fetch='one', single=True)
+    if tribeidb and steamid:
+        log.trace(f'tribeid: {tribeidb[0]}, {len(tribeidb)}  players: {type(tribeidb[1])} < {playername}')
+        if isinstance(tribeidb[1], list):
+            if steamid[0] in tribeidb[1]:
+                tribeidb[1].remove(steamid[0])
+                dbupdate(f"UPDATE tribes SET players = ARRAY{tribeidb[1]} WHERE tribeid = '{tribeidb[0]}'")
+                log.log('PLAYER', f'Removing [{playername}] as player in tribe database [{tribeidb[2]}]')
+        else:
+            log.error('error1 putting player [{playername}] {steamid} in tribe [{tribeid}]')
+    else:
+        log.error('error2 removing player [{playername}] {steamid} in tribe [{tribeid}]')
 
 
 @log.catch

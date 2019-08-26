@@ -2,8 +2,7 @@ from loguru import logger as log
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now
 from modules.servertools import removerichtext
-from modules.tribes import putplayerintribe, gettribeinfo
-
+from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
 
 
 @log.catch
@@ -84,16 +83,30 @@ def processgameline(inst, ptype, line):
                 putplayerintribe(tribeid, playername)
                 claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-                clog.log(ptype, f'{logheader} [{playername}] ({tribename}) has claimed [{claimitem}]')
+                clog.log(ptype, f'{logheader}[{playername}] of ({tribename}) has claimed [{claimitem}]')
             else:
                 clog.log(ptype, f'{logheader} SINGLECLAIM: {linesplit}')
         elif ptype == 'TRIBE':
             clog.debug(ptype, f'{ptype} : {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
-            # decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
-            # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-            clog.log(ptype, f'{logheader}{linesplit}')
- 
+            if tribeid is not None:
+                if linesplit[2].find(' was added to the Tribe by ') != -1:
+                    playername = linesplit[2][10:].split(' was added to the Tribe by ')[0].strip()
+                    playername2 = linesplit[2][10:].split(' was added to the Tribe by ')[1].strip().strip(')').strip('!')
+                    putplayerintribe(tribeid, playername)
+                    putplayerintribe(tribeid, playername2)
+                    clog.log(ptype, f'[{playername.title()}] was added to Tribe ({tribename}) by [{playername2.title()}]')
+                elif linesplit[2].find(' was removed from the Tribe!') != -1:
+                    playername = linesplit[2][10:].split(' was removed from the Tribe!')[0].strip()
+                    removeplayerintribe(tribeid, playername)
+                    clog.log(ptype, f'[{playername.title()}] was removed from Tribe ({tribename})')
+                elif linesplit[2].find(' set to Rank Group ') != -1:
+                    playername = linesplit[2][10:].split(' set to Rank Group ')[0].strip()
+                    putplayerintribe(tribeid, playername)
+                    rankgroup = linesplit[2][10:].split(' set to Rank Group ')[1].strip().strip('!')
+                    clog.log(ptype, f'[{playername.title()}] set to rank group [{rankgroup}] in Tribe ({tribename})')
+            else:
+                clog.log(ptype, f'{logheader}{linesplit}')
         else:
             log.debug(f'UNKNOWN {ptype}: {linesplit}')
             clog.log(ptype, f'{linesplit}')
