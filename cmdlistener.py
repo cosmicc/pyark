@@ -761,6 +761,7 @@ def checkcommands(minst):
 
              
                 elif line.lower().find('!ltest') != -1:
+                    lottoinfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
                     bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="0,1,0,1">           A new lottery has started! {lottoinfo["buyin"]} points to enter in this lottery</>\n\n<RichColor Color="1,1,0,1">    Starting pot {lottoinfo["payout"]} points and grows as players enter\n<RichColor Color="1,1,0,1">            Lottery Ends in {lend}\nType !lotto for more info or !lotto enter to join</>"""
                     serverexec(['arkmanager', 'rconcmd', '''{bcast}''', f'@{inst}'], nice=19, null=True)
              
