@@ -22,7 +22,7 @@ def main():
     parser.add_argument('-ra', '--noadmin', action='store_false', help='remove admin entries')
     parser.add_argument('-rs', '--startexit', action='store_false', help='remove start/exit entries')
     parser.add_argument('-rc', '--commands', action='store_false', help='remove command entries')
-    parser.add_argument('-rv', '--votes', action='store_false', help='remove vote entries')
+    parser.add_argument('-eo', '--errorsonly', action='store_false', help='warning, errors, and critical only')
     parser.add_argument('-rj', '--joinleave', action='store_false', help='remove join/leave entries')
 
     args = parser.parse_args()
@@ -38,7 +38,7 @@ def main():
     argsextend = 1 if args.extend else 0
     argsstartexit = 1 if args.startexit else 0
     argscommands = 1 if args.commands else 0
-    argsvotes = 1 if args.votes else 0
+    argsvotes = 1 if args.errorsonly else 0
     argsjoinleave = 1 if args.joinleave else 0
     argsfollow = 1 if args.nofollow else 0
     argsadmin = 1 if args.noadmin else 0

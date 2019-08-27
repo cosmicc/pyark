@@ -672,7 +672,7 @@ def checkcommands(minst):
             if whoasked is None:
                 getnamefromchaterror(minst)
             else:
-                if line.lower().find('!help') != -1:
+                if line.lower().startswith('!help') != -1:
                     subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, \
                     !myinfo, !myhome, !lastwipe, !lastrestart, !vote, !tip, !lottery, !lastseen <playername>, !playtime <playername>" @%s' %
                                    (minst), shell=True)
@@ -710,7 +710,7 @@ def checkcommands(minst):
                     steamid = getsteamid(whoasked)
                     msg = f'To view kits you must make a level 1 rewards vault and hang it on a wall or foundation. Free starter items and over 80 kits available. !help for more commands'
                     subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg, inst), shell=True)
-                elif line.startswith('/'):
+                elif line.lower().startswith('/'):
                     msg = f'Commands in this cluster start with a ! (Exclimation Mark)  Type !help for a list of commands'
                     subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg, inst), shell=True)
                 elif line.lower().find('!lastdinowipe') != -1 or line.lower().find('!lastwipe') != -1:

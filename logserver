@@ -206,6 +206,9 @@ def putqueue(data, client, single):
         if not single or single == client['address']:
             if client['server'] == 'ALL' or client['server'] == data["record"]["extra"]['hostname']:
                 log.trace(f'Adding to {client["address"]} queue {data["text"].strip()}')
+                if client['debug'] or client['trace']:
+                    msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
+                    data['text'] = data['text'].strip() + msgapp
                 client["queue"].put(data["text"].strip())
 
 
@@ -215,15 +218,12 @@ def processlogline(line, single=False):
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
         # log.trace(f'Got from log: {data["text"]}')
-        msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
         for client in client_threads:
-            if client['debug'] or client['trace']:
-                data['text'] = data['text'].strip() + msgapp
             if data["record"]["level"]["name"] == 'TRACE':
-                if client['trace']:
+                if client['trace'] and client['votes']:
                     putqueue(data, client, single)
             elif data["record"]["level"]["name"] == 'DEBUG':
-                if client['debug']:
+                if client['debug'] and client['votes']:
                     putqueue(data, client, single)
             else:
                 if client['showonly'] != 'ALL':
@@ -231,26 +231,24 @@ def processlogline(line, single=False):
                         putqueue(data, client, single)
 
                 elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT" or data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL" or data["record"]["level"]["name"] == "GIT":
-                    if client['startexit']:
+                    if client['startexit'] and client['votes']:
                         putqueue(data, client, single)
 
                 elif data["record"]["level"]["name"] == "CMD":
-                    if client['commands']:
+                    if client['commands'] and client['votes']:
                         putqueue(data, client, single)
 
                 elif data["record"]["level"]["name"] == "ADMIN":
-                    if client['admin']:
+                    if client['admin'] and client['votes']:
                         putqueue(data, client, single)
 
                 elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
-                    if client['joinleave']:
+                    if client['joinleave'] and client['votes']:
                         putqueue(data, client, single)
 
-                elif data["record"]["level"]["name"] == "VOTE":
-                    if client['votes']:
+                elif data["record"]["level"]["name"] == "WARNING" or data["record"]["level"]["name"] == "WARNING" or data["record"]["level"]["name"] == "WARNING":
                         putqueue(data, client, single)
-
-                else:
+                elif client['votes']:
                     putqueue(data, client, single)
             sleep(.01)
 

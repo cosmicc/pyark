@@ -42,7 +42,7 @@
 <div id="vtop" class="vtop">    
     <div id="toplevel" class="toplevel">
         <div id="dashboard" class="dashboard">
-        <div id="newcounts" class="newcounts">D {{ ui_getnewplayercount(86400) }}<br>W {{ ui_getnewplayercount(604800) }}<br>HR {{ ui_gethitnruns(604800) }}</div>
+        <div id="newcounts" class="newcounts">ND {{ ui_getnewplayercount(86400) }}<br>NW {{ ui_getnewplayercount(604800) }}<br>HR {{ ui_gethitnruns(604800) }}</div>
         <div id="onlineplayers" class="onlineplayers"><button class="opbutton">{{ui_getplayersonline('all', 'count')}}</button></div>
         <div id="servers" class="servers">
                  {% for instance in instances %}
@@ -86,7 +86,7 @@
             <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; text-decoration: none;"><button class="ebutton has-background-warning" style="color: #FFFFFF"></button></a>
             {% endif %}
             </div>
-        <div id="playercounts" class="playercounts">D {{ ui_getdailyplayercount() }}<br>W {{ ui_getweeklyplayercount() }}<br>M {{ ui_getmonthlyplayercount() }}</div>
+        <div id="playercounts" class="playercounts">AD {{ ui_getdailyplayercount() }}<br>AW {{ ui_getweeklyplayercount() }}<br>AM {{ ui_getmonthlyplayercount() }}</div>
 
         </div>
        <div id="logbox" class="logbox">
