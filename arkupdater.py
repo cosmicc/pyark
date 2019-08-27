@@ -489,7 +489,7 @@ def checkifenabled(inst):
     lastwipe = dbquery("SELECT enabled, isrunning FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
     if lastwipe[0] and lastwipe[1] == 0:
         log.warning(f'Instance [{inst.title()}] is set to start (enabled). Starting server')
-        restartinstnow(inst)
+        restartinstnow(inst, False)
     elif not lastwipe[0] and lastwipe[1] == 1:
         log.warning(f'Instance [{inst.title()}] is set to stop (disabled). Stopping server')
         instancerestart(inst, 'admin restart')
