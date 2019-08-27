@@ -137,11 +137,11 @@ def getplayersonline(inst, fmt='list', case='normal'):
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
 
 
-def getplayersonline2(inst, fmt='list', case='normal'):
-    if inst == 'all':
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' ORDER BY playername" % (Now() - 40))
+def getplayersonlinenames(inst, fmt='list', case='normal'):
+    if inst == 'all' or inst == 'ALL':
+        dbdata = dbquery("SELECT playername FROM players WHERE online = True ORDER BY lastseen DESC")
     else:
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > '%s' AND server = '%s' ORDER BY playername" % (Now() - 40, inst.lower()))
+        dbdata = dbquery("SELECT playername FROM players WHERE online = True AND server = '%s' ORDER BY lastseen DESC" % (inst.lower(),))
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
 
 

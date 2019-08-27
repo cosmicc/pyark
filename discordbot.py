@@ -5,8 +5,8 @@ from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinf
 from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from modules.configreader import generalchat_id, serverchat_id, discordtoken, hstname, maint_hour, infochat_id, changelog_id
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import instancelist, getlastwipe, getlastrestart, writechat, writeglobal, getlastrestartreason
-from modules.players import getplayer, getplayerlastserver, getplayersonline, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers, isplayeradmin, setprimordialbit
+from modules.instances import instancelist, getlastwipe, getlastrestart, writeglobal, getlastrestartreason
+from modules.players import getplayer, getplayerlastserver, getplayersonlinenames, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers, isplayeradmin, setprimordialbit
 from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs, datetimeto
 from lottery import totallotterydeposits, isinlottery, getlottowinnings
 import asyncio
@@ -742,12 +742,12 @@ def pyarkbot():
     async def _who(ctx):
         tcnt = 0
         for each in instancelist():
-            pcnt = getplayersonline(each, fmt='count')
+            pcnt = getplayersonlinenames(each, fmt='count')
             tcnt = tcnt + pcnt
         embed = discord.Embed(title=f" **{tcnt}**  total players currently online in the cluster", color=INFO_COLOR)
         for each in instancelist():
-            pcnt = getplayersonline(each, fmt='count')
-            plist = getplayersonline(each, fmt='string', case='title')
+            pcnt = getplayersonlinenames(each, fmt='count')
+            plist = getplayersonlinenames(each, fmt='string', case='title')
             if pcnt != 0:
                 embed.add_field(name=f"{each.capitalize().strip()} has  **{pcnt}**  players online:", value=f"{plist}", inline=False)
             else:
