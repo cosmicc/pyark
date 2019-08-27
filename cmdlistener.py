@@ -672,7 +672,7 @@ def checkcommands(minst):
             if whoasked is None:
                 getnamefromchaterror(minst)
             else:
-                lsw = line.lower.split(':')
+                lsw = line.lower().split(':')
                 if len(lsw) == 3:
                     incmd = lsw[2].strip()
                     if incmd.startswith('!help'):
