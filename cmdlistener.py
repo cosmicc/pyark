@@ -672,8 +672,10 @@ def checkcommands(minst):
             if whoasked is None:
                 getnamefromchaterror(minst)
             else:
+                log.debug(f'LINE: {line.lower()}')
                 if line.lower().startswith('!help'):
-                    subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, !myinfo, !myhome, !lastwipe, !lastrestart, !vote, !tip, !lottery, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
+                    subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday, !timeleft, !myinfo, !myhome, !lastwipe, " @%s' % (minst), shell=True)
+                    subprocess.run('arkmanager rconcmd "ServerChat !lastrestart, !vote, !tip, !lottery, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
                     log.log('CMD', f'Responding to a [!help] request from [{whoasked.title()}] on [{minst.title()}]')
                 elif line.lower().find('@all') != -1:
                     try:
