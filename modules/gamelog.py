@@ -105,6 +105,11 @@ def processgameline(inst, ptype, line):
                     playername = linesplit[2][10:].split(' was removed from the Tribe!')[0].strip()
                     removeplayerintribe(tribeid, playername)
                     clog.log(ptype, f'[{playername.title()}] was removed from Tribe ({tribename})')
+                elif linesplit[2].find(' was added to the Tribe!') != -1:
+                    playername = linesplit[2][10:].split(' was added to the Tribe!')[0].strip()
+                    putplayerintribe(tribeid, playername)
+                    clog.log(ptype, f'[{playername.title()}] was added to the Tribe ({tribename})')
+    
                 elif linesplit[2].find(' set to Rank Group ') != -1:
                     playername = linesplit[2][10:].split(' set to Rank Group ')[0].strip()
                     putplayerintribe(tribeid, playername)

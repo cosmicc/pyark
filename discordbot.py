@@ -435,8 +435,7 @@ def pyarkbot():
         msg = msg + "**`!topplayed`**  - List the top 10 players with the most playtime\n"
         msg = msg + "**`!lastlotto`**  - List the last 5 lottery winners\n"
         msg = msg + "**`!winners`**  - List the 5 all-time lottery winners\n"
-        msg = msg + "**`!tip`**  - Get a pro tip from the bot\n"
-        msg = msg + "**`!primordial`**  - Warns you in-game if you haven't logged in since the server has restarted (so you can reset your primordial's buff bug)\n\n"
+        msg = msg + "**`!tip`**  - Get a pro tip from the bot\n\n"
         msg = msg + "The servers available are:"
         for eachinst in instancelist():
             msg = msg + f"  **`{eachinst}`**,"

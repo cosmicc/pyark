@@ -160,12 +160,10 @@ def checkpyark():
 
 
 @log.catch
-def startserver(inst, restart=False):
+def startserver(inst):
     if issharedmounted():
-        if loglevel != 'DEBUG' or loglevel != 'TRACE' or not args.debug or not args.trace:
-            restartinstnow(inst, reboot=restart)
-        else:
-            log.log('WATCH', f'Instance [{inst.title()}] Debug mode stops start/restart...')
+        log.log('WATCH', f'Instance [{inst.title()}] Watchdog has initiated a start')
+        restartinstnow(inst, startonly=True)
     else:
         log.warning(f'Server {hstname} is waiting for drives to mount')
 
@@ -257,7 +255,7 @@ def main():
                                 log.warning(f'Instance [{eachinst["name"]}] failed running checks! Starting Instance')
                                 pmsg = f'Instance {eachinst["name"]} failed running checks!\nStarting Instance'
                                 pushover('Watchdog', pmsg)
-                                startserver(eachinst['name'], False)
+                                startserver(eachinst['name'])
                     for feach in isonline:
                         if feach == eachinst['name']:
                             if isonline[feach]['count'] == 10:
@@ -268,7 +266,7 @@ def main():
                                     log.warning(f'Instance [{eachinst["name"]}] failed online checks! Restarting Instance')
                                     pmsg = f'Instance {eachinst["name"]} failed online checks!\nRestarting Instance'
                                     pushover('Watchdog', pmsg)
-                                    startserver(eachinst['name'], False)
+                                    startserver(eachinst['name'])
                                 else:
                                     log.info(f'Skipping instance restart because players are actually online')
                     if serverstatcount == 1:

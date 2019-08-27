@@ -491,14 +491,14 @@ def checkifenabled(inst):
     if serverneedsrestart():
         dbupdate(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
     if lastwipe[0] and lastwipe[1] == 0:
-        log.warning(f'Instance [{inst.title()}] is set to start (enabled). Starting server')
+        log.log('MAINT', f'Instance [{inst.title()}] is set to [enabled]. Starting server')
         restartinstnow(inst, startonly=True)
     elif not lastwipe[0] and lastwipe[1] == 1:
         for each in range(numinstances):
             if not isrebooting(instance[each]['name']):
                 if instance[each]['name'] == inst:
                     checkifalreadyrestarting(instance[each]['name'])
-                    log.warning(f'Instance [{inst.title()}] is set to stop (disabled). Stopping server')
+                    log.warning(f'Instance [{inst.title()}] is set to [disabled]. Stopping server')
                     instancerestart(inst, 'admin restart')
 
 
