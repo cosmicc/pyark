@@ -185,7 +185,7 @@ def restartinstnow(inst, startonly=False):
     if not isinstanceenabled(inst):
         log.log('UPDATE', f'Instance [{inst.title()}] remaining off because not enabled.')
         unsetstartbit(inst)
-    elif serverneedsrestart(inst) and inst != 'coliseum' and inst != 'crystal'and not startonly:
+    elif serverneedsrestart() and inst != 'coliseum' and inst != 'crystal'and not startonly:
         dbupdate(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
         log.log('MAINT', f'REBOOTING Server [{hstname.upper()}] for maintenance server reboot')
         serverexec(['reboot'], nice=0, null=True)
