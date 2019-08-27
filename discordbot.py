@@ -161,7 +161,7 @@ def pyarkbot():
         while not client.is_closed():
             try:
                 log.trace('executing discord bot task checker')
-                if Now(fmt='dt') - getlastannounce('lastlottoannounce') > timedelta(hours=4) and isinlottery():
+                if Now(fmt='dt') - getlastannounce('lastlottoannounce') > timedelta(hours=7) and isinlottery():
                     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
                     log.log('LOTTO', 'Announcing running lottery in discord')
                     embed = discord.Embed(title=f"A lottery is currently running!", color=INFO_COLOR)
@@ -169,6 +169,9 @@ def pyarkbot():
                     embed.add_field(name=f"Current lottery is up to **{linfo['payout']} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\n**`!lotto enter`** to join the lottery\n**`!points`** for more information\n**`!winners`** for recent results", inline=True)
                     msg = await generalchat.send(embed=embed)
                     setlastannounce('lastlottoannounce', Now(fmt='dt'))
+                    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">       A points lottery is current running! {linfo['buyin']} points to enter in this lottery </>\n<RichColor Color="1,1,0,1">             Current lottery is up to {linfo['payout']} points and grows as players enter </>\n                   Lottery Ends in {elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}\n\n             Type !lotto for more info or !lotto enter to join"""
+
+                    writeglobal('ALERT', 'LOTTERY', bcast)
                     await clearmessages('lotterymessage')
                     addmessage('lotterymessage', msg.id)
                 if Now(fmt='dt') - getlastannounce('lasteventannounce') > timedelta(hours=12) and iseventtime():
@@ -773,13 +776,10 @@ def pyarkbot():
     @commands.check(is_admin)
     async def _test(ctx):
         try:
-            embed = discord.Embed(title=f"The current event is ending!", color=INFO_COLOR)
-            embed.set_author(name='Galaxy Cluster Server Events', icon_url='https://library.kissclipart.com/20180903/ueq/kissclipart-party-emoji-clipart-party-popper-emoji-aa28695001083d98.png')
-            embed.add_field(name=f"test", value=f"{dir(ctx.message.author)}", inline=False)
-            await client.http.add_role(329659318972448771, ctx.message.author.id, 329691280412114945)
-            # await messagesend(ctx, embed, allowgeneral=False, reject=True)
-            # addlottomessage(msg.id)
-            # await clearlottomessages()
+            bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">       A points lottery is current running! {linfo['buyin']} points to enter in this lottery </>\n<RichColor Color="1,1,0,1">             Current lottery is up to {linfo['payout']} points and grows as players enter </>\n                   Lottery Ends in {elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}\n\n             Type !lotto for more info or !lotto enter to join"""
+
+            writeglobal('coliseum', 'LOTTERY', bcast)
+
         except:
             log.exception('error in test')
 

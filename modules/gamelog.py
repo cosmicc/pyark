@@ -2,6 +2,7 @@ from loguru import logger as log
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now
 from modules.servertools import removerichtext
+from mosuled.players import isplayeradmin
 from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
 
 
@@ -25,7 +26,7 @@ def processgameline(inst, ptype, line):
             dino = msgsplit[1].strip().replace(')', '').replace('(', '')
             clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has released [{dino}]')
         elif ptype == 'DEATH':
-            clog.debug(ptype, f'{ptype} - {linesplit}')
+            clog.debug(f'{ptype} - {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             if tribename is None:
                 deathsplit = removerichtext(line[21:]).split(" - ", 1)
@@ -42,7 +43,7 @@ def processgameline(inst, ptype, line):
             else:
                 log.debug(f'deathskip: {linesplit}')
         elif ptype == 'TAME':
-                clog.debug(ptype, f'{ptype} - {linesplit}')
+                clog.debug(f'{ptype} - {linesplit}')
                 tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
                 if tribename is None:
                     tamed = linesplit[0].split(' Tamed ')[1].strip(')').strip('!')
@@ -57,7 +58,7 @@ def processgameline(inst, ptype, line):
                     else:
                         clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) tamed [{tamed}]')
         elif ptype == 'DEMO':
-                clog.debug(ptype, f'{ptype} - {linesplit}')
+                clog.debug(f'{ptype} - {linesplit}')
                 tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
                 if tribename is None:
                     clog.log(ptype, f'{logheader}SINGLDEMO: [{linesplit}]')
@@ -68,8 +69,20 @@ def processgameline(inst, ptype, line):
                     if len(linesplit[2].split(' demolished a ')) > 0 and linesplit[2].find(' demolished a ') != -1:
                         demoitem = linesplit[2].split(' demolished a ')[1].replace("'", "").strip(')').strip('!').strip()
                         clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
+        elif ptype == 'ADMIN':
+                clog.debug(f'{ptype} - {linesplit}')
+                steamid = linesplit[2].strip()[9:].strip(')')
+                pname = linesplit[0].split('PlayerName: ')[1]
+                cmd = linesplit[0].split('AdminCmd: ')[1].split(' (PlayerName:')[0].upper()
+                if not isplayeradmin(steamid):
+                    clog.warning(f'{logheader}Admin command [{cmd}] executed by NON-ADMIN [{pname.title()}] !')
+                    dbupdate("INSERT INTO kicklist (instance,steamid) VALUES ('%s','%s')" % (inst, steamid))
+                    dbupdate("UPDATE players SET banned = 'true' WHERE steamid = '%s')" % (steamid, ))
+                else:
+                    clog.log(ptype, f'{logheader}[{pname.title()}] executed admin command [{cmd}] ')
+ 
         elif ptype == 'DECAY':
-            clog.debug(ptype, f'{ptype} - {linesplit}')
+            clog.debug(f'{ptype} - {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
             # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
@@ -92,7 +105,7 @@ def processgameline(inst, ptype, line):
             else:
                 clog.log(ptype, f'{logheader} SINGLECLAIM: {linesplit}')
         elif ptype == 'TRIBE':
-            clog.debug(ptype, f'{ptype} - {linesplit}')
+            clog.debug(f'{ptype} - {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
             if tribeid is not None:
                 if linesplit[2].find(' was added to the Tribe by ') != -1:

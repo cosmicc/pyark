@@ -86,7 +86,7 @@
             <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; text-decoration: none;"><button class="ebutton has-background-warning" style="color: #FFFFFF"></button></a>
             {% endif %}
             </div>
-       <div id="playercounts" class="playercounts">AD {{ ui_getdailyplayercount() }}<br>AW {{ ui_getweeklyplayercount() }}<br>AM {{ ui_getmonthlyplayercount() }}</div>
+       <div id="playercounts" class="playercounts">{{ ui_getdailyplayercount() }} AD<br>{{ ui_getweeklyplayercount() }} AW<br>{{ ui_getmonthlyplayercount() }} AM</div>
 
        </div>
        <div id="logbox" class="logbox"><div id="log" class="log"></div></div>

@@ -198,13 +198,13 @@ def restartinstnow(inst, startonly=False):
         log.debug(f'server {inst} built and updated config files')
         log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
         serverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'], nice=0, null=True),
+        dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
         log.log('UPDATE', f'Instance [{inst.title()}] is starting')
         resetlastrestart(inst)
         unsetstartbit(inst)
         playerrestartbit(inst)
         os.nice(-19)
         serverexec(['arkmanager', 'start', f'@{inst}'], nice=-10, null=True)
-        dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
         os.nice(10)
 
 

@@ -98,7 +98,7 @@ def determinewinner(linfo):
                 kk = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (ueach,), fetch='one')
                 dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
                            ('%s', '%s', '%s', '%s', '%s')" % (kk[0], kk[1], Now(), linfo['buyin'], 0))
-            bcast = f"""Broadcast <RichColor Color="0,1,0,1"> </>\n<RichColor Color="0,1,0,1">                The current lottery has ended, and the winner is...</>\n<RichColor Color="1,1,0,1">                                  {lwinner[1].upper()}!</>\n                      {lwinner[1].capitalize()} has won {linfo["payout"]} Reward Points!\n\n                         Next lottery begins in 1 hour."""
+            bcast = f"""<RichColor Color="0,1,0,1"> </>\n<RichColor Color="0,1,0,1">                The current lottery has ended, and the winner is...</>\n<RichColor Color="1,1,0,1">                                  {lwinner[1].upper()}!</>\n                      {lwinner[1].capitalize()} has won {linfo["payout"]} Reward Points!\n\n                         Next lottery begins in 1 hour."""
             writeglobal('ALERT', 'LOTTERY', bcast)
             writediscord(f'{lwinner[1].title()}', Now(), name=f'{linfo["payout"]}', server='LOTTOEND')
             dbupdate("INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES \
@@ -139,7 +139,7 @@ def startlottery(lottoinfo):
     lend = elapsedTime(datetimeto(lottoinfo['startdate'] + timedelta(hours=lottoinfo['days']), fmt='epoch'), Now())
     if lottoinfo['announced'] is False:
         log.log('LOTTO', f'New lottery has started. Buyin: {lottoinfo["buyin"]} Starting: {lottoinfo["payout"]} Length: {lottoinfo["days"]}')
-        bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">       A new points lottery has started! {lottoinfo['buyin']} points to enter in this lottery </>\n\n<RichColor Color="1,1,0,1">             Starting pot {lottoinfo['payout']} points and grows as players enter </>\n                   Lottery Ends in {lend}\n\n             Type !lotto for more info or !lotto enter to join"""
+        bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">       A new points lottery has started! {lottoinfo['buyin']} points to enter in this lottery </>\n\n<RichColor Color="1,1,0,1">             Starting pot {lottoinfo['payout']} points and grows as players enter </>\n                   Lottery Ends in {lend}\n\n             Type !lotto for more info or !lotto enter to join"""
 
         writeglobal('ALERT', 'LOTTERY', bcast)
         writediscord(f'{lottoinfo["payout"]}', Now(), name=f'{lend}', server='LOTTOSTART')
