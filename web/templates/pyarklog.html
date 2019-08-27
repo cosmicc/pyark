@@ -1,5 +1,5 @@
 <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500,700&display=swap&subset=latin-ext" rel="stylesheet">
-<link rel="stylesheet" href="/static/css/logger.css?v=1.78">
+<link rel="stylesheet" href="/static/css/logger.css?v=1.81">
 <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
 <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
 <script>
@@ -37,8 +37,8 @@
         });
 </script>
 
-    {% if current_user.has_role('admin') %}
-    <body>
+{% if current_user.has_role('admin') %}
+<body>
 <div id="vtop" class="vtop">    
     <div id="toplevel" class="toplevel">
         <div id="dashboard" class="dashboard">
@@ -86,27 +86,16 @@
             <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; text-decoration: none;"><button class="ebutton has-background-warning" style="color: #FFFFFF"></button></a>
             {% endif %}
             </div>
-        <div id="playercounts" class="playercounts">AD {{ ui_getdailyplayercount() }}<br>AW {{ ui_getweeklyplayercount() }}<br>AM {{ ui_getmonthlyplayercount() }}</div>
+       <div id="playercounts" class="playercounts">AD {{ ui_getdailyplayercount() }}<br>AW {{ ui_getweeklyplayercount() }}<br>AM {{ ui_getmonthlyplayercount() }}</div>
 
-        </div>
-       <div id="logbox" class="logbox">
-          <div id="log" class="log">
-          </div>
        </div>
-       <div id="gamebox" class="gamebox">
-          <div id="game" class="game">
-          </div>
-       </div>
+       <div id="logbox" class="logbox"><div id="log" class="log"></div></div>
+       <div id="gamebox" class="gamebox"><div id="game" class="game"></div></div>
        <div id="chatcombined" class="chatcombined">
-          <div id="chatbox" class="chatbox">
-             <div id="chat" class="chat">
-             </div>
-          </div>
-          <div class="chatinput">  
-             <input id="localchat" class="input" type="text" placeholder="@all">
-          </div>   
+       <div id="chatbox" class="chatbox"><div id="chat" class="chat"></div></div>
+       <div class="chatinput"> <input id="localchat" class="input" type="text" placeholder="@all"></div>
        </div>
     </div>
 </div>    
-    </body>
-    {% endif %}
+</body>
+{% endif %}

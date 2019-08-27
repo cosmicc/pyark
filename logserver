@@ -208,8 +208,9 @@ def putqueue(data, client, single):
                 log.trace(f'Adding to {client["address"]} queue {data["text"].strip()}')
                 if client['debug'] or client['trace']:
                     msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
-                    data['text'] = data['text'].strip() + msgapp
-                client["queue"].put(data["text"].strip())
+                    client["queue"].put(data["text"].strip() + msgapp)
+                else:
+                    client["queue"].put(data["text"].strip())
 
 
 @log.catch
@@ -240,13 +241,14 @@ def processlogline(line, single=False):
 
                 elif data["record"]["level"]["name"] == "ADMIN":
                     if client['admin'] and client['votes']:
-                        putqueue(data, client, single)
+                        pass
+                        #putqueue(data, client, single)
 
                 elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
                     if client['joinleave'] and client['votes']:
                         putqueue(data, client, single)
 
-                elif data["record"]["level"]["name"] == "WARNING" or data["record"]["level"]["name"] == "WARNING" or data["record"]["level"]["name"] == "WARNING":
+                elif data["record"]["level"]["name"] == "WARNING" or data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
                         putqueue(data, client, single)
                 elif client['votes']:
                     putqueue(data, client, single)

@@ -370,7 +370,7 @@ def pyarkbot():
         tip = gettip()
         if refresher:
             generalchat = client.get_channel(int(generalchat_id))
-            content = f'Did you know?\n{tip}'
+            content = f'Protip: {tip}'
             msg = await generalchat.send(content=content)
             await clearmessages('tipmessage')
             addmessage('tipmessage', msg.id)
