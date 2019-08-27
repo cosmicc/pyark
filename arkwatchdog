@@ -6,7 +6,7 @@ from modules.pushover import pushover
 from modules.instances import getinststatus, isinstanceenabled
 from modules.players import getliveplayersonline
 from modules.logging import shortlogformat, longlogformat
-from arkupdater import restartinstnow
+from arkupdater import instancerestart
 from sys import exit
 from time import sleep
 from modules.timehelper import Secs, Now, elapsedTime
@@ -162,8 +162,8 @@ def checkpyark():
 @log.catch
 def startserver(inst):
     if issharedmounted():
-        log.log('WATCH', f'Instance [{inst.title()}] Watchdog has initiated a start')
-        restartinstnow(inst, startonly=True)
+        log.log('WATCH', f'Watchdog has initiated a start for [{inst.title()}]')
+        instancerestart(inst, 'auto start', startonly=True)
     else:
         log.warning(f'Server {hstname} is waiting for drives to mount')
 

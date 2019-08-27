@@ -209,9 +209,11 @@ def restartinstnow(inst, startonly=False):
 
 
 @log.catch
-def restartloop(inst):
+def restartloop(inst, startonly=False):
     checkdirs(inst)
     log.debug(f'{inst} restart loop has started')
+    if startonly:
+        restartinstnow(inst, startonly=True)
     timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
     timeleft = int(timeleftraw[0])
     reason = timeleftraw[1]
@@ -344,17 +346,19 @@ def maintenance():
 
 
 @log.catch
-def instancerestart(inst, reason):
+def instancerestart(inst, reason, startonly=False):
     checkdirs(inst)
     log.debug(f'instance restart verification starting for {inst}')
     global instance
     global confupdtimer
-    dbupdate("UPDATE instances SET restartreason = '%s' WHERE name = '%s'" % (reason, inst))
     if not isrebooting(inst):
+        dbupdate("UPDATE instances SET restartreason = '%s' WHERE name = '%s'" % (reason, inst))
         for each in range(numinstances):
             if instance[each]['name'] == inst:
-                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst,))
+                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, startonly))
                 instance[each]['restartthread'].start()
+    else:
+        log.debug(f'skipping start/restart for {inst} because restart thread already running')
 
 
 @log.catch
