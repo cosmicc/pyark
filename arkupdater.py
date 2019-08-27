@@ -5,7 +5,7 @@ from datetime import time as dt
 from modules.dbhelper import dbquery, dbupdate
 from modules.pushover import pushover
 from modules.players import getliveplayersonline, getplayersonline
-from modules.instances import getlastwipe, instancelist, isinstancerunning, isinstanceup
+from modules.instances import getlastwipe, instancelist, isinstancerunning, isinstanceup, isinstanceenabled
 from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
 from modules.servertools import serverexec
@@ -181,25 +181,29 @@ def restartinstnow(inst, reboot):
     log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
     dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
     serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
-    log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
-    buildconfig(inst)
-    shutil.copy(f'{sharedpath}/stagedconfig/Game-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
-    subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
-    shutil.copy(f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
-    log.debug(f'server {inst} built and updated config files')
-    log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
-    serverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'], nice=0, null=True),
-    log.log('UPDATE', f'Instance [{inst.title()}] is starting')
-    resetlastrestart(inst)
-    unsetstartbit(inst)
-    playerrestartbit(inst)
-    os.nice(-19)
-    if reboot and inst != 'coliseum' and inst != 'crystal':
-        serverexec(['reboot'], nice=0, null=True)
+    if not isinstanceenabled(inst):
+        log.log('UPDATE', f'Instance [{inst.title()}] remaining off because not enabled.')
+        unsetstartbit(inst)
     else:
-        serverexec(['arkmanager', 'start', f'@{inst}'], nice=-10, null=True)
-        dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
-        os.nice(10)
+        log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
+        buildconfig(inst)
+        shutil.copy(f'{sharedpath}/stagedconfig/Game-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
+        subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
+        shutil.copy(f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
+        log.debug(f'server {inst} built and updated config files')
+        log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
+        serverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'], nice=0, null=True),
+        log.log('UPDATE', f'Instance [{inst.title()}] is starting')
+        resetlastrestart(inst)
+        unsetstartbit(inst)
+        playerrestartbit(inst)
+        os.nice(-19)
+        if reboot and inst != 'coliseum' and inst != 'crystal':
+            serverexec(['reboot'], nice=0, null=True)
+        else:
+            serverexec(['arkmanager', 'start', f'@{inst}'], nice=-10, null=True)
+            dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
+            os.nice(10)
 
 
 @log.catch
@@ -485,10 +489,10 @@ def checkifenabled(inst):
     lastwipe = dbquery("SELECT enabled, isrunning FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
     if lastwipe[0] and lastwipe[1] == 0:
         log.warning(f'Instance [{inst.title()}] is set to start (enabled). Starting server')
-        restartinstnow(inst, ext='start')
+        restartinstnow(inst)
     elif not lastwipe[0] and lastwipe[1] == 1:
         log.warning(f'Instance [{inst.title()}] is set to stop (disabled). Stopping server')
-        instancerestart(inst, 'admin restart', ext='stop')
+        instancerestart(inst, 'admin restart')
 
 
 @log.catch
@@ -564,7 +568,7 @@ def checkupdates():
 @log.catch
 def restartcheck():
     for each in range(numinstances):
-        # checkifenabled(instance[each]['name'])
+        checkifenabled(instance[each]['name'])
         if not isrebooting(instance[each]['name']):
             checkifalreadyrestarting(instance[each]['name'])
 

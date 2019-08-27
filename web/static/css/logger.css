@@ -23,9 +23,9 @@ html, body, #vtop { margin: 0; padding: 0; height: 100%; width: 100%; }
 .playercounts { height: 40px; width: 50px; padding-right: 5px; text-align: right; line-height: 14px; font-size: 15px; font-weight: normal; color: #FFFFFF; }
 .servers { flex-wrap: nowrap; font-size: 12px; padding-right: 30px; font-weight: normal; color: #FFFFFF; }
 .serverbutton { text-align: center; padding: 8px 0px; margin: 5px; display: inline-block; font-size: 16px; height: 35px; width: 140px; border: 1px solid #EEE; border-radius: 10px; }
-.lottoevents { height: 45px; width: 100px; margin-top: 2px; margin-bottom: 2px; text-align: center; font-size: 16px; font-weight: normal; color: #FFFFFF; }
-.lbutton { text-align: center; margin-top: 3px; margin-bottom: 3px; line-height: 16px; font-size: 15px; height: 18px; width: 50px; border: 1px solid #AAA; border-radius: 10px; text-decoration: none; border: 1px solid #999; }
-.ebutton { text-align: center; line-height: 15px; font-size: 15px; height: 18px; width: 50px; border: 1px solid #AAA; border-radius: 10px; text-decoration: none; border: 1px solid #999; }
+.lottoevents { height: 45px; width: 120px; margin-top: 2px; margin-bottom: 2px; text-align: center; font-size: 16px; font-weight: normal; color: #FFFFFF; }
+.lbutton { text-align: center; margin-top: 3px; margin-bottom: 3px; line-height: 16px; font-size: 15px; height: 18px; width: 60px; border: 1px solid #AAA; border-radius: 10px; text-decoration: none; border: 1px solid #999; }
+.ebutton { text-align: center; line-height: 15px; font-size: 14px; height: 18px; width: 60px; border: 1px solid #AAA; border-radius: 10px; text-decoration: none; border: 1px solid #999; }
 .pad { height: 40px; width: 0px; }
 .newcounts { height: 40px; width: 50px; padding-left: 5px; text-align: left; line-height: 14px; font-size: 15px; font-weight: normal; color: #FFFFFF; }
 .
