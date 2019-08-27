@@ -12,9 +12,9 @@ html, body, #vtop { margin: 0; padding: 0; height: 100%; width: 100%; }
 .log { white-space: pre-wrap; }
 .game { white-space: pre-wrap; }
 .chat { white-space: pre-wrap; }
-.logbox { margin-bottom: 10px; margin-top: 10px; background-color: #000000; text-align: left; width: 100%; height: 40%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
-.gamebox { margin-bottom: 10px; background-color: #000000; text-align: left; width: 100%; height: 25%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
-.chatbox { padding-bottom: 5px; background-color: #000000; text-align: left; width: 100%; height: 15%; border: 1px solid #999; line-height: 18px; overflow: auto; overflow-x: hidden; }
+.logbox { margin-bottom: 10px; margin-top: 10px; background-color: #000000; text-align: left; width: 100%; height: 40%; border: 1px solid #999; line-height: 17px; overflow: auto; overflow-x: hidden; }
+.gamebox { margin-bottom: 10px; background-color: #000000; text-align: left; width: 100%; height: 25%; border: 1px solid #999; line-height: 17px; overflow: auto; overflow-x: hidden; }
+.chatbox { padding-bottom: 5px; background-color: #000000; text-align: left; width: 100%; height: 15%; border: 1px solid #999; line-height: 17px; overflow: auto; overflow-x: hidden; }
 .chatinput { background-color: #000000; text-align: left; height: 18px; width: 100%; border: 0px; }
 .chatinput > .input { background-color: #000000; color: #EEEEEE; height: 18px; margin-left: 5px; align: left; width: 100%; border: 0px; }
 .chatcombined { text-align: center; width: 100%; border: 1px solid #999; }
@@ -49,7 +49,7 @@ html, body, #vtop { margin: 0; padding: 0; height: 100%; width: 100%; }
 .inv31 { background-color: #aa0000; }
 .ansi32 { color: #00aa00; }
 .inv32 { background-color: #00aa00; }
-.ansi33 { color: #CCCC00; }
+.ansi33 { color: #BBBB00; }
 .inv33 { background-color: #aa5500; }
 .ansi34 { color: #0000aa; }
 .inv34 { background-color: #0000aa; }

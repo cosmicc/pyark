@@ -515,7 +515,7 @@ def checkifalreadyrestarting(inst):
                 nrbt = True
             for each in range(numinstances):
                 if instance[each]['name'] == inst:
-                    instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, nrbt))
+                    instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst))
                     instance[each]['restartthread'].start()
 
 

@@ -89,10 +89,10 @@ def clientloop(clientsocket, addr):
     argsdebug = bool(int(header.split('!')[2]))
     argstrace = bool(int(header.split('!')[3]))
     argsextend = bool(int(header.split('!')[4]))
-    argsadmin = bool(int(header.split('!')[5]))
+    argserrors = bool(int(header.split('!')[5]))
     argsstartexit = bool(int(header.split('!')[6]))
     argscommands = bool(int(header.split('!')[7]))
-    argsvotes = bool(int(header.split('!')[8]))
+    argserroronly = bool(int(header.split('!')[8]))
     argsjoinleave = bool(int(header.split('!')[9]))
     argsfollow = bool(int(header.split('!')[10]))
     argsserver = header.split('!')[11].strip()
@@ -101,7 +101,7 @@ def clientloop(clientsocket, addr):
     newdict = {}
     for num, client in enumerate(client_threads):
         if client['address'] == addr:
-            newdict = {'address': client['address'], 'thread': client['thread'], 'queue': client['queue'], 'socket': client['socket'], 'debug': argsdebug, 'trace': argstrace, 'extend': argsextend, 'admin': argsadmin, 'startexit': argsstartexit, 'commands': argscommands, 'votes': argsvotes, 'joinleave': argsjoinleave, 'server': argsserver, 'showonly': argsshowonly}
+            newdict = {'address': client['address'], 'thread': client['thread'], 'queue': client['queue'], 'socket': client['socket'], 'debug': argsdebug, 'trace': argstrace, 'extend': argsextend, 'errors': argserrors, 'startexit': argsstartexit, 'commands': argscommands, 'erroronly': argserroronly, 'joinleave': argsjoinleave, 'server': argsserver, 'showonly': argsshowonly}
             client_threads.pop(num)
             client_threads.append(newdict)
             log.debug(newdict)
@@ -206,7 +206,7 @@ def putqueue(data, client, single):
         if not single or single == client['address']:
             if client['server'] == 'ALL' or client['server'] == data["record"]["extra"]['hostname']:
                 log.trace(f'Adding to {client["address"]} queue {data["text"].strip()}')
-                if client['debug'] or client['trace']:
+                if client['debug'] or client['trace'] or client['extend']:
                     msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
                     client["queue"].put(data["text"].strip() + msgapp)
                 else:
@@ -220,37 +220,31 @@ def processlogline(line, single=False):
         data = json.loads(line.strip(), strict=False)
         # log.trace(f'Got from log: {data["text"]}')
         for client in client_threads:
-            if data["record"]["level"]["name"] == 'TRACE':
-                if client['trace'] and client['votes']:
-                    putqueue(data, client, single)
-            elif data["record"]["level"]["name"] == 'DEBUG':
-                if client['debug'] and client['votes']:
+            if client['showonly'] != 'ALL':
+                if data["record"]["level"]["name"].lower() == client['showonly'].lower():
                     putqueue(data, client, single)
             else:
-                if client['showonly'] != 'ALL':
-                    if data["record"]["level"]["name"].lower() == client['showonly'].lower():
+                if data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
+                    if client['errors'] or client['errorsonly']:
                         putqueue(data, client, single)
-
+                elif data["record"]["level"]["name"] == 'WARNING':
+                    putqueue(data, client, single)
+                elif data["record"]["level"]["name"] == 'TRACE':
+                    if client['trace'] and not client['errorsonly']:
+                        putqueue(data, client, single)
+                elif data["record"]["level"]["name"] == 'DEBUG':
+                    if client['debug'] and not client['errorsonly']:
+                        putqueue(data, client, single)
                 elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT" or data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL" or data["record"]["level"]["name"] == "GIT":
-                    if client['startexit'] and client['votes']:
+                    if client['startexit'] and not client['errorsonly']:
                         putqueue(data, client, single)
-
                 elif data["record"]["level"]["name"] == "CMD":
-                    if client['commands'] and client['votes']:
+                    if client['commands'] and not client['errorsonly']:
                         putqueue(data, client, single)
-
-                elif data["record"]["level"]["name"] == "ADMIN":
-                    if client['admin'] and client['votes']:
-                        pass
-                        #putqueue(data, client, single)
-
                 elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
-                    if client['joinleave'] and client['votes']:
+                    if client['joinleave'] and not client['errorsonly']:
                         putqueue(data, client, single)
-
-                elif data["record"]["level"]["name"] == "WARNING" or data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
-                        putqueue(data, client, single)
-                elif client['votes']:
+                elif not client['errorsonly']:
                     putqueue(data, client, single)
             sleep(.01)
 

@@ -16,13 +16,13 @@ def main():
     parser.add_argument('-s', '--server', action='store', default='ALL', help='show only this log type')
     parser.add_argument('-d', '--debug', action='store_true', help='show debug log')
     parser.add_argument('-t', '--trace', action='store_true', help='show trace log')
-    parser.add_argument('-e', '--extend', action='store_true', help='show extended info lines')
+    parser.add_argument('-ex', '--extend', action='store_true', help='show extended info lines')
     parser.add_argument('--showonly', action='store', default='ALL', help='show only this log type')
+    parser.add_argument('-eo', '--errorsonly', action='store_true', help='warning, errors, and critical only')
     parser.add_argument('-nf', '--nofollow', action='store_false', help='dont follow continuous log')
-    parser.add_argument('-ra', '--noadmin', action='store_false', help='remove admin entries')
+    parser.add_argument('-re', '--errors', action='store_false', help='remove error/crit entries')
     parser.add_argument('-rs', '--startexit', action='store_false', help='remove start/exit entries')
     parser.add_argument('-rc', '--commands', action='store_false', help='remove command entries')
-    parser.add_argument('-eo', '--errorsonly', action='store_false', help='warning, errors, and critical only')
     parser.add_argument('-rj', '--joinleave', action='store_false', help='remove join/leave entries')
 
     args = parser.parse_args()
@@ -38,10 +38,10 @@ def main():
     argsextend = 1 if args.extend else 0
     argsstartexit = 1 if args.startexit else 0
     argscommands = 1 if args.commands else 0
-    argsvotes = 1 if args.errorsonly else 0
+    argserrorsonly = 1 if args.errorsonly else 0
     argsjoinleave = 1 if args.joinleave else 0
     argsfollow = 1 if args.nofollow else 0
-    argsadmin = 1 if args.noadmin else 0
+    argserrors = 1 if args.errors else 0
 
     if args.showonly != 'ALL':
         argsshowonly = f'{args.showonly:<8}!'
@@ -51,7 +51,7 @@ def main():
         argsserver = f'{args.server:<5}'
     else:
         argsserver = f'ALL   '
-    logwatch = LogClient(args.lines, argsdebug, argstrace, argsextend, argsstartexit, argscommands, argsvotes, argsjoinleave, argsfollow, argsadmin, argsshowonly, argsserver, args.html)
+    logwatch = LogClient(args.lines, argsdebug, argstrace, argsextend, argsstartexit, argscommands, argserrorsonly, argsjoinleave, argsfollow, argserrors, argsshowonly, argsserver, args.html)
     # logwatch.connect()
     logwatch.connect()
     while True:

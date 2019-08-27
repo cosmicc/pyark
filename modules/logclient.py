@@ -27,7 +27,7 @@ def loggerchat(chatline):
 
 
 class LogClient():
-    def __init__(self, lines, argsdebug, argstrace, argsextend, argsstartexit, argscommands, argsvotes, argsjoinleave, argsfollow, argsadmin, showonly, server, html):
+    def __init__(self, lines, argsdebug, argstrace, argsextend, argsstartexit, argscommands, argserrorsonly, argsjoinleave, argsfollow, argserrors, showonly, server, html):
         HEADER = 5
         self.HEADERSIZE = HEADER * 4 + 4
         self.PORT = 11024
@@ -41,10 +41,10 @@ class LogClient():
         self.extend = argsextend
         self.startexit = argsstartexit
         self.commands = argscommands
-        self.votes = argsvotes
+        self.errorsonly = argserrorsonly
         self.joinleave = argsjoinleave
         self.follow = argsfollow
-        self.admin = argsadmin
+        self.errors = argserrors
         self.showonly = showonly
         self.server = server
         self.html = html
@@ -80,7 +80,7 @@ class LogClient():
             plines = self.lines
         else:
             plines = 0
-        head = f'!{plines:>3}!{self.debug}!{self.trace}!{self.extend}!{self.admin}!{self.startexit}!{self.commands}!{self.votes}!{self.joinleave}!{self.follow}!{self.server}!{self.showonly}'
+        head = f'!{plines:>3}!{self.debug}!{self.trace}!{self.extend}!{self.errors}!{self.startexit}!{self.commands}!{self.errorsonly}!{self.joinleave}!{self.follow}!{self.server}!{self.showonly}'
         log.trace(f'Header: {head}')
         self.sock.send(bytes(head, "utf-8"))
         self.timeout_timer = int(datetime.now().timestamp())
