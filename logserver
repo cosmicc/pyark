@@ -101,7 +101,7 @@ def clientloop(clientsocket, addr):
     newdict = {}
     for num, client in enumerate(client_threads):
         if client['address'] == addr:
-            newdict = {'address': client['address'], 'thread': client['thread'], 'queue': client['queue'], 'socket': client['socket'], 'debug': argsdebug, 'trace': argstrace, 'extend': argsextend, 'errors': argserrors, 'startexit': argsstartexit, 'commands': argscommands, 'erroronly': argserroronly, 'joinleave': argsjoinleave, 'server': argsserver, 'showonly': argsshowonly}
+            newdict = {'address': client['address'], 'thread': client['thread'], 'queue': client['queue'], 'socket': client['socket'], 'debug': argsdebug, 'trace': argstrace, 'extend': argsextend, 'errors': argserrors, 'startexit': argsstartexit, 'commands': argscommands, 'errorsonly': argserroronly, 'joinleave': argsjoinleave, 'server': argsserver, 'showonly': argsshowonly}
             client_threads.pop(num)
             client_threads.append(newdict)
             log.debug(newdict)

@@ -353,7 +353,7 @@ def instancerestart(inst, reason):
     if not isrebooting(inst):
         for each in range(numinstances):
             if instance[each]['name'] == inst:
-                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst))
+                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst,))
                 instance[each]['restartthread'].start()
 
 
@@ -509,13 +509,10 @@ def checkifalreadyrestarting(inst):
     ded = lastwipe[0]
     if ded == "True":
         if not isrebooting(inst):
-            nrbt = False
             log.debug(f'restart flag set for instance {inst}, starting restart loop')
-            if os.path.isfile('/var/run/reboot-required'):
-                nrbt = True
             for each in range(numinstances):
                 if instance[each]['name'] == inst:
-                    instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst))
+                    instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst,))
                     instance[each]['restartthread'].start()
 
 
