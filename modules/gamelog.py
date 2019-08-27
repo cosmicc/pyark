@@ -2,7 +2,7 @@ from loguru import logger as log
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now
 from modules.servertools import removerichtext
-from mosuled.players import isplayeradmin
+from modules.players import isplayeradmin
 from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
 
 
