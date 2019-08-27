@@ -709,7 +709,10 @@ def checkcommands(minst):
                     log.log('CMD', f'Responding to a kit request from [{whoasked.title()}] on [{minst.title()}]')
                     steamid = getsteamid(whoasked)
                     msg = f'To view kits you must make a level 1 rewards vault and hang it on a wall or foundation. Free starter items and over 80 kits available. !help for more commands'
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (steamid, msg, inst), shell=True)
+                    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg, inst), shell=True)
+                elif line.startswith('/'):
+                    msg = f'Commands in this cluster start with a ! (Exclimation Mark)  Type !help for a list of commands'
+                    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg, inst), shell=True)
                 elif line.lower().find('!lastdinowipe') != -1 or line.lower().find('!lastwipe') != -1:
                     lastwipe = elapsedTime(Now(), getlastwipe(minst))
                     subprocess.run('arkmanager rconcmd "ServerChat Last wild dino wipe was %s ago" @%s' %

@@ -7,7 +7,7 @@ from itertools import chain, zip_longest
 from lottery import isinlottery, getlotteryplayers, getlotteryendtime
 from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, psql_port
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance, getlastcrash
+from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance, getlastcrash, isinstanceenabled
 from modules.tribes import getplayertribes, gettribes, gettribe
 from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
 from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getbannedplayers, getnewplayers, getdiscordplayers, getsteamnameplayers, getplayernames
@@ -337,6 +337,13 @@ def database_processor10():
 
 
 @webui.context_processor
+def database_processor1011():
+    def ui_isinstanceenabled(inst):
+        return isinstanceenabled(inst)
+    return dict(ui_isinstanceenabled=ui_isinstanceenabled)
+
+
+@webui.context_processor
 def database_processor11():
     def ui_isinrestart(inst):
         return isinrestart(inst)
@@ -519,6 +526,20 @@ def _getmonthlyplayercount():
     def ui_getmonthlyplayercount():
         return len(getactiveplayers(Secs['month']))
     return dict(ui_getmonthlyplayercount=ui_getmonthlyplayercount)
+
+
+@webui.context_processor
+def _getnewyplayercount():
+    def ui_getnewplayercount(gtime):
+        return len(getnewplayers(gtime))
+    return dict(ui_getnewplayercount=ui_getnewplayercount)
+
+
+@webui.context_processor
+def _gethrplayercount():
+    def ui_gethitnruns(gtime):
+        return len(gethitnruns(gtime))
+    return dict(ui_gethitnruns=ui_gethitnruns)
 
 
 @webui.context_processor

@@ -24,6 +24,7 @@ dwtimer = 0
 updgennotify = Now() - Secs['hour']
 
 
+@log.catch
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
@@ -32,6 +33,7 @@ def writechat(inst, whos, msg, tstamp):
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
+@log.catch
 def checkdirs(inst):
     if not os.path.exists('/home/ark/shared/logs/arkmanager'):
         log.error(f'Log directory /home/ark/shared/logs/arkmanager does not exist! creating')
@@ -47,6 +49,7 @@ def checkdirs(inst):
         log.trace(f'Log directory /home/ark/shared/logs/arkmanager/{inst} exists')
 
 
+@log.catch
 def updatetimer(inst, ctime):
     dbupdate("UPDATE instances SET restartcountdown = '%s' WHERE name = '%s'" % (ctime, inst))
 
@@ -116,6 +119,7 @@ def wipeit(inst, extra=False):
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
+@log.catch
 def checkwipe(inst):
     global dwtimer
     lastwipe = getlastwipe(inst)
@@ -146,6 +150,7 @@ def checkwipe(inst):
         log.trace(f'no dino wipe is needed for {inst}')
 
 
+@log.catch
 def isrebooting(inst):
     for each in range(numinstances):
         if instance[each]['name'] == inst:
@@ -167,6 +172,7 @@ def stillneedsrestart(inst):
         return False
 
 
+@log.catch
 def restartinstnow(inst, reboot):
     checkdirs(inst)
     wipeit(inst, extra=True)
@@ -253,6 +259,7 @@ def restartloop(inst, reboot):
         log.debug(f'configuration restart skipped because {splayers} players and {aplayers} active players')
 
 
+@log.catch
 def maintenance():
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
@@ -331,6 +338,7 @@ def maintenance():
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
 
 
+@log.catch
 def instancerestart(inst, reason, reboot=False):
     checkdirs(inst)
     log.debug(f'instance restart verification starting for {inst}')
@@ -344,6 +352,7 @@ def instancerestart(inst, reason, reboot=False):
                 instance[each]['restartthread'].start()
 
 
+@log.catch
 def compareconfigs(config1, config2):
     if not os.path.isfile(config2):
         serverexec(['touch', '{config2}'], nice=15, null=True)
@@ -364,6 +373,7 @@ def compareconfigs(config1, config2):
         return False
 
 
+@log.catch
 def buildconfig(inst):
     try:
         basecfgfile = f'{sharedpath}/config/GameUserSettings-base.ini'
@@ -451,6 +461,7 @@ def isnewarkver(inst):
         return True, curver, avlver
 
 
+@log.catch
 def performbackup(inst):
     sleep(random.randint(1, 5) * 6)
     log.log('MAINT', f'Performing a world data backup on [{inst.title()}]')
@@ -469,6 +480,7 @@ def checkbackup():
                 performbackup(sinst)
 
 
+@log.catch
 def checkifenabled(inst):
     lastwipe = dbquery("SELECT enabled, isrunning FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
     if lastwipe[0] and lastwipe[1] == 0:
