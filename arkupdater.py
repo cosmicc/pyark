@@ -8,7 +8,7 @@ from modules.players import getliveplayersonline, getplayersonline
 from modules.instances import getlastwipe, instancelist, isinstancerunning, isinstanceup, isinstanceenabled
 from timebetween import is_time_between
 from modules.timehelper import wcstamp, Secs, Now
-from modules.servertools import serverexec
+from modules.servertools import serverexec, serverneedsrestart
 from time import sleep
 from clusterevents import iseventtime, getcurrenteventext, iseventrebootday
 from discordbot import writediscord
@@ -173,17 +173,22 @@ def stillneedsrestart(inst):
 
 
 @log.catch
-def restartinstnow(inst, reboot):
+def restartinstnow(inst, reboot, startonly=False):
     checkdirs(inst)
-    wipeit(inst, extra=True)
-    sleep(5)
-    serverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'], nice=0, null=True)
-    log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
-    dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
+    if not startonly:
+        wipeit(inst, extra=True)
+        sleep(5)
+        serverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'], nice=0, null=True)
+        log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
+        dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
     serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
     if not isinstanceenabled(inst):
         log.log('UPDATE', f'Instance [{inst.title()}] remaining off because not enabled.')
         unsetstartbit(inst)
+    elif reboot and inst != 'coliseum' and inst != 'crystal':
+        dbupdate(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
+        log.log('MAINT', f'REBOOTING Server [{hstname.upper()}] for maintenance server reboot')
+        serverexec(['reboot'], nice=0, null=True)
     else:
         log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
         buildconfig(inst)
@@ -198,12 +203,9 @@ def restartinstnow(inst, reboot):
         unsetstartbit(inst)
         playerrestartbit(inst)
         os.nice(-19)
-        if reboot and inst != 'coliseum' and inst != 'crystal':
-            serverexec(['reboot'], nice=0, null=True)
-        else:
-            serverexec(['arkmanager', 'start', f'@{inst}'], nice=-10, null=True)
-            dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
-            os.nice(10)
+        serverexec(['arkmanager', 'start', f'@{inst}'], nice=-10, null=True)
+        dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
+        os.nice(10)
 
 
 @log.catch
@@ -282,13 +284,14 @@ def maintenance():
         log.debug(f'OS autoremove started for {hstname}')
         serverexec(['apt', 'autoremove', '-y'], nice=5, null=True)
         nrbt = False
-        if os.path.isfile('/var/run/reboot-required'):
+        if serverneedsrestart():
             nrbt = True
             log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
-
         for each in range(numinstances):
             inst = instance[each]['name']
             checkdirs(inst)
+            if serverneedsrestart():
+                dbupdate(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
             try:
                 log.log('MAINT', f'Performing a world data save on [{inst.title()}]...')
                 serverexec(['arkmanager', 'saveworld', f'@{inst}'], nice=0, null=True)

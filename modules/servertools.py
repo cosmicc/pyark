@@ -2,10 +2,19 @@ import subprocess
 from psutil import Process
 from loguru import logger as log
 from re import sub
+from os.path import isfile
 
 
 def removerichtext(text):
     return sub('<.*?>', '', text)
+
+
+@log.catch
+def serverneedsrestart():
+    if isfile('/run/reboot-required'):
+        return True
+    else:
+        return False
 
 
 @log.catch

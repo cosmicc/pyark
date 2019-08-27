@@ -77,14 +77,6 @@ def float_trunc_1dec(num):
 
 
 @log.catch
-def serverneedsrestart():
-    if os.path.isfile('/var/run/reboot-required'):
-        return True
-    else:
-        return False
-
-
-@log.catch
 def arkprocesscpu(inst):
     arkprocess = psutil.Process(getinstpid(inst))
     return arkprocess.cpu_percent(interval=2)
