@@ -835,7 +835,7 @@ def checkcommands(minst):
                         log.log('VOTE', f'Responding to NO vote on [{minst.title()}] from [{whoasked.title()}]')
                         castedvote(minst, whoasked, False)
 
-                    elif incmd.startwith(('!timeleft', '!restart')):
+                    elif incmd.startswith(('!timeleft', '!restart')):
                         log.log('CMD', f'Responding to a [!timeleft] request from [{whoasked.title()}] on [{minst.title()}]')
                         resptimeleft(minst, whoasked)
 
@@ -843,7 +843,7 @@ def checkcommands(minst):
                         log.log('CMD', f'Responding to a [!linkme] request from [{whoasked.title()}] on [{minst.title()}]')
                         linker(minst, whoasked)
 
-                    elif incmd.startwith(('!lottery', '!lotto')):
+                    elif incmd.startswith(('!lottery', '!lotto')):
                         rawline = line.split(':')
                         if len(rawline) > 2:
                             lastlline = rawline[2].strip().split(' ')
