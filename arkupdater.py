@@ -173,7 +173,7 @@ def stillneedsrestart(inst):
 
 
 @log.catch
-def restartinstnow(inst, reboot, startonly=False):
+def restartinstnow(inst, startonly=False):
     checkdirs(inst)
     if not startonly:
         wipeit(inst, extra=True)
@@ -185,7 +185,7 @@ def restartinstnow(inst, reboot, startonly=False):
     if not isinstanceenabled(inst):
         log.log('UPDATE', f'Instance [{inst.title()}] remaining off because not enabled.')
         unsetstartbit(inst)
-    elif reboot and inst != 'coliseum' and inst != 'crystal':
+    elif serverneedsrestart(inst) and inst != 'coliseum' and inst != 'crystal'and not startonly:
         dbupdate(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
         log.log('MAINT', f'REBOOTING Server [{hstname.upper()}] for maintenance server reboot')
         serverexec(['reboot'], nice=0, null=True)
@@ -209,7 +209,7 @@ def restartinstnow(inst, reboot, startonly=False):
 
 
 @log.catch
-def restartloop(inst, reboot):
+def restartloop(inst):
     checkdirs(inst)
     log.debug(f'{inst} restart loop has started')
     timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
@@ -223,7 +223,7 @@ def restartloop(inst, reboot):
         message = f'server {inst.capitalize()} is restarting now for a {reason}'
         serverexec(['arkmanager', f'notify "{message}"', f'@{inst}'], nice=19, null=True)
         pushover('Instance Restart', message)
-        restartinstnow(inst, reboot)
+        restartinstnow(inst)
     elif reason != 'configuration update':
             setrestartbit(inst)
             if timeleft == 30:
@@ -255,7 +255,7 @@ def restartloop(inst, reboot):
                 serverexec(['arkmanager', f'notify "{message}"', f'@{inst}'], nice=19, null=True)
                 pushover('Instance Restart', message)
                 sleep(10)
-                restartinstnow(inst, reboot)
+                restartinstnow(inst)
             else:
                 log.warning(f'server restart on {inst} has been canceled from forced cancel')
                 bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n\n<RichColor Color="1,1,0,1">                    The server restart has been cancelled!</>"""
@@ -283,9 +283,7 @@ def maintenance():
         serverexec(['apt', 'upgrade', '-y'], nice=5, null=True)
         log.debug(f'OS autoremove started for {hstname}')
         serverexec(['apt', 'autoremove', '-y'], nice=5, null=True)
-        nrbt = False
         if serverneedsrestart():
-            nrbt = True
             log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
         for each in range(numinstances):
             inst = instance[each]['name']
@@ -333,10 +331,10 @@ def maintenance():
 
                 if eventreboot:
                     maintrest = f"{eventreboot}"
-                    instancerestart(inst, maintrest, reboot=nrbt)
+                    instancerestart(inst, maintrest)
                 elif Now() - float(lstsv[0]) > Secs['3day'] or getcfgver(inst) < getpendingcfgver(inst):
                     maintrest = "maintenance restart"
-                    instancerestart(inst, maintrest, reboot=nrbt)
+                    instancerestart(inst, maintrest)
                 else:
                     message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
                     serverexec(['arkmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}'], nice=19, null=True)
@@ -346,7 +344,7 @@ def maintenance():
 
 
 @log.catch
-def instancerestart(inst, reason, reboot=False):
+def instancerestart(inst, reason):
     checkdirs(inst)
     log.debug(f'instance restart verification starting for {inst}')
     global instance
@@ -355,7 +353,7 @@ def instancerestart(inst, reason, reboot=False):
     if not isrebooting(inst):
         for each in range(numinstances):
             if instance[each]['name'] == inst:
-                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, reboot))
+                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst))
                 instance[each]['restartthread'].start()
 
 
@@ -490,12 +488,18 @@ def checkbackup():
 @log.catch
 def checkifenabled(inst):
     lastwipe = dbquery("SELECT enabled, isrunning FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
+    if serverneedsrestart():
+        dbupdate(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
     if lastwipe[0] and lastwipe[1] == 0:
         log.warning(f'Instance [{inst.title()}] is set to start (enabled). Starting server')
-        restartinstnow(inst, False)
+        restartinstnow(inst, startonly=True)
     elif not lastwipe[0] and lastwipe[1] == 1:
-        log.warning(f'Instance [{inst.title()}] is set to stop (disabled). Stopping server')
-        instancerestart(inst, 'admin restart')
+        for each in range(numinstances):
+            if not isrebooting(instance[each]['name']):
+                if instance[each]['name'] == inst:
+                    checkifalreadyrestarting(instance[each]['name'])
+                    log.warning(f'Instance [{inst.title()}] is set to stop (disabled). Stopping server')
+                    instancerestart(inst, 'admin restart')
 
 
 @log.catch
