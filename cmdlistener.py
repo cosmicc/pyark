@@ -707,7 +707,7 @@ def checkcommands(minst):
             to send to all servers" @%s""" % (minst), shell=True)
                         except:
                             log.exception('Critical Error in global chat writer!')
-                    elif incmd.startswith('/kit', '!kit'):
+                    elif incmd.startswith(('/kit', '!kit')):
                         log.log('CMD', f'Responding to a kit request from [{whoasked.title()}] on [{minst.title()}]')
                         msg = f'To view kits you must make a level 1 rewards vault and hang it on a wall or foundation. Free starter items and over 80 kits available. !help for more commands'
                         subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg, inst), shell=True)
