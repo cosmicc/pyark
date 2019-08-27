@@ -794,7 +794,7 @@ def checkcommands(minst):
                         log.log('CMD', f'Responding to a [!today] request for [{whoasked.title()}] on [{minst.title()}]')
                         whoisonlinewrapper(ninst, minst, whoasked, 3)
 
-                    elif incmd.startswith('!tip', '!justthetip'):
+                    elif incmd.startswith(('!tip', '!justthetip')):
                         log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
                         tip = gettip()
                         serverexec(['arkmanager', 'rconcmd', f'ServerChat {tip}', f'@{minst}'], nice=19, null=True)
