@@ -881,19 +881,19 @@ async def processline(minst, line):
 
 @log.catch
 async def checkcommands(inst, dtime):
-    loop = asyncio.get_running_loop()
     while True:
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
-            loop.create_task(processline(inst, line))
+            asyncloop.create_task(processline(inst, line))
         pending = asyncio.Task.all_tasks()
-        loop.run_until_complete(asyncio.gather(*pending))
+        asyncloop.run_until_complete(asyncio.gather(*pending))
         await asyncio.sleep(dtime)
 
 
 @log.catch
 def clisten(inst, dtime):
+    global asyncloop
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncloop = asyncio.get_event_loop()
