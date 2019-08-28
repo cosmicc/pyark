@@ -881,6 +881,7 @@ async def processline(minst, line):
 
 @log.catch
 async def checkcommands(inst, dtime):
+    global asyncloop
     while True:
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
