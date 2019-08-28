@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
-from modules.configreader import instance, numinstances
+from modules.configreader import instance, numinstances, psql_user, psql_pw, psql_host, psql_port
 from modules.dbhelper import dbquery, dbupdate, cleanstring
 from modules.players import getplayer, newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from modules.servertools import serverexec
-from modules.gamelog import processgameline, glupdate
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
@@ -14,11 +13,36 @@ import subprocess
 import threading
 import os
 from gtranslate import trans_to_eng
+import psycopg2
 
 lastvoter = 0.1
 votertable = []
 votestarttime = Now()
 arewevoting = False
+
+
+@log.catch
+def glupdate(text):
+    try:
+        conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        c = conn.cursor()
+    except psycopg2.OperationalError:
+        log.critical('ERROR CONNECTING TO DATABASE SERVER')
+        sleep(60)
+        c.close()
+        conn.close()
+        return False
+    except:
+        log.error(f'Error in database init: gamelogdb - {text}')
+        c.close()
+        conn.close()
+        return False
+    else:
+        c.execute(f"INSERT INTO gamelog (logline) VALUES ('{text}')")
+        conn.commit()
+        return True
+        c.close()
+        conn.close()
 
 
 def writechat(inst, whos, msg, tstamp):
@@ -652,32 +676,30 @@ def checkcommands(minst):
         elif line.find('joined this ARK!') != -1:
             playerjoin(line, minst)
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
-            processgameline(inst, 'ADMIN', line.replace('"', '').strip())
+            glupdate(line.replace('"', '').strip())
         elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
-            processgameline(inst, 'DEMO', line.replace('"', '').strip())
+            glupdate(line.replace('"', '').strip())
         elif line.find('released:') != -1:
-            processgameline(inst, 'RELEASE', line.replace('"', '').strip())
+            glupdate(line.replace('"', '').strip())
         elif line.find('trapped:') != -1:
             glupdate(line.replace('"', '').strip())
-            processgameline(inst, 'TRAP', line.replace('"', '').strip())
         elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
             glupdate(line.replace('"', '').strip())
-            processgameline(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('Tamed a') != -1:
-            processgameline(inst, 'TAME', line.replace('"', '').strip())
+            glupdate(line.replace('"', '').strip())
         elif line.find(" claimed '") != -1 or line.find(" unclaimed '") != -1:
-            processgameline(inst, 'CLAIM', line.replace('"', '').strip())
+            glupdate(line.replace('"', '').strip())
         elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 \
         or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 \
         or line.find(' Tribe to ') != -1 or line.find(' was removed from the Tribe!') != -1 or line.find(' set to Rank Group ') != -1 \
         or line.find(' requested an Alliance with ') != -1 or line.find(' was added to the Tribe!') != -1:
-            processgameline(inst, 'TRIBE', line.replace('"', '').strip())
+            glupdate(line.replace('"', '').strip())
         elif line.find('starved to death!') != -1:
-            processgameline(inst, 'DEATH', line.replace('"', '').strip())
+            glupdate(line.replace('"', '').strip())
         elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
-            processgameline(inst, 'DECAY', line.replace('"', '').strip())
+            glupdate(line.replace('"', '').strip())
         elif line.startswith('Error:'):
-            processgameline(inst, line.replace('"', '').strip())
+            glupdate(line.replace('"', '').strip())
         else:
             whoasked = getnamefromchat(line)
             log.trace(f'chatline who: {whoasked}')

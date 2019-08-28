@@ -1,4 +1,4 @@
-from modules.configreader import psql_host, psql_port, psql_user, psql_pw
+from modules.configreader import psql_host, psql_port, psql_user, psql_pw, gamelogfile
 from loguru import logger as log
 from modules.dbhelper import dbupdate
 from modules.timehelper import Now
@@ -8,6 +8,39 @@ from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
 import psycopg2
 from time import sleep
 import json
+import modules.logging
+from modules.processlock import plock
+from os import nice, _exit
+import signal
+
+__name__ = "gamelogger"
+
+
+def sig_handler(signal, frame):
+    log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
+    gl.close()
+    _exit(0)
+
+
+signal.signal(signal.SIGTERM, sig_handler)
+signal.signal(signal.SIGHUP, sig_handler)
+signal.signal(signal.SIGINT, sig_handler)
+signal.signal(signal.SIGQUIT, sig_handler)
+
+
+def checkgamelog(record):
+    if record['level'] == 'TRAP' or record['level'] == 'ADMIN' or record['level'] == 'DEATH' or record['level'] == 'TAME' or record['level'] == 'DECAY' or record['level'] == 'DEMO' or record['level'] == 'TRIBE' or record['level'] == 'CLAIM' or record['level'] == 'RELEASE':
+        return True
+    else:
+        return False
+
+
+log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=True, format=modules.logging.gamelogformat, delay=False, filter=checkgamelog)
+
+
+plock()
+
+nice(19)
 
 
 @log.catch
@@ -29,8 +62,11 @@ class GameLogger():
 
     def getlines(self):
         try:
-            self.c.execute("SELECT logline FROM gamelog")
+            self.c.execute("SELECT * FROM gamelog")
             result = self.c.fetchall()
+            for eline in result:
+                self.c.execute(f"DELETE FROM gamelog WHERE id = {eline[0]}")
+                self.conn.commit()
             return result
         except:
             log.error('Error in getlines() gamelog line retriever from db')
@@ -39,36 +75,12 @@ class GameLogger():
         lines = self.getlines()
         if lines:
             for line in lines:
-                data = self.convertline(line[0])
+                data = self.convertline(line[1])
                 processgameline(data['record']['extra']['instance'].lower(), data['record']['level']['name'].upper(), data['text'])
 
     def close(self):
         self.c.close()
         self.conn.close()
-
-
-@log.catch
-def glupdate(text):
-    try:
-        conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        c = conn.cursor()
-    except psycopg2.OperationalError:
-        log.critical('ERROR CONNECTING TO DATABASE SERVER')
-        sleep(60)
-        c.close()
-        conn.close()
-        return False
-    except:
-        log.error(f'Error in database init: gamelogdb - {text}')
-        c.close()
-        conn.close()
-        return False
-    else:
-        c.execute(f"INSERT INTO gamelog (logline) VALUES ('{text}')")
-        conn.commit()
-        return True
-        c.close()
-        conn.close()
 
 
 @log.catch
@@ -196,3 +208,18 @@ def processgameline(inst, ptype, line):
         else:
             log.debug(f'UNKNOWN {ptype} - {linesplit}')
             clog.log(ptype, f'{linesplit}')
+
+
+if __name__ == 'gamelogger':
+    gl = GameLogger()
+    while True:
+        try:
+            gl.process()
+        except KeyboardInterrupt:
+            log.critical(f'Keyboard Interrupt termination recieved. Exiting.')
+            gl.close()
+            _exit(0)
+        except:
+            log.exception(f'Exception in Pyark Main Routine! Exiting')
+            gl.close()
+            _exit(1)
