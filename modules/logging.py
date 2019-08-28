@@ -30,7 +30,7 @@ log.level('DECAY', no=3, color="<fg 208>", icon="¤")
 log.level('DEMO', no=3, color="<fg 209>", icon="¤")
 log.level('CLAIM', no=3, color="<fg 122>", icon="¤")
 log.level('TRIBE', no=3, color="<fg 178>", icon="¤")
-log.level("ADMIN", no=3, color="<fg 15><bg 94>", icon="¤")
+log.level("ADMIN", no=3, color="<fg 11><bg 17>", icon="¤")
 log.level("NEW", no=20, color="<fg 230>", icon="¤")
 log.level("PLAYER", no=20, color="<fg 180>", icon="¤")
 

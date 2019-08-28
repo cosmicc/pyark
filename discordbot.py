@@ -169,8 +169,7 @@ def pyarkbot():
                     embed.add_field(name=f"Current lottery is up to **{linfo['payout']} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\n**`!lotto enter`** to join the lottery\n**`!points`** for more information\n**`!winners`** for recent results", inline=True)
                     msg = await generalchat.send(embed=embed)
                     setlastannounce('lastlottoannounce', Now(fmt='dt'))
-                    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">       A points lottery is current running! {linfo['buyin']} points to enter in this lottery </>\n<RichColor Color="1,1,0,1">             Current lottery is up to {linfo['payout']} points and grows as players enter </>\n                   Lottery Ends in {elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}\n\n             Type !lotto for more info or !lotto enter to join"""
-
+                    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">                      A points lottery is currently running!</>\n                        {linfo['buyin']} points to enter in this lottery\n<RichColor Color="1,1,0,1">           Current lottery is up to {linfo['payout']} points and grows as players enter </>\n                      Lottery Ends in {elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}\n\n                  Type !lotto for more info or !lotto enter to join"""
                     writeglobal('ALERT', 'LOTTERY', bcast)
                     await clearmessages('lotterymessage')
                     addmessage('lotterymessage', msg.id)
@@ -771,12 +770,13 @@ def pyarkbot():
     async def _tip(ctx):
         await protip(ctx)
 
-    @client.command(name='test')
+    @client.command(name='testing123')
     @commands.check(logcommand)
     @commands.check(is_admin)
     async def _test(ctx):
         try:
-            bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">       A points lottery is current running! {linfo['buyin']} points to enter in this lottery </>\n<RichColor Color="1,1,0,1">             Current lottery is up to {linfo['payout']} points and grows as players enter </>\n                   Lottery Ends in {elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}\n\n             Type !lotto for more info or !lotto enter to join"""
+            linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
+            bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">                      A points lottery is currently running!</>\n                        {linfo['buyin']} points to enter in this lottery\n<RichColor Color="1,1,0,1">           Current lottery is up to {linfo['payout']} points and grows as players enter </>\n                      Lottery Ends in {elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}\n\n                  Type !lotto for more info or !lotto enter to join"""
 
             writeglobal('coliseum', 'LOTTERY', bcast)
 
