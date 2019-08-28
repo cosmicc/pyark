@@ -11,7 +11,7 @@ from loguru import logger as log
 
 
 @log.catch
-def gchatrelay(inst):
+def gchatrelay(inst, dtime):
     while True:
         try:
             cbuff = db_getall('globalbuffer', fmt='dict')
@@ -53,6 +53,6 @@ def gchatrelay(inst):
                     if float(msg['timestamp']) < Now() - 10:
                         log.trace('clearing globalbuffer table')
                         dbupdate("DELETE FROM globalbuffer WHERE id = '%s'" % (msg['id'],))
-            sleep(3)
         except:
             log.exception('Critical Error in Global Chat Relayer!')
+        sleep(dtime)

@@ -2,7 +2,7 @@ from time import sleep
 from loguru import logger as log
 from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate
-from modules.timehelper import Now, Secs
+from modules.timehelper import Now
 from modules.instances import instancelist, serverchat
 from datetime import datetime, timedelta
 from datetime import time as dt
@@ -166,7 +166,7 @@ def checkifeventstart():
         autoschedevolution()
 
 
-def eventwatcher():
+def eventwatcher(dtime):
     log.debug(f'Starting cluster server event coordinator')
     instances = instancelist()
     while True:
@@ -180,4 +180,4 @@ def eventwatcher():
                     stopserverevent(inst)
         except:
             log.exception(f'Critical error in event coordinator')
-        sleep(Secs['1min'])
+        sleep(dtime)

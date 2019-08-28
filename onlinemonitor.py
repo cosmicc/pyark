@@ -189,7 +189,7 @@ def playergreet(steamid, steamname, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
-def onlineupdate(inst):
+def onlineupdate(inst, dtime):
     global greetthreads
     log.debug(f'starting online player watcher on {inst}')
     while True:
@@ -210,8 +210,7 @@ def onlineupdate(inst):
                             steamname = cleanstring(rawline[0].split('. ', 1)[1])
                             if f'greet-{nsteamid}' not in greetthreads:
                                 if not isgreeting(nsteamid):
-                                    gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet,
-                                                               args=(nsteamid, steamname, inst))
+                                    gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet, args=(nsteamid, steamname, inst))
                                     greetthreads.append({'steamid': nsteamid, 'gthread': gthread})
                                     gthread.start()
                                 else:
@@ -220,7 +219,6 @@ def onlineupdate(inst):
                                 log.debug(f'greeting already running for {steamname}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
-            sleep(15)
         except:
             log.exception('Critical Error in Online Updater!')
-            sleep(10)
+        sleep(dtime)

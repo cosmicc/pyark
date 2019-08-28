@@ -22,7 +22,7 @@ def flushold(tinst):  # not implimented
 
 
 @log.catch
-def oscollect():
+def oscollect(dtime):
     log.debug(f'starting online stats collectors')
     stinst = dbquery('SELECT name FROM instances', fmt='list', single=True)
     for each in stinst:
@@ -37,4 +37,4 @@ def oscollect():
                 addvalue(each, getplayersonline(each, fmt='count'))
         except:
             log.exception('Critical Error in Online Stat Collector!')
-        sleep(Secs['5min'])
+        sleep(dtime)

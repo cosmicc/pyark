@@ -22,11 +22,11 @@ def fetcharkserverdata():
                 dbupdate("UPDATE instances SET hostname = '%s', rank = '%s', score = '%s', uptime = '%s', votes = '%s' WHERE name = '%s'" % (adata['hostname'], adata['rank'], adata['score'], adata['uptime'], adata['votes'], each[0]))
 
 
-def arkservernetloop():
+def arkservernetloop(dtime):
     log.debug(f'starting arkservers.net information retriever')
     while True:
         fetcharkserverdata()
-        sleep(Secs['15min'])
+        sleep(dtime)
 
 
 @log.catch
@@ -176,11 +176,11 @@ def auctionapiloop(dtime):
                     refresh = True
                     rtime = Now(fmt='dt')
                 dbupdate(f"UPDATE players SET refreshauctions = False, auctionrefreshtime = '{rtime}' WHERE steamid = '{player[0]}'")
-                log.trace(f'retrieving auction information for player [{player[1]}] ({player[0]}]')
                 if refresh:
+                    log.debug(f'retrieving auction information for player [{player[1]}] ({player[0]}]')
                     pauctions = fetchauctiondata(player[0])
                     totauctions, iauctions, dauctions = getauctionstats(pauctions)
                     writeauctionstats(player[0], totauctions, iauctions, dauctions)
-                    log.debug(f'found auctions for player [{player[1]}] total: {totauctions}, items: {iauctions}, dinos: {dauctions}')
+                    log.debug(f'retrieved auctions for player [{player[1]}] total: {totauctions}, items: {iauctions}, dinos: {dauctions}')
                 sleep(5)  # slow down the requests
         sleep(dtime)

@@ -185,22 +185,22 @@ def main():
     dbupdate('DELETE FROM globalbuffer')
     for each in range(numinstances):
         inst = instance[each]['name']
-        instance[each]['kickthread'] = Thread(name='%s-kicker' % inst, target=kicker, args=(inst,), daemon=True)
+        instance[each]['kickthread'] = Thread(name='%s-kicker' % inst, target=kicker, args=(inst, 5), daemon=True)
         instance[each]['kickthread'].start()
-        instance[each]['cmdthread'] = Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst,), daemon=True)
+        instance[each]['cmdthread'] = Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst, 2), daemon=True)
         instance[each]['cmdthread'].start()
-        instance[each]['gchatthread'] = Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst,), daemon=True)
+        instance[each]['gchatthread'] = Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst, 5), daemon=True)
         instance[each]['gchatthread'].start()
-        instance[each]['onlinethread'] = Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst,), daemon=True)
+        instance[each]['onlinethread'] = Thread(name='%s-onlinemon' % inst, target=onlineupdate, args=(inst, 15), daemon=True)
         instance[each]['onlinethread'].start()
     if is_eventwatcher == "True":
-        eventwatcht = Thread(name='event-watcher', target=eventwatcher, daemon=True)
+        eventwatcht = Thread(name='eventwatcher', target=eventwatcher, args=(60,), daemon=True)
         eventwatcht.start()
     if is_asdatapuller == "True":
-        arkserversnt = Thread(name='arksvrnet-datapuller', target=arkservernetloop, daemon=True)
+        arkserversnt = Thread(name='arksvrnetloop', target=arkservernetloop, args=(900,), daemon=True)
         arkserversnt.start()
     if is_lotterymanager == "True":
-        lotteryt = Thread(name='lottery-watcher', target=lottery.lotterywatcher, daemon=True)
+        lotteryt = Thread(name='lotterywatcher', target=lottery.lotterywatcher, args=(300,), daemon=True)
         lotteryt.start()
     if is_gamelogger == "True":
         gamelogger = Process(name='gamelogger', target=gameloggerstart, daemon=True)
@@ -212,7 +212,7 @@ def main():
         gamelogger.start()
         dblchecker.start()
     if is_statscollector == "True":
-        ostat = Thread(name='stat-collector', target=oscollect, daemon=True)
+        ostat = Thread(name='stat-collector', target=oscollect, args=(300,), daemon=True)
         ostat.start()
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
 
@@ -253,8 +253,6 @@ def main():
             else:
                 checkgit += 1
             sleep(60)
-            # for each in range(numinstances):
-            # log.debug(f'{instance[each]["name"]} {list(instance[each].keys())}')
             if not arkupdt.is_alive():
                 t = 'ark updater'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')

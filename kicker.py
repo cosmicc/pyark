@@ -5,7 +5,7 @@ from loguru import logger as log
 
 
 @log.catch
-def kicker(inst):
+def kicker(inst, dtime):
     log.debug(f'starting kicklist kicker thread for {inst}')
     while True:
         try:
@@ -16,4 +16,4 @@ def kicker(inst):
                 dbupdate("DELETE FROM kicklist WHERE steamid = '%s'" % (kicked[1],))
         except:
             log.exception('Critical Error in kick watcher!')
-        sleep(5)
+        sleep(dtime)

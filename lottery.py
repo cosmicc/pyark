@@ -168,12 +168,11 @@ def checkfornewlottery():
 
 
 @log.catch
-def lotterywatcher():
+def lotterywatcher(dtime):
     while True:
         try:
             generatelottery()
             checkfornewlottery()
-            sleep(Secs['5min'])
         except:
             log.exception('Critical Error Lottery Watcher!')
-            sleep(Secs['5min'])
+        sleep(dtime)
