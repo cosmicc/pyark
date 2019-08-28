@@ -55,11 +55,6 @@ class GameLogger():
         except:
             log.error(f'Error in database init: gamelogdb')
 
-    def convertline(self, line):
-        line = line.strip('\x00')
-        data = json.loads(line.strip(), strict=False)
-        return data
-
     def getlines(self):
         try:
             self.c.execute("SELECT * FROM gamelog")
@@ -215,6 +210,7 @@ if __name__ == 'gamelogger':
     while True:
         try:
             gl.process()
+            sleep(1)
         except KeyboardInterrupt:
             log.critical(f'Keyboard Interrupt termination recieved. Exiting.')
             gl.close()

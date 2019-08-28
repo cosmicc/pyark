@@ -22,7 +22,7 @@ arewevoting = False
 
 
 @log.catch
-def glupdate(text):
+def glupdate(inst, ptype, text):
     try:
         conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         c = conn.cursor()
@@ -38,7 +38,7 @@ def glupdate(text):
         conn.close()
         return False
     else:
-        c.execute(f"INSERT INTO gamelog (logline) VALUES ('{text}')")
+        c.execute(f"INSERT INTO gamelog (instance, loglevel, logline) VALUES ('{inst.lower()}', '{ptype.upper()}', '{text}')")
         conn.commit()
         return True
         c.close()
@@ -676,30 +676,30 @@ def checkcommands(minst):
         elif line.find('joined this ARK!') != -1:
             playerjoin(line, minst)
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'ADMIN', line.replace('"', '').strip())
         elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'DEMO', line.replace('"', '').strip())
         elif line.find('released:') != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'RELEASE', line.replace('"', '').strip())
         elif line.find('trapped:') != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'TRAP', line.replace('"', '').strip())
         elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('Tamed a') != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'TAME', line.replace('"', '').strip())
         elif line.find(" claimed '") != -1 or line.find(" unclaimed '") != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'CLAIM', line.replace('"', '').strip())
         elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 \
         or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 \
         or line.find(' Tribe to ') != -1 or line.find(' was removed from the Tribe!') != -1 or line.find(' set to Rank Group ') != -1 \
         or line.find(' requested an Alliance with ') != -1 or line.find(' was added to the Tribe!') != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'TRIBE', line.replace('"', '').strip())
         elif line.find('starved to death!') != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'DECAY', line.replace('"', '').strip())
         elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'DECAY', line.replace('"', '').strip())
         elif line.startswith('Error:'):
-            glupdate(line.replace('"', '').strip())
+            glupdate(inst, 'UNKNOWN', line.replace('"', '').strip())
         else:
             whoasked = getnamefromchat(line)
             log.trace(f'chatline who: {whoasked}')

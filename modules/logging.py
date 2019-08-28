@@ -1,7 +1,7 @@
 from modules.configreader import hstname
 from loguru import logger as log
 
-log.remove()
+#log.remove()
 
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN', })
 
