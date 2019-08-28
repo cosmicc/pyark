@@ -202,7 +202,7 @@ def main():
     if is_lotterymanager == "True":
         lotteryt = Thread(name='lottery-watcher', target=lottery.lotterywatcher, daemon=True)
         lotteryt.start()
-    if is_gamelogger:
+    if is_gamelogger == "True":
         gamelogger = Process(name='gamelogger', target=gameloggerstart, daemon=True)
         steamloop = Thread(name='steamapiloop', target=steamapiloop, args=(5,), daemon=True)
         auctionloop = Thread(name='auctionapiloop', target=auctionapiloop, args=(5,), daemon=True)
