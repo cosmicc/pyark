@@ -4,8 +4,8 @@ from modules.dbhelper import dbquery, dbupdate, cleanstring
 from modules.players import getplayer, newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
-from modules.servertools import serverexec, removerichtext
-from modules.gamelog import processgameline
+from modules.servertools import serverexec
+from modules.gamelog import processgameline, glupdate
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
@@ -13,7 +13,6 @@ import random
 import subprocess
 import threading
 import os
-import re
 from gtranslate import trans_to_eng
 
 lastvoter = 0.1
@@ -659,8 +658,10 @@ def checkcommands(minst):
         elif line.find('released:') != -1:
             processgameline(inst, 'RELEASE', line.replace('"', '').strip())
         elif line.find('trapped:') != -1:
+            glupdate(line.replace('"', '').strip())
             processgameline(inst, 'TRAP', line.replace('"', '').strip())
         elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
+            glupdate(line.replace('"', '').strip())
             processgameline(inst, 'DEATH', line.replace('"', '').strip())
         elif line.find('Tamed a') != -1:
             processgameline(inst, 'TAME', line.replace('"', '').strip())

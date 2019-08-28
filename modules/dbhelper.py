@@ -81,17 +81,14 @@ def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='nor
 
 
 @log.catch
-def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False, array=None):
+def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
     try:
         if db == 'sqldb':
             conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         elif db == 'statsdb':
             conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         c = conn.cursor()
-        if array is not None:
-            c.execute(query, as_array(array))
-        else:
-            c.execute(query)
+        c.execute(query)
     except psycopg2.OperationalError:
         log.critical('ERROR CONNECTING TO DATABASE SERVER')
         sleep(60)
@@ -133,7 +130,7 @@ def statsupdate(inst, value):
 
 
 @log.catch
-def dbupdate(query, db='sqldb', array=None):
+def dbupdate(query, db='sqldb'):
     try:
         if db == 'sqldb':
             conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
@@ -147,11 +144,7 @@ def dbupdate(query, db='sqldb', array=None):
         return False
     else:
         try:
-            if array:
-                log.info(f'{query} {array}')
-                c.execute(f'{query}', array)
-            else:
-                c.execute(query)
+            c.execute(query)
             conn.commit()
         except:
             log.error(f'Error in Database update {query}')

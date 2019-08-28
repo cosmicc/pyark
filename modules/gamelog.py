@@ -1,9 +1,74 @@
+from modules.configreader import psql_host, psql_port, psql_user, psql_pw
 from loguru import logger as log
-from modules.dbhelper import dbquery, dbupdate
+from modules.dbhelper import dbupdate
 from modules.timehelper import Now
 from modules.servertools import removerichtext
 from modules.players import isplayeradmin
 from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
+import psycopg2
+from time import sleep
+import json
+
+
+@log.catch
+class GameLogger():
+    def __init__(self):
+        try:
+            self.conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            self.c = self.conn.cursor()
+        except psycopg2.OperationalError:
+            log.critical('ERROR CONNECTING TO DATABASE SERVER')
+            sleep(60)
+        except:
+            log.error(f'Error in database init: gamelogdb')
+
+    def convertline(self, line):
+        line = line.strip('\x00')
+        data = json.loads(line.strip(), strict=False)
+        return data
+
+    def getlines(self):
+        try:
+            self.c.execute("SELECT logline FROM gamelog")
+            result = self.c.fetchall()
+            return result
+        except:
+            log.error('Error in getlines() gamelog line retriever from db')
+
+    def process(self):
+        lines = self.getlines()
+        if lines:
+            for line in lines:
+                data = self.convertline(line[0])
+                processgameline(data['record']['extra']['instance'].lower(), data['record']['level']['name'].upper(), data['text'])
+
+    def close(self):
+        self.c.close()
+        self.conn.close()
+
+
+@log.catch
+def glupdate(text):
+    try:
+        conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        c = conn.cursor()
+    except psycopg2.OperationalError:
+        log.critical('ERROR CONNECTING TO DATABASE SERVER')
+        sleep(60)
+        c.close()
+        conn.close()
+        return False
+    except:
+        log.error(f'Error in database init: gamelogdb - {text}')
+        c.close()
+        conn.close()
+        return False
+    else:
+        c.execute(f"INSERT INTO gamelog (logline) VALUES ('{text}')")
+        conn.commit()
+        return True
+        c.close()
+        conn.close()
 
 
 @log.catch
@@ -80,7 +145,6 @@ def processgameline(inst, ptype, line):
                     dbupdate("UPDATE players SET banned = 'true' WHERE steamid = '%s')" % (steamid, ))
                 else:
                     clog.log(ptype, f'{logheader}[{pname.title()}] executed admin command [{cmd}] ')
- 
         elif ptype == 'DECAY':
             clog.debug(f'{ptype} - {linesplit}')
             tribename, tribeid = gettribeinfo(linesplit, inst, ptype)
@@ -122,7 +186,6 @@ def processgameline(inst, ptype, line):
                     playername = linesplit[2][10:].split(' was added to the Tribe!')[0].strip()
                     putplayerintribe(tribeid, playername)
                     clog.log(ptype, f'[{playername.title()}] was added to the Tribe ({tribename})')
-    
                 elif linesplit[2].find(' set to Rank Group ') != -1:
                     playername = linesplit[2][10:].split(' set to Rank Group ')[0].strip()
                     putplayerintribe(tribeid, playername)
