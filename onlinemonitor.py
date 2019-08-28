@@ -205,6 +205,7 @@ def playergreet(steamid, steamname, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
+@log.catch
 def doublecheckonline(inst):
     players = dbquery(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 280}", fmt='dict', fetch='all')
     for player in players:
@@ -218,7 +219,6 @@ def doublecheckonline(inst):
             dbupdate("UPDATE players SET online = False, server = '%s', steamname = '%s' WHERE steamid = '%s'" % (inst, steamname, steamid))
 
 
-@log.catch
 def onlineupdate(inst):
     global greetthreads
     log.debug(f'starting online player watcher on {inst}')
