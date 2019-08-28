@@ -136,15 +136,15 @@ def playergreet(steamid, steamname, inst):
                     dbupdate("UPDATE players SET online = True, lastseen = %s, server = '%s', connects = %s, steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
                 totplay = playedTime(int(oplayer[4]))
-                try:
-                    log.trace(f'fetching [{steamname}] [{steamid}] auctions from auction api website')
-                    pauctions = fetchauctiondata(steamid)
-                    totauctions, iauctions, dauctions = getauctionstats(pauctions)
-                    writeauctionstats(steamid, totauctions, iauctions, dauctions)
-                    log.debug(f'[{steamname}] auctions found: {iauctions} items, {dauctions} dinos, {totauctions} total')
-                except:
-                    log.error(f'error in parsing auction data')
-                sleep(3)
+                # try:
+                #    log.trace(f'fetching [{steamname}] [{steamid}] auctions from auction api website')
+                #    pauctions = fetchauctiondata(steamid)
+                #    totauctions, iauctions, dauctions = getauctionstats(pauctions)
+                #    writeauctionstats(steamid, totauctions, iauctions, dauctions)
+                #    log.debug(f'[{steamname}] auctions found: {iauctions} items, {dauctions} dinos, {totauctions} total')
+                # except:
+                #    log.error(f'error in parsing auction data')
+                # sleep(3)
                 newpoints = int(oplayer[5]) + xferpoints
                 mtxt = f'Welcome back {oplayer[1].title()}, you have {newpoints} reward points on \
 {oplayer[15].capitalize()}, last online {laston} ago, total time played {totplay}'
