@@ -7,11 +7,12 @@ from cmdlistener import clisten
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, debugfile, chatlogfile, gamelogfile
+from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, debugfile, chatlogfile, gamelogfile, is_gamelogger
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
 from modules.servertools import serverexec
+from gamelogger import gameloggerstart
 from onlinemonitor import onlineupdate
 from statcollector import oscollect
 import sys
@@ -21,6 +22,7 @@ import argparse
 from loguru import logger as log
 import lottery
 from threading import Thread
+from multiprocessing import Process
 import signal
 import shutil
 import modules.logging
@@ -200,6 +202,9 @@ def main():
     if is_lotterymanager == "True":
         lotteryt = Thread(name='lottery-watcher', target=lottery.lotterywatcher, daemon=True)
         lotteryt.start()
+    if is_gamelogger:
+        gamelogger = Process(name='gamelogger', target=gameloggerstart, daemon=True)
+        gamelogger.start()
     if is_statscollector == "True":
         ostat = Thread(name='stat-collector', target=oscollect, daemon=True)
         ostat.start()

@@ -41,6 +41,7 @@ is_asdatapuller = config.get('general', 'is_asdatapuller')
 is_discordbot = config.get('general', 'is_discordbot')
 is_statscollector = config.get('general', 'is_statscollector')
 is_lotterymanager = config.get('general', 'is_lotterymanager')
+is_gamelogger = config.get('general', 'is_gamelogger')
 
 # SteamAPI
 steamapikey = config.get('steam', 'steamapikey')

@@ -5,27 +5,9 @@ from modules.timehelper import Now
 from modules.servertools import removerichtext
 from modules.players import isplayeradmin
 from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
-import psycopg2
 from time import sleep
-import json
-import modules.logging
-from modules.processlock import plock
 from os import nice, _exit
 import signal
-
-__name__ = "gamelogger"
-
-
-def sig_handler(signal, frame):
-    log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
-    gl.close()
-    _exit(0)
-
-
-signal.signal(signal.SIGTERM, sig_handler)
-signal.signal(signal.SIGHUP, sig_handler)
-signal.signal(signal.SIGINT, sig_handler)
-signal.signal(signal.SIGQUIT, sig_handler)
 
 
 def checkgamelog(record):
@@ -35,18 +17,12 @@ def checkgamelog(record):
         return False
 
 
-log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=True, format=modules.logging.gamelogformat, delay=False, filter=checkgamelog)
-
-
-plock()
-
-nice(19)
-
-
 @log.catch
 class GameLogger():
     def __init__(self):
+        import psycopg2
         try:
+            log.debug('opening connection to gamelog database')
             self.conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             self.c = self.conn.cursor()
         except psycopg2.OperationalError:
@@ -73,6 +49,7 @@ class GameLogger():
                 processgameline(line[1], line[2], line[3])
 
     def close(self):
+        log.debug('closing connection to gamelog database')
         self.c.close()
         self.conn.close()
 
@@ -204,7 +181,23 @@ def processgameline(inst, ptype, line):
             clog.log(ptype, f'{linesplit}')
 
 
-if __name__ == 'gamelogger':
+@log.catch
+def gameloggerstart():
+    import modules.logging
+    # log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=True, format=modules.logging.gamelogformat, delay=False, filter=checkgamelog)
+
+    def sig_handler(signal, frame):
+        log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
+        gl.close()
+        _exit(0)
+
+    signal.signal(signal.SIGTERM, sig_handler)
+    signal.signal(signal.SIGHUP, sig_handler)
+    signal.signal(signal.SIGINT, sig_handler)
+    signal.signal(signal.SIGQUIT, sig_handler)
+
+    nice(19)
+    global gl
     gl = GameLogger()
     while True:
         try:
