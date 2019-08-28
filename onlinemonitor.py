@@ -1,10 +1,8 @@
-from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from clusterevents import iseventtime, getcurrenteventinfo
 from modules.dbhelper import dbquery, dbupdate, cleanstring
 from modules.players import getplayer, newplayer
 from modules.timehelper import elapsedTime, playedTime, Now
 from modules.servertools import serverexec
-from modules.steamapi import getsteaminfo, getsteambans
 from loguru import logger as log
 import threading
 from time import sleep
@@ -128,23 +126,9 @@ def playergreet(steamid, steamname, inst):
                 dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
             else:  # new player connection
                 log.debug(f'New online player [{oplayer[1].title()}] was found on [{inst.title()}]. updating info.')
-                steamname = getsteaminfo(steamid)
-                getsteambans(steamid)
-                if not steamname:
-                    dbupdate("UPDATE players SET online = True, lastseen = %s, server = '%s', connects = %s WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamid))
-                else:
-                    dbupdate("UPDATE players SET online = True, lastseen = %s, server = '%s', connects = %s, steamname = '%s' WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamname, steamid))
+                dbupdate("UPDATE players SET online = True, lastseen = %s, server = '%s', connects = %s, refreshauctions = True, refreshsteam = True WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamid))
                 laston = elapsedTime(Now(), int(oplayer[2]))
                 totplay = playedTime(int(oplayer[4]))
-                # try:
-                #    log.trace(f'fetching [{steamname}] [{steamid}] auctions from auction api website')
-                #    pauctions = fetchauctiondata(steamid)
-                #    totauctions, iauctions, dauctions = getauctionstats(pauctions)
-                #    writeauctionstats(steamid, totauctions, iauctions, dauctions)
-                #    log.debug(f'[{steamname}] auctions found: {iauctions} items, {dauctions} dinos, {totauctions} total')
-                # except:
-                #    log.error(f'error in parsing auction data')
-                # sleep(3)
                 newpoints = int(oplayer[5]) + xferpoints
                 mtxt = f'Welcome back {oplayer[1].title()}, you have {newpoints} reward points on \
 {oplayer[15].capitalize()}, last online {laston} ago, total time played {totplay}'
@@ -205,20 +189,6 @@ def playergreet(steamid, steamname, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
-@log.catch
-def doublecheckonline(inst):
-    players = dbquery(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 280}", fmt='dict', fetch='all')
-    for player in players:
-        log.warning(f'Player [{player["playername"].title()}] wasnt found logging off. Clearing player from online status')
-        steamid = player["steamid"]
-        steamname = getsteaminfo(steamid)
-        getsteambans(steamid)
-        if not steamname:
-            dbupdate("UPDATE players SET online = False, server = '%s', WHERE steamid = '%s'" % (inst, steamid))
-        else:
-            dbupdate("UPDATE players SET online = False, server = '%s', steamname = '%s' WHERE steamid = '%s'" % (inst, steamname, steamid))
-
-
 def onlineupdate(inst):
     global greetthreads
     log.debug(f'starting online player watcher on {inst}')
@@ -250,7 +220,6 @@ def onlineupdate(inst):
                                 log.debug(f'greeting already running for {steamname}')
                         else:
                             log.error(f'problem with parsing online player - {rawline}')
-            doublecheckonline(inst)
             sleep(15)
         except:
             log.exception('Critical Error in Online Updater!')

@@ -1,7 +1,6 @@
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.timehelper import Now, Secs, wcstamp
 from modules.servertools import serverexec
-from modules.steamapi import getsteaminfo, getsteambans
 from loguru import logger as log
 from time import sleep
 
@@ -22,10 +21,8 @@ def newplayer(steamid, playername, inst):
     log.log('NEW', f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
     dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
              firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-             primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated) VALUES \
-             ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (steamid, playername, Now(), inst, 0, 0, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, True, True, 0, 0))
-    getsteaminfo(steamid)
-    getsteambans(steamid)
+             primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated, refreshauctions, refreshsteam) VALUES \
+             ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', False, True)" % (steamid, playername, Now(), inst, 0, 0, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, True, True, 0, 0))
     pplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
     dbupdate("UPDATE players SET welcomeannounce = True WHERE steamid = '%s'" % (steamid,))
     log.debug(f'Sending welcome message to [{pplayer[1].title()}] on [{inst.title()}]')

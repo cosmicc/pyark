@@ -2,12 +2,11 @@ from datetime import timedelta
 from datetime import time as dt
 from datetime import datetime
 from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo, iseventtime
-from modules.auctionhelper import fetchauctiondata, getauctionstats, writeauctionstats
 from modules.configreader import generalchat_id, serverchat_id, discordtoken, hstname, maint_hour, infochat_id, changelog_id
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, getlastwipe, getlastrestart, writeglobal, getlastrestartreason
 from modules.players import getplayer, getplayerlastserver, getplayersonlinenames, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers, isplayeradmin, setprimordialbit
-from modules.timehelper import elapsedTime, playedTime, wcstamp, epochto, Now, Secs, datetimeto
+from modules.timehelper import elapsedTime, playedTime, epochto, Now, Secs, datetimeto
 from lottery import totallotterydeposits, isinlottery, getlottowinnings
 import asyncio
 import discord
@@ -276,15 +275,15 @@ def pyarkbot():
                             await serverchat.send(msg)
                             await asyncio.sleep(1)
                     dbupdate("DELETE FROM chatbuffer")
-                now = Now()
-                ### change this to online = true and lastseen > 180
-                #cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 40, now - 44))
-                #if cbuffr:
+                # now = Now()
+                #  change this to online = true and lastseen > 180
+                # cbuffr = dbquery("SELECT * FROM players WHERE lastseen < '%s' AND lastseen > '%s'" % (now - 40, now - 44))
+                # if cbuffr:
                 #    for reach in cbuffr:
-                        #log.log('LEAVE', f'Player [{reach[1].title()}] has left [{reach[3].title()}]')
-                        #mt = f'{reach[1].capitalize()} has left the server'
-                        #writeglobal(reach[3], 'ALERT', mt)
-                        #writechat(reach[3], 'ALERT', f'>>> {reach[1].title()} has left the server', wcstamp())
+                    # log.log('LEAVE', f'Player [{reach[1].title()}] has left [{reach[3].title()}]')
+                    # mt = f'{reach[1].capitalize()} has left the server'
+                    # writeglobal(reach[3], 'ALERT', mt)
+                    # writechat(reach[3], 'ALERT', f'>>> {reach[1].title()} has left the server', wcstamp())
             except discord.errors.HTTPException:
                 log.warning('HTTP Exception error while contacting discord!')
                 await asyncio.sleep(10)
@@ -388,7 +387,6 @@ def pyarkbot():
         msg = f"#1 No Griefing of any kind.  This includes all forms.\n#2 DO NOT DROP EGGS YOU DONT WANT, EAT THEM!\n#3  DO NOT SELL/GIVE AWAY BOSSES & PRIMORDIALS. People have to progress on their own.\n#4 Don't build to block.  Don't block dence resource areas or caves.  Don't block player spawn in areas.\n#5 Don't pillar reserve areas.  There is no reason to here.\n#6 Do not leave dinos auto mating/breeding while offline.\n#7 This cluster only has one small PvP server, and its for fun between friends.  It is not Deathmatch there.  It's for events, light RP, and fun only.  See Rule #1"
         embed.add_field(name=f"If unsure about anything, ever, ask in Discord.  Ignorance is not an excuse.", value=msg, inline=True)
         await messagesend(ctx, embed, allowgeneral=True, reject=False)
-
 
     async def serverrates(ctx, refresher=False):
         rates = getrates()
@@ -525,16 +523,13 @@ def pyarkbot():
         whofor = str(ctx.message.author).lower()
         kuser = getplayer(discordid=whofor)
         log.debug(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
-        pauctions = fetchauctiondata(kuser[0])
-        au1, au2, au3 = getauctionstats(pauctions)
-        writeauctionstats(kuser[0], au1, au2, au3)
         ptime = playedTime(int(kuser[4]))
         ptr = elapsedTime(Now(), int(kuser[2]))
         lpts = totallotterydeposits(kuser[0])
         msg = f'Last played **{ptr} ago** on server ***{kuser[3].capitalize()}***\n'
         msg = msg + f'Your current reward points: **{kuser[5] + kuser[16] + lpts}**\n'
         msg = msg + f'Your home server is: **{kuser[15].capitalize()}**\nYour total play time is: **{ptime}**\n'
-        msg = msg + f'You have **{au1}** current auctions: **{au2}** Items & **{au3}** Dinos\n'
+        msg = msg + f'You have **{kuser[10]}** current auctions: **{kuser[11]}** Items & **{kuser[12]}** Dinos\n'
         tpwins, twpoints = getlottowinnings(kuser[1])
         msg = msg + f'Total Lotterys Won: **{tpwins}**  Total Lottery Points Won: **{twpoints}** Points\n'
         woodtime = 1296000

@@ -585,7 +585,7 @@ def playerjoin(line, inst):
     player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
     if player:
         steamid = player['steamid']
-        dbupdate(f"""UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
+        dbupdate(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
         if Now() - player['lastseen'] > 250:
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             mtxt = f'{player["playername"].title()} has joined the server'
@@ -613,7 +613,7 @@ def leavingplayer(player, inst):
         sleep(1)
     if not transferred and Now() - lplayer['lastseen'] >= 240:
         steamid = player["steamid"]
-        dbupdate(f"UPDATE players SET online = False WHERE steamid = '{steamid}'")
+        dbupdate(f"UPDATE players SET online = False, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)

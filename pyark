@@ -1,18 +1,18 @@
 #!/usr/bin/python3.6
 
-from arkserversnet import arkserversnet
 from arkupdater import arkupd
 from clusterevents import eventwatcher
 from cmdlistener import clisten
 from gchatrelay import gchatrelay
 from git import Repo
 from kicker import kicker
-from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, debugfile, chatlogfile, gamelogfile, is_gamelogger
+from modules.configreader import hstname, jsonlogfile, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, debugfile, chatlogfile, gamelogfile, is_gamelogger
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
 from modules.servertools import serverexec
-from gamelogger import gameloggerstart
+from modules.apihelper import steamapiloop, auctionapiloop, arkservernetloop
+from gamelogger import gameloggerstart, dblcheckonlineloop
 from onlinemonitor import onlineupdate
 from statcollector import oscollect
 import sys
@@ -197,14 +197,20 @@ def main():
         eventwatcht = Thread(name='event-watcher', target=eventwatcher, daemon=True)
         eventwatcht.start()
     if is_asdatapuller == "True":
-        arkserversnt = Thread(name='arksvrnet-datapuller', target=arkserversnet, daemon=True)
+        arkserversnt = Thread(name='arksvrnet-datapuller', target=arkservernetloop, daemon=True)
         arkserversnt.start()
     if is_lotterymanager == "True":
         lotteryt = Thread(name='lottery-watcher', target=lottery.lotterywatcher, daemon=True)
         lotteryt.start()
     if is_gamelogger:
         gamelogger = Process(name='gamelogger', target=gameloggerstart, daemon=True)
+        steamloop = Thread(name='steamapiloop', target=steamapiloop, args=(5,), daemon=True)
+        auctionloop = Thread(name='auctionapiloop', target=auctionapiloop, args=(5,), daemon=True)
+        dblchecker = Thread(name='dblcheckonlineloop', target=dblcheckonlineloop, args=(30,), daemon=True)
+        auctionloop.start()
+        steamloop.start()
         gamelogger.start()
+        dblchecker.start()
     if is_statscollector == "True":
         ostat = Thread(name='stat-collector', target=oscollect, daemon=True)
         ostat.start()
@@ -260,6 +266,20 @@ def main():
                 if not lotteryt.is_alive():
                     t = 'lottery watch'
                     log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+            if is_gamelogger == "True":
+                if not gamelogger.is_alive():
+                    t = 'gamelogger'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+                if not dblchecker.is_alive():
+                    t = 'dlbchecker'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+                if not steamloop.is_alive():
+                    t = 'steamapi'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+                if not auctionloop.is_alive():
+                    t = 'gamelogger'
+                    log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
+
             if is_statscollector == "True":
                 if not ostat.is_alive():
                     t = 'stat collector'

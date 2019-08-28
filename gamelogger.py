@@ -1,6 +1,6 @@
-from modules.configreader import psql_host, psql_port, psql_user, psql_pw, gamelogfile
+from modules.configreader import psql_host, psql_port, psql_user, psql_pw
 from loguru import logger as log
-from modules.dbhelper import dbupdate
+from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.servertools import removerichtext
 from modules.players import isplayeradmin
@@ -8,6 +8,17 @@ from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
 from time import sleep
 from os import nice, _exit
 import signal
+
+
+@log.catch
+def dblcheckonlineloop(dtime):
+    log.debug(f'starting online player doublechecker')
+    while True:
+        players = dbquery(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 280}", fmt='dict', fetch='all')
+        for player in players:
+            log.warning(f'Player [{player["playername"].title()}] wasnt found logging off. Clearing player from online status')
+            dbupdate("UPDATE players SET online = False, refreshsteam = True, server = '%s', WHERE steamid = '%s'" % (player["server"], player["steamid"]))
+        sleep(dtime)
 
 
 def checkgamelog(record):
