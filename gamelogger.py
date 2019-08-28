@@ -70,8 +70,7 @@ class GameLogger():
         lines = self.getlines()
         if lines:
             for line in lines:
-                data = self.convertline(line[1])
-                processgameline(data['record']['extra']['instance'].lower(), data['record']['level']['name'].upper(), data['text'])
+                processgameline(line[1], line[2], line[3])
 
     def close(self):
         self.c.close()

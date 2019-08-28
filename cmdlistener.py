@@ -38,7 +38,8 @@ def glupdate(inst, ptype, text):
         conn.close()
         return False
     else:
-        c.execute(f"INSERT INTO gamelog (instance, loglevel, logline) VALUES ('{inst.lower()}', '{ptype.upper()}', '{text}')")
+        sql = "insert into gamelog (instance, loglevel, logline) values (%s, %s, %s)"
+        c.execute(sql, (inst.lower(), ptype.upper(), text))
         conn.commit()
         return True
         c.close()
