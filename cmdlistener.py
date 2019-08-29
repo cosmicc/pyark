@@ -722,7 +722,7 @@ async def processline(minst, line):
                     log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
                     message = 'hi'
                     cmdlist = ['akmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15, asyncloop)
+                    await asyncserverexec(cmdlist, 15)
 
                 elif incmd.startswith('!help'):
                     subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe, " @%s' % (minst), shell=True)
