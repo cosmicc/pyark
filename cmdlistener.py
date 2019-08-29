@@ -26,13 +26,15 @@ arewevoting = False
 @log.catch
 async def asyncserverexec(cmdlist, nice):
     global asyncloop
-    fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
-    cmdstring = quote(' '.join(fullcmdlist))
-    log.debug(f'server rcon cmd executing {cmdstring}')
-    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
-    await asyncio.waiti_for(proc, timeout=10, loop=asyncloop)
-    log.debug(f'server rcon process completed {cmdlist}')
-
+    try:
+        fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
+        cmdstring = quote(' '.join(fullcmdlist))
+        log.debug(f'server rcon cmd executing {cmdstring}')
+        proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+        await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
+        log.debug(f'server rcon process completed {cmdlist}')
+    except:
+        log.exception('shitty')
 
 @log.catch
 def glupdate(inst, ptype, text):
