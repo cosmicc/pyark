@@ -898,4 +898,4 @@ def clisten(inst, dtime):
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncloop = asyncio.new_event_loop()
-    asyncloop.run(checkcommands(inst, dtime))
+    asyncloop.run_forever(checkcommands(inst, dtime))
