@@ -3,6 +3,30 @@ from psutil import Process
 from loguru import logger as log
 from re import sub
 from os.path import isfile
+import asyncio
+
+
+@log.catch
+async def dosubprocess(cmdlist):
+    log.debug(f'server rcon cmd executing {cmdlist}')
+    proc = await asyncio.create_subprocess_exec(cmdlist)
+    await proc.wait()
+    log.debug(f'server rcon process completed {cmdlist}')
+
+
+@log.catch
+async def asyncserverexec(cmdlist, nice=19):
+    global arconloop
+    fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
+    arconloop.create_task(dosubprocess(fullcmdlist))
+
+
+@log.catch
+def rconexecuterloop():
+    global arconloop
+    log.debug(f'starting the rcon executer thread')
+    arconloop = asyncio.new_event_loop()
+    arconloop.run_forever()
 
 
 def removerichtext(text):

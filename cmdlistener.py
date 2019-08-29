@@ -4,7 +4,7 @@ from modules.dbhelper import dbquery, dbupdate, cleanstring
 from modules.players import getplayer, newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
-from modules.servertools import serverexec
+from modules.servertools import serverexec, asyncserverexec
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
@@ -209,7 +209,7 @@ def getvote(whoasked):
     return 99
 
 
-def castedvote(inst, whoasked, myvote):
+async def castedvote(inst, whoasked, myvote):
     global arewevoting
     if not isvoting(inst):
         subprocess.run('arkmanager rconcmd "ServerChat No vote is taking place now" @%s' % (inst), shell=True)
@@ -243,7 +243,7 @@ def castedvote(inst, whoasked, myvote):
                 subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
                                (getsteamid(whoasked), mtxt, inst), shell=True)
                 log.log('VOTE', f'Voting NO has won, NO wild dino wipe will be performed for {inst}')
-                sleep(1)
+                await asyncio.sleep(1)
                 bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
                 subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
                 writechat(inst, 'ALERT', f'### A wild dino wipe vote has failed with a NO vote from \
@@ -656,7 +656,7 @@ def chatlineelsed(line, inst):
 
 
 @log.catch
-async def processline(minst, line):
+async def processline(minst, line, rconeventloop):
     inst = minst
     if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
         pass
@@ -708,7 +708,13 @@ async def processline(minst, line):
             lsw = line.lower().split(':')
             if len(lsw) == 3:
                 incmd = lsw[2].strip()
-                if incmd.startswith('!help'):
+                if incmd.startswith('!test'):
+                    log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
+                    message = 'hi'
+                    cmdlist = ['akmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}']
+                    asyncio.run_coroutine_threadsafe(asyncserverexec(cmdlist, 15), rconeventloop)
+
+                elif incmd.startswith('!help'):
                     subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe, " @%s' % (minst), shell=True)
                     subprocess.run('arkmanager rconcmd "ServerChat !lastrestart, !vote, !tip, !lottery, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
                     log.log('CMD', f'Responding to a [!help] request from [{whoasked.title()}] on [{minst.title()}]')
@@ -840,11 +846,11 @@ async def processline(minst, line):
 
                 elif incmd.startswith(('!agree', '!yes')):
                     log.debug(f'responding to YES vote on {minst} from {whoasked}')
-                    castedvote(minst, whoasked, True)
+                    await castedvote(minst, whoasked, True)
 
                 elif incmd.startswith(('!disagree', '!no')):
                     log.log('VOTE', f'Responding to NO vote on [{minst.title()}] from [{whoasked.title()}]')
-                    castedvote(minst, whoasked, False)
+                    await castedvote(minst, whoasked, False)
 
                 elif incmd.startswith(('!timeleft', '!restart')):
                     log.log('CMD', f'Responding to a [!timeleft] request from [{whoasked.title()}] on [{minst.title()}]')
@@ -880,20 +886,20 @@ async def processline(minst, line):
 
 
 @log.catch
-async def checkcommands(inst, dtime):
+async def checkcommands(inst, dtime, rconeventloop):
     global asyncloop
     while True:
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
-            asyncloop.create_task(processline(inst, line))
+            asyncloop.create_task(processline(inst, line, rconeventloop))
         await asyncio.sleep(dtime)
 
 
 @log.catch
-def clisten(inst, dtime):
+def clisten(inst, dtime, rconeventloop):
     global asyncloop
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncloop = asyncio.new_event_loop()
-    asyncloop.run_until_complete(checkcommands(inst, dtime))
+    asyncloop.run_until_complete(checkcommands(inst, dtime, rconeventloop))
