@@ -29,10 +29,10 @@ async def asyncserverexec(cmdlist, nice):
     asyncio.get_child_watcher().attach_loop(asyncloop)
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = quote(' '.join(fullcmdlist)).strip("'")
-    log.debug(f'server rcon cmd executing {cmdstring}')
+    log.debug(f'server rcon cmd executing [{cmdstring}]')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
     await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
-    log.debug(f'server rcon process completed {cmdlist}')
+    log.debug(f'server rcon process completed [{cmdstring}]')
     return 0
 
 
@@ -917,6 +917,6 @@ def clisten(inst, dtime):
     global asyncloop
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
-    asyncloop = asyncio.set_event_loop(None)
-    asyncloop = asyncio.new_event_loop()
+    #asyncloop = asyncio.set_event_loop(None)
+    asyncloop = asyncio.get_event_loop()
     asyncloop.run_until_complete(checkcommands(inst, dtime))
