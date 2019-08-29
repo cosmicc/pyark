@@ -904,7 +904,7 @@ async def checkcommands(inst, dtime):
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
-            asyncio.create_task(processline(inst, line), loop=asyncloop)
+            procline = asyncio.create_task(processline(inst, line), loop=asyncloop)
         await asyncio.sleep(dtime)
 
 
