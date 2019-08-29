@@ -25,12 +25,11 @@ arewevoting = False
 
 @log.catch
 async def asyncserverexec(cmdlist, nice):
-    global sprocloop
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = quote(' '.join(fullcmdlist))
     log.debug(f'server rcon cmd executing {cmdstring}')
-    proc = asyncio.create_subprocess_shell(cmdstring, loop=sprocloop)
-    await asyncio.wait_for(proc, loop=sprocloop, timeout=5)
+    proc = asyncio.create_subprocess_shell(cmdstring)
+    await asyncio.wait_for(proc, timeout=5)
     log.debug(f'server rcon process completed {cmdlist}')
 
 
@@ -918,4 +917,3 @@ def clisten(inst, dtime):
     sprocloop = asyncio.new_event_loop()
     # asyncio.get_child_watcher().attach_loop(asyncloop)
     asyncloop.run_until_complete(checkcommands(inst, dtime))
-    sprocloop.run_forever()
