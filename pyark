@@ -185,7 +185,6 @@ def main():
             log.trace(f'found server {instance[ins]["name"]} in server table')
     log.debug('database initilization complete')
     checkgit = 0
-    log.debug(f'started rcon executer event thread')
     arkupdt = Thread(name='arkupdater', target=arkupd)
     arkupdt.start()
     log.trace('deleting global chat buffer')

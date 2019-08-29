@@ -516,7 +516,7 @@ def pyarkbot():
         embed = discord.Embed(title=msg2, description=msg, color=INFO_COLOR)
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
-    @client.command(name='myinfo', aliases=['mypoints'])
+    @client.command(name='myinfo', aliases=['mypoints', 'info'])
     @commands.check(logcommand)
     @commands.check(is_linked)
     async def _myinfo(ctx):
