@@ -25,11 +25,12 @@ arewevoting = False
 
 @log.catch
 async def asyncserverexec(cmdlist, nice):
+    global asyncloop
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = quote(' '.join(fullcmdlist))
     log.debug(f'server rcon cmd executing {cmdstring}')
-    proc = asyncio.create_subprocess_shell(cmdstring)
-    await asyncio.wait_for(proc, timeout=5)
+    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    await asyncio.wait_for(proc, loop=asyncloop, timeout=5)
     log.debug(f'server rcon process completed {cmdlist}')
 
 
