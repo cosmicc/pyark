@@ -25,12 +25,12 @@ arewevoting = False
 
 @log.catch
 async def asyncserverexec(cmdlist, nice):
-    global asyncloop
+    global sprocloop
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = quote(' '.join(fullcmdlist))
     log.debug(f'server rcon cmd executing {cmdstring}')
-    proc = asyncloop.create_subprocess_shell(cmdstring)
-    await asyncloop.wait_for(proc, timeout=5)
+    proc = asyncio.create_subprocess_shell(cmdstring, loop=sprocloop)
+    await asyncio.wait_for(proc, loop=sprocloop, timeout=5)
     log.debug(f'server rcon process completed {cmdlist}')
 
 
@@ -724,7 +724,7 @@ async def processline(minst, line):
                     log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
                     message = 'hi'
                     cmdlist = ['akmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}']
-                    await asyncloop.create_task(asyncserverexec(cmdlist, 15))
+                    await asyncserverexec(cmdlist, 15)
 
                 elif incmd.startswith('!help'):
                     subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe, " @%s' % (minst), shell=True)
@@ -911,8 +911,11 @@ async def checkcommands(inst, dtime):
 @log.catch
 def clisten(inst, dtime):
     global asyncloop
+    global sprocloop
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncloop = asyncio.new_event_loop()
-    asyncio.get_child_watcher().attach_loop(asyncloop)
+    sprocloop = asyncio.new_event_loop()
+    # asyncio.get_child_watcher().attach_loop(asyncloop)
+    sprocloop.run_forever()
     asyncloop.run_until_complete(checkcommands(inst, dtime))
