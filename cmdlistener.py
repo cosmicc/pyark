@@ -15,6 +15,7 @@ import os
 import asyncio
 from gtranslate import trans_to_eng
 import psycopg2
+from shlex import quote
 
 lastvoter = 0.1
 votertable = []
