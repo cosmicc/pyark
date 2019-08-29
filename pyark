@@ -10,7 +10,7 @@ from modules.configreader import hstname, jsonlogfile, instance, numinstances, i
 from modules.dbhelper import dbupdate, dbquery
 from modules.timehelper import Now
 from modules.processlock import plock
-from modules.servertools import serverexec, rconexecuterloop
+from modules.servertools import serverexec
 from modules.apihelper import steamapiloop, auctionapiloop, arkservernetloop
 from gamelogger import gameloggerstart, dblcheckonlineloop
 from onlinemonitor import onlineupdate
@@ -185,9 +185,6 @@ def main():
             log.trace(f'found server {instance[ins]["name"]} in server table')
     log.debug('database initilization complete')
     checkgit = 0
-    rconeventloop = asyncio.new_event_loop()
-    rconexecuter = Thread(name='rconexecuter', target=start_event_loop, args=(rconeventloop,))
-    rconexecuter.start()
     log.debug(f'started rcon executer event thread')
     arkupdt = Thread(name='arkupdater', target=arkupd)
     arkupdt.start()
@@ -197,7 +194,7 @@ def main():
         inst = instance[each]['name']
         instance[each]['kickthread'] = Thread(name='%s-kicker' % inst, target=kicker, args=(inst, 5), daemon=True)
         instance[each]['kickthread'].start()
-        instance[each]['cmdthread'] = Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst, 2, rconeventloop), daemon=True)
+        instance[each]['cmdthread'] = Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst, 2), daemon=True)
         instance[each]['cmdthread'].start()
         instance[each]['gchatthread'] = Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst, 5), daemon=True)
         instance[each]['gchatthread'].start()
