@@ -9,7 +9,6 @@ from shlex import quote
 
 @log.catch
 async def asyncserverexec(cmdlist, nice=19):
-    global arconloop
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = quote(' '.join(fullcmdlist))
     log.debug(f'server rcon cmd executing {cmdstring}')

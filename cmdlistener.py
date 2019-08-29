@@ -712,7 +712,7 @@ async def processline(minst, line, rconeventloop):
                     log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
                     message = 'hi'
                     cmdlist = ['akmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}']
-                    asyncio.run_coroutine_threadsafe(asyncserverexec(cmdlist, 15), rconeventloop)
+                    await asyncserverexec(cmdlist, 15)
 
                 elif incmd.startswith('!help'):
                     subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe, " @%s' % (minst), shell=True)
