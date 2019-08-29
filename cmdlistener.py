@@ -725,7 +725,7 @@ async def processline(minst, line):
                 if incmd.startswith('!test'):
                     log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
                     message = 'hi'
-                    cmdlist = ['akmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}']
+                    cmdlist = ['arkmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}']
                     await asyncserverexec(cmdlist, 15)
 
                 elif incmd.startswith('!help'):
@@ -904,8 +904,6 @@ async def checkcommands(inst, dtime):
     global asyncloop
     while True:
         starttime = Now()
-        if inst == 'coliseum':
-            log.debug('getgamelog start')
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
