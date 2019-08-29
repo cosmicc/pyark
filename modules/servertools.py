@@ -8,20 +8,11 @@ from shlex import quote
 
 
 @log.catch
-async def dosubprocess(cmdlist):
-    cmdstring = quote(' '.join(cmdlist))
-    log.debug(f'server rcon cmd executing {cmdlist}')
-    proc = await asyncio.create_subprocess_shell(cmdstring)
-    await proc.wait()
-    log.debug(f'server rcon process completed {cmdlist}')
-
-
-@log.catch
 async def asyncserverexec(cmdlist, nice=19):
     global arconloop
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     log.debug(f'server rcon cmd executing {cmdlist}')
-    proc = await asyncio.create_subprocess_exec(fullcmdlist)
+    proc = await asyncio.create_subprocess_shell(fullcmdlist)
     await proc.wait()
     log.debug(f'server rcon process completed {cmdlist}')
 
