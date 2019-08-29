@@ -917,5 +917,5 @@ def clisten(inst, dtime):
     asyncloop = asyncio.new_event_loop()
     sprocloop = asyncio.new_event_loop()
     # asyncio.get_child_watcher().attach_loop(asyncloop)
-    sprocloop.run_forever()
     asyncloop.run_until_complete(checkcommands(inst, dtime))
+    sprocloop.run_forever()
