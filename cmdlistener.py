@@ -911,7 +911,6 @@ async def checkcommands(inst, dtime):
 @log.catch
 def clisten(inst, dtime):
     global asyncloop
-    global sprocloop
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncloop = asyncio.new_event_loop()
