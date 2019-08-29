@@ -28,7 +28,7 @@ async def asyncserverexec(cmdlist, nice):
     global asyncloop
     asyncio.get_child_watcher().attach_loop(asyncloop)
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
-    cmdstring = quote(' '.join(fullcmdlist))
+    cmdstring = quote(' '.join(fullcmdlist)).strip("'")
     log.debug(f'server rcon cmd executing {cmdstring}')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
     await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
