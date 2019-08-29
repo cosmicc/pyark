@@ -902,7 +902,6 @@ async def processline(minst, line):
 async def checkcommands(inst, dtime):
     while True:
         starttime = Now()
-        log.debug('.')
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
