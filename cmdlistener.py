@@ -8,6 +8,7 @@ from modules.servertools import serverexec
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
+import signal
 import random
 import subprocess
 import threading
@@ -15,6 +16,7 @@ import os
 import asyncio
 from gtranslate import trans_to_eng
 import psycopg2
+import uvloop
 from shlex import quote
 
 lastvoter = 0.1
@@ -908,13 +910,26 @@ async def checkcommands(inst, dtime):
             asyncloop.create_task(processline(inst, line))
         while Now() - starttime < 2:
             await asyncio.sleep(.01)
+    asyncloop.close()
 
 
 @log.catch
 def clisten(inst, dtime):
     global asyncloop
+
+    def sig_handler(signal, frame):
+        log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
+        asyncloop.close()
+        os._exit(0)
+
+    signal.signal(signal.SIGTERM, sig_handler)
+    signal.signal(signal.SIGHUP, sig_handler)
+    signal.signal(signal.SIGINT, sig_handler)
+    signal.signal(signal.SIGQUIT, sig_handler)
+
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
-    #asyncloop = asyncio.set_event_loop(None)
-    asyncloop = asyncio.get_event_loop()
-    asyncloop.run_until_complete(checkcommands(inst, dtime))
+    asyncloop = asyncio.set_event_loop(None)
+    asyncloop = asyncio.new_event_loop()
+    asyncio.run(checkcommands(inst, dtime))
+    asyncloop.close()
