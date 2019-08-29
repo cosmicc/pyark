@@ -887,8 +887,6 @@ async def checkcommands(inst, dtime):
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
             asyncloop.create_task(processline(inst, line))
-        pending = asyncio.Task.all_tasks()
-        asyncloop.run_until_complete(asyncio.gather(*pending))
         await asyncio.sleep(dtime)
 
 
