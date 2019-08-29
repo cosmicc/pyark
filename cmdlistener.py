@@ -666,7 +666,7 @@ def chatlineelsed(line, inst):
 
 
 @log.catch
-async def processline(minst, line, asyncloop):
+async def processline(minst, line):
     inst = minst
     if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
         pass
