@@ -11,8 +11,9 @@ from shlex import quote
 async def asyncserverexec(cmdlist, nice=19):
     global arconloop
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
-    log.debug(f'server rcon cmd executing {cmdlist}')
-    proc = await asyncio.create_subprocess_shell(fullcmdlist)
+    cmdstring = quote(' '.join(fullcmdlist))
+    log.debug(f'server rcon cmd executing {cmdstring}')
+    proc = await asyncio.create_subprocess_exec(cmdstring)
     await proc.wait()
     log.debug(f'server rcon process completed {cmdlist}')
 
