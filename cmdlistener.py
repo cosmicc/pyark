@@ -725,7 +725,7 @@ async def processline(minst, line):
                 if incmd.startswith('!test'):
                     log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
                     message = 'hi'
-                    cmdlist = ['arkmanager', 'rconcmd', f"'ServerChat {message}'", f'@{inst}']
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
                     await asyncserverexec(cmdlist, 15)
 
                 elif incmd.startswith('!help'):
