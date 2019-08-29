@@ -25,7 +25,6 @@ arewevoting = False
 
 @log.catch
 async def asyncserverexec(cmdlist, nice):
-    global asyncloop
     asyncio.get_child_watcher().attach_loop(asyncloop)
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = quote(' '.join(fullcmdlist)).strip("'")
@@ -901,7 +900,6 @@ async def processline(minst, line):
 
 @log.catch
 async def checkcommands(inst, dtime):
-    global asyncloop
     while True:
         starttime = Now()
         log.debug('.')
