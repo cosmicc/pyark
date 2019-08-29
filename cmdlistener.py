@@ -656,7 +656,7 @@ def chatlineelsed(line, inst):
 
 
 @log.catch
-async def processline(minst, line, rconeventloop):
+async def processline(minst, line, asyncloop):
     inst = minst
     if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
         pass
@@ -712,7 +712,7 @@ async def processline(minst, line, rconeventloop):
                     log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
                     message = 'hi'
                     cmdlist = ['akmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverexec(cmdlist, 15, asyncloop)
 
                 elif incmd.startswith('!help'):
                     subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe, " @%s' % (minst), shell=True)
@@ -886,20 +886,20 @@ async def processline(minst, line, rconeventloop):
 
 
 @log.catch
-async def checkcommands(inst, dtime, rconeventloop):
+async def checkcommands(inst, dtime):
     global asyncloop
     while True:
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
-            asyncloop.create_task(processline(inst, line, rconeventloop))
+            asyncloop.create_task(processline(inst, line))
         await asyncio.sleep(dtime)
 
 
 @log.catch
-def clisten(inst, dtime, rconeventloop):
+def clisten(inst, dtime):
     global asyncloop
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncloop = asyncio.new_event_loop()
-    asyncloop.run_until_complete(checkcommands(inst, dtime, rconeventloop))
+    asyncloop.run_until_complete(checkcommands(inst, dtime, asyncloop))
