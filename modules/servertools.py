@@ -4,12 +4,14 @@ from loguru import logger as log
 from re import sub
 from os.path import isfile
 import asyncio
+from shlex import quote
 
 
 @log.catch
 async def dosubprocess(cmdlist):
+    cmdstring = quote(' '.join(cmdlist))
     log.debug(f'server rcon cmd executing {cmdlist}')
-    proc = await asyncio.create_subprocess_shell(cmdlist)
+    proc = await asyncio.create_subprocess_shell(cmdstring)
     await proc.wait()
     log.debug(f'server rcon process completed {cmdlist}')
 
