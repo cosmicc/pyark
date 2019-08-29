@@ -30,7 +30,7 @@ async def asyncserverexec(cmdlist, nice):
     cmdstring = quote(' '.join(fullcmdlist))
     log.debug(f'server rcon cmd executing {cmdstring}')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
-    await asyncio.wait_for(proc, timeout=5)
+    await asyncio.wait_for(proc, loop=asyncloop, timeout=5)
     log.debug(f'server rcon process completed {cmdlist}')
 
 
