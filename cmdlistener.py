@@ -904,7 +904,7 @@ async def checkcommands(inst, dtime):
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
-            procline = asyncio.create_task(processline(inst, line), loop=asyncloop)
+            asyncloop.create_task(processline(inst, line), loop=asyncloop)
         await asyncio.sleep(dtime)
 
 
@@ -915,5 +915,5 @@ def clisten(inst, dtime):
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncloop = asyncio.set_event_loop(None)
     asyncloop = asyncio.new_event_loop()
-    asyncio.get_child_watcher().attach_loop(asyncloop)
+    # asyncio.get_child_watcher().attach_loop(asyncloop)
     asyncloop.run_until_complete(checkcommands(inst, dtime))
