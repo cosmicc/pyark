@@ -18,7 +18,11 @@ async def dosubprocess(cmdlist):
 async def asyncserverexec(cmdlist, nice=19):
     global arconloop
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
-    arconloop.create_task(dosubprocess(fullcmdlist))
+    log.debug(f'server rcon cmd executing {cmdlist}')
+    proc = await asyncio.create_subprocess_exec(fullcmdlist)
+    await proc.wait()
+    log.debug(f'server rcon process completed {cmdlist}')
+
 
 
 @log.catch

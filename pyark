@@ -188,6 +188,7 @@ def main():
     rconeventloop = asyncio.new_event_loop()
     rconexecuter = Thread(name='rconexecuter', target=start_event_loop, args=(rconeventloop,))
     rconexecuter.start()
+    log.debug(f'started rcon executer event thread')
     arkupdt = Thread(name='arkupdater', target=arkupd)
     arkupdt.start()
     log.trace('deleting global chat buffer')
