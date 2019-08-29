@@ -7,15 +7,6 @@ import asyncio
 from shlex import quote
 
 
-@log.catch
-async def asyncserverexec(cmdlist, nice, asyncloop):
-    fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
-    cmdstring = quote(' '.join(fullcmdlist))
-    log.debug(f'server rcon cmd executing {cmdstring}')
-    proc = asyncloop.create_subprocess_shell(cmdstring)
-    await proc.wait()
-    log.debug(f'server rcon process completed {cmdlist}')
-
 
 @log.catch
 def rconexecuterloop():

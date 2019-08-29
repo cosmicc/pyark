@@ -4,7 +4,7 @@ from modules.dbhelper import dbquery, dbupdate, cleanstring
 from modules.players import getplayer, newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
-from modules.servertools import serverexec, asyncserverexec
+from modules.servertools import serverexec
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
@@ -20,6 +20,16 @@ lastvoter = 0.1
 votertable = []
 votestarttime = Now()
 arewevoting = False
+
+
+@log.catch
+async def asyncserverexec(cmdlist, nice):
+    fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
+    cmdstring = quote(' '.join(fullcmdlist))
+    log.debug(f'server rcon cmd executing {cmdstring}')
+    proc = asyncloop.create_subprocess_shell(cmdstring)
+    await proc.wait()
+    log.debug(f'server rcon process completed {cmdlist}')
 
 
 @log.catch
@@ -886,18 +896,19 @@ async def processline(minst, line, asyncloop):
 
 
 @log.catch
-async def checkcommands(inst, dtime, asyncloop):
+async def checkcommands(inst, dtime):
     while True:
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
-            asyncloop.create_task(processline(inst, line, asyncloop))
+            asyncloop.create_task(processline(inst, line))
         await asyncio.sleep(dtime)
 
 
 @log.catch
 def clisten(inst, dtime):
+    global asyncloop
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncloop = asyncio.new_event_loop()
-    asyncloop.run_until_complete(checkcommands(inst, dtime, asyncloop))
+    asyncloop.run_until_complete(checkcommands(inst, dtime))
