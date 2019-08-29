@@ -260,9 +260,6 @@ def main():
             else:
                 checkgit += 1
             sleep(60)
-            if not rconexecuter.is_alive():
-                t = 'rcon executer'
-                log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
             if not arkupdt.is_alive():
                 t = 'ark updater'
                 log.critical(f'!!!! CRITICAL ERROR! thread {t} has crashed!!')
