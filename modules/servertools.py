@@ -9,7 +9,7 @@ import asyncio
 @log.catch
 async def dosubprocess(cmdlist):
     log.debug(f'server rcon cmd executing {cmdlist}')
-    proc = await asyncio.create_subprocess_exec(cmdlist)
+    proc = await asyncio.create_subprocess_shell(cmdlist)
     await proc.wait()
     log.debug(f'server rcon process completed {cmdlist}')
 

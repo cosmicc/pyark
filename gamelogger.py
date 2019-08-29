@@ -17,7 +17,7 @@ def dblcheckonlineloop(dtime):
         players = dbquery(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 280}", fmt='dict', fetch='all')
         for player in players:
             log.warning(f'Player [{player["playername"].title()}] wasnt found logging off. Clearing player from online status')
-            dbupdate("UPDATE players SET online = False, refreshsteam = True, server = '%s', WHERE steamid = '%s'" % (player["server"], player["steamid"]))
+            dbupdate("UPDATE players SET online = False, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
         sleep(dtime)
 
 
