@@ -394,11 +394,6 @@ def getnamefromchat(chat):
         log.error(f'GetNameFromChat Error: {chat}')
 
 
-def getnamefromchaterror(inst):
-    # subprocess.run('arkmanager rconcmd "ServerChat Someone has a colon : in their steam name. This makes me, the bot, have issues. This needs to be removed from your steam name please!" @%s' % (inst,), shell=True)
-    pass
-
-
 def isserver(line):
     rawissrv = line.split(':')
     if len(rawissrv) > 1:
@@ -568,6 +563,7 @@ def lottery(whoasked, lchoice, inst):
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg, inst), shell=True)
 
 
+'''
 def wglog(minst, line):
     if not os.path.exists(f'/home/ark/shared/logs/{minst}'):
         log.error(f'Log directory /home/ark/shared/logs/{minst} does not exist! creating')
@@ -578,6 +574,7 @@ def wglog(minst, line):
         if lobber != '':
             f.write(f"""{line.replace('"','').strip()}\n""")
     f.close()
+'''
 
 
 @log.catch
@@ -624,7 +621,7 @@ def leavingplayerthread(player, inst):
 @log.catch
 async def playerleave(line, inst):
     newline = line[:-15].split(':')
-    player = await asyncdbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", single=True, fmt='dict', fetch='one')
     if player:
         log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayerthread, args=(player, inst))
@@ -702,9 +699,7 @@ async def processline(minst, line):
     else:
         whoasked = getnamefromchat(line)
         log.trace(f'chatline who: {whoasked}')
-        if whoasked is None:
-            getnamefromchaterror(minst)
-        else:
+        if whoasked is not None:
             lsw = line.lower().split(':')
             if len(lsw) == 3:
                 incmd = lsw[2].strip()
@@ -742,7 +737,7 @@ async def processline(minst, line):
                                                 dto = dto - tzfix
                                             tstamp = dto.strftime('%m-%d %I:%M%p')
                                             writeglobal(minst, whoname, cmsg)
-                                            writechat('generalchat', whoname, cmsg, tstamp)
+                                            await asyncwritechat('generalchat', whoname, cmsg, tstamp)
                                         except:
                                             log.exception('could not parse date from chat')
                                 else:

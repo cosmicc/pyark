@@ -1,4 +1,4 @@
-from modules.dbhelper import dbquery, dbupdate
+from modules.dbhelper import dbquery, dbupdate, asyncdbupdate, asyncdbquery
 from modules.players import getplayer
 from modules.timehelper import Now
 from modules.servertools import serverexec
@@ -7,6 +7,7 @@ from loguru import logger as log
 from re import compile as rcompile
 
 
+'''
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
@@ -16,6 +17,7 @@ def writechat(inst, whos, msg, tstamp):
 
     elif whos == "ALERT":
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
+'''
 
 
 def stripansi(stripstr):
@@ -177,6 +179,11 @@ def writechat(inst, whos, msg, tstamp):
     if whos == "ALERT" or isindb or whos == '*Admin':
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
                  (inst, whos, msg, tstamp))
+
+
+async def asyncwriteglobal(inst, whos, msg):
+    await asyncdbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
+                        (inst, whos, msg, Now()))
 
 
 def writeglobal(inst, whos, msg):
