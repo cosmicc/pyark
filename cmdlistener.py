@@ -124,13 +124,13 @@ async def whoisonlinewrapper(inst, oinst, whoasked, crnt):
     if oinst == inst:
         slist = await asyncgetserverlist()
         for each in slist:
-            whoisonline(each, oinst, whoasked, True, crnt)
+            await asyncwhoisonline(each, oinst, whoasked, True, crnt)
     else:
-        whoisonline(inst, oinst, whoasked, False, crnt)
+        await asyncwhoisonline(inst, oinst, whoasked, False, crnt)
 
 
 @log.catch
-def whoisonline(inst, oinst, whoasked, filt, crnt):
+async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
     try:
         if crnt == 1:
             potime = 40
@@ -138,33 +138,33 @@ def whoisonline(inst, oinst, whoasked, filt, crnt):
             potime = Secs['hour']
         elif crnt == 3:
             potime = Secs['day']
-        flast = dbquery("SELECT * FROM players WHERE server = '%s'" % (inst,))
+        players = await asyncdbquery(f"SELECT * FROM players WHERE server = '{inst}'", 'tuple', 'all')
         pcnt = 0
         plist = ''
-        for row in flast:
-            chktme = Now() - float(row[2])
+        for player in players:
+            chktme = Now() - float(player['lastseen'])
             if chktme < potime:
                 pcnt += 1
                 if plist == '':
-                    plist = '%s' % (row[1].title())
+                    plist = '%s' % (player['playername'].title())
                 else:
-                    plist = plist + ', %s' % (row[1].title())
+                    plist = plist + ', %s' % (player['playername'].title())
         if pcnt != 0:
             if crnt == 1:
-                subprocess.run('arkmanager rconcmd "ServerChat %s has %s players online: %s" @%s' %
-                               (inst.capitalize(), pcnt, plist, oinst), shell=True)
+                message = f'{inst.capitalize()} has {pcnt} players online: {plist}'
             elif crnt == 2:
-                subprocess.run('arkmanager rconcmd "ServerChat %s has had %s players in last hour: %s" @%s' %
-                               (inst.capitalize(), pcnt, plist, oinst), shell=True)
+                message = f'{inst.capitalize()} has had {pcnt} players in the last hour: {plist}'
             elif crnt == 3:
-                subprocess.run('arkmanager rconcmd "ServerChat %s had had %s players in last day: %s" @%s' %
-                               (inst.capitalize(), pcnt, plist, oinst), shell=True)
-
+                message = f'{inst.capitalize()} has had {pcnt} players in the last day: {plist}'
         if pcnt == 0 and not filt:
-            subprocess.run('arkmanager rconcmd "ServerChat %s has no players online." @%s' % (inst.capitalize(), oinst), shell=True)
+            message = f'{inst.capitalize()} has no players online.'
+        cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
+        await asyncserverexec(cmdlist, 15)
     except:
         log.exception()
-        subprocess.run('arkmanager rconcmd "ServerChat Server %s does not exist." @%s' % (inst.capitalize(), inst), shell=True)
+        message = f'Server {inst.capitalize()} does not exist.'
+        cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
+        await asyncserverexec(cmdlist, 15)
 
 
 def getlastvote(inst):
