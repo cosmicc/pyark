@@ -58,6 +58,15 @@ def writechat(inst, whos, msg, tstamp):
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
+async def asyncgetsteamid(whoasked):
+    player = await asyncdbquery(f"SELECT * FROM players WHERE (playername = '{whoasked}') or (alias = '{whoasked}')", 'dict', 'one')
+    if player is None:
+        log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
+        return None
+    else:
+        return player['steamid']
+
+
 def getsteamid(whoasked):
     sid = dbquery("SELECT steamid FROM players WHERE (playername = '%s') or (alias = '%s')" % (whoasked, whoasked), fetch='one')
     if sid is None:
@@ -67,13 +76,15 @@ def getsteamid(whoasked):
         return sid[0]
 
 
-def resptimeleft(inst, whoasked):
-    dbtl = dbquery("SELECT restartcountdown, needsrestart FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
-    if dbtl[1] == 'True':
-        subprocess.run('arkmanager rconcmd "ServerChat Server is restarting in %s minutes" @%s' %
-                       (dbtl[0], inst), shell=True)
+@log.catch
+async def asyncresptimeleft(inst, whoasked):
+    insts = await asyncdbquery(f"SELECT * FROM instances WHERE name = '{inst}'", 'dict', 'one')
+    if insts['needsrestart'] == 'True':
+        message = f'Server is restarting in {insts["restartcountdown"]} minutes'
+        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 19)
     else:
-        subprocess.run('arkmanager rconcmd "ServerChat Server is not pending a restart" @%s' % (inst), shell=True)
+        message = f'Server is not pending a restart'
+        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 19)
 
 
 async def asyncgetlastseen(seenname):
@@ -90,11 +101,13 @@ async def asyncgetlastseen(seenname):
 
 @log.catch
 async def asyncrespmyinfo(inst, whoasked):
-    player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{whoasked}' ORDER BY lastseen DESC", 'dict', 'one')
-    ptime = playedTime(player['playedtime'])
-    steamid = player['steamid']
-    message = f"Your current reward points: {player['rewardpoints'] + player['transferpoints']}.\nYour total play time is {ptime}\nYour home server is {player['homeserver'].capitalize()}"
-    await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+    steamid = await asyncgetsteamid(whoasked)
+    if steamid:
+        player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{whoasked}' ORDER BY lastseen DESC", 'dict', 'one')
+        ptime = playedTime(player['playedtime'])
+        steamid = player['steamid']
+        message = f"Your current reward points: {player['rewardpoints'] + player['transferpoints']}.\nYour total play time is {ptime}\nYour home server is {player['homeserver'].capitalize()}"
+        await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
 
 
 @log.catch
@@ -477,41 +490,36 @@ async def processtcdata(inst, tcdata):
                 log.trace(f'duplicate reward points to account for {playername} on {inst}, skipping')
 
 
-def homeserver(inst, whoasked, ext):
-    steamid = getsteamid(whoasked)
-    pinfo = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
-    if ext != '':
-        tservers = []
-        tservers = homeablelist()
-        ext = ext.lower()
-        if ext in tservers:
-            if ext != pinfo[15]:
-                if inst == pinfo[15]:
-                    log.log('PLAYER', f'[{whoasked.title()}] has transferred home servers from [{pinfo[15].title()}] to [{ext.title()}] \
-with {pinfo[5]} points')
-                    subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
-                                   (steamid, inst), shell=True)
-                    dbupdate("UPDATE players SET transferpoints = '%s', homeserver = '%s' WHERE steamid = '%s'" %
-                             (pinfo[5], ext, steamid))
-                    msg = f'Your {pinfo[5]} points have been transferred to your new home server: {ext.capitalize()}'
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                                   (pinfo[0], msg, inst), shell=True)
+async def asynchomeserver(inst, whoasked, ext):
+    steamid = await asyncgetsteamid(whoasked)
+    if steamid:
+        player = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
+        if ext != '':
+            tservers = []
+            tservers = homeablelist()
+            ext = ext.lower()
+            if ext in tservers:
+                if ext != player['homeserver']:
+                    if inst == player['homeserver']:
+                        log.log('PLAYER', f'[{player["playername"].title()}] has transferred home servers from [{player["homeserver"].title()}] to [{ext.title()}] with {player["rewardpoints"]} points')
+                        await asyncserverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar setarctotal {steamid} 0"', f'@{inst}'], 19)
+                        await asyncdbupdate(f"""UPDATE players SET transferpoints = {player["rewardpoints"]}, homeserver = '{ext}' WHERE steamid = '{steamid}'""")
+                        message = f'Your {player["rewardpoints"]} points have been transferred to your new home server: {ext.capitalize()}'
+                        await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+                    else:
+                        message = f'You must be on your home server {player["homeserver"].capitalize()} to change your home'
+                        await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
                 else:
-                    msg = f'You must be on your home server {pinfo[15].capitalize()} to change your home'
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                                   (pinfo[0], msg, inst), shell=True)
+                    message = f'{ext.capitalize()} is already your home server'
+                    await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
             else:
-                msg = f'{ext.capitalize()} is already your home server'
-                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                               (pinfo[0], msg, inst), shell=True)
+                message = f'{ext.capitalize()} is not a server you can call home in the cluster.'
+                await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
         else:
-            msg = f'{ext.capitalize()} is not a server you can call home in the cluster.'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0], msg, inst), shell=True)
-    else:
-        msg = f'Your current home server is: {pinfo[15].capitalize()}'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0], msg, inst), shell=True)
-        msg = f'Type !myhome <servername> to change your home.'
-        subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (pinfo[0], msg, inst), shell=True)
+            message = f'Your current home server is: {player["homeserver"].capitalize()}'
+            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+            message = f'Type !myhome <servername> to change your home.'
+            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
 
 
 def lastlotto(whoasked, inst):
@@ -830,7 +838,7 @@ async def processline(minst, line):
                     else:
                         ninst = ''
                     log.log('CMD', f'Responding to a [!myhome] request for [{whoasked.title()}] on [{minst.title()}]')
-                    homeserver(minst, whoasked, ninst)
+                    await asynchomeserver(minst, whoasked, ninst)
 
                 elif incmd.startswith(('!vote', '!startvote', '!wipe')):
                     log.debug(f'Responding to a [!vote] request from [{whoasked.title()}] on [{minst.title()}]')
@@ -846,7 +854,7 @@ async def processline(minst, line):
 
                 elif incmd.startswith(('!timeleft', '!restart')):
                     log.log('CMD', f'Responding to a [!timeleft] request from [{whoasked.title()}] on [{minst.title()}]')
-                    resptimeleft(minst, whoasked)
+                    await asyncresptimeleft(minst, whoasked)
 
                 elif incmd.startswith(('!linkme', '!link')):
                     log.log('CMD', f'Responding to a [!linkme] request from [{whoasked.title()}] on [{minst.title()}]')
