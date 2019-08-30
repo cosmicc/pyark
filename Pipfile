@@ -28,6 +28,7 @@ colored = "*"
 pycountry = "*"
 eventlet = "*"
 asyncpg = "*"
+sh = "*"
 
 [requires]
 python_version = "3.7"
