@@ -666,28 +666,28 @@ async def processline(minst, line):
     elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
         await asyncglupdate(inst, 'ADMIN', line.replace('"', '').strip())
     elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
-        glupdate(inst, 'DEMO', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'DEMO', line.replace('"', '').strip())
     elif line.find('released:') != -1:
-        glupdate(inst, 'RELEASE', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'RELEASE', line.replace('"', '').strip())
     elif line.find('trapped:') != -1:
-        glupdate(inst, 'TRAP', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'TRAP', line.replace('"', '').strip())
     elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
-        glupdate(inst, 'DEATH', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'DEATH', line.replace('"', '').strip())
     elif line.find('Tamed a') != -1:
-        glupdate(inst, 'TAME', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'TAME', line.replace('"', '').strip())
     elif line.find(" claimed '") != -1 or line.find(" unclaimed '") != -1:
-        glupdate(inst, 'CLAIM', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'CLAIM', line.replace('"', '').strip())
     elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 \
     or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 \
     or line.find(' Tribe to ') != -1 or line.find(' was removed from the Tribe!') != -1 or line.find(' set to Rank Group ') != -1 \
     or line.find(' requested an Alliance with ') != -1 or line.find(' was added to the Tribe!') != -1:
-        glupdate(inst, 'TRIBE', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'TRIBE', line.replace('"', '').strip())
     elif line.find('starved to death!') != -1:
-        glupdate(inst, 'DECAY', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'DECAY', line.replace('"', '').strip())
     elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
-        glupdate(inst, 'DECAY', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'DECAY', line.replace('"', '').strip())
     elif line.startswith('Error:'):
-        glupdate(inst, 'UNKNOWN', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'UNKNOWN', line.replace('"', '').strip())
     else:
         whoasked = getnamefromchat(line)
         log.trace(f'chatline who: {whoasked}')
@@ -704,9 +704,13 @@ async def processline(minst, line):
                     await asyncserverexec(cmdlist, 15)
 
                 elif incmd.startswith('!help'):
-                    subprocess.run('arkmanager rconcmd "ServerChat Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe, " @%s' % (minst), shell=True)
-                    subprocess.run('arkmanager rconcmd "ServerChat !lastrestart, !vote, !tip, !lottery, !lastseen <playername>, !playtime <playername>" @%s' % (minst), shell=True)
-                    log.log('CMD', f'Responding to a [!help] request from [{whoasked.title()}] on [{minst.title()}]')
+                    message = f'Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe,'
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
+                    await asyncserverexec(cmdlist, 15)
+                    message = f'!lastrestart, !vote, !tip, !lottery, !lastseen <playername>, !playtime <playername>'
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
+                    await asyncserverexec(cmdlist, 15)
+                    log.log('CMD', f'Responded to a [!help] request from [{whoasked.title()}] on [{minst.title()}]')
                 elif incmd.startswith('@all'):
                     try:
                         rawline = line.split('(')
