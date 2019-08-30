@@ -18,9 +18,9 @@ async def asyncdbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False
 async def llasyncdbquery(query, db, fetch, fmt, single):
     try:
         if db == 'sqldb':
-            conn = await asyncpg.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            conn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         elif db == 'statsdb':
-            conn = await asyncpg.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            conn = await asyncpg.connect(database=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     except:
         log.critical('ERROR CONNECTING TO DATABASE SERVER')
         await conn.close()
@@ -68,11 +68,11 @@ async def asyncglupdate(inst, ptype, text):
 async def llasyncdbupdate(query, db):
     try:
         if db == 'sqldb':
-            conn = await asyncpg.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            conn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         elif db == 'statsdb':
-            conn = await asyncpg.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            conn = await asyncpg.connect(database=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         elif db == 'gamelog':
-            conn = await asyncpg.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            conn = await asyncpg.connect(database='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     except:
         log.critical('ERROR CONNECTING TO DATABASE SERVER')
         await conn.close()
