@@ -471,6 +471,20 @@ async def asyncwritechatlog(inst, whos, msg, tstamp):
 
 
 @log.catch
+def writechatlog(inst, whos, msg, tstamp):
+    isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos, ), fetch='one')
+    if isindb:
+        clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
+        if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
+            log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
+            os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
+            os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
+        with open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
+            f.write(clog)
+        f.close()
+
+
+@log.catch
 async def processtcdata(inst, tcdata):
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
