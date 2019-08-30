@@ -81,8 +81,8 @@ async def llasyncdbupdate(query, db):
     else:
         try:
             if db == 'gamelog':
-                sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES (%s, %s, %s)"
-                await conn.execute(sql, (query[0].lower(), query[1].upper(), query[2]))
+                sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
+                await conn.execute(sql, query[0].lower(), query[1].upper(), query[2])
             else:
                 await conn.execute(query)
         except:
