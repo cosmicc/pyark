@@ -112,8 +112,11 @@ def gettip():
 
 @log.catch
 async def asyncgetserverlist():
+    namelist = []
     names = await asyncdbquery("SELECT name FROM instances", 'tuple', 'all')
-    return names
+    for name in names:
+        namelist.append(name['name'])
+    return namelist
 
 
 @log.catch
