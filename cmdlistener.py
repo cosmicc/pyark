@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from modules.configreader import instance, numinstances
 from modules.dbhelper import dbquery, dbupdate, cleanstring, glupdate, asyncglupdate, asyncdbquery, asyncdbupdate
 from modules.players import getplayer, newplayer
-from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal, getinstancelist
+from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal, asyncgetinstancelist
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from modules.servertools import serverexec
 from lottery import getlastlotteryinfo
@@ -111,18 +111,9 @@ def gettip():
 
 
 @log.catch
-async def asyncgetserverlist():
-    namelist = []
-    names = await asyncdbquery("SELECT name FROM instances", 'tuple', 'all')
-    for name in names:
-        namelist.append(name['name'])
-    return namelist
-
-
-@log.catch
 async def whoisonlinewrapper(inst, oinst, whoasked, crnt):
     if oinst == inst:
-        slist = await asyncgetserverlist()
+        slist = await asyncgetinstancelist()
         for each in slist:
             await asyncwhoisonline(each, oinst, whoasked, True, crnt)
     else:
@@ -138,7 +129,7 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
             potime = Secs['hour']
         elif crnt == 3:
             potime = Secs['day']
-        if inst not in getinstancelist():
+        if inst not in await asyncgetinstancelist():
             message = f'{inst.capitalize()} is not a valid server'
         else:
             players = await asyncdbquery(f"SELECT * FROM players WHERE server = '{inst}'", 'tuple', 'all')

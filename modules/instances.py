@@ -138,6 +138,15 @@ def getlastcrash(inst):
         return 'Never'
 
 
+@log.catch
+async def asyncgetinstancelist():
+    namelist = []
+    names = await asyncdbquery("SELECT name FROM instances", 'tuple', 'all')
+    for name in names:
+        namelist.append(name['name'])
+    return namelist
+
+
 def instancelist():
     dbdata = dbquery('SELECT name FROM instances ORDER BY name', fmt='list', single=True)
     return dbdata
