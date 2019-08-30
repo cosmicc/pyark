@@ -107,7 +107,7 @@ async def asyncrespmyinfo(inst, whoasked):
         ptime = playedTime(player['playedtime'])
         steamid = player['steamid']
         message = f"Your current reward points: {player['rewardpoints'] + player['transferpoints']}.\nYour total play time is {ptime}\nYour home server is {player['homeserver'].capitalize()}"
-        await asyncserverexec(['arkmanager', 'rconcmd', f'\'ServerChatTo "{steamid}" {message}\'', f'@{inst}'], 19)
+        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChatTo "{steamid}" {message}"', f'@{inst}'], 19)
 
 
 @log.catch
