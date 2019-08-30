@@ -27,6 +27,7 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
         asyncio.sleep(60)
         return None
     else:
+        log.debug(query)
         try:
             #if fmt == 'dict':
                 #table = query.split('FROM')[1].split(' ')[1].strip()
@@ -45,17 +46,22 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
             elif fetch == 'one':
                 dbdata = await conn.fetchrow(query)
         except:
-            log.error(f'Error in {db} database query {query}')
+            log.exception(f'Error in {db} database query {query}')
             await conn.close()
             return None
+        log.debug(dbdata)
         if dbdata is not None:
             if fmt == 'tuple':
+                log.debug(tuple(dbdata))
                 return tuple(dbdata)
             elif fmt == 'dict':
+                log.debug(dict(dbdata))
                 return dict(dbdata)
             elif fmt == 'count':
+                log.debug(len(dbdata))
                 return len(dbdata)
             elif fmt == 'list':
+                log.debug(list(tuple(dbdata)))
                 return list(tuple(dbdata))
             elif fmt == 'string':
                 return dbstringformat(dbdata, single=single)
