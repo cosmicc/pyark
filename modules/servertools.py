@@ -3,17 +3,7 @@ from psutil import Process
 from loguru import logger as log
 from re import sub
 from os.path import isfile
-import asyncio
 from shlex import quote
-
-
-
-@log.catch
-def rconexecuterloop():
-    global arconloop
-    log.debug(f'starting the rcon executer thread')
-    arconloop = asyncio.new_event_loop()
-    arconloop.run_forever()
 
 
 def removerichtext(text):

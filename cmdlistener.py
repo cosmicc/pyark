@@ -28,7 +28,8 @@ async def asyncserverexec(cmdlist, nice):
     asyncloop = asyncio.get_running_loop()
     # asyncio.get_child_watcher().attach_loop(asyncloop)
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
-    cmdstring = quote(' '.join(fullcmdlist)).strip("'")
+    cmdstring = ' '.join(fullcmdlist)
+    # cmdstring = quote(' '.join(fullcmdlist)).strip("'")
     log.debug(f'server rcon cmd executing [{cmdstring}]')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
     await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
@@ -107,7 +108,7 @@ async def asyncrespmyinfo(inst, whoasked):
         ptime = playedTime(player['playedtime'])
         steamid = player['steamid']
         message = f"Your current reward points: {player['rewardpoints'] + player['transferpoints']}.\nYour total play time is {ptime}\nYour home server is {player['homeserver'].capitalize()}"
-        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChatTo "{steamid}" {message}"', f'@{inst}'], 19)
+        await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
 
 
 @log.catch
