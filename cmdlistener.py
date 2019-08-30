@@ -445,10 +445,10 @@ def writechatlog(inst, whos, msg, tstamp):
 
 
 @log.catch
-def processtcdata(inst, tcdata):
+async def processtcdata(inst, tcdata):
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
-    pexist = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid, ), fetch='one')
+    pexist = await asyncdbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid, ), fetch='one')
     if not pexist and steamid != '':
         welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, playername, inst))
         welcom.start()
@@ -457,11 +457,11 @@ def processtcdata(inst, tcdata):
         rewardpoints = int(tcdata['Points'].replace(',', ''))
         if playername.lower() != pexist[1].lower():
             log.log('UPDATE', f'Player name update for [{pexist[1]}] to [{playername}]')
-            dbupdate("UPDATE players SET playername = '%s' WHERE steamid = '%s'" % (playername, steamid))
+            await asyncdbupdate("UPDATE players SET playername = '%s' WHERE steamid = '%s'" % (playername, steamid))
         if inst == pexist[15]:
             log.trace(f'player {playername} with steamid {steamid} was found on HOME server {inst}. updating info.')
-            dbupdate("UPDATE players SET playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
-                     (playtime, rewardpoints, steamid))
+            await asyncdbupdate("UPDATE players SET playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
+                                (playtime, rewardpoints, steamid))
         else:
             log.trace(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info.')
             if int(pexist[16]) != int(rewardpoints):
@@ -469,10 +469,10 @@ def processtcdata(inst, tcdata):
                     if Now() - float(pexist[17]) > 60:
                         log.debug(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for \
 {playername} on {inst}')
-                        dbupdate("UPDATE players SET transferpoints = '%s', lastpointtimestamp = '%s' WHERE steamid = '%s'" %
-                                 (int(rewardpoints) + int(pexist[16]), str(Now()), str(steamid)))
-                        subprocess.run('arkmanager rconcmd "ScriptCommand tcsar setarctotal %s 0" @%s' %
-                                       (steamid, inst), shell=True)
+                        await asyncdbupdate("UPDATE players SET transferpoints = '%s', lastpointtimestamp = '%s' WHERE steamid = '%s'" %
+                                            (int(rewardpoints) + int(pexist[16]), str(Now()), str(steamid)))
+                        cmdlist = ['arkmanager', 'rconcmd', f'"ScriptCommand tcsar setarctotal {steamid} 0"', f'@{inst}']
+                        await asyncserverexec(cmdlist, 15)
                     else:
                         log.trace(f'reward points not past threshold for wait (to avoid duplicates) for \
 {playername} on {inst}, skipping')
@@ -669,7 +669,7 @@ async def processline(minst, line):
             if len(ee) > 1:
                 tcdata.update({ee[0]: ee[1]})
         if 'SteamID' in tcdata:
-            processtcdata(minst, tcdata)
+            await processtcdata(minst, tcdata)
     elif line.find('left this ARK!') != -1:
         await playerleave(line, minst)
     elif line.find('joined this ARK!') != -1:
