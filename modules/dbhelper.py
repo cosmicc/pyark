@@ -8,7 +8,7 @@ import asyncio
 
 
 @log.catch
-async def asyncdbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
+async def asyncdbquery(query, fmt, db='sqldb', fetch='all', single=False):
     asyncloop = asyncio.get_running_loop()
     data = asyncloop.create_task(llasyncdbquery(query, db, fetch, fmt, single))
     return await data
@@ -28,37 +28,37 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
         return None
     else:
         try:
-            if fmt == 'dict':
-                table = query.split('FROM')[1].split(' ')[1].strip()
-                where = query.split(table)[1]
-                what = query.split('SELECT')[1].split('FROM')[0].strip()
-                if what == '*':
-                    nquery = f'SELECT row_to_json({table}) FROM {table}' + where
-                else:
-                    nquery = f'SELECT row_to_json(row({what})' + where
-                if fetch == 'all':
-                    dbdata = await conn.fetch(nquery)
-                elif fetch == 'one':
-                    dbdata = await conn.fetchrow(nquery)
-            elif fetch == 'all':
+            #if fmt == 'dict':
+                #table = query.split('FROM')[1].split(' ')[1].strip()
+                #where = query.split(table)[1]
+                #what = query.split('SELECT')[1].split('FROM')[0].strip()
+                #if what == '*':
+                #    nquery = f'SELECT row_to_json({table}) FROM {table}' + where
+                #else:
+                #    nquery = f'SELECT row_to_json(row({what})' + where
+                #if fetch == 'all':
+                #    dbdata = await conn.fetch(nquery)
+                #elif fetch == 'one':
+                #    dbdata = await conn.fetchrow(nquery)
+            if fetch == 'all':
                 dbdata = await conn.fetch(query)
-            else:
+            elif fetch == 'one':
                 dbdata = await conn.fetchrow(query)
         except:
             log.error(f'Error in {db} database query {query}')
             await conn.close()
             return None
         if dbdata is not None:
-            if fmt == 'tuple' or fmt == 'dict':
-                log.debug(type(dbdata))
-                log.debug(dbdata)
-                return dbdata
-            else:
-                a = (query.split('FROM'))
-                if len(a) > 1:
-                    b = a[1].split(' ')
-                    table = b[1]
-                return formatdbdata(dbdata, table, qtype=fmt, db=db, single=single)
+            if fmt == 'tuple':
+                return tuple(dbdata)
+            elif fmt == 'dict':
+                return dict(dbdata)
+            elif fmt == 'count':
+                return len(dbdata)
+            elif fmt == 'list':
+                return list(tuple(dbdata))
+            elif fmt == 'string':
+                return dbstringformat(dbdata, single=single)
         else:
             return None
 
@@ -134,6 +134,397 @@ def glupdate(inst, ptype, text):
 
 def cleanstring(name):
     return name.replace('"', '').replace("'", "").replace("(", "").replace(")", "")
+
+
+@log.catch
+def dbstringformat(data, case='normal'):
+            pstring = ''
+            for each in data:
+                if pstring == '':
+                    if case == 'normal':
+                        pstring = '%s' % (each)
+                    elif case == 'title':
+                        pstring = '%s' % (each.title())
+                    elif case == 'capitalize':
+                        pstring = '%s' % (each.capitalize())
+                else:
+                    if case == 'normal':
+                        pstring = pstring + ', %s' % (each)
+                    elif case == 'title':
+                        pstring = pstring + ', %s' % (each.title())
+                    elif case == 'capitalize':
+                        pstring = pstring + ', %s' % (each.capitalize())
+            return pstring
+
+
+@log.catch
+def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):
+    if data is not None:
+        if qtype == 'tuple':
+            return data
+        elif qtype == 'count':
+            pcnt = 0
+            for each in data:
+                pcnt += 1
+            return pcnt
+        elif qtype == 'string':
+            pstring = ''
+            for each in data:
+                if pstring == '':
+                    if single:
+                        if case == 'normal':
+                            pstring = '%s' % (each[0])
+                        elif case == 'title':
+                            pstring = '%s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = '%s' % (each)
+                        elif case == 'title':
+                            pstring = '%s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each.capitalize())
+                else:
+                    if single:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each[0])
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each)
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each.capitalize())
+            return pstring
+        elif qtype == 'list':
+            plist = []
+            for each in data:
+                if single:
+                    if case == 'normal':
+                        plist.append(each[0])
+                    elif case == 'title':
+                        plist.append(each[0].title())
+                    elif case == 'capitalize':
+                        plist.append(each[0].capitalize())
+                else:
+                    plist.append(each)
+            return plist
+        elif qtype == 'dict':
+            clmndata = db_getcolumns(table, raw=True)
+            itern = 0
+            if type(data) is tuple:
+                nlist = {}
+                nlist = dict(zip(clmndata, data))
+                itern += 1
+            else:
+                nlist = []
+                for eeach in data:
+                    itern += 1
+                    nlist.append(dict(zip(clmndata, eeach)))
+            return nlist
+    else:
+        return None
+
+
+@log.catch
+def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):
+    if data is not None:
+        if qtype == 'tuple':
+            return data
+        elif qtype == 'count':
+            pcnt = 0
+            for each in data:
+                pcnt += 1
+            return pcnt
+        elif qtype == 'string':
+            pstring = ''
+            for each in data:
+                if pstring == '':
+                    if single:
+                        if case == 'normal':
+                            pstring = '%s' % (each[0])
+                        elif case == 'title':
+                            pstring = '%s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = '%s' % (each)
+                        elif case == 'title':
+                            pstring = '%s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each.capitalize())
+                else:
+                    if single:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each[0])
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each)
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each.capitalize())
+            return pstring
+        elif qtype == 'list':
+            plist = []
+            for each in data:
+                if single:
+                    if case == 'normal':
+                        plist.append(each[0])
+                    elif case == 'title':
+                        plist.append(each[0].title())
+                    elif case == 'capitalize':
+                        plist.append(each[0].capitalize())
+                else:
+                    plist.append(each)
+            return plist
+        elif qtype == 'dict':
+            clmndata = db_getcolumns(table, raw=True)
+            itern = 0
+            if type(data) is tuple:
+                nlist = {}
+                nlist = dict(zip(clmndata, data))
+                itern += 1
+            else:
+                nlist = []
+                for eeach in data:
+                    itern += 1
+                    nlist.append(dict(zip(clmndata, eeach)))
+            return nlist
+    else:
+        return None
+
+
+@log.catch
+def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):
+    if data is not None:
+        if qtype == 'tuple':
+            return data
+        elif qtype == 'count':
+            pcnt = 0
+            for each in data:
+                pcnt += 1
+            return pcnt
+        elif qtype == 'string':
+            pstring = ''
+            for each in data:
+                if pstring == '':
+                    if single:
+                        if case == 'normal':
+                            pstring = '%s' % (each[0])
+                        elif case == 'title':
+                            pstring = '%s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = '%s' % (each)
+                        elif case == 'title':
+                            pstring = '%s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each.capitalize())
+                else:
+                    if single:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each[0])
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each)
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each.capitalize())
+            return pstring
+        elif qtype == 'list':
+            plist = []
+            for each in data:
+                if single:
+                    if case == 'normal':
+                        plist.append(each[0])
+                    elif case == 'title':
+                        plist.append(each[0].title())
+                    elif case == 'capitalize':
+                        plist.append(each[0].capitalize())
+                else:
+                    plist.append(each)
+            return plist
+        elif qtype == 'dict':
+            clmndata = db_getcolumns(table, raw=True)
+            itern = 0
+            if type(data) is tuple:
+                nlist = {}
+                nlist = dict(zip(clmndata, data))
+                itern += 1
+            else:
+                nlist = []
+                for eeach in data:
+                    itern += 1
+                    nlist.append(dict(zip(clmndata, eeach)))
+            return nlist
+    else:
+        return None
+
+
+@log.catch
+def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):
+    if data is not None:
+        if qtype == 'tuple':
+            return data
+        elif qtype == 'count':
+            pcnt = 0
+            for each in data:
+                pcnt += 1
+            return pcnt
+        elif qtype == 'string':
+            pstring = ''
+            for each in data:
+                if pstring == '':
+                    if single:
+                        if case == 'normal':
+                            pstring = '%s' % (each[0])
+                        elif case == 'title':
+                            pstring = '%s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = '%s' % (each)
+                        elif case == 'title':
+                            pstring = '%s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each.capitalize())
+                else:
+                    if single:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each[0])
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each)
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each.capitalize())
+            return pstring
+        elif qtype == 'list':
+            plist = []
+            for each in data:
+                if single:
+                    if case == 'normal':
+                        plist.append(each[0])
+                    elif case == 'title':
+                        plist.append(each[0].title())
+                    elif case == 'capitalize':
+                        plist.append(each[0].capitalize())
+                else:
+                    plist.append(each)
+            return plist
+        elif qtype == 'dict':
+            clmndata = db_getcolumns(table, raw=True)
+            itern = 0
+            if type(data) is tuple:
+                nlist = {}
+                nlist = dict(zip(clmndata, data))
+                itern += 1
+            else:
+                nlist = []
+                for eeach in data:
+                    itern += 1
+                    nlist.append(dict(zip(clmndata, eeach)))
+            return nlist
+    else:
+        return None
+
+
+@log.catch
+def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='normal'):
+    if data is not None:
+        if qtype == 'tuple':
+            return data
+        elif qtype == 'count':
+            pcnt = 0
+            for each in data:
+                pcnt += 1
+            return pcnt
+        elif qtype == 'string':
+            pstring = ''
+            for each in data:
+                if pstring == '':
+                    if single:
+                        if case == 'normal':
+                            pstring = '%s' % (each[0])
+                        elif case == 'title':
+                            pstring = '%s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = '%s' % (each)
+                        elif case == 'title':
+                            pstring = '%s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = '%s' % (each.capitalize())
+                else:
+                    if single:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each[0])
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each[0].title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each[0].capitalize())
+                    else:
+                        if case == 'normal':
+                            pstring = pstring + ', %s' % (each)
+                        elif case == 'title':
+                            pstring = pstring + ', %s' % (each.title())
+                        elif case == 'capitalize':
+                            pstring = pstring + ', %s' % (each.capitalize())
+            return pstring
+        elif qtype == 'list':
+            plist = []
+            for each in data:
+                if single:
+                    if case == 'normal':
+                        plist.append(each[0])
+                    elif case == 'title':
+                        plist.append(each[0].title())
+                    elif case == 'capitalize':
+                        plist.append(each[0].capitalize())
+                else:
+                    plist.append(each)
+            return plist
+        elif qtype == 'dict':
+            clmndata = db_getcolumns(table, raw=True)
+            itern = 0
+            if type(data) is tuple:
+                nlist = {}
+                nlist = dict(zip(clmndata, data))
+                itern += 1
+            else:
+                nlist = []
+                for eeach in data:
+                    itern += 1
+                    nlist.append(dict(zip(clmndata, eeach)))
+            return nlist
+    else:
+        return None
 
 
 @log.catch
