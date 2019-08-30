@@ -10,7 +10,7 @@ import asyncio
 @log.catch
 async def asyncdbquery(query, fmt, fetch, db='sqldb', single=False):
     data = asyncio.create_task(llasyncdbquery(query, db, fetch, fmt, single))
-    return await data.result()
+    return await data
 
 
 @log.catch
