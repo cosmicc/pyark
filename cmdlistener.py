@@ -444,7 +444,7 @@ async def processtcdata(inst, tcdata):
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
     pexist = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', fetch='one')
-    if pexist != 0 and steamid != '':
+    if not pexist and steamid != '':
         welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, playername, inst))
         welcom.start()
     elif steamid != '':
