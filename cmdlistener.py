@@ -24,13 +24,12 @@ arewevoting = False
 
 
 @log.catch
-async def createtask(func):
-    async def function_wrapper(*args, **kwargs):
-        task = asyncio.create_task(func(*args, **kwargs))
-        while not task.done():
-            asyncio.sleep(0.0001)
-        return task.result()
-    return await function_wrapper
+async def asynctask(function, wait, *args, **kwargs):
+        task = asyncio.create_task(function(*args, **kwargs))
+        if wait:
+            return await task
+        else:
+            return True
 
 
 @log.catch
@@ -198,6 +197,11 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
         await asyncserverexec(cmdlist, 15)
 
 
+async def asyncgetlastvote(inst):
+    insts = dbquery(f"SELECT * FROM instances WHERE name = '{inst}'", 'dict', 'one')
+    return insts['lastdinowipe']
+
+
 def getlastvote(inst):
     flast = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     return ''.join(flast[0])
@@ -235,53 +239,54 @@ def setvote(whoasked, myvote):
             each[2] = myvote
 
 
-def getvote(whoasked):
+async def asyncsetvote(whoasked, myvote):
+    global votertable
     for each in votertable:
-        if each[0] == getsteamid(whoasked):
+        if each[0] == await asyncgetsteamid(whoasked):
+            each[2] = myvote
+
+
+async def asyncgetvote(whoasked):
+    for each in votertable:
+        if each[0] == await asyncgetsteamid(whoasked):
             return each[2]
     return 99
 
 
-async def castedvote(inst, whoasked, myvote):
+async def asynccastedvote(inst, whoasked, myvote):
     global arewevoting
     if not isvoting(inst):
-        subprocess.run('arkmanager rconcmd "ServerChat No vote is taking place now" @%s' % (inst), shell=True)
+        message = f'No vote is taking place now'
+        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 15)
     else:
-        pdata = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked))
-        if getvote(whoasked) == 99:
-            mtxt = 'Sorry, you are not eligible to vote in this round'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                           (getsteamid(whoasked), mtxt, inst), shell=True)
-        elif not pdata:
-            mtxt = 'Sorry, you are not eligible to vote. Tell an admin they need to update your name!'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                           (getsteamid(whoasked), mtxt, inst), shell=True)
-        elif getvote(whoasked) == 2:
-            mtxt = "You started the vote. you're assumed a YES vote."
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                           (getsteamid(whoasked), mtxt, inst), shell=True)
-        elif getvote(whoasked) == 1:
-            mtxt = 'You have already voted YES. you can only vote once.'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                           (getsteamid(whoasked), mtxt, inst), shell=True)
+        steamid = await asyncgetsteamid(whoasked)
+        if await asyncgetvote(whoasked) == 99:
+            message = 'Sorry, you are not eligible to vote in this round'
+            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+        elif not steamid:
+            message = 'Sorry, you are not eligible to vote. Tell an admin they need to update your name!'
+            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+        elif await asyncgetvote(whoasked) == 2:
+            message = "You started the vote. you're assumed a YES vote."
+            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+        elif await asyncgetvote(whoasked) == 1:
+            message = 'You have already voted YES. you can only vote once.'
+            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
         else:
             if myvote:
-                setvote(whoasked, 1)
-                mtxt = 'Your YES vote has been cast'
-                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                               (getsteamid(whoasked), mtxt, inst), shell=True)
+                await asyncsetvote(whoasked, 1)
+                message = 'Your YES vote has been cast'
+                await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
             else:
-                setvote(whoasked, 0)
-                mtxt = 'Your NO vote has been cast'
-                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" %
-                               (getsteamid(whoasked), mtxt, inst), shell=True)
+                await asyncsetvote(whoasked, 0)
+                message = 'Your NO vote has been cast'
+                await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
                 log.log('VOTE', f'Voting NO has won, NO wild dino wipe will be performed for {inst}')
-                await asyncio.sleep(1)
-                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
-                subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
-                writechat(inst, 'ALERT', f'### A wild dino wipe vote has failed with a NO vote from \
-{whoasked.capitalize()}', wcstamp())
                 arewevoting = False
+                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
+                await asyncserverexec(['arkmanager', 'rconcmd', f'{bcast}', f'@{inst}'], 15)
+                asyncio.create_task(asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has failed with a NO vote from \
+{whoasked.capitalize()}', wcstamp()))
 
 
 def votingpassed():
@@ -346,7 +351,7 @@ Wiping wild dinos now.', wcstamp())
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
-def voting(inst, whoasked):
+def votingthread(inst, whoasked):
     log.log('VOTE', f'A wild dino wipe vote has started for [{inst.title()}] by [{whoasked.title()}]')
     global lastvoter
     global votestarttime
@@ -391,27 +396,27 @@ def voting(inst, whoasked):
     log.debug(f'voting thread has ended on {inst}')
 
 
-def startvoter(inst, whoasked):
+async def asyncstartvoter(inst, whoasked):
     global instance
     if isvoting(inst):
-        subprocess.run('arkmanager rconcmd "ServerChat Voting has already started. cast your vote" @%s' %
-                       (inst), shell=True)
+        message = 'Voting has already started. cast your vote now'
+        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 15)
     elif Now() - float(getlastvote(inst)) < Secs['4hour']:          # 4 hours between wipes
         rawtimeleft = Secs['4hour'] - (Now() - float(getlastvote(inst)))
         timeleft = playedTime(rawtimeleft)
-        subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
-                       (timeleft, inst), shell=True)
+        message = f'You must wait {timeleft} until the next wild wipe vote can start'
+        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 15)
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 4 hour timer')
-    elif Now() - float(lastvoter) < Secs['10min']:      # 10 min between attempts
+    elif Now() - float(lastvoter) < Secs['10min']:                  # 10 min between attempts
         rawtimeleft = Secs['10min'] - (Now() - lastvoter)
         timeleft = playedTime(rawtimeleft)
-        subprocess.run('arkmanager rconcmd "ServerChat You must wait %s until next vote can start" @%s' %
-                       (timeleft, inst), shell=True)
+        message = f'You must wait {timeleft} until the next wild wipe vote can start'
+        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 15)
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 10 min timer')
     else:
         for each in range(numinstances):
             if instance[each]['name'] == inst:
-                instance[each]['votethread'] = threading.Thread(name='%s-voter' % inst, target=voting, args=(inst, whoasked))
+                instance[each]['votethread'] = threading.Thread(name='%s-voter' % inst, target=votingthread, args=(inst, whoasked))
                 instance[each]['votethread'].start()
 
 
@@ -615,7 +620,7 @@ async def playerjoin(line, inst):
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             mtxt = f'{player["playername"].title()} has joined the server'
             await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {mtxt}"', f'@{inst}'], 19)
-            await asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp())
+            asyncio.create_task(asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp()))
 
 
 @log.catch
@@ -675,8 +680,8 @@ async def asyncchatlineelsed(line, inst):
                 tstamp = dto.strftime('%m-%d %I:%M%p')
                 cmsg = trans_to_eng(cmsg)
                 log.log('CHAT', f'{inst} | {whoname} | {cmsg[2:]}')
-                await asyncwritechat(inst, whoname, cmsg.replace("'", ""), tstamp)
-                await asyncwritechatlog(inst, whoname, cmsg, tstamp)
+                asyncio.create_task(asyncwritechat(inst, whoname, cmsg.replace("'", ""), tstamp))
+                asyncio.create_task(asyncwritechatlog(inst, whoname, cmsg, tstamp))
 
 
 @log.catch
@@ -764,7 +769,7 @@ async def processline(minst, line):
                                                 dto = dto - tzfix
                                             tstamp = dto.strftime('%m-%d %I:%M%p')
                                             writeglobal(minst, whoname, cmsg)
-                                            await asyncwritechat('generalchat', whoname, cmsg, tstamp)
+                                            asyncio.create_task(asyncwritechat('generalchat', whoname, cmsg, tstamp))
                                         except:
                                             log.exception('could not parse date from chat')
                     except:
@@ -875,7 +880,7 @@ async def processline(minst, line):
 
                 elif incmd.startswith(('!vote', '!startvote', '!wipe')):
                     log.debug(f'Responding to a [!vote] request from [{whoasked.title()}] on [{minst.title()}]')
-                    startvoter(minst, whoasked)
+                    await asyncstartvoter(minst, whoasked)
 
                 elif incmd.startswith(('!agree', '!yes')):
                     log.debug(f'responding to YES vote on {minst} from {whoasked}')
