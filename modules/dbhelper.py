@@ -74,7 +74,7 @@ async def llasyncdbupdate(query, db):
         elif db == 'gamelog':
             conn = await asyncpg.connect(database='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     except:
-        log.critical('ERROR CONNECTING TO DATABASE SERVER')
+        log.exception('ERROR CONNECTING TO DATABASE SERVER')
         await conn.close()
         asyncio.sleep(60)
         return False
@@ -86,7 +86,7 @@ async def llasyncdbupdate(query, db):
             else:
                 await conn.execute(query)
         except:
-            log.error(f'Error in Database update {query}')
+            log.exception(f'Error in Database update {query}')
             await conn.close()
             return False
         await conn.close()
