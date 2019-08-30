@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3.7
 
 from modules.configreader import instance, hstname, jsonlogfile, colorlogfile, jsondebugfile, critlogfile, loglevel, instr
 from modules.dbhelper import dbquery, dbupdate
@@ -144,7 +144,7 @@ def checkpyark():
         pyarkstatus = 'N/A'
         if psutil.pid_exists(pyarkpid):
             pyarkproc = psutil.Process(pid=pyarkpid)
-            if pyarkproc.name() == 'pyark':
+            if pyarkproc.name() == 'python3.7':
                 pyarkstatus = pyarkproc.status()
                 log.trace(f'Pyark process [{pyarkpid}] is running with status [{pyarkstatus}]')
             else:

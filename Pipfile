@@ -1,30 +1,33 @@
 [[source]]
-url = "https://pypi.org/simple"
-verify_ssl = true
 name = "pypi"
-
-[packages]
-numpy = "*"
-flask = "*"
-flask-restplus = "*"
-pandas = "*"
-gitpython = "*"
-colored = "*"
-"psycopg2" = "*"
-py-time-between = "*"
-discord = "*"
-"psycopg2-binary" = "*"
-flask-login = "*"
-sqlalchemy = "*"
-wtforms = "*"
-flask-wtf = "*"
-flask-security = "*"
-bcrypt = "*"
-active-alchemy = "*"
-flask-sqlalchemy = "*"
-psutil = "*"
+url = "https://pypi.org/simple"
+verify_ssl = true 
 
 [dev-packages]
 
+[packages]
+flask = "*"
+flask-restplus = "*"
+numpy = "*"
+pandas = "*"
+psycopg2-binary = "*"
+loguru = "*"
+requests = "*"
+psutil = "*"
+py-time-between = "*"
+discord-py = "*"
+googletrans = "*"
+iso-639 = "*"
+uvloop = "*"
+gitpython = "*"
+flask-sqlalchemy = "*"
+flask-security = "*"
+flask-socketio = "*"
+ansi2html = "*"
+colored = "*"
+pycountry = "*"
+pylzma = "*"
+eventlet = "*"
+
 [requires]
-python_version = "3.6"
+python_version = "3.7"
