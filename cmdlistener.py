@@ -77,9 +77,9 @@ def resptimeleft(inst, whoasked):
 
 
 async def asyncgetlastseen(seenname):
-    player = await asyncdbquery("SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
+    player = await asyncdbquery("SELECT * FROM players WHERE playername = '{seenname}'", 'dict', 'one')
     if not player:
-        return 'no player found with that name'
+        return 'No player found with that name'
     else:
         plasttime = elapsedTime(Now(), float(player['lastseen']))
         if plasttime != 'now':
