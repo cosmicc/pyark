@@ -8,7 +8,6 @@ from modules.servertools import serverexec
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
-import signal
 import random
 import subprocess
 import threading
@@ -892,18 +891,6 @@ async def checkcommands(inst, dtime):
 
 @log.catch
 def clisten(inst, dtime):
-    def sig_handler(signal, frame):
-        log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
-        asyncloop = asyncio.get_running_loop()
-        asyncloop.stop()
-        asyncloop.close()
-        os._exit(0)
-
-    signal.signal(signal.SIGTERM, sig_handler)
-    signal.signal(signal.SIGHUP, sig_handler)
-    signal.signal(signal.SIGINT, sig_handler)
-    signal.signal(signal.SIGQUIT, sig_handler)
-
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
