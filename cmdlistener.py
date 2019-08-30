@@ -931,5 +931,5 @@ def clisten(inst, dtime):
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncloop = asyncio.set_event_loop(None)
     asyncloop = asyncio.new_event_loop()
-    asyncloop.run(checkcommands(inst, dtime))
+    asyncio.run(checkcommands(inst, dtime))
     asyncloop.close()
