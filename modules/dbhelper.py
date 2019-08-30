@@ -54,17 +54,15 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
 
 @log.catch
 async def asyncdbupdate(query, db='sqldb', fetch='all', fmt='tuple', single=False):
-    asyncloop = asyncio.get_running_loop()
-    data = asyncloop.create_task(llasyncdbupdate(query, db))
-    return await data
+    asyncio.create_task(llasyncdbupdate(query, db))
+    return True
 
 
 @log.catch
 async def asyncglupdate(inst, ptype, text):
-    asyncloop = asyncio.get_running_loop()
     query = (inst, ptype, text)
-    data = asyncloop.create_task(llasyncdbupdate(query, 'gamelog'))
-    return await data
+    asyncio.create_task(llasyncdbupdate(query, 'gamelog'))
+    return True
 
 
 @log.catch
