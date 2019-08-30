@@ -29,6 +29,7 @@ pycountry = "*"
 eventlet = "*"
 asyncpg = "*"
 sh = "*"
+aiofiles = "*"
 
 [requires]
 python_version = "3.7"

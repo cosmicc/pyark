@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from modules.configreader import instance, numinstances
-from modules.dbhelper import dbquery, dbupdate, cleanstring, glupdate, asyncglupdate, asyncdbquery, asyncdbupdate
-from modules.players import getplayer, newplayer
+from modules.dbhelper import dbquery, dbupdate, cleanstring, asyncglupdate, asyncdbquery, asyncdbupdate
+from modules.players import newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal, asyncgetinstancelist
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from modules.servertools import serverexec
@@ -13,14 +13,22 @@ import subprocess
 import threading
 import os
 import asyncio
+import aiofiles
 from gtranslate import trans_to_eng
 import uvloop
-from shlex import quote
 
 lastvoter = 0.1
 votertable = []
 votestarttime = Now()
 arewevoting = False
+
+
+@log.catch
+def createtask(func):
+    def function_wrapper(*args, **kwargs):
+        asyncloop = asyncio.get_running_loop()
+        asyncloop.create_task(func(*args, **kwargs))
+    return function_wrapper
 
 
 @log.catch
@@ -81,13 +89,14 @@ def getsteamid(whoasked):
 async def asyncresptimeleft(inst, whoasked):
     insts = await asyncdbquery(f"SELECT * FROM instances WHERE name = '{inst}'", 'dict', 'one')
     if insts['needsrestart'] == 'True':
-        message = f'Server is restarting in {insts["restartcountdown"]} minutes'
+        message = f'{inst.title()} is restarting in {insts["restartcountdown"]} minutes'
         await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 19)
     else:
-        message = f'Server is not pending a restart'
+        message = f'{inst.title()} is not pending a restart'
         await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 19)
 
 
+@createtask
 async def asyncgetlastseen(seenname):
     player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
     if not player:
@@ -107,7 +116,7 @@ async def asyncrespmyinfo(inst, whoasked):
         player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{whoasked}' ORDER BY lastseen DESC", 'dict', 'one')
         ptime = playedTime(player['playedtime'])
         steamid = player['steamid']
-        message = f"Your current reward points: {player['rewardpoints'] + player['transferpoints']}.\nYour total play time is {ptime}\nYour home server is {player['homeserver'].capitalize()}"
+        message = f"Your current reward points: {player['rewardpoints'] + player['transferpoints']}\nYour total play time is {ptime}\nYour home server is {player['homeserver'].capitalize()}"
         await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
 
 
@@ -448,17 +457,17 @@ def linker(minst, whoasked):
 
 
 @log.catch
-def writechatlog(inst, whos, msg, tstamp):
-    isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos, ), fetch='one')
-    if isindb:
+async def asyncwritechatlog(inst, whos, msg, tstamp):
+    steamid = await asyncgetsteamid(whos)
+    if steamid:
         clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
         if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
             log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
             os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
             os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
-        with open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
-            f.write(clog)
-        f.close()
+        with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
+            await f.write(clog)
+        await f.close()
 
 
 @log.catch
@@ -633,7 +642,7 @@ async def playerleave(line, inst):
 
 
 @log.catch
-def chatlineelsed(line, inst):
+async def asyncchatlineelsed(line, inst):
     log.debug(f'chatline elsed: {line}')
     rawline = line.split('(')
     if len(rawline) > 1:
@@ -650,8 +659,8 @@ def chatlineelsed(line, inst):
                 tstamp = dto.strftime('%m-%d %I:%M%p')
                 cmsg = trans_to_eng(cmsg)
                 log.log('CHAT', f'{inst} | {whoname} | {cmsg[2:]}')
-                writechat(inst, whoname, cmsg.replace("'", ""), tstamp)
-                writechatlog(inst, whoname, cmsg, tstamp)
+                await asyncwritechat(inst, whoname, cmsg.replace("'", ""), tstamp)
+                await asyncwritechatlog(inst, whoname, cmsg, tstamp)
 
 
 @log.catch
@@ -883,14 +892,14 @@ async def processline(minst, line):
                     lastlotto(minst, whoasked)
 
                 elif incmd.startswith('!'):
-                    lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
+                    steamid = await asyncgetsteamid(whoasked)
                     log.warning(f'Invalid command request from [{whoasked.title()}] on [{minst.title()}]')
-                    msg = "Invalid command. Try !help"
-                    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
+                    message = "Invalid command. Try !help"
+                    await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{minst}'], 19)
                 else:
-                    chatlineelsed(line, inst)
+                    await asyncchatlineelsed(line, inst)
             else:
-                chatlineelsed(line, inst)
+                await asyncchatlineelsed(line, inst)
 
 
 @log.catch
