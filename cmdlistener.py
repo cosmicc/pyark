@@ -149,6 +149,8 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
             potime = Secs['day']
         if inst not in await asyncgetinstancelist():
             message = f'{inst.capitalize()} is not a valid server'
+            cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
+            await asyncserverexec(cmdlist, 15)
         else:
             players = await asyncdbquery(f"SELECT * FROM players WHERE server = '{inst}'", 'tuple', 'all')
             pcnt = 0
@@ -163,16 +165,21 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
                         plist = plist + ', %s' % (player['playername'].title())
             if pcnt != 0:
                 if crnt == 1:
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
                     message = f'{inst.capitalize()} has {pcnt} players online: {plist}'
+                    await asyncserverexec(cmdlist, 15)
                 elif crnt == 2:
                     message = f'{inst.capitalize()} has had {pcnt} players in the last hour: {plist}'
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
+                    await asyncserverexec(cmdlist, 15)
                 elif crnt == 3:
                     message = f'{inst.capitalize()} has had {pcnt} players in the last day: {plist}'
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
+                    await asyncserverexec(cmdlist, 15)
             if pcnt == 0 and not filt:
                 message = f'{inst.capitalize()} has no players online.'
-        if message:
-            cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
-            await asyncserverexec(cmdlist, 15)
+                cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
+                await asyncserverexec(cmdlist, 15)
     except:
         log.exception()
         message = f'Server {inst.capitalize()} does not exist.'
