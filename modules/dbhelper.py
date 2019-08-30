@@ -29,9 +29,9 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
     else:
         try:
             if fetch == 'all':
-                dbdata = await conn.fetchall()
+                dbdata = await conn.fetch(query)
             elif fetch == 'one':
-                dbdata = await conn.fetchrow()
+                dbdata = await conn.fetchrow(query)
         except:
             log.error(f'Error in {db} database query {query}')
             await conn.close()
