@@ -9,9 +9,8 @@ import asyncio
 
 @log.catch
 async def asyncdbquery(query, fmt, fetch, db='sqldb', single=False):
-    asyncloop = asyncio.get_running_loop()
-    data = asyncloop.create_task(llasyncdbquery(query, db, fetch, fmt, single))
-    return await data
+    data = asyncio.create_task(llasyncdbquery(query, db, fetch, fmt, single))
+    return await data.result()
 
 
 @log.catch

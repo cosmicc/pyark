@@ -24,7 +24,7 @@ arewevoting = False
 
 
 @log.catch
-async def async_create_as_task(func):
+async def createtask(func):
     async def function_wrapper(*args, **kwargs):
         task = asyncio.create_task(func(*args, **kwargs))
         while not task.done():
@@ -98,7 +98,7 @@ async def asyncresptimeleft(inst, whoasked):
         await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 19)
 
 
-@async_create_as_task
+@log.catch
 async def asyncgetlastseen(seenname):
     player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
     if not player:
