@@ -587,7 +587,7 @@ async def playerjoin(line, inst):
         if Now() - player['lastseen'] > 250:
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             mtxt = f'{player["playername"].title()} has joined the server'
-            await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {mtxt}"', f'@{inst}'], nice=19, null=True)
+            await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {mtxt}"', f'@{inst}'], 19)
             await asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp())
 
 
