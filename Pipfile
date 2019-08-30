@@ -27,6 +27,7 @@ ansi2html = "*"
 colored = "*"
 pycountry = "*"
 eventlet = "*"
+asyncpg = "*"
 
 [requires]
 python_version = "3.7"

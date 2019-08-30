@@ -2,7 +2,117 @@ from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_
 from datetime import datetime
 from loguru import logger as log
 import psycopg2
+import asyncpg
 from time import sleep
+import asyncio
+
+
+@log.catch
+async def asyncdbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
+    data = asyncio.create.task(llasyncdbquery(query, db, fetch, fmt, single))
+    return await data
+
+
+@log.catch
+async def llasyncdbquery(query, db, fetch, fmt, single):
+    try:
+        if db == 'sqldb':
+            conn = await asyncpg.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        elif db == 'statsdb':
+            conn = await asyncpg.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+    except:
+        log.critical('ERROR CONNECTING TO DATABASE SERVER')
+        await conn.close()
+        asyncio.sleep(60)
+        return None
+    else:
+        try:
+            if fetch == 'all':
+                dbdata = await conn.fetchall()
+            elif fetch == 'one':
+                dbdata = await conn.fetchrow()
+        except:
+            log.error(f'Error in {db} database query {query}')
+            await conn.close()
+            return None
+        if dbdata is not None:
+            if fmt == 'tuple':
+                return dbdata
+            else:
+                a = (query.split('FROM'))
+                if len(a) > 1:
+                    b = a[1].split(' ')
+                    table = b[1]
+                return formatdbdata(dbdata, table, qtype=fmt, db=db, single=single)
+        else:
+            return None
+
+
+@log.catch
+async def asyncdbupdate(query, db='sqldb', fetch='all', fmt='tuple', single=False):
+    data = asyncio.create.task(llasyncdbupdate(query, db))
+    return await data
+
+
+@log.catch
+async def asyncglupdate(inst, ptype, text):
+    query = (inst, ptype, text)
+    data = asyncio.create.task(llasyncdbupdate(query, 'gamelog'))
+    return await data
+
+
+@log.catch
+async def llasyncdbupdate(query, db):
+    try:
+        if db == 'sqldb':
+            conn = await asyncpg.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        elif db == 'statsdb':
+            conn = await asyncpg.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        elif db == 'gamelog':
+            conn = await asyncpg.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+    except:
+        log.critical('ERROR CONNECTING TO DATABASE SERVER')
+        await conn.close()
+        asyncio.sleep(60)
+        return False
+    else:
+        try:
+            if db == 'gamelog':
+                sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES (%s, %s, %s)"
+                await conn.execute(sql, (query[0].lower(), query[1].upper(), query[2]))
+            else:
+                await conn.execute(query)
+        except:
+            log.error(f'Error in Database update {query}')
+            await conn.close()
+            return False
+        await conn.close()
+        return True
+
+
+@log.catch
+def glupdate(inst, ptype, text):
+    try:
+        conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        c = conn.cursor()
+    except psycopg2.OperationalError:
+        log.critical('ERROR CONNECTING TO DATABASE SERVER')
+        sleep(60)
+        c.close()
+        conn.close()
+        return False
+    except:
+        log.error(f'Error in database init: gamelogdb - {text}')
+        c.close()
+        conn.close()
+        return False
+    else:
+        sql = "insert into gamelog (instance, loglevel, logline) values (%s, %s, %s)"
+        c.execute(sql, (inst.lower(), ptype.upper(), text))
+        conn.commit()
+        return True
+        c.close()
+        conn.close()
 
 
 def cleanstring(name):

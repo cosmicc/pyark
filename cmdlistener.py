@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-from modules.configreader import instance, numinstances, psql_user, psql_pw, psql_host, psql_port
-from modules.dbhelper import dbquery, dbupdate, cleanstring
+from modules.configreader import instance, numinstances
+from modules.dbhelper import dbquery, dbupdate, cleanstring, glupdate, asyncglupdate
 from modules.players import getplayer, newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
@@ -15,7 +15,6 @@ import threading
 import os
 import asyncio
 from gtranslate import trans_to_eng
-import psycopg2
 import uvloop
 from shlex import quote
 
@@ -36,30 +35,6 @@ async def asyncserverexec(cmdlist, nice):
     log.debug(f'server rcon process completed [{cmdstring}]')
     return 0
 
-
-@log.catch
-def glupdate(inst, ptype, text):
-    try:
-        conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        c = conn.cursor()
-    except psycopg2.OperationalError:
-        log.critical('ERROR CONNECTING TO DATABASE SERVER')
-        sleep(60)
-        c.close()
-        conn.close()
-        return False
-    except:
-        log.error(f'Error in database init: gamelogdb - {text}')
-        c.close()
-        conn.close()
-        return False
-    else:
-        sql = "insert into gamelog (instance, loglevel, logline) values (%s, %s, %s)"
-        c.execute(sql, (inst.lower(), ptype.upper(), text))
-        conn.commit()
-        return True
-        c.close()
-        conn.close()
 
 
 def writechat(inst, whos, msg, tstamp):
@@ -690,7 +665,7 @@ async def processline(minst, line):
     elif line.find('joined this ARK!') != -1:
         playerjoin(line, minst)
     elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
-        glupdate(inst, 'ADMIN', line.replace('"', '').strip())
+        await asyncglupdate(inst, 'ADMIN', line.replace('"', '').strip())
     elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
         glupdate(inst, 'DEMO', line.replace('"', '').strip())
     elif line.find('released:') != -1:
