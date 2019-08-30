@@ -29,14 +29,14 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
     else:
         log.debug(query)
         try:
-            if fmt == 'count' or fmt == 'exists':
+            if fmt == 'exists':
                 table = query.split('FROM')[1].split(' ')[1]
                 where = query.split(table)[1]
                 nquery = f"SELECT COUNT(*) FROM {table}" + where
                 dbdata = await conn.fetch(nquery)
             elif fetch == 'one':
                 dbdata = await conn.fetchrow(query)
-            elif fetch == 'all':
+            elif fetch == 'all' or fmt == "count":
                 dbdata = await conn.fetch(query)
         except:
             log.exception(f'Error in {db} database query {query}')
