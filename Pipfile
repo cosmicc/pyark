@@ -26,7 +26,6 @@ flask-socketio = "*"
 ansi2html = "*"
 colored = "*"
 pycountry = "*"
-pylzma = "*"
 eventlet = "*"
 
 [requires]
