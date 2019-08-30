@@ -44,7 +44,7 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
             return None
         log.debug(dbdata)
         if dbdata is not None:
-            if fmt == 'exists':
+            if fmt == 'exist':
                 log.debug(f'exists: {dbdata}')
                 return dbdata
             if fmt == 'count':
