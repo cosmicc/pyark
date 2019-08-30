@@ -621,9 +621,7 @@ def leavingplayerthread(player, inst):
 @log.catch
 async def playerleave(line, inst):
     newline = line[:-15].split(':')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE homeserver = 'crystal'", 'count', 'all')
-    log.debug(f'player count: {player}')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'count', 'one')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', 'one')
     if player:
         log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayerthread, args=(player, inst))

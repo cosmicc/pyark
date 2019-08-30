@@ -38,12 +38,13 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
             return None
         if dbdata is not None:
             if fmt == 'count':
-                log.debug(f'count: {len(dbdata)}')
                 return len(dbdata)
             elif fmt == 'tuple':
                 return tuple(dbdata)
-            elif fmt == 'dict':
+            elif fmt == 'dict' and fetch == 'one':
                 return dict(dbdata)
+            elif fmt == 'dict' and fetch == 'all':
+                return dbdata
             elif fmt == 'list':
                 return list(tuple(dbdata))
             elif fmt == 'string':
