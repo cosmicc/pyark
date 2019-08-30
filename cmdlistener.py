@@ -76,16 +76,16 @@ def resptimeleft(inst, whoasked):
         subprocess.run('arkmanager rconcmd "ServerChat Server is not pending a restart" @%s' % (inst), shell=True)
 
 
-def getlastseen(seenname):
-    flast = dbquery("SELECT * FROM players WHERE playername = '%s'" % (seenname, ), fetch='one')
-    if not flast:
+async def asyncgetlastseen(seenname):
+    player = await asyncdbquery("SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
+    if not player:
         return 'no player found with that name'
     else:
-        plasttime = elapsedTime(Now(), float(flast[2]))
+        plasttime = elapsedTime(Now(), float(player['lastseen']))
         if plasttime != 'now':
-            return f'{seenname.capitalize()} was last seen {plasttime} ago on {flast[3]}'
+            return f'{player["playername"].title()} was last seen {plasttime} ago on {player["server"]}'
         else:
-            return f'{seenname.capitalize()} is online now on {flast[3]}'
+            return f'{player["playername"].title()} is online now on {player["server"]}'
 
 
 def respmyinfo(inst, whoasked):
@@ -95,13 +95,13 @@ def respmyinfo(inst, whoasked):
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 
-def gettimeplayed(seenname):
-    flast = dbquery("SELECT * FROM players WHERE playername = '%s'" % (seenname,), fetch='one')
-    if not flast:
-        return 'No player found'
+async def asyncgettimeplayed(seenname):
+    player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
+    if not player:
+        return 'No player found with that name'
     else:
-        plasttime = playedTime(float(flast[4]))
-        return f'{seenname.capitalize()} total playtime is {plasttime} on {flast[3]}'
+        plasttime = playedTime(float(player['playedtime']))
+        return f"""{player["playername"].title()}'s total playtime is {plasttime} on {player["server"]}"""
 
 
 def gettip():
@@ -761,7 +761,7 @@ async def processline(minst, line):
                     lsnname = rawseenname[2].split('!lastseen')
                     if len(lsnname) > 1:
                         seenname = lsnname[1].strip().lower()
-                        message = getlastseen(seenname)
+                        message = await asyncgetlastseen(seenname)
                         log.log('CMD', f'Responding to a [!lastseen] request for [{seenname.title()}] from [{orgname.title()}] on [{minst.title()}]')
                     else:
                         message = f'You must specify a player name to search'
@@ -775,10 +775,11 @@ async def processline(minst, line):
                     lsnname = rawseenname[2].split('!playedtime')
                     seenname = lsnname[1].strip().lower()
                     if lsnname:
-                        lpt = gettimeplayed(seenname)
+                        message = await asyncgettimeplayed(seenname)
                     else:
-                        lpt = gettimeplayed(whoasked)
-                    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lpt, minst), shell=True)
+                        message = await asyncgettimeplayed(whoasked)
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
+                    await asyncserverexec(cmdlist, 15)
                     log.log('CMD', f'Responding to a [!playedtime] request for [{whoasked.title()}] on [{minst.title()}]')
 
                 elif incmd.startswith(('!recent', '!whorecent', '!lasthour')):
