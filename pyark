@@ -193,7 +193,7 @@ def main():
         inst = instance[each]['name']
         instance[each]['kickthread'] = Thread(name='%s-kicker' % inst, target=kicker, args=(inst, 5), daemon=True)
         instance[each]['kickthread'].start()
-        instance[each]['cmdthread'] = Process(name='%s-cmdlistener' % inst, target=clisten, args=(inst, 2), daemon=True)
+        instance[each]['cmdthread'] = Thread(name='%s-cmdlistener' % inst, target=clisten, args=(inst, 2), daemon=True)
         instance[each]['cmdthread'].start()
         instance[each]['gchatthread'] = Thread(name='%s-gchatrelay' % inst, target=gchatrelay, args=(inst, 5), daemon=True)
         instance[each]['gchatthread'].start()
