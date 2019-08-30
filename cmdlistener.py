@@ -77,7 +77,7 @@ def resptimeleft(inst, whoasked):
 
 
 async def asyncgetlastseen(seenname):
-    player = await asyncdbquery("SELECT * FROM players WHERE playername = '{seenname}'", 'dict', 'one')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
     if not player:
         return 'No player found with that name'
     else:
