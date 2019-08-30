@@ -110,17 +110,16 @@ def gettip():
     return tip['tip']
 
 
-def getserverlist():
-    newlist = []
-    flast = dbquery("SELECT name FROM instances")
-    for each in flast:
-        newlist.append(each[0])
-    return newlist
+@log.catch
+async def asyncgetserverlist():
+    names = await asyncdbquery("SELECT name FROM instances", 'tuple', 'all')
+    return names
 
 
-def whoisonlinewrapper(inst, oinst, whoasked, crnt):
+@log.catch
+async def whoisonlinewrapper(inst, oinst, whoasked, crnt):
     if oinst == inst:
-        slist = getserverlist()
+        slist = await asyncgetserverlist()
         for each in slist:
             whoisonline(each, oinst, whoasked, True, crnt)
     else:
@@ -788,7 +787,7 @@ async def processline(minst, line):
                     else:
                         ninst = minst
                     log.log('CMD', f'Responding to a [!recent] request for [{whoasked.title()}] on [{minst.title()}]')
-                    whoisonlinewrapper(ninst, minst, whoasked, 2)
+                    await whoisonlinewrapper(ninst, minst, whoasked, 2)
 
                 elif incmd.startswith(('!today', '!lastday')):
                     rawline = line.split(':')
@@ -798,7 +797,7 @@ async def processline(minst, line):
                     else:
                         ninst = minst
                     log.log('CMD', f'Responding to a [!today] request for [{whoasked.title()}] on [{minst.title()}]')
-                    whoisonlinewrapper(ninst, minst, whoasked, 3)
+                    await whoisonlinewrapper(ninst, minst, whoasked, 3)
 
                 elif incmd.startswith(('!tip', '!justthetip')):
                     log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
@@ -817,7 +816,7 @@ async def processline(minst, line):
                     else:
                         ninst = minst
                     log.log('CMD', f'Responding to a [!who] request for [{whoasked.title()}] on [{minst.title()}]')
-                    whoisonlinewrapper(ninst, minst, whoasked, 1)
+                    await whoisonlinewrapper(ninst, minst, whoasked, 1)
 
                 elif incmd.startswith(('!myhome', '!transfer', '!home', '!sethome')):
                     rawline = line.split(':')
