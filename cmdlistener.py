@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from modules.configreader import instance, numinstances
-from modules.dbhelper import dbquery, dbupdate, cleanstring, glupdate, asyncglupdate
+from modules.dbhelper import dbquery, dbupdate, cleanstring, glupdate, asyncglupdate, asyncdbquery, asyncdbupdate
 from modules.players import getplayer, newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
@@ -34,6 +34,17 @@ async def asyncserverexec(cmdlist, nice):
     await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
     log.debug(f'server rcon process completed [{cmdstring}]')
     return 0
+
+
+async def asyncwritechat(inst, whos, msg, tstamp):
+    isindb = False
+    if whos != 'ALERT':
+        isindb = await asyncdbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
+        if isindb:
+            await asyncdbupdate("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')""" % (inst, whos, msg.replace("'", ""), tstamp))
+
+    elif whos == "ALERT":
+        await asyncdbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
 def writechat(inst, whos, msg, tstamp):
@@ -570,21 +581,21 @@ def wglog(minst, line):
 
 
 @log.catch
-def playerjoin(line, inst):
+async def playerjoin(line, inst):
     newline = line[:-17].split(':')
-    player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
+    player = await asyncdbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
     if player:
         steamid = player['steamid']
-        dbupdate(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
+        await asyncdbupdate(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
         if Now() - player['lastseen'] > 250:
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             mtxt = f'{player["playername"].title()} has joined the server'
-            serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
-            writechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp())
+            await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {mtxt}"', f'@{inst}'], nice=19, null=True)
+            await asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp())
 
 
 @log.catch
-def leavingplayer(player, inst):
+def leavingplayerthread(player, inst):
     log.debug(f'Thread started for leaving player [{player["playername"].title()}] on [{inst.title()}]')
     timerstart = Now()
     killthread = False
@@ -611,12 +622,12 @@ def leavingplayer(player, inst):
 
 
 @log.catch
-def playerleave(line, inst):
+async def playerleave(line, inst):
     newline = line[:-15].split(':')
-    player = dbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
+    player = await asyncdbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
     if player:
         log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
-        leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayer, args=(player, inst))
+        leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayerthread, args=(player, inst))
         leaving.start()
     else:
         log.error(f'Player with steam name [{newline[1].strip()}] was not found while leaving server')
@@ -660,9 +671,9 @@ async def processline(minst, line):
         if 'SteamID' in tcdata:
             processtcdata(minst, tcdata)
     elif line.find('left this ARK!') != -1:
-        playerleave(line, minst)
+        await playerleave(line, minst)
     elif line.find('joined this ARK!') != -1:
-        playerjoin(line, minst)
+        await playerjoin(line, minst)
     elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
         await asyncglupdate(inst, 'ADMIN', line.replace('"', '').strip())
     elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
