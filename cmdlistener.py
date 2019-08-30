@@ -726,7 +726,6 @@ async def processline(minst, line):
                                             await asyncwritechat('generalchat', whoname, cmsg, tstamp)
                                         except:
                                             log.exception('could not parse date from chat')
-                                else:
                     except:
                         log.exception('Critical Error in global chat writer!')
 
