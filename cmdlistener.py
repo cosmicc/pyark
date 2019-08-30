@@ -563,20 +563,6 @@ def lottery(whoasked, lchoice, inst):
         subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg, inst), shell=True)
 
 
-'''
-def wglog(minst, line):
-    if not os.path.exists(f'/home/ark/shared/logs/{minst}'):
-        log.error(f'Log directory /home/ark/shared/logs/{minst} does not exist! creating')
-        os.mkdir(f'/home/ark/shared/logs/{minst}', 0o777)
-        os.chown(f'/home/ark/shared/logs/{minst}', 1001, 1005)
-    with open(f"/home/ark/shared/logs/{minst}/game.log", "at") as f:
-        lobber = line.replace('"', '').strip()
-        if lobber != '':
-            f.write(f"""{line.replace('"','').strip()}\n""")
-    f.close()
-'''
-
-
 @log.catch
 async def playerjoin(line, inst):
     newline = line[:-17].split(':')
@@ -741,27 +727,32 @@ async def processline(minst, line):
                                         except:
                                             log.exception('could not parse date from chat')
                                 else:
-                                    subprocess.run("""arkmanager rconcmd "ServerChat Commands: You didn't supply a message \
-        to send to all servers" @%s""" % (minst), shell=True)
                     except:
                         log.exception('Critical Error in global chat writer!')
+
                 elif incmd.startswith(('/kit', '!kit')):
                     log.log('CMD', f'Responding to a kit request from [{whoasked.title()}] on [{minst.title()}]')
-                    msg = f'To view kits you must make a level 1 rewards vault and hang it on a wall or foundation. Free starter items and over 80 kits available. !help for more commands'
-                    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg, inst), shell=True)
+                    message = f'To view kits you must make a level 1 rewards vault and hang it on a wall or foundation. Free starter items and over 80 kits available. !help for more commands'
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
+                    await asyncserverexec(cmdlist, 15)
+
                 elif incmd.startswith('/'):
-                    msg = f'Commands in this cluster start with a ! (Exclimation Mark)  Type !help for a list of commands'
-                    subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (msg, inst), shell=True)
+                    message = f'Commands in this cluster start with a ! (Exclimation Mark)  Type !help for a list of commands'
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
+                    await asyncserverexec(cmdlist, 15)
+
                 elif incmd.startswith(('!lastdinowipe', '!lastwipe')):
                     lastwipe = elapsedTime(Now(), getlastwipe(minst))
-                    subprocess.run('arkmanager rconcmd "ServerChat Last wild dino wipe was %s ago" @%s' %
-                                   (lastwipe, minst), shell=True)
+                    message = f'Last wild dino wipe was {lastwipe} ago'
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
+                    await asyncserverexec(cmdlist, 15)
                     log.log('CMD', f'Responding to a [!lastwipe] request from [{whoasked.title()}] on [{minst.title()}]')
 
                 elif incmd.startswith('!lastrestart'):
                     lastrestart = elapsedTime(Now(), getlastrestart(minst))
-                    subprocess.run('arkmanager rconcmd "ServerChat Last server restart was %s ago" @%s' %
-                                   (lastrestart, minst), shell=True)
+                    message = f'Last server restart was {lastrestart} ago'
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
+                    await asyncserverexec(cmdlist, 15)
                     log.log('CMD', f'Responding to a [!lastrestart] request from [{whoasked.title()}] on [{minst.title()}]')
 
                 elif incmd.startswith('!lastseen'):
@@ -770,13 +761,13 @@ async def processline(minst, line):
                     lsnname = rawseenname[2].split('!lastseen')
                     if len(lsnname) > 1:
                         seenname = lsnname[1].strip().lower()
-                        lsn = getlastseen(seenname)
-                        subprocess.run('arkmanager rconcmd "ServerChat %s" @%s' % (lsn, minst), shell=True)
+                        message = getlastseen(seenname)
                         log.log('CMD', f'Responding to a [!lastseen] request for [{seenname.title()}] from [{orgname.title()}] on [{minst.title()}]')
                     else:
-                        subprocess.run('arkmanager rconcmd "ServerChat You must specify a player name to search" @%s' %
-                                       (minst), shell=True)
+                        message = f'You must specify a player name to search'
                         log.log('CMD', f'Responding to a invalid [!lastseen] request from [{orgname.title()}] on [{minst.title()}]')
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
+                    await asyncserverexec(cmdlist, 15)
 
                 elif incmd.startswith('!playedtime'):
                     rawseenname = line.split(':')
