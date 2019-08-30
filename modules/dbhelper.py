@@ -29,42 +29,38 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
     else:
         log.debug(query)
         try:
-            #if fmt == 'dict':
-                #table = query.split('FROM')[1].split(' ')[1].strip()
-                #where = query.split(table)[1]
-                #what = query.split('SELECT')[1].split('FROM')[0].strip()
-                #if what == '*':
-                #    nquery = f'SELECT row_to_json({table}) FROM {table}' + where
-                #else:
-                #    nquery = f'SELECT row_to_json(row({what})' + where
-                #if fetch == 'all':
-                #    dbdata = await conn.fetch(nquery)
-                #elif fetch == 'one':
-                #    dbdata = await conn.fetchrow(nquery)
-            if fetch == 'all':
-                dbdata = await conn.fetch(query)
+            if fmt == 'count' or fmt == 'exists':
+                table = query.split('FROM')[1].split(' ')[1]
+                where = query.split(table)[1]
+                nquery = f"SELECT COUNT(*) FROM {table}" + where
+                dbdata = await conn.fetch(nquery)
             elif fetch == 'one':
                 dbdata = await conn.fetchrow(query)
+            elif fetch == 'all':
+                dbdata = await conn.fetch(query)
         except:
             log.exception(f'Error in {db} database query {query}')
             await conn.close()
             return None
         log.debug(dbdata)
         if dbdata is not None:
-            if fmt == 'tuple':
-                log.debug(tuple(dbdata))
+            if fmt == 'exists':
+                log.debug(f'exists: {dbdata}')
+                return dbdata
+            if fmt == 'count':
+                log.debug(f'count: {dbdata}')
+                return dbdata
+            elif fmt == 'tuple':
+                log.debug(f'tuple: {tuple(dbdata)}')
                 return tuple(dbdata)
             elif fmt == 'dict':
-                log.debug(dict(dbdata))
+                log.debug(f'dict: {dict(dbdata)}')
                 return dict(dbdata)
-            elif fmt == 'count':
-                log.debug(len(dbdata))
-                return len(dbdata)
             elif fmt == 'list':
-                log.debug(list(tuple(dbdata)))
+                log.debug(f'list {list(tuple(dbdata))}')
                 return list(tuple(dbdata))
             elif fmt == 'string':
-                return dbstringformat(dbdata, single=single)
+                return dbstringformat(dbdata)
         else:
             return None
 
