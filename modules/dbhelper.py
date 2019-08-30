@@ -27,7 +27,6 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
         asyncio.sleep(60)
         return None
     else:
-        log.debug(query)
         try:
             if fetch == 'one':
                 dbdata = await conn.fetchrow(query)
@@ -37,7 +36,6 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
             log.exception(f'Error in {db} database query {query}')
             await conn.close()
             return None
-        log.debug(dbdata)
         if dbdata is not None:
             if fmt == 'count':
                 log.debug(f'count: {len(dbdata)}')
