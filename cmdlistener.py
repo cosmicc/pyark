@@ -39,7 +39,7 @@ async def asyncserverexec(cmdlist, nice):
 async def asyncwritechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        isindb = await asyncdbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
+        isindb = await asyncdbquery(f"SELECT * from players WHERE playername = '{whos}'", 'count', fetch='one')
         if isindb:
             await asyncdbupdate("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')""" % (inst, whos, msg.replace("'", ""), tstamp))
 
@@ -443,8 +443,8 @@ def writechatlog(inst, whos, msg, tstamp):
 async def processtcdata(inst, tcdata):
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
-    pexist = await asyncdbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid, ), fetch='one')
-    if not pexist and steamid != '':
+    pexist = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'count', fetch='one')
+    if pexist != 0 and steamid != '':
         welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, playername, inst))
         welcom.start()
     elif steamid != '':
@@ -580,7 +580,7 @@ def wglog(minst, line):
 @log.catch
 async def playerjoin(line, inst):
     newline = line[:-17].split(':')
-    player = await asyncdbquery("SELECT * FROM players WHERE steamname = '%s'" % (cleanstring(newline[1].strip()),), single=True, fmt='dict', fetch='one')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', single=True, fetch='one')
     if player:
         steamid = player['steamid']
         await asyncdbupdate(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
@@ -621,7 +621,7 @@ def leavingplayerthread(player, inst):
 @log.catch
 async def playerleave(line, inst):
     newline = line[:-15].split(':')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", single=True, fmt='dict', fetch='one')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', single=True, fetch='one')
     if player:
         log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayerthread, args=(player, inst))
