@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from modules.configreader import instance, numinstances
 from modules.dbhelper import dbquery, dbupdate, cleanstring, glupdate, asyncglupdate, asyncdbquery, asyncdbupdate
 from modules.players import getplayer, newplayer
-from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal
+from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal, getinstancelist
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from modules.servertools import serverexec
 from lottery import getlastlotteryinfo
@@ -138,26 +138,29 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
             potime = Secs['hour']
         elif crnt == 3:
             potime = Secs['day']
-        players = await asyncdbquery(f"SELECT * FROM players WHERE server = '{inst}'", 'tuple', 'all')
-        pcnt = 0
-        plist = ''
-        for player in players:
-            chktme = Now() - float(player['lastseen'])
-            if chktme < potime:
-                pcnt += 1
-                if plist == '':
-                    plist = '%s' % (player['playername'].title())
-                else:
-                    plist = plist + ', %s' % (player['playername'].title())
-        if pcnt != 0:
-            if crnt == 1:
-                message = f'{inst.capitalize()} has {pcnt} players online: {plist}'
-            elif crnt == 2:
-                message = f'{inst.capitalize()} has had {pcnt} players in the last hour: {plist}'
-            elif crnt == 3:
-                message = f'{inst.capitalize()} has had {pcnt} players in the last day: {plist}'
-        if pcnt == 0 and not filt:
-            message = f'{inst.capitalize()} has no players online.'
+        if inst not in getinstancelist():
+            message = f'{inst.capitalize()} is not a valid server'
+        else:
+            players = await asyncdbquery(f"SELECT * FROM players WHERE server = '{inst}'", 'tuple', 'all')
+            pcnt = 0
+            plist = ''
+            for player in players:
+                chktme = Now() - float(player['lastseen'])
+                if chktme < potime:
+                    pcnt += 1
+                    if plist == '':
+                        plist = '%s' % (player['playername'].title())
+                    else:
+                        plist = plist + ', %s' % (player['playername'].title())
+            if pcnt != 0:
+                if crnt == 1:
+                    message = f'{inst.capitalize()} has {pcnt} players online: {plist}'
+                elif crnt == 2:
+                    message = f'{inst.capitalize()} has had {pcnt} players in the last hour: {plist}'
+                elif crnt == 3:
+                    message = f'{inst.capitalize()} has had {pcnt} players in the last day: {plist}'
+            if pcnt == 0 and not filt:
+                message = f'{inst.capitalize()} has no players online.'
         if message:
             cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
             await asyncserverexec(cmdlist, 15)
