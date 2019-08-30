@@ -83,9 +83,9 @@ async def asyncgetlastseen(seenname):
     else:
         plasttime = elapsedTime(Now(), float(player['lastseen']))
         if plasttime != 'now':
-            return f'{player["playername"].title()} was last seen {plasttime} ago on {player["server"]}'
+            return f'{player["playername"].title()} was last seen {plasttime} ago on {player["server"].title()}'
         else:
-            return f'{player["playername"].title()} is online now on {player["server"]}'
+            return f'{player["playername"].title()} is online now on {player["server"].title()}'
 
 
 def respmyinfo(inst, whoasked):
@@ -95,13 +95,14 @@ def respmyinfo(inst, whoasked):
     subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
 
 
+@log.catch
 async def asyncgettimeplayed(seenname):
     player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
     if not player:
         return 'No player found with that name'
     else:
         plasttime = playedTime(float(player['playedtime']))
-        return f"""{player["playername"].title()}'s total playtime is {plasttime} on {player["server"]}"""
+        return f"""{player["playername"].title()} total playtime is {plasttime} on home server {player["homeserver"].title()}"""
 
 
 def gettip():
