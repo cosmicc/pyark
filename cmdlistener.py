@@ -580,7 +580,9 @@ def wglog(minst, line):
 @log.catch
 async def playerjoin(line, inst):
     newline = line[:-17].split(':')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'exists', single=True, fetch='one')
+    player = await asyncdbquery(f"SELECT * FROM players where homeserver = 'crystal'", 'exists', single=True, fetch='one')
+
+    # player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'exists', single=True, fetch='one')
     if player:
         steamid = player['steamid']
         await asyncdbupdate(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
