@@ -26,6 +26,7 @@ arewevoting = False
 
 @log.catch
 async def asyncserverexec(cmdlist, nice):
+    asyncloop = asyncio.get_running_loop()
     asyncio.get_child_watcher().attach_loop(asyncloop)
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = quote(' '.join(fullcmdlist)).strip("'")
@@ -34,7 +35,6 @@ async def asyncserverexec(cmdlist, nice):
     await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
     log.debug(f'server rcon process completed [{cmdstring}]')
     return 0
-
 
 
 def writechat(inst, whos, msg, tstamp):
@@ -878,6 +878,7 @@ async def processline(minst, line):
 @log.catch
 async def checkcommands(inst, dtime):
     while True:
+        asyncloop = asyncio.get_running_loop()
         starttime = Now()
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
@@ -885,15 +886,16 @@ async def checkcommands(inst, dtime):
             asyncloop.create_task(processline(inst, line))
         while Now() - starttime < 2:
             await asyncio.sleep(.01)
+    asyncloop.stop()
     asyncloop.close()
 
 
 @log.catch
 def clisten(inst, dtime):
-    global asyncloop
-
     def sig_handler(signal, frame):
         log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
+        asyncloop = asyncio.get_running_loop()
+        asyncloop.stop()
         asyncloop.close()
         os._exit(0)
 
@@ -904,8 +906,5 @@ def clisten(inst, dtime):
 
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
-    asyncloop = asyncio.set_event_loop(None)
-    asyncloop = asyncio.new_event_loop()
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncloop.run_until_complete(checkcommands(inst, dtime))
-    asyncloop.close()
+    asyncio.run(checkcommands(inst, dtime))
