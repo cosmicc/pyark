@@ -88,11 +88,13 @@ async def asyncgetlastseen(seenname):
             return f'{player["playername"].title()} is online now on {player["server"].title()}'
 
 
-def respmyinfo(inst, whoasked):
-    pinfo = getplayer(playername=whoasked)
-    ptime = playedTime(pinfo[4])
-    mtxt = f"Your current reward points: {pinfo[5] + pinfo[16]}.\nYour total play time is {ptime}\nYour home server is {pinfo[15].capitalize()}"
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (getsteamid(whoasked), mtxt, inst), shell=True)
+@log.catch
+async def asyncrespmyinfo(inst, whoasked):
+    player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{whoasked}' ORDER BY lastseen DESC", 'dict', 'one')
+    ptime = playedTime(player['playedtime'])
+    steamid = player['steamid']
+    message = f"Your current reward points: {player['rewardpoints'] + player['transferpoints']}.\nYour total play time is {ptime}\nYour home server is {player['homeserver'].capitalize()}"
+    await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
 
 
 @log.catch
@@ -105,9 +107,10 @@ async def asyncgettimeplayed(seenname):
         return f"""{player["playername"].title()} total playtime is {plasttime} on home server {player["homeserver"].title()}"""
 
 
-def gettip():
-    tip = dbquery("SELECT * FROM tips WHERE active = True ORDER BY count ASC, random()", fetch='one', fmt='dict')
-    dbupdate("UPDATE tips set count = %s WHERE id = %s" % (int(tip['count']) + 1, tip['id']))
+@log.catch
+async def asyncgettip():
+    tip = await asyncdbquery("SELECT * FROM tips WHERE active = True ORDER BY count ASC, random()", 'dict', 'one')
+    await asyncdbupdate("UPDATE tips set count = {int(tip['count'] + 1} WHERE id = {tip['id'])}")
     return tip['tip']
 
 
@@ -800,12 +803,14 @@ async def processline(minst, line):
 
                 elif incmd.startswith(('!tip', '!justthetip')):
                     log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
-                    tip = gettip()
-                    serverexec(['arkmanager', 'rconcmd', f'ServerChat {tip}', f'@{minst}'], nice=19, null=True)
+                    tip = await asyncgettip()
+                    message = tip['tip']
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
+                    await asyncserverexec(cmdlist, 15)
 
                 elif incmd.startswith(('!mypoints', '!myinfo')):
                     log.log('CMD', f'Responding to a [!myinfo] request from [{whoasked.title()}] on [{minst.title()}]')
-                    respmyinfo(minst, whoasked)
+                    await asyncrespmyinfo(minst, whoasked)
 
                 elif incmd.startswith(('!players', '!whoson', '!who')):
                     rawline = line.split(':')
