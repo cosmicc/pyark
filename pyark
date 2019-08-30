@@ -22,7 +22,7 @@ import argparse
 from loguru import logger as log
 import lottery
 from threading import Thread
-from multiprocessing import Process
+# from multiprocessing import Process
 import signal
 import shutil
 import modules.logging
@@ -209,7 +209,7 @@ def main():
         lotteryt = Thread(name='lotterywatcher', target=lottery.lotterywatcher, args=(300,), daemon=True)
         lotteryt.start()
     if is_gamelogger == "True":
-        gamelogger = Process(name='gamelogger', target=gameloggerstart, daemon=True)
+        gamelogger = Thread(name='gamelogger', target=gameloggerstart, daemon=True)
         steamloop = Thread(name='steamapiloop', target=steamapiloop, args=(5,), daemon=True)
         auctionloop = Thread(name='auctionapiloop', target=auctionapiloop, args=(5,), daemon=True)
         dblchecker = Thread(name='dblcheckonlineloop', target=dblcheckonlineloop, args=(30,), daemon=True)
@@ -252,7 +252,7 @@ def main():
             sleep(60)
         try:
             if checkgit == 0:
-                #gitupdatecheck()
+                # gitupdatecheck()
                 checkgit += 1
             elif checkgit == 12:
                 checkgit = 0
@@ -316,6 +316,6 @@ def main():
 
 
 if __name__ == 'pyark':
-    #gitupdatecheck()
+    # gitupdatecheck()
     gitcheck = 1
     main()

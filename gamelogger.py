@@ -7,7 +7,6 @@ from modules.players import isplayeradmin
 from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
 from time import sleep
 from os import nice, _exit
-import signal
 
 
 @log.catch
@@ -194,18 +193,7 @@ def processgameline(inst, ptype, line):
 
 @log.catch
 def gameloggerstart():
-    import modules.logging
     # log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=True, format=modules.logging.gamelogformat, delay=False, filter=checkgamelog)
-
-    def sig_handler(signal, frame):
-        log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
-        gl.close()
-        _exit(0)
-
-    signal.signal(signal.SIGTERM, sig_handler)
-    signal.signal(signal.SIGHUP, sig_handler)
-    signal.signal(signal.SIGINT, sig_handler)
-    signal.signal(signal.SIGQUIT, sig_handler)
 
     nice(19)
     global gl
