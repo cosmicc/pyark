@@ -443,29 +443,29 @@ def writechatlog(inst, whos, msg, tstamp):
 async def processtcdata(inst, tcdata):
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
-    pexist = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', fetch='one')
-    if not pexist:
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
+    if not player:
         welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, playername, inst))
         welcom.start()
     else:
         playtime = int(float(tcdata['TotalPlayed'].replace(',', '')))
         rewardpoints = int(tcdata['Points'].replace(',', ''))
-        if playername.lower() != pexist[1].lower():
-            log.log('UPDATE', f'Player name update for [{pexist[1]}] to [{playername}]')
+        if playername.lower() != player['playername'].lower():
+            log.log('UPDATE', f'Player name update for [{player["playername"]}] to [{playername}]')
             await asyncdbupdate("UPDATE players SET playername = '%s' WHERE steamid = '%s'" % (playername, steamid))
-        if inst == pexist[15]:
+        if inst == player['homeserver']:
             log.trace(f'player {playername} with steamid {steamid} was found on HOME server {inst}. updating info.')
             await asyncdbupdate("UPDATE players SET playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
                                 (playtime, rewardpoints, steamid))
         else:
             log.trace(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info.')
-            if int(pexist[16]) != int(rewardpoints):
+            if int(player['transferpoints']) != int(rewardpoints):
                 if int(rewardpoints) != 0:
-                    if Now() - float(pexist[17]) > 60:
-                        log.debug(f'adding {rewardpoints} non home points to {pexist[16]} transfer points for \
+                    if Now() - float(player['lastpointtimestamp']) > 60:
+                        log.debug(f'adding {rewardpoints} non home points to {player["homeserver"]} transfer points for \
 {playername} on {inst}')
                         await asyncdbupdate("UPDATE players SET transferpoints = '%s', lastpointtimestamp = '%s' WHERE steamid = '%s'" %
-                                            (int(rewardpoints) + int(pexist[16]), str(Now()), str(steamid)))
+                                            (int(rewardpoints) + int(player['homeserver']), str(Now()), str(steamid)))
                         cmdlist = ['arkmanager', 'rconcmd', f'"ScriptCommand tcsar setarctotal {steamid} 0"', f'@{inst}']
                         await asyncserverexec(cmdlist, 15)
                     else:
@@ -580,7 +580,7 @@ def wglog(minst, line):
 @log.catch
 async def playerjoin(line, inst):
     newline = line[:-17].split(':')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', single=True, fetch='one')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', 'one')
     if player:
         steamid = player['steamid']
         await asyncdbupdate(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
@@ -621,9 +621,9 @@ def leavingplayerthread(player, inst):
 @log.catch
 async def playerleave(line, inst):
     newline = line[:-15].split(':')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE homeserver = 'crystal'", 'count')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE homeserver = 'crystal'", 'count', 'all')
     log.debug(f'player count: {player}')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'count', single=True, fetch='one')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'count', 'one')
     if player:
         log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayerthread, args=(player, inst))
