@@ -158,8 +158,9 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
                 message = f'{inst.capitalize()} has had {pcnt} players in the last day: {plist}'
         if pcnt == 0 and not filt:
             message = f'{inst.capitalize()} has no players online.'
-        cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
-        await asyncserverexec(cmdlist, 15)
+        if message:
+            cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
+            await asyncserverexec(cmdlist, 15)
     except:
         log.exception()
         message = f'Server {inst.capitalize()} does not exist.'
