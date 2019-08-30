@@ -50,6 +50,8 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
             return None
         if dbdata is not None:
             if fmt == 'tuple' or fmt == 'dict':
+                log.debug(type(dbdata))
+                log.debug(dbdata)
                 return dbdata
             else:
                 a = (query.split('FROM'))
