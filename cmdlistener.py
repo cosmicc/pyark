@@ -444,10 +444,10 @@ async def processtcdata(inst, tcdata):
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
     pexist = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', fetch='one')
-    if not pexist and steamid != '':
+    if not pexist:
         welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, playername, inst))
         welcom.start()
-    elif steamid != '':
+    else:
         playtime = int(float(tcdata['TotalPlayed'].replace(',', '')))
         rewardpoints = int(tcdata['Points'].replace(',', ''))
         if playername.lower() != pexist[1].lower():
@@ -580,7 +580,7 @@ def wglog(minst, line):
 @log.catch
 async def playerjoin(line, inst):
     newline = line[:-17].split(':')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'exists', single=True, fetch='one')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', single=True, fetch='one')
     if player:
         steamid = player['steamid']
         await asyncdbupdate(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
@@ -622,8 +622,8 @@ def leavingplayerthread(player, inst):
 async def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = await asyncdbquery(f"SELECT * FROM players WHERE homeserver = 'crystal'", 'count')
-
-    #player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'count', single=True, fetch='one')
+    log.debug(f'player count: {player}')
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'count', single=True, fetch='one')
     if player:
         log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayerthread, args=(player, inst))

@@ -8,7 +8,7 @@ import asyncio
 
 
 @log.catch
-async def asyncdbquery(query, fmt, db='sqldb', fetch='all', single=False):
+async def asyncdbquery(query, fmt, fetch, db='sqldb', single=False):
     asyncloop = asyncio.get_running_loop()
     data = asyncloop.create_task(llasyncdbquery(query, db, fetch, fmt, single))
     return await data
@@ -29,12 +29,7 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
     else:
         log.debug(query)
         try:
-            if fmt == 'exists':
-                table = query.split('FROM')[1].split(' ')[1]
-                where = query.split(table)[1]
-                nquery = f"SELECT COUNT(*) FROM {table}" + where
-                dbdata = await conn.fetch(nquery)
-            elif fetch == 'one':
+            if fetch == 'one':
                 dbdata = await conn.fetchrow(query)
             elif fetch == 'all' or fmt == "count":
                 dbdata = await conn.fetch(query)
@@ -44,20 +39,14 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
             return None
         log.debug(dbdata)
         if dbdata is not None:
-            if fmt == 'exists':
-                log.debug(f'exists: {dbdata}')
-                return dbdata
             if fmt == 'count':
-                log.debug(f'count: {dbdata}')
-                return dbdata
+                log.debug(f'count: {len(dbdata)}')
+                return len(dbdata)
             elif fmt == 'tuple':
-                log.debug(f'tuple: {tuple(dbdata)}')
                 return tuple(dbdata)
             elif fmt == 'dict':
-                log.debug(f'dict: {dict(dbdata)}')
                 return dict(dbdata)
             elif fmt == 'list':
-                log.debug(f'list {list(tuple(dbdata))}')
                 return list(tuple(dbdata))
             elif fmt == 'string':
                 return dbstringformat(dbdata)
