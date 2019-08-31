@@ -1,12 +1,13 @@
-from modules.configreader import psql_host, psql_port, psql_user, psql_pw
-from loguru import logger as log
-from modules.dbhelper import dbupdate, dbquery
-from modules.timehelper import Now
-from modules.servertools import removerichtext
-from modules.players import isplayeradmin
-from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
-from time import sleep
 from sys import exit
+from time import sleep
+
+from loguru import logger as log
+from modules.configreader import psql_host, psql_port, psql_pw, psql_user
+from modules.dbhelper import dbquery, dbupdate
+from modules.players import isplayeradmin
+from modules.servertools import removerichtext
+from modules.timehelper import Now
+from modules.tribes import gettribeinfo, putplayerintribe, removeplayerintribe
 
 
 def stopsleep(sleeptime, stop_event, name):

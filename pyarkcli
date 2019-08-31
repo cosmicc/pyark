@@ -1,21 +1,21 @@
 #!/usr/bin/env python3.7
 
-from datetime import datetime
-from modules.colorizer import RST, WHT, BWHT, BYEL, BRED, BGRN, BLU, ORG, BCYN, SKN, BMGT, RMY, SLT, YEL, GRN, RED, \
-    MAU, MGT, PUR, LREV, BGN
-from modules.configreader import sharedpath
-from modules.dbhelper import dbquery, dbupdate, db_getall, db_getvalue, db_getcolumns, db_gettables
-from modules.timehelper import elapsedTime, estshift, gmtshift, playedTime, wcstamp, datetimeto, Now, Secs
-from numpy import mean
-from sys import exit
-from urllib.request import urlopen, Request
 import argparse
 import json
 import logging
 import subprocess
 import time
+from datetime import datetime
 from os import system
-from time import sleep
+from sys import exit
+from urllib.request import Request, urlopen
+
+from modules.colorizer import (BCYN, BGN, BGRN, BLU, BMGT, BRED, BWHT, BYEL, GRN, LREV,
+                               MAU, MGT, ORG, PUR, RED, RMY, RST, SKN, SLT, WHT, YEL)
+from modules.configreader import sharedpath
+from modules.dbhelper import db_getall, db_getcolumns, db_gettables, db_getvalue, dbquery, dbupdate
+from modules.timehelper import Now, Secs, datetimeto, elapsedTime, estshift, gmtshift, playedTime, wcstamp
+from numpy import mean
 from sh import tail
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)

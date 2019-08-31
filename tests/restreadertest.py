@@ -1,4 +1,6 @@
-import urllib.request, json
+import json
+import urllib.request
+
 from modules.configreader import webserver_ip, webserver_port
 
 apiurl = f'http://{webserver_ip}:{webserver_port}/api'

@@ -1,21 +1,23 @@
-from datetime import timedelta
-from datetime import time as dt
-from datetime import datetime
-from clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo, iseventtime
-from modules.configreader import generalchat_id, serverchat_id, discordtoken, hstname, maint_hour, infochat_id, changelog_id
-from modules.dbhelper import dbquery, dbupdate
-from modules.instances import instancelist, getlastwipe, getlastrestart, writeglobal, getlastrestartreason
-from modules.players import getplayer, getplayerlastserver, getplayersonlinenames, getplayerlastseen, getplayerstoday, getnewestplayers, gettopplayedplayers, isplayeradmin, setprimordialbit
-from modules.timehelper import elapsedTime, playedTime, epochto, Now, Secs, datetimeto
-from lottery import totallotterydeposits, isinlottery, getlottowinnings
 import asyncio
+import signal
+from concurrent.futures._base import CancelledError
+from datetime import datetime
+from datetime import time as dt
+from datetime import timedelta
+from os import _exit, getpid
+
 import discord
 from discord.ext import commands
 from loguru import logger as log
-import signal
-from os import getpid, _exit
-from concurrent.futures._base import CancelledError
-
+from modules.clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo, iseventtime
+from modules.configreader import (changelog_id, discordtoken, generalchat_id,
+                                  hstname, infochat_id, maint_hour, serverchat_id)
+from modules.dbhelper import dbquery, dbupdate
+from modules.instances import getlastrestart, getlastrestartreason, getlastwipe, instancelist, writeglobal
+from modules.lottery import getlottowinnings, isinlottery, totallotterydeposits
+from modules.players import (getnewestplayers, getplayer, getplayerlastseen, getplayerlastserver, getplayersonlinenames,
+                             getplayerstoday, gettopplayedplayers, isplayeradmin, setprimordialbit)
+from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
 
 __name__ = 'discordbot'
 

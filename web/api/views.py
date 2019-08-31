@@ -1,18 +1,18 @@
-from clusterevents import getcurrenteventinfo, iseventtime
+import time
 from datetime import datetime
-from flask import request, Blueprint
-from flask_restplus import Api, Resource, fields
 from functools import wraps
-from modules.dbhelper import dbquery, dbupdate
-from modules.timehelper import estshift, elapsedTime, playedTime, Now
+from secrets import token_urlsafe
+
+from flask import Blueprint, request
+from flask_restplus import Api, Resource, fields
+from loguru import logger as log
+from modules.clusterevents import getcurrenteventinfo, iseventtime
 from modules.configreader import apilogfile
+from modules.dbhelper import dbquery, dbupdate
 from modules.logclient import loggerchat
 from modules.players import getplayersonline
+from modules.timehelper import Now, elapsedTime, estshift, playedTime
 from numpy import mean
-from secrets import token_urlsafe
-import time
-from loguru import logger as log
-
 
 authorizations = {
     'apikey': {

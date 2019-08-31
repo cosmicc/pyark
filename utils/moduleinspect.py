@@ -1,6 +1,8 @@
-import sys
 import inspect
+import sys
+
 import active_alchemy
+
 
 def describe_builtin(obj):
     """ Describe a builtin function """

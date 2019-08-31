@@ -1,12 +1,14 @@
+from datetime import datetime
+from datetime import time as dt
+from datetime import timedelta
+from sys import exit
 from time import sleep
+
 from loguru import logger as log
 from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate
-from modules.timehelper import Now
 from modules.instances import instancelist, serverchat
-from datetime import datetime, timedelta
-from datetime import time as dt
-from sys import exit
+from modules.timehelper import Now
 
 
 def writediscord(msg, mtype, tstamp):

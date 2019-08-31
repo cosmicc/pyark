@@ -1,5 +1,6 @@
 import subprocess
 
+
 def getliveonline(inst):
     rawrun = subprocess.run('arkmanager status @%s' % (inst), stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL, shell=True)
@@ -11,4 +12,3 @@ def getliveonline(inst):
             print(stripansi(ea.split(':')[1]).strip().split('/')[0].strip())
 
 getliveonline('ragnarok')
-

@@ -1,5 +1,6 @@
 import os
-from modules.configreader import psql_db, psql_host, psql_port, psql_user, psql_pw, secsalt, testing_seckey
+
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user, secsalt, testing_seckey
 
 
 class BaseConfig(object):

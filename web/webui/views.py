@@ -1,32 +1,38 @@
-from datetime import datetime, timedelta, time, date
-from flask import render_template, Response, request, redirect, url_for, flash, Blueprint
-from flask_security import login_required, logout_user, current_user, roles_required, RegisterForm, SQLAlchemyUserDatastore
-from flask_security.utils import hash_password
-from flask_wtf import FlaskForm
-from itertools import chain, zip_longest
-from lottery import isinlottery, getlotteryplayers, getlotteryendtime
-from modules.configreader import psql_statsdb, psql_user, psql_host, psql_pw, psql_port
-from modules.dbhelper import dbquery, dbupdate
-from modules.instances import instancelist, isinstanceup, isinrestart, restartinstance, getlog, iscurrentconfig, serverchat, enableinstance, disableinstance, getlastcrash, isinstanceenabled
-from modules.tribes import getplayertribes, gettribes, gettribe
-from modules.messages import validatelastsent, validatenumsent, getmessages, sendmessage
-from modules.players import getplayersonline, getlastplayersonline, isplayerbanned, getplayer, banunbanplayer, isplayeronline, isplayerold, kickplayer, getactiveplayers, gethitnruns, getbannedplayers, getnewplayers, getdiscordplayers, getsteamnameplayers, getplayernames
-from modules.timehelper import elapsedTime, Now, playedTime, epochto, Secs, datetimeto, joinedTime
-from wtforms import StringField, IntegerField
-from wtforms.validators import InputRequired, Length
-from clusterevents import getcurrenteventtitle, iseventtime, getcurrenteventtitleabv
-from ..models import User, Role
-from ..database import db
-from .. import socketio
-from modules.logclient import LogClient, loggerchat
-from chatclient import ChatClient
-from gameclient import GameClient
-from pycountry import countries
 import json
+from datetime import date, datetime, time, timedelta
+from itertools import chain, zip_longest
+
 import pandas as pd
 import psycopg2
 import pytz
+from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
+from flask_security import (RegisterForm, SQLAlchemyUserDatastore, current_user,
+                            login_required, logout_user, roles_required)
+from flask_security.utils import hash_password
+from flask_wtf import FlaskForm
 from loguru import logger as log
+from modules.chatclient import ChatClient
+from modules.clusterevents import getcurrenteventtitle, getcurrenteventtitleabv, iseventtime
+from modules.configreader import psql_host, psql_port, psql_pw, psql_statsdb, psql_user
+from modules.dbhelper import dbquery, dbupdate
+from modules.gameclient import GameClient
+from modules.instances import (disableinstance, enableinstance, getlastcrash, getlog, instancelist, iscurrentconfig,
+                               isinrestart, isinstanceenabled, isinstanceup, restartinstance, serverchat)
+from modules.logclient import LogClient, loggerchat
+from modules.lottery import getlotteryendtime, getlotteryplayers, isinlottery
+from modules.messages import getmessages, sendmessage, validatelastsent, validatenumsent
+from modules.players import (banunbanplayer, getactiveplayers, getbannedplayers, getdiscordplayers, gethitnruns,
+                             getlastplayersonline, getnewplayers, getplayer, getplayernames, getplayersonline,
+                             getsteamnameplayers, isplayerbanned, isplayerold, isplayeronline, kickplayer)
+from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, joinedTime, playedTime
+from modules.tribes import getplayertribes, gettribe, gettribes
+from pycountry import countries
+from wtforms import IntegerField, StringField
+from wtforms.validators import InputRequired, Length
+
+from .. import socketio
+from ..database import db
+from ..models import Role, User
 
 webui = Blueprint('webui', __name__)
 

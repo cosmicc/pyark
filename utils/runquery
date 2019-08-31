@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
-from dbhelper import dbupdate, dbquery
 import time
+
+from dbhelper import dbquery, dbupdate
 
 now = time.time()
 

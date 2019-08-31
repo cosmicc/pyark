@@ -1,4 +1,4 @@
-from active_alchemy import ActiveAlchemy, create_engine, MetaData, Table
+from active_alchemy import ActiveAlchemy, MetaData, Table, create_engine
 from sqlalchemy.orm import mapper, sessionmaker
 
 

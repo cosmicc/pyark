@@ -1,22 +1,24 @@
 #!/usr/bin/env python3.7
 
-from modules.configreader import instance, hstname, jsonlogfile, colorlogfile, jsondebugfile, critlogfile, loglevel, instr
-from modules.dbhelper import dbquery, dbupdate
-from modules.pushover import pushover
-from modules.instances import getinststatus, isinstanceenabled
-from modules.players import getliveplayersonline
-from modules.logging import shortlogformat, longlogformat
-from arkupdater import instancerestart
-from sys import exit
-from time import sleep
-from modules.timehelper import Secs, Now, elapsedTime
-from modules.servertools import serverexec, setarknice, getinstpid
-import psutil
 import argparse
-from loguru import logger as log
 import os
 import sys
+from sys import exit
+from time import sleep
+
 import modules.logging
+import psutil
+from loguru import logger as log
+from modules.arkupdater import instancerestart
+from modules.configreader import (colorlogfile, critlogfile, hstname, instance,
+                                  instr, jsondebugfile, jsonlogfile, loglevel)
+from modules.dbhelper import dbquery, dbupdate
+from modules.instances import getinststatus, isinstanceenabled
+from modules.logging import longlogformat, shortlogformat
+from modules.players import getliveplayersonline
+from modules.pushover import pushover
+from modules.servertools import getinstpid, serverexec, setarknice
+from modules.timehelper import Now, Secs, elapsedTime
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"

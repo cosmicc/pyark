@@ -1,10 +1,11 @@
-from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb, hstname
-from loguru import logger as log
 import asyncio
-import uvloop
-import asyncpg
-from threading import Thread
 import time
+from threading import Thread
+
+import asyncpg
+import uvloop
+from loguru import logger as log
+from modules.configreader import hstname, psql_db, psql_host, psql_port, psql_pw, psql_statsdb, psql_user
 
 
 class asyncDB():

@@ -1,10 +1,11 @@
-from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
-from datetime import datetime
-from loguru import logger as log
-import psycopg2
-import asyncpg
-from time import sleep
 import asyncio
+from datetime import datetime
+from time import sleep
+
+import asyncpg
+import psycopg2
+from loguru import logger as log
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_statsdb, psql_user
 
 
 @log.catch

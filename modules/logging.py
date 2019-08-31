@@ -1,5 +1,5 @@
-from modules.configreader import hstname
 from loguru import logger as log
+from modules.configreader import hstname
 
 log.remove()
 

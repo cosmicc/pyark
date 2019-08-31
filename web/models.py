@@ -1,6 +1,5 @@
-from web.database import db
 from flask_security import RoleMixin, UserMixin
-
+from web.database import db
 
 roles_users = db.Table('roles_users', db.Column('user_id', db.Integer(), db.ForeignKey('web_users.id')), db.Column('role_id', db.Integer(), db.ForeignKey('web_roles.id')))
 

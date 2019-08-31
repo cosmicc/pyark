@@ -1,7 +1,8 @@
-from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_statsdb
 from datetime import datetime, timedelta
-import psycopg2
+
 import pandas as pd
+import psycopg2
+from modules.configreader import psql_host, psql_port, psql_pw, psql_statsdb, psql_user
 
 # conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
 
@@ -42,5 +43,3 @@ for each in ['island', 'ragnarok', 'volcano', 'extinction']:
 print(list(zip(dlist, avglist)))
 c.close()
 conn.close()
-
-

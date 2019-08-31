@@ -1,6 +1,8 @@
 import sys
-sys.path.append('/home/ark/pyark')
+
 import modules.players as players
+
+sys.path.append('/home/ark/pyark')
 
 
 def test_getplayer():

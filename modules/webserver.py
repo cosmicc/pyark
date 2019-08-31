@@ -1,8 +1,8 @@
 #!/usr/bin/python3.6
 
-from modules.configreader import webserver_ip, webserver_port, hstname
-from web import socketio
 from loguru import logger as log
+from modules.configreader import hstname, webserver_ip, webserver_port
+from web import socketio
 
 log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 

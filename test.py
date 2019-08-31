@@ -1,12 +1,13 @@
 
 import asyncio
-from loguru import logger as log
-import uvloop
-from modules.asyncdb import asyncDB
-import threading
 import signal
+import threading
 import time
 from sys import exit
+
+import uvloop
+from loguru import logger as log
+from modules.asyncdb import asyncDB
 
 
 def sig_handler(signal, frame):

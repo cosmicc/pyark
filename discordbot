@@ -1,13 +1,16 @@
 #!/usr/bin/env python3.7
 
 import argparse
-from loguru import logger as log
-from modules.configreader import hstname, jsonlogfile, instance, numinstances, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, debugfile
-from discordbot import pyarkbot
-from modules.processlock import plock
-import modules.logging
-from os import nice
 import sys
+from os import nice
+
+import modules.logging
+from loguru import logger as log
+from modules.configreader import (adminfile, colorlogfile, crashlogfile, critlogfile, debugfile, hstname, instance,
+                                  instr, is_asdatapuller, is_eventwatcher, is_lotterymanager, is_statscollector,
+                                  jsondebugfile, jsonlogfile, loglevel, numinstances, pointsfile)
+from modules.discordbot import pyarkbot
+from modules.processlock import plock
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')

@@ -1,9 +1,10 @@
-import subprocess
-from psutil import Process
-from loguru import logger as log
-from re import sub
-from os.path import isfile
 import asyncio
+import subprocess
+from os.path import isfile
+from re import sub
+
+from loguru import logger as log
+from psutil import Process
 
 
 @log.catch

@@ -1,8 +1,10 @@
+import sys
+
 import psycopg2
 import pytest
-import sys
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_statsdb, psql_user
+
 sys.path.append('/home/ark/pyark')
-from modules.configreader import psql_host, psql_port, psql_user, psql_pw, psql_db, psql_statsdb
 
 
 @pytest.fixture(scope='module')

@@ -1,30 +1,33 @@
 #!/usr/bin/env python3.7
 
-from arkupdater import arkupdater_thread
-from clusterevents import eventwatcher_thread
-from cmdlistener import cmdlistener_thread
-from gchatrelay import gchatrelay_thread
+import argparse
+import shutil
+import signal
+import sys
+import threading
+from os import _exit, nice, stat
+from time import sleep
+
+import modules.logging
+import modules.lottery as lottery
 from git import Repo
-from kicker import kicker_thread
-from modules.configreader import hstname, instances, jsonlogfile, is_asdatapuller, is_statscollector, is_eventwatcher, is_lotterymanager, loglevel, adminfile, jsondebugfile, pointsfile, colorlogfile, crashlogfile, critlogfile, instr, debugfile, chatlogfile, gamelogfile, is_gamelogger
-from modules.dbhelper import dbupdate, dbquery
+from loguru import logger as log
+from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
+from modules.arkupdater import arkupdater_thread
+from modules.clusterevents import eventwatcher_thread
+from modules.cmdlistener import cmdlistener_thread
+from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
+                                  debugfile, gamelogfile, hstname, instances, instr, is_asdatapuller,
+                                  is_eventwatcher, is_gamelogger, is_lotterymanager,
+                                  is_statscollector, jsondebugfile, jsonlogfile, loglevel, pointsfile)
+from modules.dbhelper import dbquery, dbupdate
+from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
+from modules.gchatrelay import gchatrelay_thread
+from modules.kicker import kicker_thread
+from modules.onlinemonitor import onlinemonitor_thread
 from modules.processlock import plock
 from modules.servertools import serverexec
-from modules.apihelper import steamapi_thread, auctionapi_thread, arkservernet_thread
-from gamelogger import gamelogger_thread, dblcheckonline_thread
-from onlinemonitor import onlinemonitor_thread
-from statcollector import statcollector_thread
-import sys
-from time import sleep
-from os import nice, stat, _exit
-import argparse
-from loguru import logger as log
-import lottery
-import threading
-import signal
-import shutil
-import modules.logging
-
+from modules.statcollector import statcollector_thread
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"

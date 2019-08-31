@@ -1,16 +1,17 @@
 #!/usr/bin/env python3.6
 
-import modules.tail
-from loguru import logger as log
-from time import sleep
-from modules.timehelper import estshift
 import argparse
 import os
-import threading
-from dateutil.parser import parse as dtparse
-from os import _exit
 import sys
+import threading
+from os import _exit
+from time import sleep
+
+import modules.tail
 from ansi2html import Ansi2HTMLConverter
+from dateutil.parser import parse as dtparse
+from loguru import logger as log
+from modules.timehelper import estshift
 
 
 @log.catch

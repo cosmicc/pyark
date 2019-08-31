@@ -1,12 +1,13 @@
 #!/usr/bin/env python3.7
 
 import argparse
-from modules.configreader import webserver_ip, webserver_port, jsondebugfile, jsonlogfile, colorlogfile, debugfile
-from web import create_app, socketio
 from os import nice
-from loguru import logger as log
-from modules.processlock import plock
+
 import modules.logging
+from loguru import logger as log
+from modules.configreader import colorlogfile, debugfile, jsondebugfile, jsonlogfile, webserver_ip, webserver_port
+from modules.processlock import plock
+from web import create_app, socketio
 
 __name__ = 'webserver'
 

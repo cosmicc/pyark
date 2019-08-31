@@ -1,9 +1,10 @@
-import os
-import sys
-import fcntl
-from loguru import logger as log
 import atexit
+import fcntl
+import os
 import socket
+import sys
+
+from loguru import logger as log
 
 hstname = socket.gethostname()
 

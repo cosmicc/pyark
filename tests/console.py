@@ -1,8 +1,9 @@
-import sys
 import select
-import tty
+import sys
 import termios
+import tty
 from time import sleep
+
 
 class NonBlockingConsole(object):
 

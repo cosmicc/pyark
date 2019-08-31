@@ -1,8 +1,8 @@
 #!/usr/bin/python3.6
 
-from modules.logclient import loggerchat
 import argparse
 
+from modules.logclient import loggerchat
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

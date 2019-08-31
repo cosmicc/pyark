@@ -1,6 +1,8 @@
 import sys
-sys.path.append('/home/ark/pyark')
+
 import onlinemonitor
+
+sys.path.append('/home/ark/pyark')
 
 
 def test_checkifbanned():

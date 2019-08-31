@@ -1,11 +1,12 @@
-from datetime import timedelta
-from modules.dbhelper import dbupdate, dbquery
-from modules.configreader import steamapikey
-from modules.timehelper import Now
-from time import sleep
-from urllib.request import urlopen, Request
 import json
+from datetime import timedelta
+from time import sleep
+from urllib.request import Request, urlopen
+
 from loguru import logger as log
+from modules.configreader import steamapikey
+from modules.dbhelper import dbquery, dbupdate
+from modules.timehelper import Now
 
 
 def stopsleep(sleeptime, stop_event, name):

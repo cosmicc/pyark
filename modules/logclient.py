@@ -1,10 +1,11 @@
 import socket
+from datetime import datetime
+from os import _exit
+from time import sleep
+
+from ansi2html import Ansi2HTMLConverter
 from loguru import logger as log
 from modules.instances import instancelist
-from datetime import datetime
-from time import sleep
-from os import _exit
-from ansi2html import Ansi2HTMLConverter
 
 
 def loggerchat(chatline):

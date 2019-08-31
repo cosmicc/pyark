@@ -1,15 +1,16 @@
 #!/usr/bin/env python3.7
 
-import modules.tail
+import argparse
 import json
 import os
 import socket
-import threading
-import argparse
 import sys
+import threading
 from datetime import datetime
 from queue import Queue
 from time import sleep
+
+import modules.tail
 from loguru import logger as log
 
 HEADER = 5

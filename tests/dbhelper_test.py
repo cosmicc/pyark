@@ -1,7 +1,9 @@
-from datetime import datetime
 import sys
-sys.path.append('/home/ark/pyark')
+from datetime import datetime
+
 import modules.dbhelper as dbhelper
+
+sys.path.append('/home/ark/pyark')
 
 
 def test_checkdb(cursor):

@@ -1,6 +1,8 @@
 import sys
-sys.path.append('/home/ark/pyark')
+
 import arkserversnet
+
+sys.path.append('/home/ark/pyark')
 
 
 def test_fetchurldata():

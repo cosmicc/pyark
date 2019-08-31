@@ -1,8 +1,9 @@
 from flask import Flask
-from .models import User, Role
-from .database import db, security
 from flask_security import SQLAlchemyUserDatastore
 from flask_socketio import SocketIO
+
+from .database import db, security
+from .models import Role, User
 
 socketio = SocketIO()
 

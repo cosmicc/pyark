@@ -1,4 +1,4 @@
-from colored import fg, bg, attr
+from colored import attr, bg, fg
 
 RST = attr('reset')
 RED = attr('reset') + fg(1)

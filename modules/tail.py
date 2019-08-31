@@ -21,6 +21,7 @@ import os
 import sys
 import time
 
+
 class Tail(object):
     ''' Represents a tail command. '''
     def __init__(self, tailed_file):

@@ -1,7 +1,9 @@
 import sys
-sys.path.append('/home/ark/pyark')
-import modules.timehelper as timehelper
 from datetime import datetime
+
+import modules.timehelper as timehelper
+
+sys.path.append('/home/ark/pyark')
 
 
 def test_datetimeto():
@@ -43,4 +45,3 @@ def test_elapsedTime():
 
 def test_wcstamp():
     assert type(timehelper.wcstamp()) is str
-
