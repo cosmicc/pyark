@@ -6,6 +6,7 @@ from modules.timehelper import Now
 from modules.instances import instancelist, serverchat
 from datetime import datetime, timedelta
 from datetime import time as dt
+from sys import exit
 
 
 def writediscord(msg, mtype, tstamp):
@@ -166,18 +167,25 @@ def checkifeventstart():
         autoschedevolution()
 
 
-def eventwatcher(dtime):
-    log.debug(f'Starting cluster server event coordinator')
+def stopsleep(sleeptime, stop_event):
+    for ntime in range(sleeptime):
+        if stop_event.is_set():
+            log.debug('Eventwatcher thread has ended')
+            exit(0)
+        sleep(1)
+
+
+def eventwatcher_thread(dtime, stop_event):
+    log.debug(f'Eventwatcher thread is starting')
     instances = instancelist()
-    while True:
-        try:
-            checkifeventover()
-            checkifeventstart()
-            for inst in instances:
-                if iseventtime() and currentserverevent(inst) == '0':
-                    startserverevent(inst)
-                elif not iseventtime() and currentserverevent(inst) != '0':
-                    stopserverevent(inst)
-        except:
-            log.exception(f'Critical error in event coordinator')
-        sleep(dtime)
+    while not stop_event.is_set():
+        checkifeventover()
+        checkifeventstart()
+        for inst in instances:
+            if iseventtime() and currentserverevent(inst) == '0':
+                startserverevent(inst)
+            elif not iseventtime() and currentserverevent(inst) != '0':
+                stopserverevent(inst)
+        stopsleep(dtime, stop_event)
+    log.debug('Eventwatcher thread has ended')
+    exit(0)

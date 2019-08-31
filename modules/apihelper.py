@@ -1,11 +1,19 @@
 from datetime import timedelta
 from modules.dbhelper import dbupdate, dbquery
 from modules.configreader import steamapikey
-from modules.timehelper import Now, Secs
+from modules.timehelper import Now
 from time import sleep
 from urllib.request import urlopen, Request
 import json
 from loguru import logger as log
+
+
+def stopsleep(sleeptime, stop_event, name):
+    for ntime in range(sleeptime):
+        if stop_event.is_set():
+            log.debug(f'{name} thread has ended')
+            exit(0)
+        sleep(1)
 
 
 def fetcharkserverdata():
@@ -22,11 +30,13 @@ def fetcharkserverdata():
                 dbupdate("UPDATE instances SET hostname = '%s', rank = '%s', score = '%s', uptime = '%s', votes = '%s' WHERE name = '%s'" % (adata['hostname'], adata['rank'], adata['score'], adata['uptime'], adata['votes'], each[0]))
 
 
-def arkservernetloop(dtime):
-    log.debug(f'starting arkservers.net information retriever')
-    while True:
+def arkservernet_thread(dtime, stop_event):
+    log.debug(f'ArkserversnetAPI thread is starting ')
+    while not stop_event.is_set():
         fetcharkserverdata()
-        sleep(dtime)
+        stopsleep(dtime, stop_event, 'ArkserversnetAPI')
+    log.debug(f'ArkservernetAPI thread has ended')
+    exit(0)
 
 
 @log.catch
@@ -125,9 +135,9 @@ def getsteambans(steamid, playername):
 
 
 @log.catch
-def steamapiloop(dtime):
-    log.debug('starting steamapi infomation retriever')
-    while True:
+def steamapi_thread(dtime, stop_event):
+    log.debug('SteamAPI thread is starting')
+    while not stop_event.is_set():
         players = dbquery(f"SELECT steamid, playername, steamrefreshtime FROM players WHERE refreshsteam = True")
         if players:
             log.trace(f'Found {len(players)} players for steamapi to process {players}')
@@ -151,13 +161,15 @@ def steamapiloop(dtime):
                     getsteaminfo(player[0], player[1])
                     getsteambans(player[0], player[1])
                 sleep(5)  # slow downi the requests
-        sleep(dtime)
+        stopsleep(dtime, stop_event, 'SteamAPI')
+    log.debug(f'SteamAPI thread has ended')
+    exit(0)
 
 
 @log.catch
-def auctionapiloop(dtime):
-    log.debug('starting auctionapi information retriever')
-    while True:
+def auctionapi_thread(dtime, stop_event):
+    log.debug('AuctionAPI thread is starting')
+    while not stop_event.is_set():
         players = dbquery(f"SELECT steamid, playername, auctionrefreshtime FROM players WHERE refreshauctions = True OR online = True")
         if players:
             log.trace(f'Found {len(players)} players for auctionapi to process {players}')
@@ -182,5 +194,7 @@ def auctionapiloop(dtime):
                     totauctions, iauctions, dauctions = getauctionstats(pauctions)
                     writeauctionstats(player[0], totauctions, iauctions, dauctions)
                     log.debug(f'retrieved auctions for player [{player[1]}] total: {totauctions}, items: {iauctions}, dinos: {dauctions}')
-                sleep(5)  # slow down the requests
-        sleep(dtime)
+                stopsleep(5, stop_event, 'AuctionAPI')  # slow down the requests
+        stopsleep(dtime, stop_event, 'AuctionAPI')
+    log.debug(f'AuctionAPI thread has ended')
+    exit(0)

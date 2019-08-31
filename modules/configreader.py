@@ -78,14 +78,15 @@ testing_seckey = config.get('webserver', 'debug_testkey')
 
 numinstances = int(config.get('general', 'instances'))
 instance = [dict() for x in range(numinstances)]
-
+instances = []
 instr = ''
 
 if numinstances == 0:
-    instr = 'Master Bot'
+    instr = 'Master Server'
 else:
     for each in range(numinstances):
         a = config.get('instance%s' % (each), 'name')
+        instances.append(a)
         instance[each] = {'name': a, }
         if instr == '':
             instr = '%s' % (a)

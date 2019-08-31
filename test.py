@@ -6,7 +6,7 @@ from modules.asyncdb import asyncDB
 import threading
 import signal
 import time
-from os import _exit
+from sys import exit
 
 
 def sig_handler(signal, frame):
@@ -15,7 +15,7 @@ def sig_handler(signal, frame):
     print(threads)
     for thread in threads:
         thread.join
-    # _exit(0)
+    exit(0)
 
 
 signal.signal(signal.SIGTERM, sig_handler)

@@ -8,6 +8,14 @@ from time import time, sleep
 from loguru import logger as log
 
 
+def stopsleep(sleeptime, stop_event):
+    for ntime in range(sleeptime):
+        if stop_event.is_set():
+            log.debug('Statcollector thread has ended')
+            exit(0)
+        sleep(1)
+
+
 def checkiftableexists(inst):
     dbupdate("CREATE TABLE IF NOT EXISTS %s (date timestamp, value smallint)" % (inst,), db='statsdb')
 
@@ -22,19 +30,18 @@ def flushold(tinst):  # not implimented
 
 
 @log.catch
-def oscollect(dtime):
-    log.debug(f'starting online stats collectors')
+def statcollector_thread(dtime, stop_event):
+    log.debug(f'Statcollector thread is starting')
     stinst = dbquery('SELECT name FROM instances', fmt='list', single=True)
     for each in stinst:
         checkiftableexists(each)
-    while True:
-        try:
-            t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
-            dailycollect = is_time_between(t, s, e)
-            if dailycollect:
-                dbupdate("INSERT INTO clusterstats (timestamp, dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (Now(fmt='dt'), len(getactiveplayers(Secs['day'])), len(getactiveplayers(Secs['week'])), len(getactiveplayers(Secs['month'])), len(gethitnruns(Secs['day'])), len(getnewplayers(Secs['day']))), db='statsdb')
-            for each in stinst:
-                addvalue(each, getplayersonline(each, fmt='count'))
-        except:
-            log.exception('Critical Error in Online Stat Collector!')
-        sleep(dtime)
+    while not stop_event.is_set():
+        t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
+        dailycollect = is_time_between(t, s, e)
+        if dailycollect:
+            dbupdate("INSERT INTO clusterstats (timestamp, dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (Now(fmt='dt'), len(getactiveplayers(Secs['day'])), len(getactiveplayers(Secs['week'])), len(getactiveplayers(Secs['month'])), len(gethitnruns(Secs['day'])), len(getnewplayers(Secs['day']))), db='statsdb')
+        for each in stinst:
+            addvalue(each, getplayersonline(each, fmt='count'))
+        stopsleep(dtime, stop_event)
+    log.debug('Statcollector thread has ended')
+    exit(0)

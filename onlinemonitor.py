@@ -5,7 +5,7 @@ from modules.timehelper import elapsedTime, playedTime, Now
 from modules.servertools import serverexec, asyncserverexec
 from loguru import logger as log
 import threading
-from time import sleep
+import time
 import asyncio
 import uvloop
 
@@ -13,6 +13,14 @@ welcomthreads = []
 greetthreads = []
 
 global instance
+
+
+async def asyncstopsleep(sleeptime, stop_event):
+    for ntime in range(sleeptime):
+        if stop_event.is_set():
+            log.debug('Online monitor thread has ended')
+            exit(0)
+        asyncio.sleep(1)
 
 
 @log.catch
@@ -145,7 +153,7 @@ def playergreet(steamid, steamname, inst):
                 mtxt = f'Welcome back {oplayer[1].title()}, you have {newpoints} reward points on \
 {oplayer[15].capitalize()}, last online {laston} ago, total time played {totplay}'
                 serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-                sleep(1)
+                time.sleep(1)
                 flast = dbquery("SELECT * FROM players WHERE server = '%s' AND steamid != '%s'" % (inst, steamid))
                 pcnt = 0
                 plist = ''
@@ -163,22 +171,22 @@ def playergreet(steamid, steamname, inst):
                 else:
                     msg = f'There are no other players are online on this server.'
                 serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {msg}', f'@{inst}'], nice=19, null=True)
-                sleep(2)
+                time.sleep(2)
                 if int(oplayer[14]) == 1 and int(oplayer[13]) == 1 and oplayer[3] == inst and inst != 'extiction':
                     mtxt = f'WARNING: Server has restarted since you logged in, vivarium your primordials!'
                     serverexec([f'arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
                     resetplayerbit(steamid)
                 if oplayer[8] == '':
-                    sleep(5)
+                    time.sleep(5)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
                     serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
                 if not isinlottery(steamid):
-                    sleep(3)
+                    time.sleep(3)
                     mtxt = f'A lottery you have not entered yet is underway. Type !lotto for more information'
                     serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
 
             if xferpoints != 0:
-                    sleep(2)
+                    time.sleep(2)
                     mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
                     serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
             lottodeposits(steamid, inst)
@@ -189,12 +197,12 @@ def playergreet(steamid, steamname, inst):
                 serverisinrestart(steamid, inst, oplayer)
                 if iseventtime():
                     eventinfo = getcurrenteventinfo()
-                    sleep(2)
+                    time.sleep(2)
                     mtxt = f'{eventinfo[4]} event is currently active!'
                     serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
                 annc = dbquery("SELECT announce FROM general", fetch='one')
                 if annc and annc[0] is not None:
-                    sleep(2)
+                    time.sleep(2)
                     mtxt = annc[0]
                     serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
 
@@ -227,30 +235,29 @@ async def asyncprocessline(inst, line):
         log.exception('Exception in online monitor process line')
 
 
-async def asynconlineupdate(inst, dtime):
+async def asynconlineupdate(inst, dtime, stop_event):
     global greetthreads
-    while True:
+    while not stop_event.is_set():
         try:
             asyncloop = asyncio.get_running_loop()
-            starttime = Now()
+            starttime = time()
             cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
             b = cmdpipe.stdout.decode("utf-8")
             for line in iter(b.splitlines()):
                 asyncloop.create_task(asyncprocessline(inst, line))
-            while Now() - starttime < dtime:
-                await asyncio.sleep(dtime / 20)
+            while time() - starttime < dtime:
+                await asyncstopsleep(dtime / 20)
         except:
             log.exception(f'Exception in online monitor loop')
     asyncloop.stop()
     asyncloop.close()
+    log.debug('Online monitor thread has ended')
+    exit(0)
 
 
 @log.catch
-def onlinemonitorthread(inst, dtime):
-    try:
-        log.debug(f'starting the online monitor thread for {inst}')
-        log.patch(lambda record: record["extra"].update(instance=inst))
-        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-        asyncio.run(asynconlineupdate(inst, dtime))
-    except:
-        log.exception(f'Exception launching online monitor thread')
+def onlinemonitor_thread(inst, dtime, stop_event):
+    log.debug(f'Online monitor thread for {inst} is starting')
+    log.patch(lambda record: record["extra"].update(instance=inst))
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    asyncio.run(asynconlineupdate(inst, dtime, stop_event))

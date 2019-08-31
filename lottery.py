@@ -122,14 +122,14 @@ def determinewinner(linfo):
         writeglobal('ALERT', 'ALERT', msg)
 
 
-def lotteryloop(linfo):
+def lotteryloop(linfo, stop_event):
     if linfo['announced'] is False:
         log.debug('clearing lotteryplayers table')
         dbupdate("DELETE FROM lotteryplayers")
     inlottery = True
     log.debug('lottery loop has begun, waiting for lottery entries')
     while inlottery:
-        sleep(Secs['5min'])
+        stopsleep(Secs['5min'], stop_event)
         tdy = linfo['startdate'] + timedelta(hours=linfo['days'])
         # tdy = linfo['startdate'] + timedelta(minutes=5)  # quick 5 min for testing
         if Now(fmt='dt') >= tdy:
@@ -138,7 +138,7 @@ def lotteryloop(linfo):
     log.debug(f'Lottery loop has completed')
 
 
-def startlottery(lottoinfo):
+def startlottery(lottoinfo, stop_event):
     lend = elapsedTime(datetimeto(lottoinfo['startdate'] + timedelta(hours=lottoinfo['days']), fmt='epoch'), Now())
     if lottoinfo['announced'] is False:
         log.log('LOTTO', f'New lottery has started. Buyin: {lottoinfo["buyin"]} Starting: {lottoinfo["payout"]} Length: {lottoinfo["days"]}')
@@ -147,8 +147,7 @@ def startlottery(lottoinfo):
         writeglobal('ALERT', 'LOTTERY', bcast)
         writediscord(f'{lottoinfo["payout"]}', Now(), name=f'{lend}', server='LOTTOSTART')
         dbupdate("UPDATE lotteryinfo SET announced = True WHERE id = %s" % (lottoinfo["id"],))
-        sleep(10)
-    lotteryloop(lottoinfo)
+    lotteryloop(lottoinfo, stop_event)
 
 
 def generatelottery():
@@ -164,18 +163,26 @@ def generatelottery():
             dbupdate("INSERT INTO lotteryinfo (payout,startdate,buyin,days,players,winner,announced,completed) VALUES ('%s','%s','%s','%s',0,'Incomplete',False,False)" % (litm, Now(fmt="dt"), buyin, length))
 
 
-def checkfornewlottery():
+def checkfornewlottery(stop_event):
     lottoinfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
     if lottoinfo:
-        startlottery(lottoinfo)
+        startlottery(lottoinfo, stop_event)
+
+
+def stopsleep(sleeptime, stop_event):
+    for ntime in range(sleeptime):
+        if stop_event.is_set():
+            log.debug('Lotterywatcher thread has ended')
+            exit(0)
+        sleep(1)
 
 
 @log.catch
-def lotterywatcher(dtime):
-    while True:
-        try:
-            generatelottery()
-            checkfornewlottery()
-        except:
-            log.exception('Critical Error Lottery Watcher!')
-        sleep(dtime)
+def lotterywatcher_thread(dtime, stop_event):
+    log.debug('Lotterywatcher thread is starting')
+    while not stop_event.is_set():
+        generatelottery()
+        checkfornewlottery(stop_event)
+        stopsleep(dtime, stop_event)
+    log.debug('Lotterywatcher thread has ended')
+    exit(0)

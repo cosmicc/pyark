@@ -24,6 +24,14 @@ dwtimer = 0
 updgennotify = Now() - Secs['hour']
 
 
+def stopsleep(sleeptime, stop_event):
+    for ntime in range(sleeptime):
+        if stop_event.is_set():
+            log.debug('Arkupdater thread has ended')
+            exit(0)
+        sleep(1)
+
+
 @log.catch
 def writechat(inst, whos, msg, tstamp):
     isindb = False
@@ -581,42 +589,41 @@ def restartcheck():
             checkifalreadyrestarting(instance[each]['name'])
 
 
+
 @log.catch
-def arkupd():
-    log.debug('arkupdater thread started')
+def arkupdater_thread(stop_event):
+    log.debug('Arkupdater thread is starting')
     if numinstances > 0:
         log.debug(f'Found {numinstances} ARK server instances: [{instr}]')
     else:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
-    while True:
-        try:
-            checkconfig()
-            restartcheck()
-            sleep(30)
-            restartcheck()
-            sleep(30)
-            checkupdates()
-            restartcheck()
-            sleep(30)
-            restartcheck()
-            sleep(30)
-            maintenance()
-            restartcheck()
-            sleep(30)
-            restartcheck()
-            sleep(30)
-            checkbackup()
-            restartcheck()
-            sleep(30)
-            restartcheck()
-            sleep(30)
-            for each in range(numinstances):
-                if not isrebooting(instance[each]['name']):
-                    checkwipe(instance[each]['name'])
-            restartcheck()
-            sleep(30)
-            restartcheck()
-            sleep(30)
-        except:
-            log.exception('Critical Error in Ark Updater!')
-            sleep(60)
+    while not stop_event.is_set():
+        checkconfig()
+        restartcheck()
+        stopsleep(30, stop_event)
+        restartcheck()
+        stopsleep(30, stop_event)
+        checkupdates()
+        restartcheck()
+        stopsleep(30, stop_event)
+        restartcheck()
+        stopsleep(30, stop_event)
+        maintenance()
+        restartcheck()
+        stopsleep(30, stop_event)
+        restartcheck()
+        stopsleep(30, stop_event)
+        checkbackup()
+        restartcheck()
+        stopsleep(30, stop_event)
+        restartcheck()
+        stopsleep(30, stop_event)
+        for each in range(numinstances):
+            if not isrebooting(instance[each]['name']):
+                checkwipe(instance[each]['name'])
+        restartcheck()
+        stopsleep(30, stop_event)
+        restartcheck()
+        stopsleep(30, stop_event)
+    log.debug('Arkupdater thread has ended')
+    exit(0)

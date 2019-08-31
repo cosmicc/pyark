@@ -6,18 +6,28 @@ from modules.servertools import removerichtext
 from modules.players import isplayeradmin
 from modules.tribes import putplayerintribe, removeplayerintribe, gettribeinfo
 from time import sleep
-from os import nice, _exit
+from sys import exit
+
+
+def stopsleep(sleeptime, stop_event, name):
+    for ntime in range(sleeptime):
+        if stop_event.is_set():
+            log.debug(f'{name} thread has ended')
+            exit(0)
+        sleep(1)
 
 
 @log.catch
-def dblcheckonlineloop(dtime):
-    log.debug(f'starting online player doublechecker')
-    while True:
+def dblcheckonline_thread(dtime, stop_event):
+    log.debug(f'Online player doublechecker thread is starting')
+    while not stop_event.is_set():
         players = dbquery(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 280}", fmt='dict', fetch='all')
         for player in players:
             log.warning(f'Player [{player["playername"].title()}] wasnt found logging off. Clearing player from online status')
             dbupdate("UPDATE players SET online = False, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
-        sleep(dtime)
+        stopsleep(dtime, stop_event, 'Online player doublechecker')
+    log.debug(f'Online player doublechecker thread ended')
+    exit(0)
 
 
 def checkgamelog(record):
@@ -32,7 +42,7 @@ class GameLogger():
     def __init__(self):
         import psycopg2
         try:
-            log.debug('opening connection to gamelog database')
+            log.debug('Opening connection to gamelog database')
             self.conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             self.c = self.conn.cursor()
         except psycopg2.OperationalError:
@@ -59,9 +69,15 @@ class GameLogger():
                 processgameline(line[1], line[2], line[3])
 
     def close(self):
-        log.debug('closing connection to gamelog database')
-        self.c.close()
-        self.conn.close()
+        log.debug('Closing connection to gamelog database')
+        try:
+            self.c.close()
+        except:
+            log.exception('closing curser')
+        try:
+            self.conn.close()
+        except:
+            log.exception('closing conection')
 
 
 @log.catch
@@ -192,21 +208,14 @@ def processgameline(inst, ptype, line):
 
 
 @log.catch
-def gameloggerstart():
+def gamelogger_thread(stop_event):
     # log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=True, format=modules.logging.gamelogformat, delay=False, filter=checkgamelog)
-
-    nice(19)
+    log.debug(f'Gamelogger thread is starting')
     global gl
     gl = GameLogger()
-    while True:
-        try:
+    while not stop_event.is_set():
             gl.process()
             sleep(1)
-        except KeyboardInterrupt:
-            log.critical(f'Keyboard Interrupt termination recieved. Exiting.')
-            gl.close()
-            _exit(0)
-        except:
-            log.exception(f'Exception in Pyark Main Routine! Exiting')
-            gl.close()
-            _exit(1)
+    gl.close()
+    log.debug(f'Gamelogger thread has ended')
+    exit(0)

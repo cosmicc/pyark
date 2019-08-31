@@ -23,6 +23,14 @@ votestarttime = Now()
 arewevoting = False
 
 
+async def asyncstopsleep(sleeptime, stop_event):
+    for ntime in range(sleeptime):
+        if stop_event.is_set():
+            log.debug('Command listener thread has ended')
+            exit(0)
+        asyncio.sleep(1)
+
+'''
 @log.catch
 async def asynctask(function, wait, *args, **kwargs):
         task = asyncio.create_task(function(*args, **kwargs))
@@ -30,6 +38,7 @@ async def asynctask(function, wait, *args, **kwargs):
             return await task
         else:
             return True
+'''
 
 
 async def asyncwritechat(inst, whos, msg, tstamp):
@@ -896,28 +905,25 @@ async def asyncprocessline(minst, line):
 
 
 @log.catch
-async def checkcommands(inst, dtime):
-    while True:
-        try:
-            cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
-            b = cmdpipe.stdout.decode("utf-8")
-            for line in iter(b.splitlines()):
-                asyncio.create_task(asyncprocessline(inst, line))
-            await asyncio.sleep(10)
-        except:
-            log.exception(f'Exception in checkcommands loop')
+async def checkcommands(inst, dtime, stop_event):
+    asyncloop = asyncio.get_running_loop()
+    while not stop_event.is_set():
+        cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
+        b = cmdpipe.stdout.decode("utf-8")
+        starttime = time()
+        for line in iter(b.splitlines()):
+            asyncio.create_task(asyncprocessline(inst, line))
+        while time() - starttime < dtime:
+            await asyncstopsleep(dtime / 20, stop_event)
+    asyncloop.stop()
+    asyncloop.close()
+    log.debug('Command listener thread has ended')
+    exit(0)
 
 
 @log.catch
-def clisten(inst, dtime):
-    log.debug(f'starting the command listener thread for {inst}')
+def cmdlistener_thread(inst, dtime, stop_event):
+    log.debug(f'Command listener thread for {inst} is starting')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    #asyncloop = asyncio.new_event_loop()
-    #asyncloop.call_at(2, checkcommands, inst, dtime)
-    #try:
-    #    asyncloop.run_forever()
-    #finally:
-    #    asyncloop.run_until_complete(asyncloop.shutdown_asyncgens())
-    #    asyncloop.close()
     asyncio.run(checkcommands(inst, dtime))
