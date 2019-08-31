@@ -902,6 +902,7 @@ async def checkcommands(inst, dtime):
     while True:
         try:
             if asyncloop.time() - start > dtime:
+                log.debug(asyncloop.time() - start)
                 start = asyncloop.time()
                 log.debug('checking commands')
                 cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
