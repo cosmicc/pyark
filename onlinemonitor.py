@@ -236,11 +236,11 @@ async def asynconlineupdate(inst, dtime):
 
 
 @log.catch
-async def onlinemonitorthread(inst, dtime):
+def onlinemonitorthread(inst, dtime):
     try:
         log.debug(f'starting the online monitor thread for {inst}')
-       # log.patch(lambda record: record["extra"].update(instance=inst))
-       # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-       # asyncio.run(asynconlineupdate(inst, dtime))
+        log.patch(lambda record: record["extra"].update(instance=inst))
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        asyncio.run(asynconlineupdate(inst, dtime))
     except:
         log.exception(f'Exception launching online monitor thread')
