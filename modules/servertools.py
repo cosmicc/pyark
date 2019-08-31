@@ -29,9 +29,9 @@ async def asyncserverchatto(inst, steamid, message, nice=15):
 @log.catch
 async def asyncserverbcast(inst, message, nice=10):
     asyncloop = asyncio.get_running_loop()
-    cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd "{message}" @{inst}"""
+    cmdstring = quote(f"""/usr/bin/nice -n {nice} arkmanager rconcmd "{message}" @{inst}""")
     log.debug(f'cmd: {cmdstring}')
-    proc = asyncio.create_subprocess_shell(quote(cmdstring), loop=asyncloop)
+    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
     asyncio.create_task(proc)
     return True
 
