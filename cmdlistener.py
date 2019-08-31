@@ -926,4 +926,4 @@ def cmdlistener_thread(inst, dtime, stop_event):
     log.debug(f'Command listener thread for {inst} is starting')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncio.run(checkcommands(inst, dtime))
+    asyncio.run(checkcommands(inst, dtime, stop_event))
