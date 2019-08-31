@@ -220,6 +220,7 @@ def main():
     if is_statscollector == "True":
         ostat = Thread(name='stat-collector', target=oscollect, args=(300,), daemon=True)
         ostat.start()
+    sleep(2)
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
 
     def sig_handler(signal, frame):
