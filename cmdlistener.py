@@ -499,8 +499,7 @@ async def processtcdata(inst, tcdata):
             if int(player['transferpoints']) != int(rewardpoints):
                 if int(rewardpoints) != 0:
                     if Now() - float(player['lastpointtimestamp']) > 60:
-                        log.debug(f'adding {rewardpoints} non home points to {player["homeserver"]} transfer points for \
-{playername} on {inst}')
+                        log.debug(f'adding {rewardpoints} non home points to {player["homeserver"]} transfer points for {playername} on {inst}')
                         await asyncdbupdate(f"UPDATE players SET transferpoints = '{int(rewardpoints)}', lastpointtimestamp = '{str(Now())}' WHERE steamid = '{str(steamid)}'")
                         cmdlist = ['arkmanager', 'rconcmd', f'"ScriptCommand tcsar setarctotal {steamid} 0"', f'@{inst}']
                         await asyncserverexec(cmdlist, 15)
