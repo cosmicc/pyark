@@ -22,7 +22,6 @@ import argparse
 from loguru import logger as log
 import lottery
 from threading import Thread
-# from multiprocessing import Process
 import signal
 import shutil
 import modules.logging

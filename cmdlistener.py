@@ -917,5 +917,5 @@ async def checkcommands(inst, dtime):
 def clisten(inst, dtime):
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
-    #asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     asyncio.run(checkcommands(inst, dtime))
