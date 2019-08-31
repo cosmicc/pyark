@@ -3,7 +3,45 @@ from psutil import Process
 from loguru import logger as log
 from re import sub
 from os.path import isfile
-from shlex import quote
+import asyncio
+
+
+@log.catch
+async def asyncserverchat(inst, message, nice=15):
+    asyncloop = asyncio.get_running_loop()
+    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{inst}'
+    asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    return True
+
+
+@log.catch
+async def asyncserverchatto(inst, steamid, message, nice=15):
+    asyncloop = asyncio.get_running_loop()
+    cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'ServerChatTo "{steamid}" {message}' @{inst}"""
+    asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    return True
+
+
+@log.catch
+async def asyncserverbcast(inst, message, nice=10):
+    asyncloop = asyncio.get_running_loop()
+    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerBroadcast {message}" @{inst}'
+    asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    return True
+
+
+
+@log.catch
+async def asyncserverexec(cmdlist, nice):
+    asyncloop = asyncio.get_running_loop()
+    fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
+    cmdstring = ' '.join(fullcmdlist)
+    # cmdstring = quote(' '.join(fullcmdlist)).strip("'")
+    log.debug(f'server rcon cmd executing [{cmdstring}]')
+    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
+    log.debug(f'server rcon process completed [{cmdstring}]')
+    return 0
 
 
 def removerichtext(text):

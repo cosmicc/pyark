@@ -4,7 +4,7 @@ from modules.dbhelper import dbquery, dbupdate, cleanstring, asyncglupdate, asyn
 from modules.players import newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal, asyncgetinstancelist
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
-from modules.servertools import serverexec
+from modules.servertools import serverexec, asyncserverexec, asyncserverchat, asyncserverchatto, asyncserverbcast
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
@@ -30,20 +30,6 @@ async def asynctask(function, wait, *args, **kwargs):
             return await task
         else:
             return True
-
-
-@log.catch
-async def asyncserverexec(cmdlist, nice):
-    asyncloop = asyncio.get_running_loop()
-    # asyncio.get_child_watcher().attach_loop(asyncloop)
-    fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
-    cmdstring = ' '.join(fullcmdlist)
-    # cmdstring = quote(' '.join(fullcmdlist)).strip("'")
-    log.debug(f'server rcon cmd executing [{cmdstring}]')
-    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
-    await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
-    log.debug(f'server rcon process completed [{cmdstring}]')
-    return 0
 
 
 async def asyncwritechat(inst, whos, msg, tstamp):
@@ -443,23 +429,22 @@ def isserver(line):
         return False
 
 
-def linker(minst, whoasked):
-    dplayer = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked.lower(), whoasked.lower()), fetch='one')
-    if dplayer:
-        if dplayer[8] is None or dplayer[8] == '':
+async def asynclinker(minst, whoasked):
+    steamid = await asyncgetsteamid(whoasked)
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
+    if player:
+        if player['discordid'] is None or player['discordid'] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
-            log.log('PLAYER', f'Generated code [{rcode}] for link request from [{dplayer[1].title()}] on [{minst.title()}]')
-            dbupdate("DELETE from linkrequests WHERE steamid = '%s'" % (dplayer[0],))
-            dbupdate("INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('%s', '%s', '%s')" % (dplayer[0], dplayer[1], str(rcode)))
-            msg = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0], msg, minst), shell=True)
+            log.log('PLAYER', f'Generated code [{rcode}] for link request from [{player["playername"].title()}] on [{minst.title()}]')
+            await asyncdbupdate(f"""DELETE from linkrequests WHERE steamid = '{player["steamid"]}'""")
+            await asyncdbupdate(f"""INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('{player["steamid"]}', '{player["playername"]}', '{str(rcode)}')""")
+            message = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
+            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{player["steamid"]}" {message}'""", f'@{minst}'], 19)
         else:
-            log.warning(f'link request for {dplayer[1]} denied, already linked')
-            msg = f'You already have a discord account linked to this account'
-            subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (dplayer[0], msg, minst), shell=True)
+            log.warning(f'link request for {player["playername"]} denied, already linked')
+            message = f'You already have a discord account linked to this account'
+            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{player["steamid"]}" {message}'""", f'@{minst}'], 19)
     else:
-        pass
-        # user not found in db (wierd)
         log.error(f'User not found in DB {whoasked}!')
 
 
@@ -811,8 +796,7 @@ async def processline(minst, line):
                     else:
                         message = f'You must specify a player name to search'
                         log.log('CMD', f'Responding to a invalid [!lastseen] request from [{orgname.title()}] on [{minst.title()}]')
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(minst, message)
 
                 elif incmd.startswith('!playedtime'):
                     rawseenname = line.split(':')
@@ -884,11 +868,11 @@ async def processline(minst, line):
 
                 elif incmd.startswith(('!agree', '!yes')):
                     log.debug(f'responding to YES vote on {minst} from {whoasked}')
-                    await castedvote(minst, whoasked, True)
+                    await asynccastedvote(minst, whoasked, True)
 
                 elif incmd.startswith(('!disagree', '!no')):
                     log.log('VOTE', f'Responding to NO vote on [{minst.title()}] from [{whoasked.title()}]')
-                    await castedvote(minst, whoasked, False)
+                    await asynccastedvote(minst, whoasked, False)
 
                 elif incmd.startswith(('!timeleft', '!restart')):
                     log.log('CMD', f'Responding to a [!timeleft] request from [{whoasked.title()}] on [{minst.title()}]')
@@ -896,7 +880,7 @@ async def processline(minst, line):
 
                 elif incmd.startswith(('!linkme', '!link')):
                     log.log('CMD', f'Responding to a [!linkme] request from [{whoasked.title()}] on [{minst.title()}]')
-                    linker(minst, whoasked)
+                    asyncio.create_task(asynclinker(minst, whoasked))
 
                 elif incmd.startswith(('!lottery', '!lotto')):
                     rawline = line.split(':')
