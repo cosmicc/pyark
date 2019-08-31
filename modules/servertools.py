@@ -12,7 +12,7 @@ async def asyncserverchat(inst, message, nice=15):
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{inst}'
     log.debug(f'cmd: {cmdstring}')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
-    await asyncio.create_task(proc)
+    asyncio.create_task(proc)
     return True
 
 
@@ -20,7 +20,8 @@ async def asyncserverchat(inst, message, nice=15):
 async def asyncserverchatto(inst, steamid, message, nice=15):
     asyncloop = asyncio.get_running_loop()
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'ServerChatTo "{steamid}" {message}' @{inst}"""
-    asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    asyncio.create_task(proc)
     return True
 
 
@@ -28,7 +29,8 @@ async def asyncserverchatto(inst, steamid, message, nice=15):
 async def asyncserverbcast(inst, message, nice=10):
     asyncloop = asyncio.get_running_loop()
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerBroadcast {message}" @{inst}'
-    asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    asyncio.create_task(proc)
     return True
 
 
