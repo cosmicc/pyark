@@ -245,7 +245,7 @@ async def asynconlineupdate(inst, dtime, stop_event):
         for line in iter(b.splitlines()):
             asyncloop.create_task(asyncprocessline(inst, line))
         while time.time() - starttime < dtime:
-            await asyncstopsleep(dtime / 20, stop_event)
+            await asyncio.sleep(1)
     asyncloop.stop()
     asyncloop.close()
     log.debug('Online monitor thread has ended')
