@@ -19,13 +19,11 @@ def writeglobal(inst, whos, msg):
 
 
 def getlastlotteryinfo():
-    linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc", fetch='one', fmt='dict')
-    return linfo
+    return dbquery("SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc", fetch='one', fmt='dict')
 
 
 async def asyncgetlastlotteryinfo():
-    lottery = await asyncdbquery("SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc", 'dict', 'one')
-    return lottery
+    return await asyncdbquery("SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc", 'dict', 'one')
 
 
 def isinlottery():

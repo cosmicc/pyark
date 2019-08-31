@@ -666,7 +666,7 @@ async def asyncchatlineelsed(line, inst):
 
 
 @log.catch
-async def processline(minst, line):
+async def asyncprocessline(minst, line):
     inst = minst
     if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
         pass
@@ -898,14 +898,17 @@ async def processline(minst, line):
 @log.catch
 async def checkcommands(inst, dtime):
     while True:
-        asyncloop = asyncio.get_running_loop()
-        starttime = Now()
-        cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
-        b = cmdpipe.stdout.decode("utf-8")
-        for line in iter(b.splitlines()):
-            asyncloop.create_task(processline(inst, line))
-        while Now() - starttime < 2:
-            await asyncio.sleep(.01)
+        try:
+            asyncloop = asyncio.get_running_loop()
+            starttime = Now()
+            cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
+            b = cmdpipe.stdout.decode("utf-8")
+            for line in iter(b.splitlines()):
+                asyncloop.create_task(asyncprocessline(inst, line))
+            while Now() - starttime < dtime:
+                await asyncio.sleep(.01)
+        except:
+            log.exception(f'Exception in checkcommands loop')
     asyncloop.stop()
     asyncloop.close()
 

@@ -31,6 +31,7 @@ async def llasyncdbquery(query, db, fetch, fmt, single):
                 dbdata = await conn.fetchrow(query)
             elif fetch == 'all' or fmt == "count":
                 dbdata = await conn.fetch(query)
+            await conn.close()
         except:
             log.exception(f'Error in {db} database query {query}')
             await conn.close()
@@ -86,6 +87,7 @@ async def llasyncdbupdate(query, db):
                 await conn.execute(sql, query[0].lower(), query[1].upper(), query[2])
             else:
                 await conn.execute(query)
+            await conn.close()
         except:
             log.exception(f'Error in Database update {query}')
             await conn.close()

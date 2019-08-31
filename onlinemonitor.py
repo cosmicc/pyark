@@ -1,11 +1,13 @@
 from clusterevents import iseventtime, getcurrenteventinfo
-from modules.dbhelper import dbquery, dbupdate, cleanstring
+from modules.dbhelper import dbquery, dbupdate, cleanstring, asyncdbquery, asyncdbupdate
 from modules.players import getplayer, newplayer
 from modules.timehelper import elapsedTime, playedTime, Now
 from modules.servertools import serverexec
 from loguru import logger as log
 import threading
 from time import sleep
+import asyncio
+import uvloop
 
 welcomthreads = []
 greetthreads = []
@@ -90,18 +92,18 @@ def lottodeposits(steamid, inst):
 
 
 @log.catch
-def checkifbanned(steamid):
-    oplayer = dbquery("SELECT steamid FROM players WHERE steamid = '%s' AND banned != ''" % (steamid,), fetch='one')
-    bplayer = dbquery("SELECT steamid FROM banlist WHERE steamid = '%s'" % (steamid,), fetch='one')
-    if oplayer or bplayer:
+async def asynccheckifbanned(steamid):
+    player = await asyncdbquery(f"SELECT steamid FROM players WHERE steamid = '{steamid}' AND banned != ''", 'dict', 'one')
+    banned = await asyncdbquery(f"SELECT steamid FROM banlist WHERE steamid = '{steamid}'", 'dict','one')
+    if player or banned:
         return True
     else:
         return False
 
 
 @log.catch
-def playergreet(steamid, steamname, inst):
-    global greetthreads
+async def asyncplayergreet(steamid, steamname, inst):
+    #global greetthreads
     global welcomthreads
     gogo = 0
     xferpoints = 0
@@ -189,36 +191,56 @@ def playergreet(steamid, steamname, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
-def onlineupdate(inst, dtime):
+@log.catch
+async def asyncprocessline(inst, line):
+    try:
+        if line.startswith('Running command') or line.startswith(('"', ' "', 'Error:', '"No Players')):
+            pass
+        else:
+            rawline = line.split(',')
+            if len(rawline) > 1:
+                steamid = rawline[1].strip()
+                steamname = cleanstring(rawline[0].split('. ', 1)[1])
+                asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
+
+                #if f'greet-{nsteamid}' not in greetthreads:
+                #    if not isgreeting(nsteamid):
+                #        gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet, args=(nsteamid, steamname, inst))
+                #        greetthreads.append({'steamid': nsteamid, 'gthread': gthread})
+                #        gthread.start()
+                #    else:
+                #        log.debug(f'online player greeting aleady running for {steamname}')
+                #else:
+                #    log.debug(f'greeting already running for {steamname}')
+            else:
+                log.error(f'problem with parsing online player - {rawline}')
+    except:
+        log.exception('Exception in online monitor process line')
+
+
+@log.catch
+async def asynconlineupdate(inst, dtime):
     global greetthreads
-    log.debug(f'starting online player watcher on {inst}')
     while True:
         try:
+            asyncloop = asyncio.get_running_loop()
+            starttime = Now()
             cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
             b = cmdpipe.stdout.decode("utf-8")
             for line in iter(b.splitlines()):
-                if line.startswith('Running command') or line.startswith('"') or line.startswith(' "') \
-                   or line.startswith('Error:'):
-                    pass
-                else:
-                    if line.startswith('"No Players'):
-                        pass
-                    else:
-                        rawline = line.split(',')
-                        if len(rawline) > 1:
-                            nsteamid = rawline[1].strip()
-                            steamname = cleanstring(rawline[0].split('. ', 1)[1])
-                            if f'greet-{nsteamid}' not in greetthreads:
-                                if not isgreeting(nsteamid):
-                                    gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet, args=(nsteamid, steamname, inst))
-                                    greetthreads.append({'steamid': nsteamid, 'gthread': gthread})
-                                    gthread.start()
-                                else:
-                                    log.debug(f'online player greeting aleady running for {steamname}')
-                            else:
-                                log.debug(f'greeting already running for {steamname}')
-                        else:
-                            log.error(f'problem with parsing online player - {rawline}')
+                asyncloop.create_task(asyncprocessline(inst, line))
+            while Now() - starttime < dtime:
+                await asyncio.sleep(.01)
         except:
-            log.exception('Critical Error in Online Updater!')
-        sleep(dtime)
+            log.exception(f'Exception in online monitor loop')
+    asyncloop.stop()
+    asyncloop.close()
+
+
+
+@log.catch
+async def onlinemonitorthread(inst, dtime):
+    log.debug(f'starting the online monotpr thread for {inst}')
+    log.patch(lambda record: record["extra"].update(instance=inst))
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    asyncio.run(asynconlineupdate(inst, dtime))
