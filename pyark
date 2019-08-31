@@ -184,6 +184,7 @@ def checkthreads():
 
 @log.catch
 def main():
+    log.debug(f'Pyark is sarting on {hstname.upper()}')
     global checkgit
     global instance
     global stop_event
