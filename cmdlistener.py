@@ -896,16 +896,17 @@ async def asyncprocessline(minst, line):
 
 
 @log.catch
-def checkcommands(inst, dtime):
-    asyncloop = asyncio.get_running_loop()
-    try:
-        log.debug('checking commands')
-        cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
-        b = cmdpipe.stdout.decode("utf-8")
-        for line in iter(b.splitlines()):
-            asyncloop.create_task(asyncprocessline(inst, line))
-    except:
-        log.exception(f'Exception in checkcommands loop')
+async def checkcommands(inst, dtime):
+    while True:
+        try:
+            log.debug('checking commands')
+            cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
+            b = cmdpipe.stdout.decode("utf-8")
+            for line in iter(b.splitlines()):
+                asyncio.create_task(asyncprocessline(inst, line))
+            await asyncio.sleep(dtime)
+        except:
+            log.exception(f'Exception in checkcommands loop')
 
 
 @log.catch
@@ -913,11 +914,11 @@ def clisten(inst, dtime):
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncloop = asyncio.new_event_loop()
-    asyncloop.call_at(2, checkcommands, inst, dtime)
-    try:
-        asyncloop.run_forever()
-    finally:
-        asyncloop.run_until_complete(asyncloop.shutdown_asyncgens())
-        asyncloop.close()
-    #asyncio.run(checkcommands(inst, dtime))
+    #asyncloop = asyncio.new_event_loop()
+    #asyncloop.call_at(2, checkcommands, inst, dtime)
+    #try:
+    #    asyncloop.run_forever()
+    #finally:
+    #    asyncloop.run_until_complete(asyncloop.shutdown_asyncgens())
+    #    asyncloop.close()
+    asyncio.run(checkcommands(inst, dtime))
