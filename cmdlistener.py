@@ -896,17 +896,14 @@ async def asyncprocessline(minst, line):
 
 
 @log.catch
-async def checkcommands(inst, dtime):
+def checkcommands(inst, dtime):
     asyncloop = asyncio.get_running_loop()
-    start = asyncloop.time()
     try:
-            log.debug(asyncloop.time() - start)
-            start = asyncloop.time()
-            log.debug('checking commands')
-            cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
-            b = cmdpipe.stdout.decode("utf-8")
-            for line in iter(b.splitlines()):
-                asyncloop.create_task(asyncprocessline(inst, line))
+        log.debug('checking commands')
+        cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
+        b = cmdpipe.stdout.decode("utf-8")
+        for line in iter(b.splitlines()):
+            asyncloop.create_task(asyncprocessline(inst, line))
     except:
         log.exception(f'Exception in checkcommands loop')
 
