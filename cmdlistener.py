@@ -5,7 +5,7 @@ from modules.players import newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal, asyncgetinstancelist
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from modules.servertools import serverexec, asyncserverchat, asyncserverchatto, asyncserverbcast, asyncserverscriptcmd
-from lottery import getlastlotteryinfo
+from lottery import asyncgetlastlotteryinfo
 from time import sleep
 from loguru import logger as log
 import random
@@ -539,53 +539,55 @@ async def asynchomeserver(inst, whoasked, ext):
             await asyncserverchatto(inst, steamid, message)
 
 
-def lastlotto(whoasked, inst):
-    lastl = getlastlotteryinfo()
-    msg = f'Last lottery was won by {lastl["winner"].upper()} for {lastl["payout"]} points {elapsedTime(datetimeto(lastl["startdate"] + timedelta(hours=int(lastl["days"])), fmt="epoch"),Now())} ago'
-    subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg, inst), shell=True)
+@log.catch
+async def asynclastlotto(whoasked, inst):
+    lastl = await asyncgetlastlotteryinfo()
+    message = f'Last lottery was won by {lastl["winner"].upper()} for {lastl["payout"]} points {elapsedTime(datetimeto(lastl["startdate"] + timedelta(hours=int(lastl["days"])), fmt="epoch"),Now())} ago'
+    await asyncserverchat(inst, message)
 
 
-def lotteryinfo(linfo, lpinfo, inst):
-    msg = f'Current lottery is up to {linfo["payout"]} ARc reward points.'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
-    msg = f'{linfo["players"]} players have entered into this lottery so far'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
-    msg = f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
-    amiin = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
-    if amiin:
-        msg = f'You are enterted into this lottery. Good Luck!'
+@log.catch
+async def asynclotteryinfo(lottery, player, inst):
+    message = f'Current lottery is up to {lottery["payout"]} ARc reward points.'
+    await asyncserverchatto(inst, player['steamid'], message)
+    message = f'{lottery["players"]} players have entered into this lottery so far'
+    await asyncserverchatto(inst, player['steamid'], message)
+    message = f'Lottery ends in {elapsedTime(datetimeto(lottery["startdate"] + timedelta(hours=lottery["days"]), fmt="epoch"),Now())}'
+    await asyncserverchatto(inst, player['steamid'], message)
+    inlotto = await asyncdbquery(f"""SELECT * FROM lotteryplayers WHERE steamid = '{player["steamid"]}'""", 'dict', 'one')
+    if inlotto:
+        message = f'You are enterted into this lottery. Good Luck!'
     else:
-        msg = f'Type !lotto join to spend {linfo["buyin"]} points and enter into this lottery'
-    subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
+        message = f'Type !lotto join to spend {lottery["buyin"]} points and enter into this lottery'
+    await asyncserverchatto(inst, player['steamid'], message)
 
 
-def lottery(whoasked, lchoice, inst):
-    linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False", fetch='one', fmt='dict')
-    lpinfo = dbquery("SELECT * FROM players WHERE playername = '%s' or alias = '%s'" % (whoasked, whoasked), fetch='one')
-    if linfo:
+@log.catch
+async def asynclottery(whoasked, lchoice, inst):
+    lottery = await asyncdbquery("SELECT * FROM lotteryinfo WHERE completed = False", 'dict', 'one')
+    steamid = await asyncgetsteamid(whoasked)
+    player = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
+    if lottery:
         if lchoice == 'join' or lchoice == 'enter':
             log.log('CMD', f'Responding to a [!lotto join] request from [{whoasked.title()}] on [{inst.title()}]')
-            lpcheck = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (lpinfo[0],), fetch='one')
-            lfo = 'ARc Rewards Points'
+            lpcheck = await asyncdbquery(f"""SELECT * FROM lotteryplayers WHERE steamid = '{player["steamid"]}'""", 'dict', 'one')
             # ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
             if lpcheck is None:
-                dbupdate("INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('%s', '%s', '%s', '%s')" %
-                         (lpinfo[0], lpinfo[1], Now(fmt='dt'), 0))
-                dbupdate("UPDATE lotteryinfo SET payout = '%s', players = '%s' WHERE completed = False" % (linfo['payout'] + linfo['buyin'] * 2, linfo['players'] + 1))
-                msg = f'You have been added to the {lfo} lottery! A winner will be choosen in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}. Good Luck!'
-                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
+                await asyncdbupdate(f"""INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('{player["steamid"]}', '{player["playername"]}', '{Now(fmt='dt')}', 0)""")
+                await asyncdbupdate(f"""UPDATE lotteryinfo SET payout = {lottery['payout'] + lottery['buyin'] * 2}, players = {lottery['players'] + 1} WHERE completed = False""")
+                message = f'You have been added to the reward points lottery! A winner will be choosen in {elapsedTime(datetimeto(lottery["startdate"] + timedelta(hours=lottery["days"]), fmt="epoch"), Now())}. Good Luck!'
+                await asyncserverchatto(inst, player['steamid'], message)
                 log.log('LOTTO', f'Player [{whoasked.title()}] has joined the current active lottery')
             else:
-                msg = f'You are already participating in this lottery for {lfo}.  Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}'
-                subprocess.run("""arkmanager rconcmd 'ServerChatTo "%s" %s' @%s""" % (lpinfo[0], msg, inst), shell=True)
+                message = f'You are already participating in this reward point lottery.  Lottery ends in {elapsedTime(datetimeto(lottery["startdate"] + timedelta(hours=lottery["days"]), fmt="epoch"),Now())}'
+                await asyncserverchatto(inst, player['steamid'], message)
         else:
             log.log('CMD', f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
-            lotteryinfo(linfo, lpinfo, inst)
+            await asynclotteryinfo(lottery, player, inst)
     else:
+        message = f'There are no current lotterys underway.'
+        await asyncserverchat(inst, message)
         log.log('CMD', f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
-        msg = f'There are no current lotterys underway.'
-        subprocess.run("""arkmanager rconcmd 'ServerChat %s' @%s""" % (msg, inst), shell=True)
 
 
 @log.catch
@@ -876,11 +878,11 @@ async def processline(minst, line):
                             lchoice = lastlline[1]
                         else:
                             lchoice = False
-                        lottery(whoasked, lchoice, minst)
+                        asyncio.create_task(asynclottery(whoasked, lchoice, minst))
 
                 elif incmd.startswith(('!lastlotto', '!winner')):
                     log.log('CMD', f'Responding to a [!lastlotto] request from [{whoasked.title()}] on [{minst.title()}]')
-                    lastlotto(minst, whoasked)
+                    await asynclastlotto(minst, whoasked)
 
                 elif incmd.startswith('!'):
                     steamid = await asyncgetsteamid(whoasked)

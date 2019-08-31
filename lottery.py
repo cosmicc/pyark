@@ -2,7 +2,7 @@ from random import choice
 from datetime import timedelta, datetime
 from datetime import time as dt
 from timebetween import is_time_between
-from modules.dbhelper import dbquery, dbupdate
+from modules.dbhelper import dbquery, dbupdate, asyncdbquery
 from modules.timehelper import estshift, Secs, Now, datetimeto, elapsedTime
 from numpy import argmax
 from numpy.random import seed, shuffle, randint
@@ -21,6 +21,11 @@ def writeglobal(inst, whos, msg):
 def getlastlotteryinfo():
     linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc", fetch='one', fmt='dict')
     return linfo
+
+
+async def asyncgetlastlotteryinfo():
+    lottery = await asyncdbquery("SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc", 'dict', 'one')
+    return lottery
 
 
 def isinlottery():
