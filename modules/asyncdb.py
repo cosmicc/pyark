@@ -9,20 +9,34 @@ import time
 
 class asyncDB():
     def __init__(self):
-        log.trace('starting async db engine')
+        log.trace('Starting async db engine')
 
-    async def connect(self):
+    async def pyconnect(self):
         self.dbeventloop = asyncio.get_running_loop()
         self.pydbconn = await asyncpg.connect(database='pyark', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        self.gldbconn = await asyncpg.connect(database='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        log.debug('Connections established to database server')
+        log.debug('Connection established to pyarkdb')
 
-    async def disconnect(self):
-        await self.pydbconn.close()
-        await self.gldbconn.close()
+    async def glconnect(self):
+        self.dbeventloop = asyncio.get_running_loop()
+        self.gldbconn = await asyncpg.connect(database='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        log.debug('Connection established to gamelogdb')
+
+    async def stconnect(self):
+        self.dbeventloop = asyncio.get_running_loop()
+        self.stdbconn = await asyncpg.connect(database='statsdb', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        log.debug('Connection established to statsdb')
+
+    async def close(self):
+        if 'self.pydbconn' in locals():
+            await self.pydbconn.close()
+        if 'self.gldbconn' in locals():
+            await self.gldbconn.close()
+        if 'self.stbconn' in locals():
+            await self.stdbconn.close()
         log.debug('Database connections closed')
 
-    async def pyquery(self, query, fetch, fmt):
+    async def pyquery(self, query, fmt, fetch):
+        dbdata = None
         try:
             if fetch == 'one':
                 dbdata = await self.pydbconn.fetchrow(query)
@@ -79,18 +93,14 @@ async def stop():
 
 
 @log.catch
-def dbeventthread():
+def pyark():
     log.debug(f'Starting database connection thread for {hstname}')
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     dbeventloop = asyncio.new_event_loop()
-    dbeventloop.create_task(start())
+    db = asyncDB()
+    dbeventloop.create_task(db.pyconnect())
+    dbeventloop.create_task(db.pydisconnect())
     dbeventloop.run_forever()
-
-
-def pyark():
-    el = Thread(target=dbeventthread, daemon=True)
-    el.start()
-    time.sleep(5)
 
 
 @log.catch
