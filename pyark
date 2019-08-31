@@ -191,6 +191,8 @@ def main():
     threads = []
     stop_event = threading.Event()
     checklist = dbquery("SELECT name FROM instances")
+    log.debug(checklist)
+    log.debug(instances)
     if not any(x in instances for x in checklist) and instr != 'Master Server':
         log.critical(f'Instance does not exist in the database!')
         exit(1)
