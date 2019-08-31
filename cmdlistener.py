@@ -4,7 +4,7 @@ from modules.dbhelper import dbquery, dbupdate, cleanstring, asyncglupdate, asyn
 from modules.players import newplayer
 from modules.instances import homeablelist, getlastwipe, getlastrestart, writeglobal, asyncgetinstancelist
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
-from modules.servertools import serverexec, asyncserverexec, asyncserverchat, asyncserverchatto, asyncserverbcast
+from modules.servertools import serverexec, asyncserverchat, asyncserverchatto, asyncserverbcast, asyncserverscriptcmd
 from lottery import getlastlotteryinfo
 from time import sleep
 from loguru import logger as log
@@ -77,10 +77,10 @@ async def asyncresptimeleft(inst, whoasked):
     insts = await asyncdbquery(f"SELECT * FROM instances WHERE name = '{inst}'", 'dict', 'one')
     if insts['needsrestart'] == 'True':
         message = f'{inst.title()} is restarting in {insts["restartcountdown"]} minutes'
-        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 19)
+        await asyncserverchat(inst, message)
     else:
         message = f'{inst.title()} is not pending a restart'
-        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 19)
+        await asyncserverchat(inst, message)
 
 
 @log.catch
@@ -104,7 +104,7 @@ async def asyncrespmyinfo(inst, whoasked):
         ptime = playedTime(player['playedtime'])
         steamid = player['steamid']
         message = f"Your current reward points: {player['rewardpoints'] + player['transferpoints']}\nYour total play time is {ptime}\nYour home server is {player['homeserver'].capitalize()}"
-        await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+        await asyncserverchatto(inst, steamid, message)
 
 
 @log.catch
@@ -145,8 +145,7 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
             potime = Secs['day']
         if inst not in await asyncgetinstancelist():
             message = f'{inst.capitalize()} is not a valid server'
-            cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
-            await asyncserverexec(cmdlist, 15)
+            await asyncserverchat(oinst, message)
         else:
             players = await asyncdbquery(f"SELECT * FROM players WHERE server = '{inst}'", 'tuple', 'all')
             pcnt = 0
@@ -162,25 +161,20 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
             if pcnt != 0:
                 if crnt == 1:
                     message = f'{inst.capitalize()} has {pcnt} players online: {plist}'
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(oinst, message)
                 elif crnt == 2:
                     message = f'{inst.capitalize()} has had {pcnt} players in the last hour: {plist}'
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(oinst, message)
                 elif crnt == 3:
                     message = f'{inst.capitalize()} has had {pcnt} players in the last day: {plist}'
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(oinst, message)
             if pcnt == 0 and not filt:
                 message = f'{inst.capitalize()} has no players online.'
-                cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
-                await asyncserverexec(cmdlist, 15)
+                await asyncserverchat(oinst, message)
     except:
         log.exception()
         message = f'Server {inst.capitalize()} does not exist.'
-        cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
-        await asyncserverexec(cmdlist, 15)
+        await asyncserverchat(oinst, message)
 
 
 async def asyncgetlastvote(inst):
@@ -243,34 +237,34 @@ async def asynccastedvote(inst, whoasked, myvote):
     global arewevoting
     if not isvoting(inst):
         message = f'No vote is taking place now'
-        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 15)
+        await asyncserverchat(inst, message)
     else:
         steamid = await asyncgetsteamid(whoasked)
         if await asyncgetvote(whoasked) == 99:
             message = 'Sorry, you are not eligible to vote in this round'
-            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+            await asyncserverchatto(inst, steamid, message)
         elif not steamid:
             message = 'Sorry, you are not eligible to vote. Tell an admin they need to update your name!'
-            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+            await asyncserverchatto(inst, steamid, message)
         elif await asyncgetvote(whoasked) == 2:
             message = "You started the vote. you're assumed a YES vote."
-            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+            await asyncserverchatto(inst, steamid, message)
         elif await asyncgetvote(whoasked) == 1:
             message = 'You have already voted YES. you can only vote once.'
-            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+            await asyncserverchatto(inst, steamid, message)
         else:
             if myvote:
                 await asyncsetvote(whoasked, 1)
                 message = 'Your YES vote has been cast'
-                await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+                await asyncserverchatto(inst, steamid, message)
             else:
                 await asyncsetvote(whoasked, 0)
                 message = 'Your NO vote has been cast'
-                await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+                await asyncserverchatto(inst, steamid, message)
                 log.log('VOTE', f'Voting NO has won, NO wild dino wipe will be performed for {inst}')
                 arewevoting = False
-                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
-                await asyncserverexec(['arkmanager', 'rconcmd', f'{bcast}', f'@{inst}'], 15)
+                bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
+                await asyncserverbcast(inst, bcast)
                 asyncio.create_task(asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has failed with a NO vote from \
 {whoasked.capitalize()}', wcstamp()))
 
@@ -386,18 +380,18 @@ async def asyncstartvoter(inst, whoasked):
     global instance
     if isvoting(inst):
         message = 'Voting has already started. cast your vote now'
-        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 15)
+        await asyncserverchat(inst, message)
     elif Now() - float(getlastvote(inst)) < Secs['4hour']:          # 4 hours between wipes
         rawtimeleft = Secs['4hour'] - (Now() - float(getlastvote(inst)))
         timeleft = playedTime(rawtimeleft)
         message = f'You must wait {timeleft} until the next wild wipe vote can start'
-        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 15)
+        await asyncserverchat(inst, message)
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 4 hour timer')
     elif Now() - float(lastvoter) < Secs['10min']:                  # 10 min between attempts
         rawtimeleft = Secs['10min'] - (Now() - lastvoter)
         timeleft = playedTime(rawtimeleft)
         message = f'You must wait {timeleft} until the next wild wipe vote can start'
-        await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}'], 15)
+        await asyncserverchat(inst, message)
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 10 min timer')
     else:
         for each in range(numinstances):
@@ -429,21 +423,21 @@ def isserver(line):
         return False
 
 
-async def asynclinker(minst, whoasked):
+async def asynclinker(inst, whoasked):
     steamid = await asyncgetsteamid(whoasked)
     player = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
     if player:
         if player['discordid'] is None or player['discordid'] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
-            log.log('PLAYER', f'Generated code [{rcode}] for link request from [{player["playername"].title()}] on [{minst.title()}]')
+            log.log('PLAYER', f'Generated code [{rcode}] for link request from [{player["playername"].title()}] on [{inst.title()}]')
             await asyncdbupdate(f"""DELETE from linkrequests WHERE steamid = '{player["steamid"]}'""")
             await asyncdbupdate(f"""INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('{player["steamid"]}', '{player["playername"]}', '{str(rcode)}')""")
             message = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
-            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{player["steamid"]}" {message}'""", f'@{minst}'], 19)
+            await asyncserverchatto(inst, player["steamid"], message)
         else:
             log.warning(f'link request for {player["playername"]} denied, already linked')
             message = f'You already have a discord account linked to this account'
-            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{player["steamid"]}" {message}'""", f'@{minst}'], 19)
+            await asyncserverchatto(inst, player["steamid"], message)
     else:
         log.error(f'User not found in DB {whoasked}!')
 
@@ -501,8 +495,8 @@ async def processtcdata(inst, tcdata):
                     if Now() - float(player['lastpointtimestamp']) > 60:
                         log.debug(f'adding {rewardpoints} non home points to {player["homeserver"]} transfer points for {playername} on {inst}')
                         await asyncdbupdate(f"UPDATE players SET transferpoints = '{int(rewardpoints)}', lastpointtimestamp = '{str(Now())}' WHERE steamid = '{str(steamid)}'")
-                        cmdlist = ['arkmanager', 'rconcmd', f'"ScriptCommand tcsar setarctotal {steamid} 0"', f'@{inst}']
-                        await asyncserverexec(cmdlist, 15)
+                        command = f'tcsar setarctotal {steamid} 0'
+                        await asyncserverscriptcmd(inst, command)
                     else:
                         log.trace(f'reward points not past threshold for wait (to avoid duplicates) for \
 {playername} on {inst}, skipping')
@@ -524,24 +518,25 @@ async def asynchomeserver(inst, whoasked, ext):
                 if ext != player['homeserver']:
                     if inst == player['homeserver']:
                         log.log('PLAYER', f'[{player["playername"].title()}] has transferred home servers from [{player["homeserver"].title()}] to [{ext.title()}] with {player["rewardpoints"]} points')
-                        await asyncserverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar setarctotal {steamid} 0"', f'@{inst}'], 19)
+                        command = 'tcsar setarctotal {steamid} 0'
+                        await asyncserverscriptcmd(inst, command)
                         await asyncdbupdate(f"""UPDATE players SET transferpoints = {player["rewardpoints"]}, homeserver = '{ext}' WHERE steamid = '{steamid}'""")
                         message = f'Your {player["rewardpoints"]} points have been transferred to your new home server: {ext.capitalize()}'
-                        await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+                        await asyncserverchatto(inst, steamid, message)
                     else:
                         message = f'You must be on your home server {player["homeserver"].capitalize()} to change your home'
-                        await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+                        await asyncserverchatto(inst, steamid, message)
                 else:
                     message = f'{ext.capitalize()} is already your home server'
-                    await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+                    await asyncserverchatto(inst, steamid, message)
             else:
                 message = f'{ext.capitalize()} is not a server you can call home in the cluster.'
-                await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+                await asyncserverchatto(inst, steamid, message)
         else:
             message = f'Your current home server is: {player["homeserver"].capitalize()}'
-            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+            await asyncserverchatto(inst, steamid, message)
             message = f'Type !myhome <servername> to change your home.'
-            await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{inst}'], 19)
+            await asyncserverchatto(inst, steamid, message)
 
 
 def lastlotto(whoasked, inst):
@@ -602,8 +597,8 @@ async def playerjoin(line, inst):
         await asyncdbupdate(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
         if Now() - player['lastseen'] > 250:
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
-            mtxt = f'{player["playername"].title()} has joined the server'
-            await asyncserverexec(['arkmanager', 'rconcmd', f'"ServerChat {mtxt}"', f'@{inst}'], 19)
+            message = f'{player["playername"].title()} has joined the server'
+            await asyncserverchat(inst, message)
             asyncio.create_task(asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp()))
 
 
@@ -727,11 +722,9 @@ async def processline(minst, line):
 
                 elif incmd.startswith('!help'):
                     message = f'Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe,'
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(inst, message)
                     message = f'!lastrestart, !vote, !tip, !lottery, !lastseen <playername>, !playtime <playername>'
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(inst, message)
                     log.log('CMD', f'Responded to a [!help] request from [{whoasked.title()}] on [{minst.title()}]')
                 elif incmd.startswith('@all'):
                     try:
@@ -762,26 +755,22 @@ async def processline(minst, line):
                 elif incmd.startswith(('/kit', '!kit')):
                     log.log('CMD', f'Responding to a kit request from [{whoasked.title()}] on [{minst.title()}]')
                     message = f'To view kits you must make a level 1 rewards vault and hang it on a wall or foundation. Free starter items and over 80 kits available. !help for more commands'
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(inst, message)
 
                 elif incmd.startswith('/'):
                     message = f'Commands in this cluster start with a ! (Exclimation Mark)  Type !help for a list of commands'
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(inst, message)
 
                 elif incmd.startswith(('!lastdinowipe', '!lastwipe')):
                     lastwipe = elapsedTime(Now(), getlastwipe(minst))
                     message = f'Last wild dino wipe was {lastwipe} ago'
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(inst, message)
                     log.log('CMD', f'Responding to a [!lastwipe] request from [{whoasked.title()}] on [{minst.title()}]')
 
                 elif incmd.startswith('!lastrestart'):
                     lastrestart = elapsedTime(Now(), getlastrestart(minst))
                     message = f'Last server restart was {lastrestart} ago'
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(inst, message)
                     log.log('CMD', f'Responding to a [!lastrestart] request from [{whoasked.title()}] on [{minst.title()}]')
 
                 elif incmd.startswith('!lastseen'):
@@ -806,8 +795,7 @@ async def processline(minst, line):
                         message = await asyncgettimeplayed(seenname)
                     else:
                         message = await asyncgettimeplayed(whoasked)
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(inst, message)
                     log.log('CMD', f'Responding to a [!playedtime] request for [{whoasked.title()}] on [{minst.title()}]')
 
                 elif incmd.startswith(('!recent', '!whorecent', '!lasthour')):
@@ -834,8 +822,7 @@ async def processline(minst, line):
                     log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
                     tip = await asyncgettip()
                     message = tip['tip']
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{inst}']
-                    await asyncserverexec(cmdlist, 15)
+                    await asyncserverchat(inst, message)
 
                 elif incmd.startswith(('!mypoints', '!myinfo')):
                     log.log('CMD', f'Responding to a [!myinfo] request from [{whoasked.title()}] on [{minst.title()}]')
@@ -899,7 +886,7 @@ async def processline(minst, line):
                     steamid = await asyncgetsteamid(whoasked)
                     log.warning(f'Invalid command request from [{whoasked.title()}] on [{minst.title()}]')
                     message = "Invalid command. Try !help"
-                    await asyncserverexec(['arkmanager', 'rconcmd', f"""'ServerChatTo "{steamid}" {message}'""", f'@{minst}'], 19)
+                    await asyncserverchatto(inst, steamid, message)
                 else:
                     await asyncchatlineelsed(line, inst)
             else:
