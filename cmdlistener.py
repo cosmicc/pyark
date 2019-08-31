@@ -917,7 +917,7 @@ def clisten(inst, dtime):
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncloop = asyncio.new_event_thread()
+    asyncloop = asyncio.new_event_loop()
     asyncloop.create_task(checkcommands(inst, dtime))
     try:
         asyncloop.run_forever()
