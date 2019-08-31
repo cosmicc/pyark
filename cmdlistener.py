@@ -906,7 +906,7 @@ async def checkcommands(inst, dtime):
             for line in iter(b.splitlines()):
                 asyncloop.create_task(asyncprocessline(inst, line))
             while Now() - starttime < dtime:
-                await asyncio.sleep(.1)
+                await asyncio.sleep(dtime / 20)
         except:
             log.exception(f'Exception in checkcommands loop')
     asyncloop.stop()
