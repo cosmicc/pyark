@@ -12,7 +12,7 @@ async def asyncserverchat(inst, message, nice=15):
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{inst}'
     log.debug(f'cmd: {cmdstring}')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
-    await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
+    await asyncio.create_task(proc)
     return True
 
 
