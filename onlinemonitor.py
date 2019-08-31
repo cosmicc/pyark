@@ -193,14 +193,14 @@ def playergreet(steamid, steamname, inst):
 
 async def asyncprocessline(inst, line):
     try:
-        if line.startswith('Running command') or line.startswith(('"', ' "', 'Error:', '"No Players')):
+        if line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
             pass
         else:
             rawline = line.split(',')
             if len(rawline) > 1:
                 steamid = rawline[1].strip()
                 steamname = cleanstring(rawline[0].split('. ', 1)[1])
-                #asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
+                # asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
 
                 if f'greet-{steamid}' not in greetthreads:
                     if not isgreeting(steamid):
@@ -237,7 +237,10 @@ async def asynconlineupdate(inst, dtime):
 
 @log.catch
 async def onlinemonitorthread(inst, dtime):
-    log.debug(f'starting the online monotpr thread for {inst}')
-    log.patch(lambda record: record["extra"].update(instance=inst))
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncio.run(asynconlineupdate(inst, dtime))
+    try:
+        log.debug(f'starting the online monitor thread for {inst}')
+        log.patch(lambda record: record["extra"].update(instance=inst))
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        asyncio.run(asynconlineupdate(inst, dtime))
+    except:
+        log.exception(f'Exception launching online monitor thread')
