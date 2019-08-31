@@ -190,7 +190,7 @@ def main():
     global threads
     threads = []
     stop_event = threading.Event()
-    checklist = dbquery("SELECT name FROM instances")
+    checklist = dbquery("SELECT name FROM instances", fmt='list', single=True)
     log.debug(checklist)
     log.debug(instances)
     if not any(x in instances for x in checklist) and instr != 'Master Server':
