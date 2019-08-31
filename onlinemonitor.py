@@ -191,7 +191,6 @@ def playergreet(steamid, steamname, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
-@log.catch
 async def asyncprocessline(inst, line):
     try:
         if line.startswith('Running command') or line.startswith(('"', ' "', 'Error:', '"No Players')):
@@ -218,7 +217,6 @@ async def asyncprocessline(inst, line):
         log.exception('Exception in online monitor process line')
 
 
-@log.catch
 async def asynconlineupdate(inst, dtime):
     global greetthreads
     while True:
