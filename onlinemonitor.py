@@ -102,17 +102,17 @@ async def asynccheckifbanned(steamid):
 
 
 @log.catch
-async def asyncplayergreet(steamid, steamname, inst):
+def playergreet(steamid, steamname, inst):
     global greetthreads
     global welcomthreads
     gogo = 0
     xferpoints = 0
-    if await asynccheckifbanned(steamid):
+    if asynccheckifbanned(steamid):
         log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
-        await asyncserverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
+        serverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
         # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
-        oplayer = await getplayer(steamid)
+        oplayer = getplayer(steamid)
         if not oplayer:
             welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, steamname, inst))
             welcom.start()
@@ -201,17 +201,17 @@ async def asyncprocessline(inst, line):
             if len(rawline) > 1:
                 steamid = rawline[1].strip()
                 steamname = cleanstring(rawline[0].split('. ', 1)[1])
-                asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
+                #asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
 
-                #if f'greet-{nsteamid}' not in greetthreads:
-                #    if not isgreeting(nsteamid):
-                #        gthread = threading.Thread(name='greet-%s' % nsteamid, target=playergreet, args=(nsteamid, steamname, inst))
-                #        greetthreads.append({'steamid': nsteamid, 'gthread': gthread})
-                #        gthread.start()
-                #    else:
-                #        log.debug(f'online player greeting aleady running for {steamname}')
-                #else:
-                #    log.debug(f'greeting already running for {steamname}')
+                if f'greet-{steamid}' not in greetthreads:
+                    if not isgreeting(steamid):
+                        gthread = threading.Thread(name='greet-%s' % steamid, target=playergreet, args=(steamid, steamname, inst))
+                        greetthreads.append({'steamid': steamid, 'gthread': gthread})
+                        gthread.start()
+                    else:
+                        log.debug(f'online player greeting aleady running for {steamname}')
+                else:
+                    log.debug(f'greeting already running for {steamname}')
             else:
                 log.error(f'problem with parsing online player - {rawline}')
     except:
