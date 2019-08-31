@@ -207,7 +207,7 @@ def main():
         threads.append(thread)
         thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
         threads.append(thread)
-        thread = threading.Thread(name=f'{inst}-onlinemon', target=onlinemonitor_thread, args=(inst, 15, stop_event), daemon=False)
+        thread = threading.Thread(name=f'{inst}-onlinemon', target=onlinemonitor_thread, args=(inst, 10, stop_event), daemon=False)
         threads.append(thread)
     if is_eventwatcher == "True":
         thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(60, stop_event), daemon=False)
