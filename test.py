@@ -7,12 +7,13 @@ from modules.servertools import serverexec
 
 async def asyncprint(line):
     log.success(line)
+    return True
 
 
 async def looper():
     while True:
-        log.info('looping')
         try:
+            log.info('looping')
             cmdpipe = serverexec(['arkmanager', 'rconcmd', 'listplayers', f'@coliseum'], nice=5, null=False)
             b = cmdpipe.stdout.decode("utf-8")
             for line in iter(b.splitlines()):
