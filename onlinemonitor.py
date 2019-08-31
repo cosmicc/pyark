@@ -2,7 +2,7 @@ from clusterevents import iseventtime, getcurrenteventinfo
 from modules.dbhelper import dbquery, dbupdate, cleanstring, asyncdbquery, asyncdbupdate
 from modules.players import getplayer, newplayer
 from modules.timehelper import elapsedTime, playedTime, Now
-from modules.servertools import serverexec
+from modules.servertools import serverexec, asyncserverexec
 from loguru import logger as log
 import threading
 from time import sleep
@@ -94,7 +94,7 @@ def lottodeposits(steamid, inst):
 @log.catch
 async def asynccheckifbanned(steamid):
     player = await asyncdbquery(f"SELECT steamid FROM players WHERE steamid = '{steamid}' AND banned != ''", 'dict', 'one')
-    banned = await asyncdbquery(f"SELECT steamid FROM banlist WHERE steamid = '{steamid}'", 'dict','one')
+    banned = await asyncdbquery(f"SELECT steamid FROM banlist WHERE steamid = '{steamid}'", 'dict', 'one')
     if player or banned:
         return True
     else:
@@ -103,16 +103,16 @@ async def asynccheckifbanned(steamid):
 
 @log.catch
 async def asyncplayergreet(steamid, steamname, inst):
-    #global greetthreads
+    global greetthreads
     global welcomthreads
     gogo = 0
     xferpoints = 0
-    if checkifbanned(steamid):
+    if await asynccheckifbanned(steamid):
         log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
-        serverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
+        await asyncserverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
         # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
-        oplayer = getplayer(steamid)
+        oplayer = await getplayer(steamid)
         if not oplayer:
             welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, steamname, inst))
             welcom.start()
@@ -235,7 +235,6 @@ async def asynconlineupdate(inst, dtime):
             log.exception(f'Exception in online monitor loop')
     asyncloop.stop()
     asyncloop.close()
-
 
 
 @log.catch
