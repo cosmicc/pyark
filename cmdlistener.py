@@ -6,7 +6,7 @@ from modules.instances import homeablelist, getlastwipe, getlastrestart, writegl
 from modules.timehelper import elapsedTime, playedTime, wcstamp, tzfix, Secs, Now, datetimeto
 from modules.servertools import serverexec, asyncserverchat, asyncserverchatto, asyncserverbcast, asyncserverscriptcmd
 from lottery import asyncgetlastlotteryinfo
-from time import sleep
+from time import sleep, time
 from loguru import logger as log
 import random
 import subprocess
@@ -901,12 +901,12 @@ async def checkcommands(inst, dtime):
         try:
             log.debug('checking commands')
             asyncloop = asyncio.get_running_loop()
-            starttime = Now()
+            start = time()
             cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
             b = cmdpipe.stdout.decode("utf-8")
             for line in iter(b.splitlines()):
                 asyncloop.create_task(asyncprocessline(inst, line))
-            while Now() - starttime < dtime:
+            if time() - start < dtime:
                 await asyncio.sleep(dtime / 20)
         except:
             log.exception(f'Exception in checkcommands loop')
