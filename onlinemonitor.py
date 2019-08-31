@@ -239,12 +239,12 @@ async def asynconlineupdate(inst, dtime, stop_event):
     global greetthreads
     while not stop_event.is_set():
         asyncloop = asyncio.get_running_loop()
-        starttime = time()
+        starttime = time.time()
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         for line in iter(b.splitlines()):
             asyncloop.create_task(asyncprocessline(inst, line))
-        while time() - starttime < dtime:
+        while time.time() - starttime < dtime:
             await asyncstopsleep(dtime / 20)
     asyncloop.stop()
     asyncloop.close()
