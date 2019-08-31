@@ -899,11 +899,12 @@ async def asyncprocessline(minst, line):
 async def checkcommands(inst, dtime):
     while True:
         try:
+            log.debug('checking commands')
             cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
             b = cmdpipe.stdout.decode("utf-8")
             for line in iter(b.splitlines()):
                 asyncio.create_task(asyncprocessline(inst, line))
-            await asyncio.sleep(dtime)
+            await asyncio.sleep(10)
         except:
             log.exception(f'Exception in checkcommands loop')
 
