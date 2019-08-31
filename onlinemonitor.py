@@ -249,7 +249,6 @@ async def asynconlineupdate(inst, dtime, stop_event):
     pendingtasks = asyncio.Task.all_tasks()
     asyncio.gather(*pendingtasks)
     asyncloop.stop()
-    asyncloop.close()
     log.debug('Online monitor thread has ended')
     exit(0)
 
