@@ -93,7 +93,7 @@ def lottodeposits(steamid, inst):
 
 @log.catch
 async def asynccheckifbanned(steamid):
-    player = await asyncdbquery(f"SELECT steamid FROM players WHERE steamid = '{steamid}' AND banned != ''", 'dict', 'one')
+    player = await asyncdbquery(f"SELECT steamid FROM players WHERE steamid = '{steamid}' AND banned != 'true'", 'dict', 'one')
     banned = await asyncdbquery(f"SELECT steamid FROM banlist WHERE steamid = '{steamid}'", 'dict', 'one')
     if player or banned:
         return True
@@ -109,7 +109,7 @@ def playergreet(steamid, steamname, inst):
     xferpoints = 0
     if asynccheckifbanned(steamid):
         log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
-        serverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
+        #serverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
         # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
         oplayer = getplayer(steamid)
