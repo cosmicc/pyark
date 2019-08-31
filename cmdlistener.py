@@ -908,11 +908,8 @@ async def checkcommands(inst, dtime):
                 asyncloop.create_task(asyncprocessline(inst, line))
             while asyncloop.time() - start < dtime:
                 await asyncio.sleep(dtime / 20)
-            #sleep(dtime)
         except:
             log.exception(f'Exception in checkcommands loop')
-    asyncloop.stop()
-    asyncloop.close()
 
 
 @log.catch
@@ -920,4 +917,11 @@ def clisten(inst, dtime):
     log.debug(f'starting the command listener thread for {inst}')
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncio.run(checkcommands(inst, dtime))
+    asyncloop = asyncio.new_event_thread()
+    asyncloop.create_task(checkcommands(inst, dtime))
+    try:
+        asyncloop.run_forever()
+    finally:
+        asyncloop.run_until_complete(asyncloop.shutdown_asyncgens())
+        asyncloop.close()
+    #asyncio.run(checkcommands(inst, dtime))
