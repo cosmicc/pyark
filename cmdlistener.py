@@ -161,8 +161,8 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
                         plist = plist + ', %s' % (player['playername'].title())
             if pcnt != 0:
                 if crnt == 1:
-                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
                     message = f'{inst.capitalize()} has {pcnt} players online: {plist}'
+                    cmdlist = ['arkmanager', 'rconcmd', f'"ServerChat {message}"', f'@{oinst}']
                     await asyncserverexec(cmdlist, 15)
                 elif crnt == 2:
                     message = f'{inst.capitalize()} has had {pcnt} players in the last hour: {plist}'
