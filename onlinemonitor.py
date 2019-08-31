@@ -238,7 +238,7 @@ async def asynconlineupdate(inst, dtime):
             for line in iter(b.splitlines()):
                 asyncloop.create_task(asyncprocessline(inst, line))
             while Now() - starttime < dtime:
-                await asyncio.sleep(.01)
+                await asyncio.sleep(1)
         except:
             log.exception(f'Exception in online monitor loop')
     asyncloop.stop()
@@ -250,7 +250,7 @@ def onlinemonitorthread(inst, dtime):
     try:
         log.debug(f'starting the online monitor thread for {inst}')
         log.patch(lambda record: record["extra"].update(instance=inst))
-        # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-        # asyncio.run(asynconlineupdate(inst, dtime))
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        asyncio.run(asynconlineupdate(inst, dtime))
     except:
         log.exception(f'Exception launching online monitor thread')
