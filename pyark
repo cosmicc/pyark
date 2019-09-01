@@ -206,8 +206,8 @@ def main():
     for inst in instances:
         thread = threading.Thread(name=f'{inst}-kicker', target=kicker_thread, args=(inst, 5, stop_event), daemon=False)
         threads.append(thread)
-        #thread = threading.Thread(name=f'{inst}-cmdlistener', target=cmdlistener_thread, args=(inst, 2, stop_event), daemon=False)
-        #threads.append(thread)
+        thread = threading.Thread(name=f'{inst}-cmdlistener', target=cmdlistener_thread, args=(inst, 2, stop_event), daemon=False)
+        threads.append(thread)
         thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
         threads.append(thread)
         thread = threading.Thread(name=f'{inst}-onlinemon', target=onlinemonitor_thread, args=(inst, 10, stop_event), daemon=False)
