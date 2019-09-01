@@ -897,7 +897,7 @@ async def asyncprocessline(minst, db, line):
 async def checkcommands(inst, dtime, stop_event):
     global db
     asyncloop = asyncio.get_running_loop()
-    db = asyncDB
+    db = asyncDB()
     while not stop_event.is_set():
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
