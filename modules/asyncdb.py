@@ -27,12 +27,10 @@ class asyncDB:
             await self.cpool.close()
         log.debug('Database connections closed')
 
-    async def check_if_connected(self):
+    async def _aquire(self):
         if self.cpool is None:
             log.trace('Database is not connected. connecting...')
             await self._connect()
-
-    async def _aquire(self):
         try:
             con = await self.cpool.acquire()
         except:
@@ -66,7 +64,6 @@ class asyncDB:
         return await self._query(query, 'one', result, db)
 
     async def _query(self, query, fetch, fmt, db):
-        await self.check_if_connected()
         try:
             con = await self._aquire()
             if fetch == 'one':
@@ -97,7 +94,7 @@ class asyncDB:
             return None
 
     async def _execute(self, query, db):
-        con = await self._acquire()
+        con = await self._aquire()
         if db in self.dbgamelog:
             sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
             try:
@@ -119,7 +116,6 @@ class asyncDB:
             raise ValueError(f'Invalid database [{db}]')
         # if (db not in self.dbgamelog and not isinstance(query, str)) or (db in self.dbgamelog and not isinstance(query, list)):
         #    raise TypeError(f'Query type is invalid [{type(query)}]')
-        await self.check_if_connected()
-        await asyncio.create_task(self._execute(query, db))
         # log.trace(f'Executing DB [{db}] update {query}')
+        await asyncio.create_task(self._execute(query, db))
         return True
