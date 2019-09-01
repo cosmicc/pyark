@@ -46,7 +46,7 @@ class asyncDB:
             con = await self.cpool.acquire(timeout=10)
         except:
             log.exception('Error aquiring a db pool connection, retrying..')
-            self._aquire()
+            await self._aquire()
         else:
             return con
 
