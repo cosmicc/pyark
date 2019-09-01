@@ -595,7 +595,7 @@ async def asynclottery(whoasked, lchoice, inst, db):
 @log.catch
 async def playerjoin(line, inst, db):
     newline = line[:-17].split(':')
-    player = await db.query(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', 'one')
+    player = await db.fetchone(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'")
     if player:
         steamid = player['steamid']
         await db.update(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
@@ -636,7 +636,7 @@ def leavingplayerthread(player, inst):
 @log.catch
 async def playerleave(line, inst, db):
     newline = line[:-15].split(':')
-    player = await db.query(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', 'one')
+    player = await db.fetchone(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'")
     if player:
         log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayerthread, args=(player, inst))
