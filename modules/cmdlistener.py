@@ -10,7 +10,8 @@ import aiofiles
 import uvloop
 from loguru import logger as log
 from modules.configreader import instance, numinstances
-from modules.dbhelper import asyncdbquery, asyncdbupdate, asyncglupdate, cleanstring, dbquery, dbupdate
+from modules.asyncdb import asyncDB
+from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist, writeglobal
 from modules.lottery import asyncgetlastlotteryinfo
@@ -31,26 +32,16 @@ async def asyncstopsleep(sleeptime, stop_event):
             exit(0)
         asyncio.sleep(1)
 
-'''
-@log.catch
-async def asynctask(function, wait, *args, **kwargs):
-        task = asyncio.create_task(function(*args, **kwargs))
-        if wait:
-            return await task
-        else:
-            return True
-'''
 
-
-async def asyncwritechat(inst, whos, msg, tstamp):
+async def asyncwritechat(inst, whos, msg, tstamp, db):
     isindb = False
     if whos != 'ALERT':
-        isindb = await asyncdbquery(f"SELECT * from players WHERE playername = '{whos}'", 'count', fetch='one')
+        isindb = await db.query(f"SELECT * from players WHERE playername = '{whos}'", 'count', 'one')
         if isindb:
-            await asyncdbupdate("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')""" % (inst, whos, msg.replace("'", ""), tstamp))
+            await db.update("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')""" % (inst, whos, msg.replace("'", ""), tstamp))
 
     elif whos == "ALERT":
-        await asyncdbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
+        await db.update("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
 def writechat(inst, whos, msg, tstamp):
@@ -64,8 +55,8 @@ def writechat(inst, whos, msg, tstamp):
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
-async def asyncgetsteamid(whoasked):
-    player = await asyncdbquery(f"SELECT * FROM players WHERE (playername = '{whoasked}') or (alias = '{whoasked}')", 'dict', 'one')
+async def asyncgetsteamid(whoasked, db):
+    player = await db.query(f"SELECT * FROM players WHERE (playername = '{whoasked}') or (alias = '{whoasked}')", 'dict', 'one')
     if player is None:
         log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
         return None
@@ -83,8 +74,8 @@ def getsteamid(whoasked):
 
 
 @log.catch
-async def asyncresptimeleft(inst, whoasked):
-    insts = await asyncdbquery(f"SELECT * FROM instances WHERE name = '{inst}'", 'dict', 'one')
+async def asyncresptimeleft(inst, whoasked, db):
+    insts = await db.query(f"SELECT * FROM instances WHERE name = '{inst}'", 'dict', 'one')
     if insts['needsrestart'] == 'True':
         message = f'{inst.title()} is restarting in {insts["restartcountdown"]} minutes'
         await asyncserverchat(inst, message)
@@ -94,8 +85,8 @@ async def asyncresptimeleft(inst, whoasked):
 
 
 @log.catch
-async def asyncgetlastseen(seenname):
-    player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
+async def asyncgetlastseen(seenname, db):
+    player = await db.query(f"SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
     if not player:
         return 'No player found with that name'
     else:
@@ -107,10 +98,10 @@ async def asyncgetlastseen(seenname):
 
 
 @log.catch
-async def asyncrespmyinfo(inst, whoasked):
-    steamid = await asyncgetsteamid(whoasked)
+async def asyncrespmyinfo(inst, whoasked, db):
+    steamid = await asyncgetsteamid(whoasked, db)
     if steamid:
-        player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{whoasked}' ORDER BY lastseen DESC", 'dict', 'one')
+        player = await db.query(f"SELECT * FROM players WHERE playername = '{whoasked}' ORDER BY lastseen DESC", 'dict', 'one')
         ptime = playedTime(player['playedtime'])
         steamid = player['steamid']
         message = f"Your current reward points: {player['rewardpoints'] + player['transferpoints']}\nYour total play time is {ptime}\nYour home server is {player['homeserver'].capitalize()}"
@@ -118,8 +109,8 @@ async def asyncrespmyinfo(inst, whoasked):
 
 
 @log.catch
-async def asyncgettimeplayed(seenname):
-    player = await asyncdbquery(f"SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
+async def asyncgettimeplayed(seenname, db):
+    player = await db.query(f"SELECT * FROM players WHERE playername = '{seenname}' ORDER BY lastseen DESC", 'dict', 'one')
     if not player:
         return 'No player found with that name'
     else:
@@ -128,24 +119,24 @@ async def asyncgettimeplayed(seenname):
 
 
 @log.catch
-async def asyncgettip():
-    tip = await asyncdbquery("SELECT * FROM tips WHERE active = True ORDER BY count ASC, random()", 'dict', 'one')
-    await asyncdbupdate("UPDATE tips set count = {int(tip['count'] + 1} WHERE id = {tip['id'])}")
+async def asyncgettip(db):
+    tip = await db.query("SELECT * FROM tips WHERE active = True ORDER BY count ASC, random()", 'dict', 'one')
+    await db.update("UPDATE tips set count = {int(tip['count'] + 1} WHERE id = {tip['id'])}")
     return tip['tip']
 
 
 @log.catch
-async def whoisonlinewrapper(inst, oinst, whoasked, crnt):
+async def whoisonlinewrapper(inst, oinst, whoasked, crnt, db):
     if oinst == inst:
         slist = await asyncgetinstancelist()
         for each in slist:
-            await asyncwhoisonline(each, oinst, whoasked, True, crnt)
+            await asyncwhoisonline(each, oinst, whoasked, True, crnt, db)
     else:
-        await asyncwhoisonline(inst, oinst, whoasked, False, crnt)
+        await asyncwhoisonline(inst, oinst, whoasked, False, crnt, db)
 
 
 @log.catch
-async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
+async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt, db):
     try:
         if crnt == 1:
             potime = 40
@@ -157,7 +148,7 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
             message = f'{inst.capitalize()} is not a valid server'
             await asyncserverchat(oinst, message)
         else:
-            players = await asyncdbquery(f"SELECT * FROM players WHERE server = '{inst}'", 'tuple', 'all')
+            players = await db.query(f"SELECT * FROM players WHERE server = '{inst}'", 'tuple', 'all')
             pcnt = 0
             plist = ''
             for player in players:
@@ -229,46 +220,46 @@ def setvote(whoasked, myvote):
             each[2] = myvote
 
 
-async def asyncsetvote(whoasked, myvote):
+async def asyncsetvote(whoasked, myvote, db):
     global votertable
     for each in votertable:
-        if each[0] == await asyncgetsteamid(whoasked):
+        if each[0] == await asyncgetsteamid(whoasked, db):
             each[2] = myvote
 
 
-async def asyncgetvote(whoasked):
+async def asyncgetvote(whoasked, db):
     for each in votertable:
-        if each[0] == await asyncgetsteamid(whoasked):
+        if each[0] == await asyncgetsteamid(whoasked, db):
             return each[2]
     return 99
 
 
-async def asynccastedvote(inst, whoasked, myvote):
+async def asynccastedvote(inst, whoasked, myvote, db):
     global arewevoting
     if not isvoting(inst):
         message = f'No vote is taking place now'
         await asyncserverchat(inst, message)
     else:
-        steamid = await asyncgetsteamid(whoasked)
-        if await asyncgetvote(whoasked) == 99:
+        steamid = await asyncgetsteamid(whoasked, db)
+        if await asyncgetvote(whoasked, db) == 99:
             message = 'Sorry, you are not eligible to vote in this round'
             await asyncserverchatto(inst, steamid, message)
         elif not steamid:
             message = 'Sorry, you are not eligible to vote. Tell an admin they need to update your name!'
             await asyncserverchatto(inst, steamid, message)
-        elif await asyncgetvote(whoasked) == 2:
+        elif await asyncgetvote(whoasked, db) == 2:
             message = "You started the vote. you're assumed a YES vote."
             await asyncserverchatto(inst, steamid, message)
-        elif await asyncgetvote(whoasked) == 1:
+        elif await asyncgetvote(whoasked, db) == 1:
             message = 'You have already voted YES. you can only vote once.'
             await asyncserverchatto(inst, steamid, message)
         else:
             if myvote:
-                await asyncsetvote(whoasked, 1)
+                await asyncsetvote(whoasked, 1, db)
                 message = 'Your YES vote has been cast'
                 await asyncserverchatto(inst, steamid, message)
             else:
-                await asyncsetvote(whoasked, 0)
+                await asyncsetvote(whoasked, 0, db)
                 message = 'Your NO vote has been cast'
                 await asyncserverchatto(inst, steamid, message)
                 log.log('VOTE', f'Voting NO has won, NO wild dino wipe will be performed for {inst}')
@@ -276,7 +267,7 @@ async def asynccastedvote(inst, whoasked, myvote):
                 bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
                 await asyncserverbcast(inst, bcast)
                 asyncio.create_task(asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has failed with a NO vote from \
-{whoasked.capitalize()}', wcstamp()))
+{whoasked.capitalize()}', wcstamp(), db))
 
 
 def votingpassed():
@@ -433,15 +424,15 @@ def isserver(line):
         return False
 
 
-async def asynclinker(inst, whoasked):
-    steamid = await asyncgetsteamid(whoasked)
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
+async def asynclinker(inst, whoasked, db):
+    steamid = await asyncgetsteamid(whoasked, db)
+    player = await db.query(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
     if player:
         if player['discordid'] is None or player['discordid'] == '':
             rcode = ''.join(str(x) for x in random.sample(range(10), 4))
             log.log('PLAYER', f'Generated code [{rcode}] for link request from [{player["playername"].title()}] on [{inst.title()}]')
-            await asyncdbupdate(f"""DELETE from linkrequests WHERE steamid = '{player["steamid"]}'""")
-            await asyncdbupdate(f"""INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('{player["steamid"]}', '{player["playername"]}', '{str(rcode)}')""")
+            await db.update(f"""DELETE from linkrequests WHERE steamid = '{player["steamid"]}'""")
+            await db.update(f"""INSERT INTO linkrequests (steamid, name, reqcode) VALUES ('{player["steamid"]}', '{player["playername"]}', '{str(rcode)}')""")
             message = f'Your discord link code is {rcode}, goto discord now and type !linkme {rcode}'
             await asyncserverchatto(inst, player["steamid"], message)
         else:
@@ -481,10 +472,10 @@ def writechatlog(inst, whos, msg, tstamp):
 
 
 @log.catch
-async def processtcdata(inst, tcdata):
+async def processtcdata(inst, tcdata, db):
     steamid = tcdata['SteamID']
     playername = tcdata['PlayerName'].lower()
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
+    player = await db.query(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
     if not player:
         welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, playername, inst))
         welcom.start()
@@ -493,18 +484,18 @@ async def processtcdata(inst, tcdata):
         rewardpoints = int(tcdata['Points'].replace(',', ''))
         if playername.lower() != player['playername'].lower():
             log.log('UPDATE', f'Player name update for [{player["playername"]}] to [{playername}]')
-            await asyncdbupdate("UPDATE players SET playername = '%s' WHERE steamid = '%s'" % (playername, steamid))
+            await db.update("UPDATE players SET playername = '%s' WHERE steamid = '%s'" % (playername, steamid))
         if inst == player['homeserver']:
             log.trace(f'player {playername} with steamid {steamid} was found on HOME server {inst}. updating info.')
-            await asyncdbupdate("UPDATE players SET playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
-                                (playtime, rewardpoints, steamid))
+            await db.update("UPDATE players SET playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
+                            (playtime, rewardpoints, steamid))
         else:
             log.trace(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info.')
             if int(player['transferpoints']) != int(rewardpoints):
                 if int(rewardpoints) != 0:
                     if Now() - float(player['lastpointtimestamp']) > 60:
                         log.debug(f'adding {rewardpoints} non home points to {player["homeserver"]} transfer points for {playername} on {inst}')
-                        await asyncdbupdate(f"UPDATE players SET transferpoints = '{int(rewardpoints)}', lastpointtimestamp = '{str(Now())}' WHERE steamid = '{str(steamid)}'")
+                        await db.update(f"UPDATE players SET transferpoints = '{int(rewardpoints)}', lastpointtimestamp = '{str(Now())}' WHERE steamid = '{str(steamid)}'")
                         command = f'tcsar setarctotal {steamid} 0'
                         await asyncserverscriptcmd(inst, command)
                     else:
@@ -516,10 +507,10 @@ async def processtcdata(inst, tcdata):
                 log.trace(f'duplicate reward points to account for {playername} on {inst}, skipping')
 
 
-async def asynchomeserver(inst, whoasked, ext):
+async def asynchomeserver(inst, whoasked, ext, db):
     steamid = await asyncgetsteamid(whoasked)
     if steamid:
-        player = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
+        player = await db.query(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
         if ext != '':
             tservers = []
             tservers = homeablelist()
@@ -530,7 +521,7 @@ async def asynchomeserver(inst, whoasked, ext):
                         log.log('PLAYER', f'[{player["playername"].title()}] has transferred home servers from [{player["homeserver"].title()}] to [{ext.title()}] with {player["rewardpoints"]} points')
                         command = 'tcsar setarctotal {steamid} 0'
                         await asyncserverscriptcmd(inst, command)
-                        await asyncdbupdate(f"""UPDATE players SET transferpoints = {player["rewardpoints"]}, homeserver = '{ext}' WHERE steamid = '{steamid}'""")
+                        await db.update(f"""UPDATE players SET transferpoints = {player["rewardpoints"]}, homeserver = '{ext}' WHERE steamid = '{steamid}'""")
                         message = f'Your {player["rewardpoints"]} points have been transferred to your new home server: {ext.capitalize()}'
                         await asyncserverchatto(inst, steamid, message)
                     else:
@@ -557,14 +548,14 @@ async def asynclastlotto(whoasked, inst):
 
 
 @log.catch
-async def asynclotteryinfo(lottery, player, inst):
+async def asynclotteryinfo(lottery, player, inst, db):
     message = f'Current lottery is up to {lottery["payout"]} ARc reward points.'
     await asyncserverchatto(inst, player['steamid'], message)
     message = f'{lottery["players"]} players have entered into this lottery so far'
     await asyncserverchatto(inst, player['steamid'], message)
     message = f'Lottery ends in {elapsedTime(datetimeto(lottery["startdate"] + timedelta(hours=lottery["days"]), fmt="epoch"),Now())}'
     await asyncserverchatto(inst, player['steamid'], message)
-    inlotto = await asyncdbquery(f"""SELECT * FROM lotteryplayers WHERE steamid = '{player["steamid"]}'""", 'dict', 'one')
+    inlotto = await db.query(f"""SELECT * FROM lotteryplayers WHERE steamid = '{player["steamid"]}'""", 'dict', 'one')
     if inlotto:
         message = f'You are enterted into this lottery. Good Luck!'
     else:
@@ -573,18 +564,18 @@ async def asynclotteryinfo(lottery, player, inst):
 
 
 @log.catch
-async def asynclottery(whoasked, lchoice, inst):
-    lottery = await asyncdbquery("SELECT * FROM lotteryinfo WHERE completed = False", 'dict', 'one')
+async def asynclottery(whoasked, lchoice, inst, db):
+    lottery = await db.query("SELECT * FROM lotteryinfo WHERE completed = False", 'dict', 'one')
     steamid = await asyncgetsteamid(whoasked)
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
+    player = await db.query(f"SELECT * FROM players WHERE steamid = '{steamid}'", 'dict', 'one')
     if lottery:
         if lchoice == 'join' or lchoice == 'enter':
             log.log('CMD', f'Responding to a [!lotto join] request from [{whoasked.title()}] on [{inst.title()}]')
-            lpcheck = await asyncdbquery(f"""SELECT * FROM lotteryplayers WHERE steamid = '{player["steamid"]}'""", 'dict', 'one')
+            lpcheck = await db.query(f"""SELECT * FROM lotteryplayers WHERE steamid = '{player["steamid"]}'""", 'dict', 'one')
             # ltime = estshift(datetime.fromtimestamp(float(linfo[3]) + (Secs['hour'] * int(linfo[5])))).strftime('%a, %b %d %I:%M%p')
             if lpcheck is None:
-                await asyncdbupdate(f"""INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('{player["steamid"]}', '{player["playername"]}', '{Now(fmt='dt')}', 0)""")
-                await asyncdbupdate(f"""UPDATE lotteryinfo SET payout = {lottery['payout'] + lottery['buyin'] * 2}, players = {lottery['players'] + 1} WHERE completed = False""")
+                await db.update(f"""INSERT INTO lotteryplayers (steamid, playername, timestamp, paid) VALUES ('{player["steamid"]}', '{player["playername"]}', '{Now(fmt='dt')}', 0)""")
+                await db.update(f"""UPDATE lotteryinfo SET payout = {lottery['payout'] + lottery['buyin'] * 2}, players = {lottery['players'] + 1} WHERE completed = False""")
                 message = f'You have been added to the reward points lottery! A winner will be choosen in {elapsedTime(datetimeto(lottery["startdate"] + timedelta(hours=lottery["days"]), fmt="epoch"), Now())}. Good Luck!'
                 await asyncserverchatto(inst, player['steamid'], message)
                 log.log('LOTTO', f'Player [{whoasked.title()}] has joined the current active lottery')
@@ -593,7 +584,7 @@ async def asynclottery(whoasked, lchoice, inst):
                 await asyncserverchatto(inst, player['steamid'], message)
         else:
             log.log('CMD', f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
-            await asynclotteryinfo(lottery, player, inst)
+            await asynclotteryinfo(lottery, player, inst, db)
     else:
         message = f'There are no current lotterys underway.'
         await asyncserverchat(inst, message)
@@ -601,17 +592,17 @@ async def asynclottery(whoasked, lchoice, inst):
 
 
 @log.catch
-async def playerjoin(line, inst):
+async def playerjoin(line, inst, db):
     newline = line[:-17].split(':')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', 'one')
+    player = await db.query(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', 'one')
     if player:
         steamid = player['steamid']
-        await asyncdbupdate(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
+        await db.update(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
         if Now() - player['lastseen'] > 250:
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             message = f'{player["playername"].title()} has joined the server'
             await asyncserverchat(inst, message)
-            asyncio.create_task(asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp()))
+            asyncio.create_task(asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp(), db))
 
 
 @log.catch
@@ -642,9 +633,9 @@ def leavingplayerthread(player, inst):
 
 
 @log.catch
-async def playerleave(line, inst):
+async def playerleave(line, inst, db):
     newline = line[:-15].split(':')
-    player = await asyncdbquery(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', 'one')
+    player = await db.query(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'", 'dict', 'one')
     if player:
         log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
         leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayerthread, args=(player, inst))
@@ -654,7 +645,7 @@ async def playerleave(line, inst):
 
 
 @log.catch
-async def asyncchatlineelsed(line, inst):
+async def asyncchatlineelsed(line, inst, db):
     log.debug(f'chatline elsed: {line}')
     rawline = line.split('(')
     if len(rawline) > 1:
@@ -671,12 +662,12 @@ async def asyncchatlineelsed(line, inst):
                 tstamp = dto.strftime('%m-%d %I:%M%p')
                 cmsg = trans_to_eng(cmsg)
                 log.log('CHAT', f'{inst} | {whoname} | {cmsg[2:]}')
-                asyncio.create_task(asyncwritechat(inst, whoname, cmsg.replace("'", ""), tstamp))
+                asyncio.create_task(asyncwritechat(inst, whoname, cmsg.replace("'", ""), tstamp, db))
                 asyncio.create_task(asyncwritechatlog(inst, whoname, cmsg, tstamp))
 
 
 @log.catch
-async def asyncprocessline(minst, line):
+async def asyncprocessline(minst, db, line):
     inst = minst
     if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
         pass
@@ -689,36 +680,33 @@ async def asyncprocessline(minst, line):
             if len(ee) > 1:
                 tcdata.update({ee[0]: ee[1]})
         if 'SteamID' in tcdata:
-            await processtcdata(minst, tcdata)
+            await processtcdata(minst, tcdata, db)
     elif line.find('left this ARK!') != -1:
-        await playerleave(line, minst)
+        await playerleave(line, minst, db)
     elif line.find('joined this ARK!') != -1:
-        await playerjoin(line, minst)
+        await playerjoin(line, minst, db)
     elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
-        await asyncglupdate(inst, 'ADMIN', line.replace('"', '').strip())
+        await db.update([inst, 'ADMIN', line.replace('"', '').strip()], db='gl')
     elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
-        await asyncglupdate(inst, 'DEMO', line.replace('"', '').strip())
+        await db.update([inst, 'DEMO', line.replace('"', '').strip()], db='gl')
     elif line.find('released:') != -1:
-        await asyncglupdate(inst, 'RELEASE', line.replace('"', '').strip())
+        await db.update([inst, 'RELEASE', line.replace('"', '').strip()], db='gl')
     elif line.find('trapped:') != -1:
-        await asyncglupdate(inst, 'TRAP', line.replace('"', '').strip())
+        await db.update([inst, 'TRAP', line.replace('"', '').strip()], db='gl')
     elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
-        await asyncglupdate(inst, 'DEATH', line.replace('"', '').strip())
+        await db.update([inst, 'DEATH', line.replace('"', '').strip()], db='gl')
     elif line.find('Tamed a') != -1:
-        await asyncglupdate(inst, 'TAME', line.replace('"', '').strip())
+        await db.update([inst, 'TAME', line.replace('"', '').strip()], db='gl')
     elif line.find(" claimed '") != -1 or line.find(" unclaimed '") != -1:
-        await asyncglupdate(inst, 'CLAIM', line.replace('"', '').strip())
-    elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 \
-    or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 \
-    or line.find(' Tribe to ') != -1 or line.find(' was removed from the Tribe!') != -1 or line.find(' set to Rank Group ') != -1 \
-    or line.find(' requested an Alliance with ') != -1 or line.find(' was added to the Tribe!') != -1:
-        await asyncglupdate(inst, 'TRIBE', line.replace('"', '').strip())
+        await db.update([inst, 'CLAIM', line.replace('"', '').strip()], db='gl')
+    elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 or line.find(' Tribe to ') != -1 or line.find(' was removed from the Tribe!') != -1 or line.find(' set to Rank Group ') != -1 or line.find(' requested an Alliance with ') != -1 or line.find(' was added to the Tribe!') != -1:
+        await db.update([inst, 'TRIBE', line.replace('"', '').strip()], db='gl')
     elif line.find('starved to death!') != -1:
-        await asyncglupdate(inst, 'DECAY', line.replace('"', '').strip())
+        await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
     elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
-        await asyncglupdate(inst, 'DECAY', line.replace('"', '').strip())
+        await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
     elif line.startswith('Error:'):
-        await asyncglupdate(inst, 'UNKNOWN', line.replace('"', '').strip())
+        await db.update([inst, 'UNKNOWN', line.replace('"', '').strip()], db='gl')
     else:
         whoasked = getnamefromchat(line)
         log.trace(f'chatline who: {whoasked}')
@@ -758,7 +746,7 @@ async def asyncprocessline(minst, line):
                                                 dto = dto - tzfix
                                             tstamp = dto.strftime('%m-%d %I:%M%p')
                                             writeglobal(minst, whoname, cmsg)
-                                            asyncio.create_task(asyncwritechat('generalchat', whoname, cmsg, tstamp))
+                                            asyncio.create_task(asyncwritechat('generalchat', whoname, cmsg, tstamp, db))
                                         except:
                                             log.exception('could not parse date from chat')
                     except:
@@ -791,7 +779,7 @@ async def asyncprocessline(minst, line):
                     lsnname = rawseenname[2].split('!lastseen')
                     if len(lsnname) > 1:
                         seenname = lsnname[1].strip().lower()
-                        message = await asyncgetlastseen(seenname)
+                        message = await asyncgetlastseen(seenname, db)
                         log.log('CMD', f'Responding to a [!lastseen] request for [{seenname.title()}] from [{orgname.title()}] on [{minst.title()}]')
                     else:
                         message = f'You must specify a player name to search'
@@ -804,9 +792,9 @@ async def asyncprocessline(minst, line):
                     lsnname = rawseenname[2].split('!playedtime')
                     seenname = lsnname[1].strip().lower()
                     if lsnname:
-                        message = await asyncgettimeplayed(seenname)
+                        message = await asyncgettimeplayed(seenname, db)
                     else:
-                        message = await asyncgettimeplayed(whoasked)
+                        message = await asyncgettimeplayed(whoasked, db)
                     await asyncserverchat(inst, message)
                     log.log('CMD', f'Responding to a [!playedtime] request for [{whoasked.title()}] on [{minst.title()}]')
 
@@ -818,7 +806,7 @@ async def asyncprocessline(minst, line):
                     else:
                         ninst = minst
                     log.log('CMD', f'Responding to a [!recent] request for [{whoasked.title()}] on [{minst.title()}]')
-                    await whoisonlinewrapper(ninst, minst, whoasked, 2)
+                    await whoisonlinewrapper(ninst, minst, whoasked, 2, db)
 
                 elif incmd.startswith(('!today', '!lastday')):
                     rawline = line.split(':')
@@ -828,17 +816,17 @@ async def asyncprocessline(minst, line):
                     else:
                         ninst = minst
                     log.log('CMD', f'Responding to a [!today] request for [{whoasked.title()}] on [{minst.title()}]')
-                    await whoisonlinewrapper(ninst, minst, whoasked, 3)
+                    await whoisonlinewrapper(ninst, minst, whoasked, 3, db)
 
                 elif incmd.startswith(('!tip', '!justthetip')):
                     log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
-                    tip = await asyncgettip()
+                    tip = await asyncgettip(db)
                     message = tip['tip']
                     await asyncserverchat(inst, message)
 
                 elif incmd.startswith(('!mypoints', '!myinfo')):
                     log.log('CMD', f'Responding to a [!myinfo] request from [{whoasked.title()}] on [{minst.title()}]')
-                    await asyncrespmyinfo(minst, whoasked)
+                    await asyncrespmyinfo(minst, whoasked, db)
 
                 elif incmd.startswith(('!players', '!whoson', '!who')):
                     rawline = line.split(':')
@@ -848,7 +836,7 @@ async def asyncprocessline(minst, line):
                     else:
                         ninst = minst
                     log.log('CMD', f'Responding to a [!who] request for [{whoasked.title()}] on [{minst.title()}]')
-                    await whoisonlinewrapper(ninst, minst, whoasked, 1)
+                    await whoisonlinewrapper(ninst, minst, whoasked, 1, db)
 
                 elif incmd.startswith(('!myhome', '!transfer', '!home', '!sethome')):
                     rawline = line.split(':')
@@ -858,7 +846,7 @@ async def asyncprocessline(minst, line):
                     else:
                         ninst = ''
                     log.log('CMD', f'Responding to a [!myhome] request for [{whoasked.title()}] on [{minst.title()}]')
-                    await asynchomeserver(minst, whoasked, ninst)
+                    await asynchomeserver(minst, whoasked, ninst, db)
 
                 elif incmd.startswith(('!vote', '!startvote', '!wipe')):
                     log.debug(f'Responding to a [!vote] request from [{whoasked.title()}] on [{minst.title()}]')
@@ -866,19 +854,19 @@ async def asyncprocessline(minst, line):
 
                 elif incmd.startswith(('!agree', '!yes')):
                     log.debug(f'responding to YES vote on {minst} from {whoasked}')
-                    await asynccastedvote(minst, whoasked, True)
+                    await asynccastedvote(minst, whoasked, True, db)
 
                 elif incmd.startswith(('!disagree', '!no')):
                     log.log('VOTE', f'Responding to NO vote on [{minst.title()}] from [{whoasked.title()}]')
-                    await asynccastedvote(minst, whoasked, False)
+                    await asynccastedvote(minst, whoasked, False, db)
 
                 elif incmd.startswith(('!timeleft', '!restart')):
                     log.log('CMD', f'Responding to a [!timeleft] request from [{whoasked.title()}] on [{minst.title()}]')
-                    await asyncresptimeleft(minst, whoasked)
+                    await asyncresptimeleft(minst, whoasked, db)
 
                 elif incmd.startswith(('!linkme', '!link')):
                     log.log('CMD', f'Responding to a [!linkme] request from [{whoasked.title()}] on [{minst.title()}]')
-                    asyncio.create_task(asynclinker(minst, whoasked))
+                    asyncio.create_task(asynclinker(minst, whoasked, db))
 
                 elif incmd.startswith(('!lottery', '!lotto')):
                     rawline = line.split(':')
@@ -888,35 +876,37 @@ async def asyncprocessline(minst, line):
                             lchoice = lastlline[1]
                         else:
                             lchoice = False
-                        asyncio.create_task(asynclottery(whoasked, lchoice, minst))
+                        asyncio.create_task(asynclottery(whoasked, lchoice, minst, db))
 
                 elif incmd.startswith(('!lastlotto', '!winner')):
                     log.log('CMD', f'Responding to a [!lastlotto] request from [{whoasked.title()}] on [{minst.title()}]')
                     await asynclastlotto(minst, whoasked)
 
                 elif incmd.startswith('!'):
-                    steamid = await asyncgetsteamid(whoasked)
+                    steamid = await asyncgetsteamid(whoasked, db)
                     log.warning(f'Invalid command request from [{whoasked.title()}] on [{minst.title()}]')
                     message = "Invalid command. Try !help"
                     await asyncserverchatto(inst, steamid, message)
                 else:
-                    await asyncchatlineelsed(line, inst)
+                    await asyncchatlineelsed(line, inst, db)
             else:
-                await asyncchatlineelsed(line, inst)
+                await asyncchatlineelsed(line, inst, db)
 
 
 @log.catch
 async def checkcommands(inst, dtime, stop_event):
     asyncloop = asyncio.get_running_loop()
+    db = asyncDB
     while not stop_event.is_set():
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
         starttime = time()
         for line in iter(b.splitlines()):
-            asyncio.create_task(asyncprocessline(inst, line))
+            asyncio.create_task(asyncprocessline(inst, db, line))
         while time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
+    await db.disconnect()
     asyncio.gather(*pendingtasks)
     asyncloop.stop()
     log.debug('Command listener thread has ended')
