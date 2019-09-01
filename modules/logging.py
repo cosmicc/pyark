@@ -3,7 +3,7 @@ from modules.configreader import hstname
 
 log.remove()
 
-log.configure(extra={'hostname': hstname, 'instance': 'MAIN', })
+log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
 
 log.level("START", no=38, color="<fg 39>", icon="¤")
 log.level("JOIN", no=21, color="<fg 201>", icon="¤")
@@ -32,10 +32,13 @@ log.level('CLAIM', no=3, color="<fg 122>", icon="¤")
 log.level('TRIBE', no=3, color="<fg 178>", icon="¤")
 log.level("ADMIN", no=3, color="<fg 11><bg 17>", icon="¤")
 log.level("NEW", no=20, color="<fg 230>", icon="¤")
+log.level("GLRAW", no=1)
 log.level("PLAYER", no=20, color="<fg 180>", icon="¤")
 
 
 shortlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level><fg 248>|</fg 248><level>{extra[hostname]: >5}</level><fg 248>|</fg 248><level>{level: <7}</level><fg 248>|</fg 248> <level>{message}</level>'
+
+glrawlogformat = '{time:YYYY-MM-DD HH:mm:ss.SSS}|{message}'
 
 simplelogformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {message}'
 

@@ -32,6 +32,7 @@ crashlogfile = config.get('general', 'crashlogfile')
 critlogfile = config.get('general', 'critlogfile')
 chatlogfile = config.get('general', 'chatlogfile')
 gamelogfile = config.get('general', 'gamelogfile')
+gamelograwfile = config.get('general', 'gamelograwfile')
 
 maint_hour = config.get('general', 'maint_hour')
 

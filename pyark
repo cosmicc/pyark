@@ -19,7 +19,7 @@ from modules.cmdlistener import cmdlistener_thread
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
                                   debugfile, gamelogfile, hstname, instances, instr, is_asdatapuller,
                                   is_eventwatcher, is_gamelogger, is_lotterymanager,
-                                  is_statscollector, jsondebugfile, jsonlogfile, loglevel, pointsfile)
+                                  is_statscollector, jsondebugfile, jsonlogfile, loglevel, pointsfile, gamelograwfile)
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
 from modules.gchatrelay import gchatrelay_thread
@@ -74,6 +74,13 @@ def checkdebuglog(record):
 
 def checkgamelog(record):
     if record['level'] == 'TRAP' or record['level'] == 'ADMIN' or record['level'] == 'DEATH' or record['level'] == 'TAME' or record['level'] == 'DECAY' or record['level'] == 'DEMO' or record['level'] == 'TRIBE' or record['level'] == 'CLAIM' or record['level'] == 'RELEASE':
+        return True
+    else:
+        return False
+
+
+def checkgamelograw(record):
+    if record['level'] == 'GLRAW':
         return True
     else:
         return False
@@ -148,8 +155,9 @@ log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, d
 # chat Logging error.log
 log.add(sink=chatlogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=modules.logging.chatlogformat, delay=False, filter=checkchatlog)
 # game Logging game.log
-log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=True, format=modules.logging.gamelogformat, delay=False, filter=checkgamelog)
-
+log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=False, format=modules.logging.gamelogformat, delay=False, filter=checkgamelog)
+# rawgame Logging gamelog.raw
+log.add(sink=gamelograwfile, level=1, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=False, format=modules.logging.glrawlogformat, delay=False, filter=checkgamelograw)
 
 plock()
 
