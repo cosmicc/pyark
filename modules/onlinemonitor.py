@@ -239,8 +239,8 @@ async def asyncprocessline(inst, line):
 
 async def asynconlineupdate(inst, dtime, stop_event):
     global greetthreads
+    asyncloop = asyncio.get_running_loop()
     while not stop_event.is_set():
-        asyncloop = asyncio.get_running_loop()
         starttime = time.time()
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
         b = cmdpipe.stdout.decode("utf-8")
