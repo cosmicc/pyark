@@ -262,4 +262,5 @@ def onlinemonitor_thread(inst, dtime, stop_event):
     db = asyncDB()
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    time.sleep(1)
     asyncio.run(asynconlineupdate(inst, dtime, stop_event))
