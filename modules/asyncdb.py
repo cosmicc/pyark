@@ -6,7 +6,7 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_st
 
 
 class asyncDB:
-    async def __init__(self):
+    def __init__(self):
         log.trace('Starting async db connection engine')
         self.loop = asyncio.get_running_loop()
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
