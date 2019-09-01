@@ -895,6 +895,7 @@ async def asyncprocessline(minst, db, line):
 
 @log.catch
 async def checkcommands(inst, dtime, stop_event):
+    global db
     asyncloop = asyncio.get_running_loop()
     db = asyncDB
     while not stop_event.is_set():
