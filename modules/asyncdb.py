@@ -10,18 +10,21 @@ class asyncDB:
         log.debug('Starting async db engine')
         self.querytypes = ['tuple', 'dict', 'count', 'list']
         self.databases = ['pyark', 'py', 'stats', 'st', 'gamelog', 'gl']
+        self.dbpyark = ['pyark', 'py']
+        self.dbstats = ['stats', 'st']
+        self.dbgamelog = ['gamelog', 'gl']
 
     async def _connect(self, db):
         if db not in self.databases:
             raise SyntaxError
         self.dbeventloop = asyncio.get_running_loop()
-        if db == 'py' or db == 'pyark':
+        if db in self.dbpyark:
             self.pydbconn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             log.debug('Connection established to pyarkdb')
-        elif db == 'st' or db == 'stats':
+        elif db in self.dbstats:
             self.stdbconn = await asyncpg.connect(database=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             log.debug('Connection established to statsdb')
-        elif db == 'gl' or db == 'gamelog':
+        elif db in self.dbgamelog:
             self.gldbconn = await asyncpg.connect(database='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             log.debug('Connection established to gamelogdb')
 
@@ -34,6 +37,17 @@ class asyncDB:
             await self.stdbconn.close()
         log.debug('Database connections closed')
 
+    async def check_if_connected(self, db):
+        if db in self.dbpyark:
+            if 'self.pydbconn' not in locals():
+                await self._connect('pyark')
+        elif db in self.dbstats:
+            if 'self.stdbconn' not in locals():
+                await self._connect('stats')
+        elif db in self.glgamelog:
+            if 'self.gldbconn' not in locals():
+                await self._connect('gamelog')
+
     async def query(self, query, fmt, fetch, single=True, db='pyark'):
         if not isinstance(query, str):
             raise TypeError('Query is not type string')
@@ -43,12 +57,7 @@ class asyncDB:
             raise ValueError('Invalid fmt type')
         if fetch != 'one' and fetch != 'all':
             raise ValueError('Invalid fetch type')
-        if 'self.pydbconn' not in locals():
-            await self._connect('pyark')
-        if 'self.stdbconn' not in locals():
-            await self._connect('stats')
-        if 'self.gldbconn' not in locals():
-            await self._connect('gamelog')
+        await self.check_if_connected(db)
         try:
             if fetch == 'one':
                 dbdata = await self.pydbconn.fetchrow(query)
@@ -76,6 +85,7 @@ class asyncDB:
             raise ValueError('Invalid database')
         if (db != 'gamelog' or db != 'gl' and not isinstance(query, str)) or (db == 'gamelog' or db == 'gl' and not isinstance(query, list)):
             raise TypeError('Query type is invalid')
+        await self.check_if_connected(db)
         try:
             if 'self.pydbconn' not in locals():
                 await self._connect('pyark')
