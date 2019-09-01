@@ -202,7 +202,7 @@ async def asyncsetvote(whoasked, myvote):
             each[2] = myvote
 
 
-async def asyncgetvote(whoasked, db):
+async def asyncgetvote(whoasked):
     for each in votertable:
         if each[0] == await asyncgetsteamid(whoasked):
             return each[2]
@@ -317,6 +317,7 @@ async def asyncvoter(inst, whoasked):
     await asyncserverbcast(inst, bcast)
     votestarttime = time()
     await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp())
+    warned = False
     while isvoting:
         await asyncio.sleep(5)
         if votingpassed() and time() - votestarttime > 60:
@@ -334,7 +335,8 @@ async def asyncvoter(inst, whoasked):
                 log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({yesvoters}/{totvoters})')
                 await asyncwritechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of \
 {totvoters})', wcstamp())
-        elif time() - votestarttime > 30:
+        elif time() - votestarttime > 30 and not warned:
+            warned = True
             log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title()}]')
             bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                  A Wild dino wipe vote is waiting for votes!</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe"""
             await asyncserverbcast(inst, bcast)
