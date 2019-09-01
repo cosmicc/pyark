@@ -66,18 +66,19 @@ class asyncDB:
         return await self._query(query, 'one', result, db)
 
     async def _query(self, query, fetch, fmt, db):
-        await self.check_if_connected(db)
+        await self.check_if_connected()
         try:
             con = await self._aquire()
             if fetch == 'one':
                 dbdata = await con.fetchrow(query)
             elif fetch == 'all' or fmt == "count":
                 dbdata = await con.fetch(query)
-            await self._release(con)
             # log.trace(f'Executing DB [{db}] query {query}')
         except:
             log.exception(f'Error in database query {query} in {db}')
             return None
+        finally:
+            await self._release(con)
         if dbdata is not None:
             # log.trace(f'Retrieved DB [{db}] result {dbdata}')
             if fmt == 'record':
@@ -109,7 +110,7 @@ class asyncDB:
             raise ValueError(f'Invalid database [{db}]')
         # if (db not in self.dbgamelog and not isinstance(query, str)) or (db in self.dbgamelog and not isinstance(query, list)):
         #    raise TypeError(f'Query type is invalid [{type(query)}]')
-        await self.check_if_connected(db)
+        await self.check_if_connected()
         if db in self.dbpyark:
             await asyncio.create_task(self._execute(query))
         elif db in self.dbstats:
