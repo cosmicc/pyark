@@ -63,11 +63,11 @@ class asyncDB:
 
     async def fetchall(self, query, result='record', db='pyark'):
         await self.testvars(query, result, db)
-        await self._query(query, 'all', result, db)
+        return await self._query(query, 'all', result, db)
 
     async def fetchone(self, query, result='record', db='pyark'):
         await self.testvars(query, result, db)
-        await self._query(query, 'one', result, db)
+        return await self._query(query, 'one', result, db)
 
     async def _query(self, query, fetch, fmt, db):
         await self.check_if_connected(db)
