@@ -206,7 +206,7 @@ async def asyncgetvote(whoasked, db):
 
 async def asynccastedvote(inst, whoasked, myvote, db):
     global arewevoting
-    if not isvoting(inst):
+    if not isvoting:
         message = f'No vote is taking place now'
         await asyncserverchat(inst, message)
     else:
