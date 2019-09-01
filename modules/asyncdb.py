@@ -107,10 +107,10 @@ class asyncDB:
         try:
             if db in self.dbpyark:
                 log.debug
-                await asyncio.create_task(self.pydbconn.execute(query), loop=self.loop)
+                await asyncio.create_task(self.pydbconn.execute(query))
                 log.debug(f'Executing DB [{db}] update {query}')
             elif db in self.dbstats:
-                await asyncio.create_task(self.pydbconn.execute(query), loop=self.loop)
+                await asyncio.create_task(self.pydbconn.execute(query))
                 log.debug(f'Executing DB [{db}] update {query}')
             elif db in self.dbgamelog:
                 sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
