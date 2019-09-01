@@ -3,11 +3,12 @@ import asyncio
 import asyncpg
 from loguru import logger as log
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
+import threading
 
 
 class asyncDB:
     def __init__(self):
-        log.trace('Starting async db connection engine')
+        log.trace(f'Starting async db connection engine for {threading.current_thread().name}')
         self.loop = asyncio.get_running_loop()
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
         self.databases = ('pyark', 'py', 'stats', 'st', 'gamelog', 'gl')
