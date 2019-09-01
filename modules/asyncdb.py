@@ -52,11 +52,11 @@ class asyncDB:
         if not isinstance(query, str):
             raise TypeError('Query is not type string')
         if db not in self.databases:
-            raise ValueError('Invalid database')
+            raise ValueError(f'Invalid database [{db}]')
         if fmt not in self.querytypes:
-            raise ValueError('Invalid fmt type')
+            raise ValueError(f'Invalid fmt type [{fmt}]')
         if fetch != 'one' and fetch != 'all':
-            raise ValueError('Invalid fetch type')
+            raise ValueError(f'Invalid fetch type [{fetch}]')
         await self.check_if_connected(db)
         try:
             if fetch == 'one':
@@ -82,9 +82,9 @@ class asyncDB:
 
     async def update(self, query, db='pyark'):
         if db not in self.databases:
-            raise ValueError('Invalid database')
+            raise ValueError(f'Invalid database [{db}]')
         if (db != 'gamelog' or db != 'gl' and not isinstance(query, str)) or (db == 'gamelog' or db == 'gl' and not isinstance(query, list)):
-            raise TypeError('Query type is invalid')
+            raise TypeError(f'Query type is invalid [{type(query)}]')
         await self.check_if_connected(db)
         try:
             if 'self.pydbconn' not in locals():
