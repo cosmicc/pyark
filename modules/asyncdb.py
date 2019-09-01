@@ -25,7 +25,7 @@ class asyncDB():
             self.gldbconn = await asyncpg.connect(database='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             log.debug('Connection established to gamelogdb')
 
-    async def __async__close(self):
+    async def close(self):
         if 'self.pydbconn' in locals():
             await self.pydbconn.close()
         if 'self.gldbconn' in locals():
@@ -34,7 +34,7 @@ class asyncDB():
             await self.stdbconn.close()
         log.debug('Database connections closed')
 
-    async def __async__query(self, query, fmt, fetch, single=True, db='pyark'):
+    async def query(self, query, fmt, fetch, single=True, db='pyark'):
         if fetch != 'one' or fetch != 'all' or fmt not in self.querytypes or db not in self.databases or not isinstance(query, str):
             raise SyntaxError
         if 'self.pydbconn' in locals():
