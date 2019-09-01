@@ -7,12 +7,15 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_st
 
 class asyncDB:
     def __init__(self):
-        log.debug('Starting async db engine')
+        log.trace('Starting async db connection engine')
         self.querytypes = ['tuple', 'dict', 'count', 'list']
         self.databases = ['pyark', 'py', 'stats', 'st', 'gamelog', 'gl']
         self.dbpyark = ['pyark', 'py']
         self.dbstats = ['stats', 'st']
         self.dbgamelog = ['gamelog', 'gl']
+        self.pydbconn = None
+        self.stdbconn = None
+        self.gldbconn = None
 
     async def _connect(self, db):
         if db not in self.databases:
@@ -29,23 +32,23 @@ class asyncDB:
             log.debug('Connection established to gamelogdb')
 
     async def close(self):
-        if 'self.pydbconn' in locals():
+        if self.pydbconn is not None:
             await self.pydbconn.close()
-        if 'self.gldbconn' in locals():
+        if self.gldbconn is not None:
             await self.gldbconn.close()
-        if 'self.stbconn' in locals():
+        if self.stbconn is not None:
             await self.stdbconn.close()
         log.debug('Database connections closed')
 
     async def check_if_connected(self, db):
         if db in self.dbpyark:
-            if 'self.pydbconn' not in locals():
+            if self.pydbconn is None:
                 await self._connect('pyark')
         elif db in self.dbstats:
-            if 'self.stdbconn' not in locals():
+            if self.stdbconn is None:
                 await self._connect('stats')
         elif db in self.glgamelog:
-            if 'self.gldbconn' not in locals():
+            if self.gldbconn is None:
                 await self._connect('gamelog')
 
     async def query(self, query, fmt, fetch, single=True, db='pyark'):
@@ -87,17 +90,11 @@ class asyncDB:
             raise TypeError(f'Query type is invalid [{type(query)}]')
         await self.check_if_connected(db)
         try:
-            if 'self.pydbconn' not in locals():
-                await self._connect('pyark')
-            if 'self.stdbconn' not in locals():
-                await self._connect('stats')
-            if 'self.gldbconn' not in locals():
-                await self._connect('gamelog')
-            if db == 'py' or db == 'pyark':
+            if db in self.dbpyark:
                 await asyncio.create_task(self.pydbconn.execute(query))
-            elif db == 'st' or db == 'stats':
+            elif db in self.dbstats:
                 await asyncio.create_task(self.pydbconn.execute(query))
-            elif db == 'gl' or db == 'gamelog':
+            elif db in self.dbgamelog:
                 sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
                 await asyncio.create_task(self.gldbconn.execute(sql, query[0].lower(), query[1].upper(), query[2]))
         except:
