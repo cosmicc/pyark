@@ -7,7 +7,7 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_st
 
 class asyncDB:
     def __init__(self):
-        log.trace('Starting async db engine')
+        log.debug('Starting async db engine')
         self.querytypes = ['tuple', 'dict', 'count', 'list']
         self.databases = ['pyark', 'py', 'stats', 'st', 'gamelog', 'gl']
 
