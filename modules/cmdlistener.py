@@ -297,10 +297,10 @@ async def asyncwipeit(inst):
     await asyncserverbcast(inst, bcast)
     await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). \
 Wiping wild dinos now.', wcstamp())
-    asyncio.sleep(7)
+    await asyncio.sleep(7)
     ##########################################
     subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-    asyncio.sleep(3)
+    await asyncio.sleep(3)
     subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     await asyncresetlastwipe(inst)
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
@@ -319,7 +319,7 @@ async def asyncvoter(inst, whoasked):
     await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp())
     while isvoting:
         await asyncio.sleep(5)
-        if votingpassed() and time() - votestarttime > 10:
+        if votingpassed() and time() - votestarttime > 60:
             isvoting = False
             asyncio.create_task(asyncwipeit(inst))
         elif time() - votestarttime > Secs['3min']:
@@ -334,7 +334,7 @@ async def asyncvoter(inst, whoasked):
                 log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({yesvoters}/{totvoters})')
                 await asyncwritechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of \
 {totvoters})', wcstamp())
-        elif time() - votestarttime > 120:
+        elif time() - votestarttime > 30:
             log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title()}]')
             bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                  A Wild dino wipe vote is waiting for votes!</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe"""
             await asyncserverbcast(inst, bcast)
