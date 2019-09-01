@@ -25,7 +25,7 @@ class asyncDB():
             self.gldbconn = await asyncpg.connect(database='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             log.debug('Connection established to gamelogdb')
 
-    async def close(self):
+    async def __async__close(self):
         if 'self.pydbconn' in locals():
             await self.pydbconn.close()
         if 'self.gldbconn' in locals():
