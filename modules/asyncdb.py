@@ -5,7 +5,7 @@ from loguru import logger as log
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_statsdb, psql_user
 
 
-class asyncDB():
+class asyncDB:
     def __init__(self):
         log.trace('Starting async db engine')
         self.querytypes = ['tuple', 'dict', 'count', 'list']
