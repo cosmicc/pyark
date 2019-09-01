@@ -33,6 +33,7 @@ class asyncDB:
     async def check_if_connected(self, db):
         if db in self.dbpyark:
             if self.dbconn is None:
+                log.trace('Database is not connected. connecting...')
                 await self._connect('pyark')
 
     # async def query(self, query, fmt='one', fetch='record', db='pyark'):
@@ -57,15 +58,14 @@ class asyncDB:
         try:
             if fetch == 'one':
                 dbdata = await self.dbconn.fetchrow(query)
-                log.debug(f'Executing DB [{db}] query {query}')
             elif fetch == 'all' or fmt == "count":
                 dbdata = await self.dbconn.fetch(query)
-                log.debug(f'Executing DB [{db}] query {query}')
+            # log.trace(f'Executing DB [{db}] query {query}')
         except:
             log.exception(f'Error in database query {query} in {db}')
             return None
         if dbdata is not None:
-            log.debug(f'Retrieved DB [{db}] result {dbdata}')
+            # log.trace(f'Retrieved DB [{db}] result {dbdata}')
             if fmt == 'record':
                 return dbdata
             if fmt == 'count':
@@ -89,16 +89,13 @@ class asyncDB:
         await self.check_if_connected(db)
         try:
             if db in self.dbpyark:
-                log.debug
                 await asyncio.create_task(self.dbconn.execute(query))
-                log.debug(f'Executing DB [{db}] update {query}')
             elif db in self.dbstats:
                 await asyncio.create_task(self.dbconn.execute(query))
-                log.debug(f'Executing DB [{db}] update {query}')
             elif db in self.dbgamelog:
                 sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
                 await asyncio.create_task(self.dbconn.execute(sql, query[0].lower(), query[1].upper(), query[2]))
-                log.debug(f'Executing DB [{db}] update {query}')
+            # log.trace(f'Executing DB [{db}] update {query}')
         except:
             log.exception(f'Exception in db update {query} in {db}')
             return False
