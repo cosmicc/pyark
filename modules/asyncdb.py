@@ -47,7 +47,7 @@ class asyncDB:
         elif db in self.dbstats:
             if self.stdbconn is None:
                 await self._connect('stats')
-        elif db in self.glgamelog:
+        elif db in self.dbgamelog:
             if self.gldbconn is None:
                 await self._connect('gamelog')
 
