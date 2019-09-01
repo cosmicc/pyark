@@ -96,14 +96,23 @@ class asyncDB:
         else:
             return None
 
-    async def _execute(self, query):
+    async def _execute(self, query, db):
         con = await self._acquire()
-        try:
-            await con.execute(query)
-        except:
-            log.exception(f'Exception in db update {query}')
-        finally:
-            await self._release(con)
+        if db in self.dbgamelog:
+            sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
+            try:
+                await con.execute(self._execute(sql, query[0].lower(), query[1].upper(), query[2]))
+            except:
+                log.exception(f'Exception in db stat update {query}')
+            finally:
+                await self._release(con)
+        else:
+            try:
+                await con.execute(query)
+            except:
+                log.exception(f'Exception in db update {query}')
+            finally:
+                await self._release(con)
 
     async def update(self, query, db='pyark'):
         if db not in self.databases:
@@ -111,12 +120,6 @@ class asyncDB:
         # if (db not in self.dbgamelog and not isinstance(query, str)) or (db in self.dbgamelog and not isinstance(query, list)):
         #    raise TypeError(f'Query type is invalid [{type(query)}]')
         await self.check_if_connected()
-        if db in self.dbpyark:
-            await asyncio.create_task(self._execute(query))
-        elif db in self.dbstats:
-            await asyncio.create_task(self._execute(query))
-        elif db in self.dbgamelog:
-            sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
-            await asyncio.create_task(self._execute(sql, query[0].lower(), query[1].upper(), query[2]))
+        await asyncio.create_task(self._execute(query, db))
         # log.trace(f'Executing DB [{db}] update {query}')
         return True
