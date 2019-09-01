@@ -822,7 +822,7 @@ async def asyncprocessline(minst, db, line):
                 elif incmd.startswith(('!tip', '!justthetip')):
                     log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
                     tip = await asyncgettip(db)
-                    message = tip['tip']
+                    message = tip
                     await asyncserverchat(inst, message)
 
                 elif incmd.startswith(('!mypoints', '!myinfo')):
