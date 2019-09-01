@@ -26,7 +26,7 @@ class asyncDB:
             await asyncio.sleep(5)
             self.connect()
         else:
-            log.debug('Database connection pool initilized and connected')
+            log.debug('Database connection pool initilized and connected for {threading.current_thread().name}')
             self.connecting = False
         # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
