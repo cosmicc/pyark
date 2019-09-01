@@ -97,7 +97,7 @@ class asyncDB:
         if db in self.dbgamelog:
             sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
             try:
-                await con.execute(self._execute(sql, query[0].lower(), query[1].upper(), query[2]))
+                await con.execute(sql, query[0].lower(), query[1].upper(), query[2])
             except:
                 log.exception(f'Exception in db stat update {query}')
             finally:
