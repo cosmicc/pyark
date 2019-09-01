@@ -1,14 +1,8 @@
-class aclass:
-	def __init__(self):
-		self.test = None
-	def go(self):
-		def now(self, a):
-			self.test = a
-			
-		print('whoa')
+from modules.servertools import serverexec
 
-c = aclass()
+inst = 'crystal'
+cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
+b = cmdpipe.stdout.decode("utf-8")
+print(len(b.splitlines))
+#for line in iter(b.splitlines()):
 
-c.go().now(1)
-
-print(c.test)
