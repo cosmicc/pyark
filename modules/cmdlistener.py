@@ -173,7 +173,7 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt, db):
                 message = f'{inst.capitalize()} has no players online.'
                 await asyncserverchat(oinst, message)
     except:
-        log.exception()
+        log.exception('exception in whosisonline')
         message = f'Server {inst.capitalize()} does not exist.'
         await asyncserverchat(oinst, message)
 

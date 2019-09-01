@@ -41,7 +41,7 @@ class asyncDB:
             raise ValueError('Invalid database')
         if fmt not in self.querytypes:
             raise ValueError('Invalid fmt type')
-        if fetch != 'one' or fetch != 'all':
+        if fetch != 'one' and fetch != 'all':
             raise ValueError('Invalid fetch type')
         if 'self.pydbconn' in locals():
             await self._connect('pyark')
