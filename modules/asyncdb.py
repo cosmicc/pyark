@@ -6,13 +6,14 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_st
 
 
 class asyncDB:
-    def __init__(self):
+    async def __init__(self):
         log.trace('Starting async db connection engine')
-        self.querytypes = ['tuple', 'dict', 'count', 'list']
-        self.databases = ['pyark', 'py', 'stats', 'st', 'gamelog', 'gl']
-        self.dbpyark = ['pyark', 'py']
-        self.dbstats = ['stats', 'st']
-        self.dbgamelog = ['gamelog', 'gl']
+        self.loop = asyncio.get_running_loop()
+        self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
+        self.databases = ('pyark', 'py', 'stats', 'st', 'gamelog', 'gl')
+        self.dbpyark = ('pyark', 'py')
+        self.dbstats = ('stats', 'st')
+        self.dbgamelog = ('gamelog', 'gl')
         self.pydbconn = None
         self.stdbconn = None
         self.gldbconn = None
@@ -51,37 +52,48 @@ class asyncDB:
             if self.gldbconn is None:
                 await self._connect('gamelog')
 
-    async def query(self, query, fmt, fetch, single=True, db='pyark'):
+    # async def query(self, query, fmt='one', fetch='record', db='pyark'):
+    async def testvars(self, query, result, db):
         if not isinstance(query, str):
             raise TypeError('Query is not type string')
         if db not in self.databases:
             raise ValueError(f'Invalid database [{db}]')
-        if fmt not in self.querytypes:
-            raise ValueError(f'Invalid fmt type [{fmt}]')
-        if fetch != 'one' and fetch != 'all':
-            raise ValueError(f'Invalid fetch type [{fetch}]')
-        await self.check_if_connected(db)
-        try:
-            if fetch == 'one':
-                dbdata = await self.pydbconn.fetchrow(query)
-            elif fetch == 'all' or fmt == "count":
-                dbdata = await self.pydbconn.fetch(query)
-        except:
-            log.exception(f'Error in database query {query} in {db}')
-            return None
-        if dbdata is not None:
-            if fmt == 'count':
-                return len(dbdata)
-            elif fmt == 'tuple':
-                return tuple(dbdata)
-            elif fmt == 'dict' and fetch == 'one':
-                return dict(dbdata)
-            elif fmt == 'dict' and fetch == 'all':
-                return dbdata
-            elif fmt == 'list':
-                return list(tuple(dbdata))
-        else:
-            return None
+        if result in self.querytypes:
+            raise ValueError(f'Invalid result type [{result}]')
+
+    async def fetchall(self, query, result='record', db='pyark'):
+        await self.testvars(query, result, db)
+        await self._query(query, 'all', result, db)
+
+    async def fetchone(self, query, result='record', db='pyark'):
+        await self.testvars(query, result, db)
+        await self._query(query, 'one', result, db)
+
+        async def _query(self, query, fetch, fmt, db):
+            await self.check_if_connected(db)
+            try:
+                if fetch == 'one':
+                    dbdata = await self.pydbconn.fetchrow(query)
+                elif fetch == 'all' or fmt == "count":
+                    dbdata = await self.pydbconn.fetch(query)
+            except:
+                log.exception(f'Error in database query {query} in {db}')
+                return None
+            if dbdata is not None:
+                if fmt == 'record':
+                    return dbdata
+                if fmt == 'count':
+                    return len(dbdata)
+                elif fmt == 'tuple':
+                    return tuple(dbdata)
+                elif fmt == 'dict' and fetch == 'one':
+                    return dict(dbdata)
+                elif fmt == 'dict' and fetch == 'all':
+                    return dbdata
+                elif fmt == 'list':
+                    return list(tuple(dbdata))
+            else:
+                return None
 
     async def update(self, query, db='pyark'):
         if db not in self.databases:
@@ -91,9 +103,9 @@ class asyncDB:
         await self.check_if_connected(db)
         try:
             if db in self.dbpyark:
-                await asyncio.create_task(self.pydbconn.execute(query))
+                await asyncio.create_task(self.pydbconn.execute(query), loop=self.loop)
             elif db in self.dbstats:
-                await asyncio.create_task(self.pydbconn.execute(query))
+                await asyncio.create_task(self.pydbconn.execute(query), loop=self.loop)
             elif db in self.dbgamelog:
                 sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
                 await asyncio.create_task(self.gldbconn.execute(sql, query[0].lower(), query[1].upper(), query[2]))
