@@ -907,7 +907,7 @@ async def checkcommands(inst, dtime, stop_event):
         while time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
-    await db.disconnect()
+    await db.close()
     asyncio.gather(*pendingtasks)
     asyncloop.stop()
     log.debug('Command listener thread has ended')
