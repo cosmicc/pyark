@@ -97,7 +97,7 @@ class asyncDB:
                 log.debug(f'Executing DB [{db}] update {query}')
             elif db in self.dbgamelog:
                 sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
-                await asyncio.create_task(self.dbconn._query(sql, query[0].lower(), query[1].upper(), query[2]))
+                await asyncio.create_task(self.dbconn.execute(sql, query[0].lower(), query[1].upper(), query[2]))
                 log.debug(f'Executing DB [{db}] update {query}')
         except:
             log.exception(f'Exception in db update {query} in {db}')
