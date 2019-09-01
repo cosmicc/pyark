@@ -5,9 +5,10 @@ import time
 import uvloop
 from loguru import logger as log
 from modules.clusterevents import getcurrenteventinfo, iseventtime
-from modules.dbhelper import asyncdbquery, asyncdbupdate, cleanstring, dbquery, dbupdate
+from modules.asyncdb import asyncDB
+from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.players import getplayer, newplayer
-from modules.servertools import asyncserverexec, serverexec
+from modules.servertools import serverexec
 from modules.timehelper import Now, elapsedTime, playedTime
 
 welcomthreads = []
@@ -102,8 +103,8 @@ def lottodeposits(steamid, inst):
 
 @log.catch
 async def asynccheckifbanned(steamid):
-    player = await asyncdbquery(f"SELECT steamid FROM players WHERE steamid = '{steamid}' AND banned != 'true'", 'dict', 'one')
-    banned = await asyncdbquery(f"SELECT steamid FROM banlist WHERE steamid = '{steamid}'", 'dict', 'one')
+    player = await db.fetchone(f"SELECT steamid FROM players WHERE steamid = '{steamid}' AND banned != 'true'")
+    banned = await db.fetchone(f"SELECT steamid FROM banlist WHERE steamid = '{steamid}'")
     if player or banned:
         return True
     else:
@@ -256,7 +257,9 @@ async def asynconlineupdate(inst, dtime, stop_event):
 
 @log.catch
 def onlinemonitor_thread(inst, dtime, stop_event):
+    global db
     log.debug(f'Online monitor thread for {inst} is starting')
+    db = asyncDB()
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     asyncio.run(asynconlineupdate(inst, dtime, stop_event))
