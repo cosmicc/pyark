@@ -222,8 +222,8 @@ def main():
         thread = threading.Thread(name='lotterywatcher', target=lottery.lotterywatcher_thread, args=(300, stop_event), daemon=False)
         threads.append(thread)
     if is_gamelogger == "True":
-        thread = threading.Thread(name='gamelogger', target=gamelogger_thread, args=(stop_event,), daemon=False)
-        threads.append(thread)
+        #thread = threading.Thread(name='gamelogger', target=gamelogger_thread, args=(stop_event,), daemon=False)
+        #threads.append(thread)
         thread = threading.Thread(name='steamapi', target=steamapi_thread, args=(5, stop_event), daemon=False)
         threads.append(thread)
         thread = threading.Thread(name='auctionapi', target=auctionapi_thread, args=(5, stop_event), daemon=False)
