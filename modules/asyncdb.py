@@ -9,7 +9,6 @@ import threading
 class asyncDB:
     def __init__(self):
         log.trace(f'Starting async db connection engine for {threading.current_thread().name}')
-        self.loop = asyncio.get_running_loop()
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
         self.databases = ('pyark', 'py', 'stats', 'st', 'gamelog', 'gl')
         self.dbpyark = ('pyark', 'py')
@@ -18,7 +17,6 @@ class asyncDB:
         self.cpool = None
 
     async def _connect(self):
-        self.dbeventloop = asyncio.get_running_loop()
         self.cpool = await asyncpg.create_pool(min_size=2, max_size=10, max_inactive_connection_lifetime=120.0, database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         log.debug('Database connection pool initilized')
         # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
