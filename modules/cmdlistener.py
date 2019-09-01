@@ -4,12 +4,11 @@ import random
 import subprocess
 import threading
 from datetime import datetime, timedelta
-from time import sleep, time
+from time import time
 
 import aiofiles
 import uvloop
 from loguru import logger as log
-from modules.configreader import instance, numinstances
 from modules.asyncdb import asyncDB
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng

@@ -23,34 +23,19 @@ class asyncDB:
             raise SyntaxError
         self.dbeventloop = asyncio.get_running_loop()
         if db in self.dbpyark:
-            self.pydbconn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-            log.debug('Connection established to pyarkdb')
-        elif db in self.dbstats:
-            self.stdbconn = await asyncpg.connect(database=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-            log.debug('Connection established to statsdb')
-        elif db in self.dbgamelog:
-            self.gldbconn = await asyncpg.connect(database='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-            log.debug('Connection established to gamelogdb')
+            self.dbconn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            log.debug('Connection established to database')
+            self.player_by_id = self.pydbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
     async def close(self):
-        if self.pydbconn is not None:
-            await self.pydbconn.close()
-        if self.gldbconn is not None:
-            await self.gldbconn.close()
-        if self.stdbconn is not None:
-            await self.stdbconn.close()
+        if self.dbconn is not None:
+            await self.dbconn.close()
         log.debug('Database connections closed')
 
     async def check_if_connected(self, db):
         if db in self.dbpyark:
-            if self.pydbconn is None:
+            if self.dbconn is None:
                 await self._connect('pyark')
-        elif db in self.dbstats:
-            if self.stdbconn is None:
-                await self._connect('stats')
-        elif db in self.dbgamelog:
-            if self.gldbconn is None:
-                await self._connect('gamelog')
 
     # async def query(self, query, fmt='one', fetch='record', db='pyark'):
     async def testvars(self, query, result, db):
@@ -73,10 +58,10 @@ class asyncDB:
         await self.check_if_connected(db)
         try:
             if fetch == 'one':
-                dbdata = await self.pydbconn.fetchrow(query)
+                dbdata = await self.dbconn.fetchrow(query)
                 log.debug(f'Executing DB [{db}] query {query}')
             elif fetch == 'all' or fmt == "count":
-                dbdata = await self.pydbconn.fetch(query)
+                dbdata = await self.dbconn.fetch(query)
                 log.debug(f'Executing DB [{db}] query {query}')
         except:
             log.exception(f'Error in database query {query} in {db}')
@@ -107,14 +92,14 @@ class asyncDB:
         try:
             if db in self.dbpyark:
                 log.debug
-                await asyncio.create_task(self.pydbconn.execute(query))
+                await asyncio.create_task(self.dbconn.execute(query))
                 log.debug(f'Executing DB [{db}] update {query}')
             elif db in self.dbstats:
-                await asyncio.create_task(self.pydbconn.execute(query))
+                await asyncio.create_task(self.dbconn.execute(query))
                 log.debug(f'Executing DB [{db}] update {query}')
             elif db in self.dbgamelog:
                 sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
-                await asyncio.create_task(self.gldbconn.execute(sql, query[0].lower(), query[1].upper(), query[2]))
+                await asyncio.create_task(self.dbconn.execute(sql, query[0].lower(), query[1].upper(), query[2]))
                 log.debug(f'Executing DB [{db}] update {query}')
         except:
             log.exception(f'Exception in db update {query} in {db}')

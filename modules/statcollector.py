@@ -17,10 +17,6 @@ def stopsleep(sleeptime, stop_event):
         sleep(1)
 
 
-def checkiftableexists(inst):
-    dbupdate("CREATE TABLE IF NOT EXISTS %s (date timestamp, value smallint)" % (inst,), db='statsdb')
-
-
 def addvalue(inst, value):
     statsupdate(inst, value)
 
@@ -34,8 +30,6 @@ def flushold(tinst):  # not implimented
 def statcollector_thread(dtime, stop_event):
     log.debug(f'Statcollector thread is starting')
     stinst = dbquery('SELECT name FROM instances', fmt='list', single=True)
-    for each in stinst:
-        checkiftableexists(each)
     while not stop_event.is_set():
         t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
         dailycollect = is_time_between(t, s, e)

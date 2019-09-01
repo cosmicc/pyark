@@ -17,10 +17,7 @@ async def asyncdbquery(query, fmt, fetch, db='sqldb', single=False):
 @log.catch
 async def llasyncdbquery(query, db, fetch, fmt, single):
     try:
-        if db == 'sqldb':
-            conn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        elif db == 'statsdb':
-            conn = await asyncpg.connect(database=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        conn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     except:
         log.critical('ERROR CONNECTING TO DATABASE SERVER')
         await conn.close()
@@ -70,12 +67,7 @@ async def asyncglupdate(inst, ptype, text):
 @log.catch
 async def llasyncdbupdate(query, db):
     try:
-        if db == 'sqldb':
-            conn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        elif db == 'statsdb':
-            conn = await asyncpg.connect(database=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        elif db == 'gamelog':
-            conn = await asyncpg.connect(database='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        conn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     except:
         log.exception('ERROR CONNECTING TO DATABASE SERVER')
         await conn.close()
@@ -100,7 +92,7 @@ async def llasyncdbupdate(query, db):
 @log.catch
 def glupdate(inst, ptype, text):
     try:
-        conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         c = conn.cursor()
     except psycopg2.OperationalError:
         log.critical('ERROR CONNECTING TO DATABASE SERVER')
@@ -224,10 +216,7 @@ def formatdbdata(data, table, qtype='tuple', db='sqldb', single=False, case='nor
 @log.catch
 def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
     try:
-        if db == 'sqldb':
-            conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        elif db == 'statsdb':
-            conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         c = conn.cursor()
         c.execute(query)
     except psycopg2.OperationalError:
@@ -262,9 +251,9 @@ def dbquery(query, db='sqldb', fetch='all', fmt='tuple', single=False):
 
 @log.catch
 def statsupdate(inst, value):
-    conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+    conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     c = conn.cursor()
-    c.execute("INSERT INTO %s (date, value) VALUES ('%s', '%s')" % (inst.lower(), datetime.now().replace(microsecond=0), value))
+    c.execute(f"INSERT INTO {inst.lower()}_stats (date, value) VALUES ('{datetime.now().replace(microsecond=0)}', {value})")
     conn.commit()
     c.close()
     conn.close()
@@ -273,10 +262,7 @@ def statsupdate(inst, value):
 @log.catch
 def dbupdate(query, db='sqldb'):
     try:
-        if db == 'sqldb':
-            conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        elif db == 'statsdb':
-            conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         c = conn.cursor()
     except:
         log.error(f'Error in database init: {db} - {query}')
