@@ -20,7 +20,7 @@ class asyncDB:
     async def connect(self):
         self.connecting = True
         try:
-            self.cpool = await asyncpg.create_pool(min_size=2, max_size=10, max_inactive_connection_lifetime=60.0, database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            self.cpool = await asyncpg.create_pool(min_size=2, max_size=20, max_inactive_connection_lifetime=30.0, database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         except:
             log.critical('Error connecting to database server.. waiting to reconnect')
             await asyncio.sleep(5)
@@ -44,7 +44,7 @@ class asyncDB:
             log.trace('Database is not connected. connecting...')
             await self.connect()
         try:
-            con = await self.cpool.acquire()
+            con = await self.cpool.acquire(timeout=10)
         except:
             log.exception('Error aquiring a db pool connection')
         else:

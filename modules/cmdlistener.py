@@ -579,7 +579,7 @@ async def asyncleavingplayerwatch(player, inst):
             totxt = f'{player["playername"].title()} has transferred to {queryplayer["server"].title()}'
             serverexec(['arkmanager', 'rconcmd', f'ServerChat {totxt}', f'@{inst}'], nice=19, null=True)
             await asyncwriteglobal(queryplayer["server"].lower(), 'ALERT', fromtxt, db)
-            await asyncwritechat(inst, 'ALERT', f'>><< {player["playername"].title()} has transferred from {inst.title()} to {queryplayer["server"].title()}', wcstamp())
+            await asyncwritechat(inst, 'ALERT', f'>><< {player["playername"].title()} has transferred from {inst.title()} to {queryplayer["server"].title()}', wcstamp(), db)
             log.log('XFER', f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{queryplayer["server"].title()}]')
             transferred = True
             stop_watch = True
