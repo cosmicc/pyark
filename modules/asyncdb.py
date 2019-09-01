@@ -36,7 +36,7 @@ class asyncDB:
             await self.pydbconn.close()
         if self.gldbconn is not None:
             await self.gldbconn.close()
-        if self.stbconn is not None:
+        if self.stdbconn is not None:
             await self.stdbconn.close()
         log.debug('Database connections closed')
 
