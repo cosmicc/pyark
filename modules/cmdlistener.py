@@ -122,6 +122,7 @@ async def asyncgettimeplayed(seenname, db):
 async def asyncgettip():
     tip = await db.query("SELECT * FROM tips WHERE active = True ORDER BY count ASC, random()", 'dict', 'one')
     db.update("UPDATE tips set count = {int(tip['count'] + 1} WHERE id = {tip['id'])}")
+    log.debug(f'## {tip}')
     return tip['tip']
 
 
