@@ -239,6 +239,7 @@ async def asyncprocessline(inst, line):
 
 async def asynconlineupdate(inst, dtime, stop_event):
     global greetthreads
+    await db.connect()
     asyncloop = asyncio.get_running_loop()
     while not stop_event.is_set():
         starttime = time.time()
@@ -249,7 +250,8 @@ async def asynconlineupdate(inst, dtime, stop_event):
         while time.time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
-    asyncio.gather(*pendingtasks)
+    await asyncio.gather(*pendingtasks)
+    await db.close()
     asyncloop.stop()
     log.debug('Online monitor thread has ended')
     exit(0)

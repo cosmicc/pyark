@@ -859,7 +859,7 @@ async def checkcommands(inst, dtime, stop_event):
     global isvoting
     isvoting = False
     asyncloop = asyncio.get_running_loop()
-    db = asyncDB()
+    await db.connect()
     while not stop_event.is_set():
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         b = cmdpipe.stdout.decode("utf-8")
@@ -869,8 +869,8 @@ async def checkcommands(inst, dtime, stop_event):
         while time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
+    await asyncio.gather(*pendingtasks)
     await db.close()
-    asyncio.gather(*pendingtasks)
     asyncloop.stop()
     log.debug('Command listener thread has ended')
     exit(0)
@@ -878,7 +878,9 @@ async def checkcommands(inst, dtime, stop_event):
 
 @log.catch
 def cmdlistener_thread(inst, dtime, stop_event):
+    global db
     log.debug(f'Command listener thread for {inst} is starting')
+    db = asyncDB()
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     asyncio.run(checkcommands(inst, dtime, stop_event))

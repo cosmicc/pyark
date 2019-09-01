@@ -15,10 +15,19 @@ class asyncDB:
         self.dbstats = ('stats', 'st')
         self.dbgamelog = ('gamelog', 'gl')
         self.cpool = None
+        self.connecting = False
 
-    async def _connect(self):
-        self.cpool = await asyncpg.create_pool(min_size=2, max_size=10, max_inactive_connection_lifetime=120.0, database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        log.debug('Database connection pool initilized')
+    async def connect(self):
+        self.connecting = True
+        try:
+            self.cpool = await asyncpg.create_pool(min_size=2, max_size=10, max_inactive_connection_lifetime=120.0, database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        except:
+            log.critical('Error connecting to database server.. waiting to reconnect')
+            await asyncio.sleep(5)
+            self.connect()
+        else:
+            log.debug('Database connection pool initilized and connected')
+            self.connecting = False
         # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
     async def close(self):
@@ -27,9 +36,13 @@ class asyncDB:
         log.debug('Database connections closed')
 
     async def _aquire(self):
-        if self.cpool is None:
+        while self.connecting and self.cpool is None:
+            log.warning('waiting to for db to connect')
+            await asyncio.sleep(1)
+        if not self.connecting and self.cpool is None:
+            self.connecting = True
             log.trace('Database is not connected. connecting...')
-            await self._connect()
+            await self.connect()
         try:
             con = await self.cpool.acquire()
         except:
