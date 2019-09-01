@@ -2,7 +2,7 @@ import asyncio
 
 import asyncpg
 from loguru import logger as log
-from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_statsdb, psql_user
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 
 
 class asyncDB:
@@ -16,29 +16,25 @@ class asyncDB:
         self.dbgamelog = ('gamelog', 'gl')
         self.cpool = None
 
-    async def _connect(self, db):
-        if db not in self.databases:
-            raise SyntaxError
+    async def _connect(self):
         self.dbeventloop = asyncio.get_running_loop()
-        if db in self.dbpyark:
-            self.cpool = await asyncpg.create_pool(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-            log.debug('Database connection pool initilized')
-            # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
+        self.cpool = await asyncpg.create_pool(min_size=2, max_size=10, max_inactive_connection_lifetime=120.0, database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        log.debug('Database connection pool initilized')
+        # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
     async def close(self):
-        if self.dbconn is not None:
-            await self.dbconn.close()
+        if self.cpool is not None:
+            await self.cpool.close()
         log.debug('Database connections closed')
 
-    async def check_if_connected(self, db):
-        if db in self.dbpyark:
-            if self.dbconn is None:
-                log.trace('Database is not connected. connecting...')
-                await self._connect('pyark')
+    async def check_if_connected(self):
+        if self.cpool is None:
+            log.trace('Database is not connected. connecting...')
+            await self._connect()
 
     async def _aquire(self):
         try:
-            con = await self.dbpool.acquire()
+            con = await self.cpool.acquire()
         except:
             log.error('Error aquiring db pool connection')
         else:
@@ -46,14 +42,13 @@ class asyncDB:
 
     async def _release(self, connection):
         try:
-            await self.dbpool.release(connection)
+            await self.cpool.release(connection)
         except:
             log.error('Error releasing db pool connection')
             return False
         else:
             return True
 
-    # async def query(self, query, fmt='one', fetch='record', db='pyark'):
     async def testvars(self, query, result, db):
         if not isinstance(query, str):
             raise TypeError('Query is not type string')
