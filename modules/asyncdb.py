@@ -14,16 +14,16 @@ class asyncDB:
         self.dbpyark = ('pyark', 'py')
         self.dbstats = ('stats', 'st')
         self.dbgamelog = ('gamelog', 'gl')
-        self.dbconn = None
+        self.cpool = None
 
     async def _connect(self, db):
         if db not in self.databases:
             raise SyntaxError
         self.dbeventloop = asyncio.get_running_loop()
         if db in self.dbpyark:
-            self.dbconn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-            log.debug('Connection established to database')
-            self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
+            self.cpool = await asyncpg.create_pool(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            log.debug('Database connection pool initilized')
+            # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
     async def close(self):
         if self.dbconn is not None:
@@ -35,6 +35,23 @@ class asyncDB:
             if self.dbconn is None:
                 log.trace('Database is not connected. connecting...')
                 await self._connect('pyark')
+
+    async def _aquire(self):
+        try:
+            con = await self.dbpool.acquire()
+        except:
+            log.error('Error aquiring db pool connection')
+        else:
+            return con
+
+    async def _release(self, connection):
+        try:
+            await self.dbpool.release(connection)
+        except:
+            log.error('Error releasing db pool connection')
+            return False
+        else:
+            return True
 
     # async def query(self, query, fmt='one', fetch='record', db='pyark'):
     async def testvars(self, query, result, db):
@@ -56,10 +73,12 @@ class asyncDB:
     async def _query(self, query, fetch, fmt, db):
         await self.check_if_connected(db)
         try:
+            con = await self._aquire()
             if fetch == 'one':
-                dbdata = await self.dbconn.fetchrow(query)
+                dbdata = await con.fetchrow(query)
             elif fetch == 'all' or fmt == "count":
-                dbdata = await self.dbconn.fetch(query)
+                dbdata = await con.fetch(query)
+            await self._release(con)
             # log.trace(f'Executing DB [{db}] query {query}')
         except:
             log.exception(f'Error in database query {query} in {db}')
@@ -81,23 +100,27 @@ class asyncDB:
         else:
             return None
 
+    async def _execute(self, query):
+        con = await self._acquire()
+        try:
+            await con.execute(query)
+        except:
+            log.exception(f'Exception in db update {query}')
+        finally:
+            await self._release(con)
+
     async def update(self, query, db='pyark'):
         if db not in self.databases:
             raise ValueError(f'Invalid database [{db}]')
-        #if (db not in self.dbgamelog and not isinstance(query, str)) or (db in self.dbgamelog and not isinstance(query, list)):
+        # if (db not in self.dbgamelog and not isinstance(query, str)) or (db in self.dbgamelog and not isinstance(query, list)):
         #    raise TypeError(f'Query type is invalid [{type(query)}]')
         await self.check_if_connected(db)
-        try:
-            if db in self.dbpyark:
-                await asyncio.create_task(self.dbconn.execute(query))
-            elif db in self.dbstats:
-                await asyncio.create_task(self.dbconn.execute(query))
-            elif db in self.dbgamelog:
-                sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
-                await asyncio.create_task(self.dbconn.execute(sql, query[0].lower(), query[1].upper(), query[2]))
-            # log.trace(f'Executing DB [{db}] update {query}')
-        except:
-            log.exception(f'Exception in db update {query} in {db}')
-            return False
-        else:
-            return True
+        if db in self.dbpyark:
+            await asyncio.create_task(self._execute(query))
+        elif db in self.dbstats:
+            await asyncio.create_task(self._execute(query))
+        elif db in self.dbgamelog:
+            sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
+            await asyncio.create_task(self._execute(sql, query[0].lower(), query[1].upper(), query[2]))
+        # log.trace(f'Executing DB [{db}] update {query}')
+        return True

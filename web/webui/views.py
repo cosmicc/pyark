@@ -13,7 +13,7 @@ from flask_wtf import FlaskForm
 from loguru import logger as log
 from modules.chatclient import ChatClient
 from modules.clusterevents import getcurrenteventtitle, getcurrenteventtitleabv, iseventtime
-from modules.configreader import psql_host, psql_port, psql_pw, psql_statsdb, psql_user
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 from modules.dbhelper import dbquery, dbupdate
 from modules.gameclient import GameClient
 from modules.instances import (disableinstance, enableinstance, getlastcrash, getlog, instancelist, iscurrentconfig,
@@ -452,7 +452,7 @@ def _statpull():
             hours = 4320
             rate = 'W'
             tstr = '%b %-d'
-        conn = psycopg2.connect(dbname=psql_statsdb, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+        conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         if inst == 'all':
             statavglist = []
             for each in instancelist():
@@ -461,7 +461,7 @@ def _statpull():
                 navglist = []
                 datelist = []
                 c = conn.cursor()
-                c.execute("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(each, datetime.now() - timedelta(hours=hours)))
+                c.execute("SELECT * FROM {}_stats WHERE date > '{}' ORDER BY date DESC".format(each, datetime.now() - timedelta(hours=hours)))
                 alllist = c.fetchall()
                 for y in alllist:
                     statlist.append(y[1])
