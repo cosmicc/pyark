@@ -33,7 +33,7 @@ class asyncDB:
         try:
             con = await self.cpool.acquire()
         except:
-            log.error('Error aquiring db pool connection')
+            log.exception('Error aquiring a db pool connection')
         else:
             return con
 
@@ -41,7 +41,7 @@ class asyncDB:
         try:
             await self.cpool.release(connection)
         except:
-            log.error('Error releasing db pool connection')
+            log.exception('Error releasing db pool connection')
             return False
         else:
             return True
