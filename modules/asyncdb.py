@@ -26,7 +26,7 @@ class asyncDB:
             await asyncio.sleep(5)
             self.connect()
         else:
-            log.debug('Database connection pool initilized and connected for {threading.current_thread().name}')
+            log.debug(f'Database connection pool initilized and connected for {threading.current_thread().name}')
             self.connecting = False
         # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
@@ -45,9 +45,8 @@ class asyncDB:
         try:
             con = await self.cpool.acquire(timeout=10)
         except:
-            log.error('Error aquiring a db pool connection, retrying..')
+            log.exception('Error aquiring a db pool connection, retrying..')
             await asyncio.sleep(1)
-            await self._aquire()
         else:
             return con
 
