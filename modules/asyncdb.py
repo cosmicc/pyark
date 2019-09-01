@@ -34,7 +34,7 @@ class asyncDB():
             await self.stdbconn.close()
         log.debug('Database connections closed')
 
-    async def query(self, query, fmt, fetch, single=True, db='pyark'):
+    async def __async__query(self, query, fmt, fetch, single=True, db='pyark'):
         if fetch != 'one' or fetch != 'all' or fmt not in self.querytypes or db not in self.databases or not isinstance(query, str):
             raise SyntaxError
         if 'self.pydbconn' in locals():
