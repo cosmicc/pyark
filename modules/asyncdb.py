@@ -69,31 +69,31 @@ class asyncDB:
         await self.testvars(query, result, db)
         await self._query(query, 'one', result, db)
 
-        async def _query(self, query, fetch, fmt, db):
-            await self.check_if_connected(db)
-            try:
-                if fetch == 'one':
-                    dbdata = await self.pydbconn.fetchrow(query)
-                elif fetch == 'all' or fmt == "count":
-                    dbdata = await self.pydbconn.fetch(query)
-            except:
-                log.exception(f'Error in database query {query} in {db}')
-                return None
-            if dbdata is not None:
-                if fmt == 'record':
-                    return dbdata
-                if fmt == 'count':
-                    return len(dbdata)
-                elif fmt == 'tuple':
-                    return tuple(dbdata)
-                elif fmt == 'dict' and fetch == 'one':
-                    return dict(dbdata)
-                elif fmt == 'dict' and fetch == 'all':
-                    return dbdata
-                elif fmt == 'list':
-                    return list(tuple(dbdata))
-            else:
-                return None
+    async def _query(self, query, fetch, fmt, db):
+        await self.check_if_connected(db)
+        try:
+            if fetch == 'one':
+                dbdata = await self.pydbconn.fetchrow(query)
+            elif fetch == 'all' or fmt == "count":
+                dbdata = await self.pydbconn.fetch(query)
+        except:
+            log.exception(f'Error in database query {query} in {db}')
+            return None
+        if dbdata is not None:
+            if fmt == 'record':
+                return dbdata
+            if fmt == 'count':
+                return len(dbdata)
+            elif fmt == 'tuple':
+                return tuple(dbdata)
+            elif fmt == 'dict' and fetch == 'one':
+                return dict(dbdata)
+            elif fmt == 'dict' and fetch == 'all':
+                return dbdata
+            elif fmt == 'list':
+                return list(tuple(dbdata))
+        else:
+            return None
 
     async def update(self, query, db='pyark'):
         if db not in self.databases:
