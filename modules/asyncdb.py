@@ -86,7 +86,7 @@ class asyncDB:
     async def update(self, query, db='pyark'):
         if db not in self.databases:
             raise ValueError(f'Invalid database [{db}]')
-        if (db != 'gamelog' or db != 'gl' and not isinstance(query, str)) or (db == 'gamelog' or db == 'gl' and not isinstance(query, list)):
+        if (db not in self.dbgamelog and not isinstance(query, str)) or (db in self.dbgamelog and not isinstance(query, list)):
             raise TypeError(f'Query type is invalid [{type(query)}]')
         await self.check_if_connected(db)
         try:
