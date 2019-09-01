@@ -43,11 +43,11 @@ class asyncDB:
             raise ValueError('Invalid fmt type')
         if fetch != 'one' and fetch != 'all':
             raise ValueError('Invalid fetch type')
-        if 'self.pydbconn' in locals():
+        if 'self.pydbconn' not in locals():
             await self._connect('pyark')
-        if 'self.stdbconn' in locals():
+        if 'self.stdbconn' not in locals():
             await self._connect('stats')
-        if 'self.gldbconn' in locals():
+        if 'self.gldbconn' not in locals():
             await self._connect('gamelog')
         try:
             if fetch == 'one':
@@ -77,11 +77,11 @@ class asyncDB:
         if (db != 'gamelog' or db != 'gl' and not isinstance(query, str)) or (db == 'gamelog' or db == 'gl' and not isinstance(query, list)):
             raise TypeError('Query type is invalid')
         try:
-            if 'self.pydbconn' in locals():
+            if 'self.pydbconn' not in locals():
                 await self._connect('pyark')
-            if 'self.stdbconn' in locals():
+            if 'self.stdbconn' not in locals():
                 await self._connect('stats')
-            if 'self.gldbconn' in locals():
+            if 'self.gldbconn' not in locals():
                 await self._connect('gamelog')
             if db == 'py' or db == 'pyark':
                 await asyncio.create_task(self.pydbconn.execute(query))
