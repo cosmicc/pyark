@@ -23,7 +23,7 @@ class asyncDB:
         if db in self.dbpyark:
             self.dbconn = await asyncpg.connect(database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             log.debug('Connection established to database')
-            self.player_by_id = self.pydbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
+            self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
     async def close(self):
         if self.dbconn is not None:
@@ -97,7 +97,7 @@ class asyncDB:
                 log.debug(f'Executing DB [{db}] update {query}')
             elif db in self.dbgamelog:
                 sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
-                await asyncio.create_task(self.dbconn.execute(sql, query[0].lower(), query[1].upper(), query[2]))
+                await asyncio.create_task(self.dbconn._query(sql, query[0].lower(), query[1].upper(), query[2]))
                 log.debug(f'Executing DB [{db}] update {query}')
         except:
             log.exception(f'Exception in db update {query} in {db}')
