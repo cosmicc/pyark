@@ -418,9 +418,9 @@ async def asyncwritechatlog(inst, whos, msg, tstamp):
             log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
             os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
             os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
-        with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
-            await f.write(clog)
-        await f.close()
+        #with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
+        #    await f.write(clog)
+        #await f.close()
 
 
 @log.catch
@@ -589,7 +589,7 @@ async def asyncleavingplayerwatch(player, inst):
             transferred = True
             stop_watch = True
         await asyncio.sleep(1)
-    if not transferred and time() - queryplayer['lastseen'] >= 240:
+    if not transferred and time() - int(queryplayer['lastseen']) >= 240:
         steamid = player["steamid"]
         await db.update(f"UPDATE players SET online = False, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')

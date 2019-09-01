@@ -38,7 +38,7 @@ class asyncDB:
     async def _aquire(self):
         while self.connecting and self.cpool is None:
             log.warning('waiting to for db to connect')
-            await asyncio.sleep(1)
+            await asyncio.sleep(.1)
         if not self.connecting and self.cpool is None:
             self.connecting = True
             log.trace('Database is not connected. connecting...')
