@@ -74,12 +74,15 @@ class asyncDB:
         try:
             if fetch == 'one':
                 dbdata = await self.pydbconn.fetchrow(query)
+                log.debug(f'Executing DB [{db}] query {query}')
             elif fetch == 'all' or fmt == "count":
                 dbdata = await self.pydbconn.fetch(query)
+                log.debug(f'Executing DB [{db}] query {query}')
         except:
             log.exception(f'Error in database query {query} in {db}')
             return None
         if dbdata is not None:
+            log.debug(f'Retrieved DB [{db}] query {query}')
             if fmt == 'record':
                 return dbdata
             if fmt == 'count':
