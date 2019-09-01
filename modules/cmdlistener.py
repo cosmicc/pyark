@@ -13,7 +13,7 @@ from modules.configreader import instance, numinstances
 from modules.asyncdb import asyncDB
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
-from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist, writeglobal
+from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist, asyncwriteglobal
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import newplayer
 from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd, serverexec
@@ -62,15 +62,6 @@ async def asyncgetsteamid(whoasked, db):
         return None
     else:
         return player['steamid']
-
-
-def getsteamid(whoasked):
-    sid = dbquery("SELECT steamid FROM players WHERE (playername = '%s') or (alias = '%s')" % (whoasked, whoasked), fetch='one')
-    if sid is None:
-        log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
-        return 0
-    else:
-        return sid[0]
 
 
 @log.catch
@@ -180,45 +171,24 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt, db):
 
 
 async def asyncgetlastvote(inst):
-    insts = db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    return insts['lastdinowipe']
+    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    return insts['lastvote']
 
 
-def getlastvote(inst):
-    flast = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    return ''.join(flast[0])
-
-
-def isvoting(inst):
-    for each in range(numinstances):
-        if instance[each]['name'] == inst and 'votethread' in instance[each]:
-            if instance[each]['votethread'].is_alive():
-                return True
-            else:
-                return False
-
-
-def populatevoters(inst):
+async def asyncpopulatevoters(inst):
     log.debug(f'populating vote table for {inst}')
     global votertable
     votertable = []
-    pcnt = 0
-    pdata = dbquery("SELECT * FROM players WHERE server = '%s'" % (inst,))
-    for row in pdata:
-        chktme = Now() - float(row[2])
-        if chktme < 90:
-            pcnt += 1
-            newvoter = [row[0], row[1], 3]
+    playercount = 0
+    players = await db.fetchall(f"SELECT * FROM players WHERE server = '{inst}' and online = True")
+    for player in players:
+        checktime = time() - float(player['lastseen'])
+        if checktime < 90:
+            playercount += 1
+            newvoter = [player['steamid'], player['playername'], 3]
             votertable.append(newvoter)
     log.debug(votertable)
-    return pcnt
-
-
-def setvote(whoasked, myvote):
-    global votertable
-    for each in votertable:
-        if each[0] == getsteamid(whoasked):
-            each[2] = myvote
+    return playercount
 
 
 async def asyncsetvote(whoasked, myvote, db):
@@ -272,134 +242,125 @@ async def asynccastedvote(inst, whoasked, myvote, db):
 
 
 def votingpassed():
-    vcnt = 0
-    tvoters = 0
+    votecount = 0
+    totalvoters = 0
     for each in votertable:
-        tvoters += 1
+        totalvoters += 1
         if each[2] == 1 or each[2] == 2:
-            vcnt += 1
-    if vcnt == tvoters:
+            votecount += 1
+    if votecount == totalvoters:
         return True
     else:
         return False
 
 
 def enoughvotes():
-    vcnt = 0
-    tvoters = 0
+    votecount = 0
+    totalvoters = 0
     for each in votertable:
-        tvoters += 1
+        totalvoters += 1
         if each[2] == 1 or each[2] == 2:
-            vcnt += 1
-    if vcnt >= tvoters / 2:
+            votecount += 1
+    if votecount >= totalvoters / 2:
         return True
     else:
         return False
 
 
-def resetlastvote(inst):
-    newtime = Now()
-    dbupdate("UPDATE instances SET lastvote = '%s' WHERE name = '%s'" % (newtime, inst))
-
-
-def resetlastwipe(inst):
-    newtime = Now()
-    dbupdate("UPDATE instances SET lastdinowipe = '%s' WHERE name = '%s'" % (newtime, inst))
-
-
 def howmanyvotes():
-    vcnt = 0
-    tvoters = 0
+    votecount = 0
+    totalvoters = 0
     for each in votertable:
-        tvoters += 1
+        totalvoters += 1
         if each[2] == 1 or each[2] == 2:
-            vcnt += 1
-    return vcnt, tvoters
+            votecount += 1
+    return votecount, totalvoters
+
+
+async def asyncresetlastvote(inst):
+    await db.update(f"UPDATE instances SET lastvote = '{time()}' WHERE name = '{inst}'")
+
+
+async def asyncresetlastwipe(inst):
+    await db.update("UPDATE instances SET lastdinowipe = '{time()}' WHERE name = '{inst}'")
 
 
 @log.catch
-def wipeit(inst):
+async def asyncwipeit(inst):
     yesvoters, totvoters = howmanyvotes()
     log.log('VOTE', f'YES has won ({yesvoters}/{totvoters}), wild dinos are wiping on [{inst.title()}] in 15 seconds')
     bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n<RichColor Color="0,1,0,1">                     YES votes have won! ('%s' of '%s' Players)</>\n\n  <RichColor Color="1,1,0,1">               !! WIPING ALL WILD DINOS IN 10 SECONDS !!</>""" % (yesvoters, totvoters)
-    subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
-    writechat(inst, 'ALERT', f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). \
-Wiping wild dinos now.', wcstamp())
-    sleep(7)
+    await asyncserverbcast(inst, bcast)
+    await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). \
+Wiping wild dinos now.', wcstamp(), db)
+    asyncio.sleep(7)
+    ##########################################
     subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-    sleep(3)
+    asyncio.sleep(3)
     subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-    resetlastwipe(inst)
+    await asyncresetlastwipe(inst)
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
-def votingthread(inst, whoasked):
+async def asyncvoter(inst, whoasked):
     log.log('VOTE', f'A wild dino wipe vote has started for [{inst.title()}] by [{whoasked.title()}]')
     global lastvoter
-    global votestarttime
-    global arewevoting
+    global isvoting
     global votertable
-    arewevoting = True
-    pon = populatevoters(inst)
-    setvote(whoasked, 2)
-    bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">             A Wild dino wipe vote has started with {pon} online players</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe\n                           Voting lasts 3 minutes"""
-    subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
-    votestarttime = Now()
-    sltimer = 0
-    writechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp())
-    while arewevoting:
-        sleep(5)
-        if votingpassed() and Now() - votestarttime > 10:
-            wipeit(inst)
-            arewevoting = False
-        elif Now() - votestarttime > Secs['3min']:
+    votercount = await asyncpopulatevoters(inst)
+    await asyncsetvote(whoasked, 2)
+    bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">             A Wild dino wipe vote has started with {votercount} online players</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe\n                           Voting lasts 3 minutes"""
+    await asyncserverbcast(inst, bcast)
+    votestarttime = time()
+    await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp(), db)
+    while isvoting:
+        await asyncio.sleep(5)
+        if votingpassed() and time() - votestarttime > 10:
+            isvoting = False
+            asyncio.create_task(asyncwipeit(inst))
+        elif time() - votestarttime > Secs['3min']:
             if enoughvotes():
-                wipeit(inst)
-                arewevoting = False
+                isvoting = False
+                asyncio.create_task(asyncwipeit(inst))
             else:
-                yesvoters, totvoters = howmanyvotes()
-                subprocess.run('arkmanager rconcmd "ServerChat Not enough votes (%s of %s). voting has ended." @%s' %
-                               (yesvoters, totvoters, inst), shell=True)
+                isvoting = False
+                yesvoters, totvoters = await howmanyvotes()
+                message = f'Not enough votes ({yesvoters} of {totvoters}). voting has ended.'
+                await asyncserverchat(inst, message)
                 log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({yesvoters}/{totvoters})')
-                writechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of \
-{totvoters})', wcstamp())
-                arewevoting = False
-        else:
-            if sltimer == 120:
-                log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title()}]')
-                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                  A Wild dino wipe vote is waiting for votes!</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe"""
-                subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
-
-        sltimer += 5
+                await asyncwritechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of \
+{totvoters})', wcstamp(), db)
+        elif time() - votestarttime > 120:
+            log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title()}]')
+            bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                  A Wild dino wipe vote is waiting for votes!</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe"""
+            await asyncserverbcast(inst, bcast)
     log.debug(votertable)
     votertable = []
-    lastvoter = Now()
-    resetlastvote(inst)
+    lastvoter = time()
+    await asyncresetlastvote(inst)
     log.debug(f'voting thread has ended on {inst}')
 
 
 async def asyncstartvoter(inst, whoasked):
-    global instance
-    if isvoting(inst):
+    global isvoting
+    if isvoting:
         message = 'Voting has already started. cast your vote now'
         await asyncserverchat(inst, message)
-    elif Now() - float(getlastvote(inst)) < Secs['4hour']:          # 4 hours between wipes
-        rawtimeleft = Secs['4hour'] - (Now() - float(getlastvote(inst)))
+    elif time() - float(await asyncgetlastvote(inst)) < Secs['4hour']:   # 4 hours between wipes
+        rawtimeleft = Secs['4hour'] - (Now() - float(await asyncgetlastvote(inst)))
         timeleft = playedTime(rawtimeleft)
         message = f'You must wait {timeleft} until the next wild wipe vote can start'
         await asyncserverchat(inst, message)
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 4 hour timer')
-    elif Now() - float(lastvoter) < Secs['10min']:                  # 10 min between attempts
+    elif time() - float(lastvoter) < Secs['10min']:                      # 10 min between failed attempts
         rawtimeleft = Secs['10min'] - (Now() - lastvoter)
         timeleft = playedTime(rawtimeleft)
         message = f'You must wait {timeleft} until the next wild wipe vote can start'
         await asyncserverchat(inst, message)
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 10 min timer')
     else:
-        for each in range(numinstances):
-            if instance[each]['name'] == inst:
-                instance[each]['votethread'] = threading.Thread(name='%s-voter' % inst, target=votingthread, args=(inst, whoasked))
-                instance[each]['votethread'].start()
+        isvoting = True
+        asyncio.create_task(asyncvoter(inst, whoasked))
 
 
 def getnamefromchat(chat):
@@ -607,26 +568,26 @@ async def playerjoin(line, inst, db):
 
 
 @log.catch
-def leavingplayerthread(player, inst):
-    log.debug(f'Thread started for leaving player [{player["playername"].title()}] on [{inst.title()}]')
-    timerstart = Now()
-    killthread = False
+async def asyncleavingplayerwatch(player, inst):
+    log.debug(f'Started leaving player watch for [{player["playername"].title()}] on [{inst.title()}]')
+    starttime = time()
+    stop_watch = False
     transferred = False
-    while Now() - timerstart < 250 and not killthread:
-        lplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (player['steamid']), single=True, fmt='dict', fetch='one')
-        if lplayer['server'] != inst:
+    while time() - starttime < 250 and not stop_watch:
+        queryplayer = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{player['steamid']}'")
+        if queryplayer['server'] != inst:
             fromtxt = f'{player["playername"].title()} has transferred here from {inst.title()}'
-            totxt = f'{player["playername"].title()} has transferred to {lplayer["server"].title()}'
+            totxt = f'{player["playername"].title()} has transferred to {queryplayer["server"].title()}'
             serverexec(['arkmanager', 'rconcmd', f'ServerChat {totxt}', f'@{inst}'], nice=19, null=True)
-            writeglobal(lplayer["server"].lower(), 'ALERT', fromtxt)
-            writechat(inst, 'ALERT', f'>><< {player["playername"].title()} has transferred from {inst.title()} to {lplayer["server"].title()}', wcstamp())
-            log.log('XFER', f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{lplayer["server"].title()}]')
+            await asyncwriteglobal(queryplayer["server"].lower(), 'ALERT', fromtxt, db)
+            await asyncwritechat(inst, 'ALERT', f'>><< {player["playername"].title()} has transferred from {inst.title()} to {queryplayer["server"].title()}', wcstamp())
+            log.log('XFER', f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{queryplayer["server"].title()}]')
             transferred = True
-            killthread = True
-        sleep(1)
-    if not transferred and Now() - lplayer['lastseen'] >= 240:
+            stop_watch = True
+        await asyncio.sleep(1)
+    if not transferred and time() - queryplayer['lastseen'] >= 240:
         steamid = player["steamid"]
-        dbupdate(f"UPDATE players SET online = False, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
+        await db.update(f"UPDATE players SET online = False, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
@@ -639,8 +600,7 @@ async def playerleave(line, inst, db):
     player = await db.fetchone(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'")
     if player:
         log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
-        leaving = threading.Thread(name='leaving-%s' % player["steamid"], target=leavingplayerthread, args=(player, inst))
-        leaving.start()
+        asyncio.create_task(asyncleavingplayerwatch(player, inst))
     else:
         log.error(f'Player with steam name [{newline[1].strip()}] was not found while leaving server')
 
@@ -746,7 +706,7 @@ async def asyncprocessline(minst, db, line):
                                                 dto = datetime.strptime(nmsg[0][2:], '%y.%m.%d_%H.%M.%S')
                                                 dto = dto - tzfix
                                             tstamp = dto.strftime('%m-%d %I:%M%p')
-                                            writeglobal(minst, whoname, cmsg)
+                                            await asyncwriteglobal(minst, whoname, cmsg, db)
                                             asyncio.create_task(asyncwritechat('generalchat', whoname, cmsg, tstamp, db))
                                         except:
                                             log.exception('could not parse date from chat')
@@ -897,6 +857,8 @@ async def asyncprocessline(minst, db, line):
 @log.catch
 async def checkcommands(inst, dtime, stop_event):
     global db
+    global isvoting
+    isvoting = False
     asyncloop = asyncio.get_running_loop()
     db = asyncDB()
     while not stop_event.is_set():

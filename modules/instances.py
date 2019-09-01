@@ -191,9 +191,9 @@ def writechat(inst, whos, msg, tstamp):
                  (inst, whos, msg, tstamp))
 
 
-async def asyncwriteglobal(inst, whos, msg):
-    await asyncdbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-                        (inst, whos, msg, Now()))
+async def asyncwriteglobal(inst, whos, msg, db):
+    await db.update("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
+                    (inst, whos, msg, Now()))
 
 
 def writeglobal(inst, whos, msg):
