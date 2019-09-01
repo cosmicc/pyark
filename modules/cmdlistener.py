@@ -119,7 +119,7 @@ async def asyncgettimeplayed(seenname, db):
 
 
 @log.catch
-async def asyncgettip(db):
+async def asyncgettip():
     tip = await db.query("SELECT * FROM tips WHERE active = True ORDER BY count ASC, random()", 'dict', 'one')
     await db.update("UPDATE tips set count = {int(tip['count'] + 1} WHERE id = {tip['id'])}")
     return tip['tip']
@@ -820,7 +820,7 @@ async def asyncprocessline(minst, db, line):
 
                 elif incmd.startswith(('!tip', '!justthetip')):
                     log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
-                    tip = await asyncgettip(db)
+                    tip = await asyncgettip()
                     message = tip['tip']
                     await asyncserverchat(inst, message)
 
