@@ -58,7 +58,7 @@ class asyncDB:
             raise TypeError('Query is not type string')
         if db not in self.databases:
             raise ValueError(f'Invalid database [{db}]')
-        if result in self.querytypes:
+        if result not in self.querytypes:
             raise ValueError(f'Invalid result type [{result}]')
 
     async def fetchall(self, query, result='record', db='pyark'):
