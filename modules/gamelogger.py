@@ -2,7 +2,7 @@ from sys import exit
 from time import sleep
 
 from loguru import logger as log
-from modules.configreader import psql_host, psql_port, psql_pw, psql_user
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import isplayeradmin
 from modules.servertools import removerichtext
@@ -44,7 +44,7 @@ class GameLogger():
         import psycopg2
         try:
             log.debug('Opening connection to gamelog database')
-            self.conn = psycopg2.connect(dbname='gamelog', user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            self.conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             self.c = self.conn.cursor()
         except psycopg2.OperationalError:
             log.critical('ERROR CONNECTING TO DATABASE SERVER')
