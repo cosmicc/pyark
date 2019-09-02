@@ -232,7 +232,7 @@ async def asyncmainloop():
             tasklist.append(each)
     # currenttask = asyncio.Task.current_task()
 
-    log.debug(f'still running tasks: {tasklist}')
+    log.debug(f'still running tasks: {list(pendingtasks)}')
     await db.close()
     return True
 
