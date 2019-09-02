@@ -2,7 +2,6 @@
 
 import argparse
 import asyncio
-import shutil
 import signal
 import sys
 import threading
@@ -14,11 +13,11 @@ from git import Repo
 from loguru import logger as log
 
 import modules.logging
-import modules.lottery as lottery
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
 from modules.arkupdater import arkupdater_thread
 from modules.asyncdb import DB as db
 from modules.clusterevents import eventwatcher_thread
+from modules.instances import instancelist
 from modules.cmdlistener import asynccmdcheck
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
                                   debugfile, gamelogfile, gamelograwfile, hstname, instances, instr,
@@ -204,13 +203,18 @@ async def asyncmainloop():
     await db.connect()
     starttime = asyncloop.time()
     kickcheck_timer, cmdcheck_timer, onlinecheck_timer = starttime, starttime, starttime
+    serverpre = ['@all']
+    for each in instancelist():
+        serverpre.append(f'@{each}')
+    atinstances = tuple(serverpre)
+
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
     while not main_stop_event:
         if asyncloop.time() - kickcheck_timer > kickcheck_delay and len(instances) > 0:
             asyncio.create_task(asynckickcheck(instances))
             kickcheck_timer = asyncloop.time()
         if asyncloop.time() - cmdcheck_timer > cmdcheck_delay and len(instances) > 0:
-            asyncio.create_task(asynccmdcheck(instances))
+            asyncio.create_task(asynccmdcheck(instances, atinstances))
             cmdcheck_timer = asyncloop.time()
         if asyncloop.time() - onlinecheck_timer > onlinecheck_delay and len(instances) > 0:
             asyncio.create_task(asynconlinecheck(instances))
