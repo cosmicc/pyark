@@ -35,6 +35,7 @@ log.level("ADMIN", no=3, color="<fg 11><bg 17>", icon="¤")
 log.level("NEW", no=20, color="<fg 230>", icon="¤")
 log.level("GLRAW", no=1)
 log.level("PLAYER", no=20, color="<fg 180>", icon="¤")
+log.level("WATCH", no=20, color="<fg 180>", icon="¤")
 
 
 shortlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level><fg 248>|</fg 248><level>{extra[hostname]: >5}</level><fg 248>|</fg 248><level>{level: <7}</level><fg 248>|</fg 248> <level>{message}</level>'

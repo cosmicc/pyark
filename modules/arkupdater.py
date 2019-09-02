@@ -600,6 +600,7 @@ def arkupdater_thread(stop_event):
     else:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
     while not stop_event.is_set():
+        stopsleep(30, stop_event)
         checkconfig()
         restartcheck()
         stopsleep(30, stop_event)
@@ -626,6 +627,5 @@ def arkupdater_thread(stop_event):
         restartcheck()
         stopsleep(30, stop_event)
         restartcheck()
-        stopsleep(30, stop_event)
     log.debug('Arkupdater thread has ended')
     exit(0)
