@@ -218,7 +218,7 @@ async def asyncmainloop():
             asyncio.create_task(asynconlinecheck(instances))
             await cmdtask
             onlinecheck_timer = asyncloop.time()
-        asyncio.sleep(.1)
+        await asyncio.sleep(.1)
     pendingtasks = asyncio.Task.all_tasks()
     await asyncio.gather(*pendingtasks)
     await db.close()
