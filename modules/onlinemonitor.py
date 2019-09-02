@@ -253,7 +253,8 @@ async def asynconlineupdate(inst, dtime, stop_event):
         starttime = time.time()
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
-        asyncloop.create_task(processplayerchunk(inst, chunk))
+        task = asyncloop.create_task(processplayerchunk(inst, chunk))
+        await task
         while time.time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
