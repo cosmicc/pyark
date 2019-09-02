@@ -210,7 +210,6 @@ def playergreet(steamid, steamname, inst):
 
 
 async def asynckickcheck(instances):
-    log.debug('!')
     for inst in instances:
         kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
         if kicked:
