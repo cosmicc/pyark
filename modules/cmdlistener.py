@@ -578,7 +578,7 @@ async def playerjoin(line, inst):
 
 @log.catch
 async def asyncleavingplayerwatch(player, inst):
-    log.debug(f'Started leaving player watch for [{player["playername"].title()}] on [{inst.title()}]')
+    log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
     starttime = time()
     stop_watch = False
     transferred = False
@@ -600,7 +600,7 @@ async def asyncleavingplayerwatch(player, inst):
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
-        log.debug(f'Thread ending for leaving player [{player["playername"].title()}]')
+    return True
 
 
 @log.catch
@@ -608,7 +608,6 @@ async def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = await db.fetchone(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'")
     if player:
-        log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
         asyncio.create_task(asyncleavingplayerwatch(player, inst))
     else:
         log.error(f'Player with steam name [{newline[1].strip()}] was not found while leaving server')
