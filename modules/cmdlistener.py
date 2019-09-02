@@ -47,6 +47,34 @@ async def asyncwritechat(inst, whos, msg, tstamp):
         await db.update("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
+@log.catch
+async def asyncwritechatlog(inst, whos, msg, tstamp):
+    steamid = await asyncgetsteamid(whos)
+    if steamid:
+        # clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
+        if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
+            log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
+            os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
+            os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
+        # with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
+        #   await f.write(clog)
+        # await f.close()
+
+
+@log.catch
+def writechatlog(inst, whos, msg, tstamp):
+    isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos, ), fetch='one')
+    if isindb:
+        clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
+        if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
+            log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
+            os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
+            os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
+        with open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
+            f.write(clog)
+        f.close()
+
+
 def writechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
@@ -401,34 +429,6 @@ async def asynclinker(inst, whoasked):
     else:
         log.error(f'User not found in DB {whoasked}!')
     return True
-
-
-@log.catch
-async def asyncwritechatlog(inst, whos, msg, tstamp):
-    steamid = await asyncgetsteamid(whos)
-    if steamid:
-        # clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
-        if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
-            log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
-            os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
-            os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
-        # with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
-        #   await f.write(clog)
-        # await f.close()
-
-
-@log.catch
-def writechatlog(inst, whos, msg, tstamp):
-    isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos, ), fetch='one')
-    if isindb:
-        clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
-        if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
-            log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
-            os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
-            os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
-        with open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
-            f.write(clog)
-        f.close()
 
 
 @log.catch

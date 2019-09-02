@@ -23,6 +23,7 @@ async def asyncstopsleep(sleeptime, stop_event):
         asyncio.sleep(1)
 
 
+
 @log.catch
 def resetplayerbit(steamid):
     dbupdate("UPDATE players SET restartbit = 0 WHERE steamid = '%s'" % (steamid,))

@@ -241,5 +241,6 @@ def getlog(inst, whichlog, lines=20):
     return cloglist
 
 
+
 if __name__ == '__main__':
     exit()
