@@ -211,7 +211,7 @@ def playergreet(steamid, steamname, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
-async def asynckicker(inst, dtime, stop_event):
+async def asynckicker(inst):
     log.debug('!')
     kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
     if kicked:
@@ -268,7 +268,7 @@ async def asynconlineupdate(inst, dtime, stop_event):
         await chunktask
         while time.time() - liststart < dtime:
             if time.time() - kickstart < 5:
-                kicker = asyncloop.create_task(asynckicker(inst, 5))
+                kicker = asyncloop.create_task(asynckicker(inst))
                 await kicker
                 kickstart = time.time()
             await asyncio.sleep(1)
