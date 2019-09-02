@@ -856,7 +856,7 @@ async def processcmdchunk(inst, atinstances, chunk):
 async def asynccmdcheck(instances, atinstances):
     global db
     for inst in instances:
-        cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'])
+        cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
         task = asyncio.create_task(processcmdchunk(inst, atinstances, cmdpipe['stdout']))
         await task
     return True
