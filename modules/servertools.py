@@ -47,7 +47,7 @@ async def asyncserverbcast(inst, bcast, nice=10):
 
 
 @log.catch
-async def asyncserverexec(cmdlist, nice):
+async def asyncserverexec(cmdlist, nice=19):
     asyncloop = asyncio.get_running_loop()
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)

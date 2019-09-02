@@ -255,7 +255,7 @@ async def processplayerchunk(inst, cmdpipe):
 async def asynconlinecheck(instances):
     global greetthreads
     for inst in instances:
-        cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
+        cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'])
         chunktask = asyncio.create_task(processplayerchunk(inst, cmdpipe))
         await chunktask
     return True
