@@ -4,6 +4,7 @@ inst = 'crystal'
 cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
 b = cmdpipe.stdout.decode("utf-8")
 c = b.splitlines
+
 print(len(b.splitlines))
 #for line in iter(b.splitlines()):
 

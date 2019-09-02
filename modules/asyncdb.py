@@ -43,7 +43,7 @@ class asyncDB:
             log.trace('Database is not connected. connecting...')
             await self.connect()
         try:
-            con = await self.cpool.acquire(timeout=10)
+            con = await self.cpool.acquire(timeout=30)
         except:
             log.exception('Error aquiring a db pool connection, retrying..')
             await asyncio.sleep(1)

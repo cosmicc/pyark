@@ -872,6 +872,12 @@ async def asyncprocessline(minst, line):
 
 
 @log.catch
+async def processchunk(inst, chunk):
+    for line in iter(chunk.splitlines()):
+        await asyncprocessline(inst, line)
+
+
+@log.catch
 async def checkcommands(inst, dtime, stop_event):
     global isvoting
     isvoting = False
@@ -879,10 +885,9 @@ async def checkcommands(inst, dtime, stop_event):
     await db.connect()
     while not stop_event.is_set():
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
-        b = cmdpipe.stdout.decode("utf-8")
+        chunk = cmdpipe.stdout.decode("utf-8")
         starttime = time()
-        for line in iter(b.splitlines()):
-            asyncio.create_task(asyncprocessline(inst, line))
+        asyncio.create_task(processchunk(inst, chunk))
         while time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
