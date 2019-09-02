@@ -35,6 +35,7 @@ class asyncDB:
             await self.cpool.close()
         log.debug('Database connections closed')
 
+    @log.catch
     async def _aquire(self):
         while self.connecting and self.cpool is None:
             await asyncio.sleep(.1)
