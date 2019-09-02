@@ -379,7 +379,7 @@ def getnamefromchat(chat):
         log.debug(f'Got name from chat: {chatname}')
         return chatname
     except:
-        log.error(f'GetNameFromChat Error: {chat}')
+        log.exception(f'GetNameFromChat Error: {chat}')
 
 
 def isserver(line):
