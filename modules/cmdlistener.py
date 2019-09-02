@@ -241,8 +241,8 @@ async def asynccastedvote(inst, whoasked, myvote):
                 arewevoting = False
                 bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
                 await asyncserverbcast(inst, bcast)
-                asyncio.create_task(asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has failed with a NO vote from \
-{whoasked.capitalize()}', wcstamp()))
+                await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has failed with a NO vote from \
+{whoasked.capitalize()}', wcstamp())
 
 
 def votingpassed():
@@ -570,7 +570,7 @@ async def playerjoin(line, inst):
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             message = f'{player["playername"].title()} has joined the server'
             await asyncserverchat(inst, message)
-            asyncio.create_task(asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp()))
+            await asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp())
 
 
 @log.catch
@@ -629,8 +629,8 @@ async def asyncchatlineelsed(line, inst):
                 tstamp = dto.strftime('%m-%d %I:%M%p')
                 cmsg = trans_to_eng(cmsg)
                 log.log('CHAT', f'{inst} | {whoname} | {cmsg[2:]}')
-                asyncio.create_task(asyncwritechat(inst, whoname, cmsg.replace("'", ""), tstamp))
-                asyncio.create_task(asyncwritechatlog(inst, whoname, cmsg, tstamp))
+                await asyncwritechat(inst, whoname, cmsg.replace("'", ""), tstamp)
+                await asyncwritechatlog(inst, whoname, cmsg, tstamp)
 
 
 @log.catch
@@ -724,7 +724,7 @@ async def asyncprocessline(minst, line):
                                                 dto = dto - tzfix
                                             tstamp = dto.strftime('%m-%d %I:%M%p')
                                             await asyncwriteglobal(minst, whoname, cmsg)
-                                            asyncio.create_task(asyncwritechat('generalchat', whoname, cmsg, tstamp))
+                                            await asyncwritechat('generalchat', whoname, cmsg, tstamp)
                                         except:
                                             log.exception('could not parse date from chat')
                     except:

@@ -130,5 +130,5 @@ class asyncDB:
         # if (db not in self.dbgamelog and not isinstance(query, str)) or (db in self.dbgamelog and not isinstance(query, list)):
         #    raise TypeError(f'Query type is invalid [{type(query)}]')
         # log.trace(f'Executing DB [{db}] update {query}')
-        await asyncio.create_task(self._execute(query, db))
+        await self._execute(query, db)
         return True
