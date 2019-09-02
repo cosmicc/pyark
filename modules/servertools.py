@@ -54,9 +54,9 @@ async def asyncserverexec(cmdlist, nice=19):
     # cmdstring = quote(' '.join(fullcmdlist)).strip("'")
     log.debug(f'server rcon cmd executing [{cmdstring}]')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
-    await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
+    result = await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
     log.debug(f'server rcon process completed [{cmdstring}]')
-    return 0
+    return result
 
 
 def removerichtext(text):
