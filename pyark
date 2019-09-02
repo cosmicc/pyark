@@ -254,6 +254,23 @@ def main():
     dbupdate('DELETE FROM globalbuffer')
     arkupdt = threading.Thread(name='arkupdater', target=arkupdater_thread, args=(stop_event,), daemon=False)
     threads.append(arkupdt)
+    if len(instances) == 0:
+        thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(60, stop_event), daemon=False)
+        threads.append(thread)
+        thread = threading.Thread(name='arkservernet', target=arkservernet_thread, args=(900, stop_event), daemon=False)
+        threads.append(thread)
+        thread = threading.Thread(name='lotterywatcher', target=lottery.lotterywatcher_thread, args=(300, stop_event), daemon=False)
+        threads.append(thread)
+        thread = threading.Thread(name='gamelogger', target=gamelogger_thread, args=(stop_event,), daemon=False)
+        threads.append(thread)
+        thread = threading.Thread(name='steamapi', target=steamapi_thread, args=(5, stop_event), daemon=False)
+        threads.append(thread)
+        thread = threading.Thread(name='auctionapi', target=auctionapi_thread, args=(5, stop_event), daemon=False)
+        threads.append(thread)
+        thread = threading.Thread(name='dblcheckonline', target=dblcheckonline_thread, args=(30, stop_event), daemon=False)
+        threads.append(thread)
+        thread = threading.Thread(name='stat-collector', target=statcollector_thread, args=(300, stop_event), daemon=False)
+        threads.append(thread)
     log.debug(f'Starting {len(threads)} threads')
     for thread in threads:
         thread.start()
@@ -270,29 +287,7 @@ def main():
     #thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
     #threads.append(thread)
 
-#    if len() == 0:
-'''
-    if is_eventwatcher == "True":
-        thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(60, stop_event), daemon=False)
-        threads.append(thread)
-    if is_asdatapuller == "True":
-        thread = threading.Thread(name='arkservernet', target=arkservernet_thread, args=(900, stop_event), daemon=False)
-        threads.append(thread)
-    if is_lotterymanager == "True":
-        thread = threading.Thread(name='lotterywatcher', target=lottery.lotterywatcher_thread, args=(300, stop_event), daemon=False)
-        threads.append(thread)
-    if is_gamelogger == "True":
-        thread = threading.Thread(name='gamelogger', target=gamelogger_thread, args=(stop_event,), daemon=False)
-        threads.append(thread)
-        thread = threading.Thread(name='steamapi', target=steamapi_thread, args=(5, stop_event), daemon=False)
-        threads.append(thread)
-        thread = threading.Thread(name='auctionapi', target=auctionapi_thread, args=(5, stop_event), daemon=False)
-        threads.append(thread)
-        thread = threading.Thread(name='dblcheckonline', target=dblcheckonline_thread, args=(30, stop_event), daemon=False)
-        threads.append(thread)
-    if is_statscollector == "True":
-        thread = threading.Thread(name='stat-collector', target=statcollector_thread, args=(300, stop_event), daemon=False)
-        threads.append(thread)
+    '''
     while True:
         try:
             if shutil.disk_usage('/').free < 2000000000:
@@ -323,6 +318,7 @@ def main():
         sleep(60)
         checkthreads()
 '''
+
 
 if __name__ == 'pyark':
     # gitupdatecheck()
