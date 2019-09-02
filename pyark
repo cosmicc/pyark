@@ -270,7 +270,7 @@ def main():
     #thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
     #threads.append(thread)
 
-    if len() == 0:
+#    if len() == 0:
 '''
     if is_eventwatcher == "True":
         thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(60, stop_event), daemon=False)
