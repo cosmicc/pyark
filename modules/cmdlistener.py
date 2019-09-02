@@ -304,6 +304,7 @@ Wiping wild dinos now.', wcstamp())
     subprocess.run('arkmanager rconcmd DestroyWildDinos @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
     await asyncresetlastwipe(inst)
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
+    return True
 
 
 async def asyncvoter(inst, whoasked):
@@ -345,6 +346,7 @@ async def asyncvoter(inst, whoasked):
     lastvoter = time()
     await asyncresetlastvote(inst)
     log.debug(f'voting thread has ended on {inst}')
+    return True
 
 
 async def asyncstartvoter(inst, whoasked):
@@ -409,6 +411,7 @@ async def asynclinker(inst, whoasked):
             await asyncserverchatto(inst, player["steamid"], message)
     else:
         log.error(f'User not found in DB {whoasked}!')
+    return True
 
 
 @log.catch
@@ -557,6 +560,7 @@ async def asynclottery(whoasked, lchoice, inst):
         message = f'There are no current lotterys underway.'
         await asyncserverchat(inst, message)
         log.log('CMD', f'Responding to a [!lotto] request from [{whoasked.title()}] on [{inst.title()}]')
+    return True
 
 
 @log.catch
@@ -875,6 +879,7 @@ async def asyncprocessline(minst, line):
 async def processchunk(inst, chunk):
     for line in iter(chunk.splitlines()):
         await asyncprocessline(inst, line)
+    return True
 
 
 @log.catch
