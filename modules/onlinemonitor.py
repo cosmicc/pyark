@@ -262,7 +262,7 @@ async def asynconlineupdate(inst, dtime, stop_event):
     db = asyncDB()
     await db.connect()
     asyncloop = asyncio.get_running_loop()
-    asyncloop.create_task(asynckicker(inst, 5, stop_event))
+    #asyncloop.create_task(asynckicker(inst, 5, stop_event))
     while not stop_event.is_set():
         starttime = time.time()
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
