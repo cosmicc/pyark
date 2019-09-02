@@ -6,6 +6,7 @@ from time import sleep
 
 from loguru import logger as log
 
+from modules.asyndb import DB as db
 from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, serverchat
@@ -54,6 +55,20 @@ def iseventrebootday():
         return f'{startday} Event Start'
     elif endday:
         return f'{startday} Event End'
+
+
+async def asynciseventtime():
+    inevent = await db.fetchone(f"""SELECT * FROM events WHERE completed = 0 AND (starttime < '{Now(fmt="dtd")}' OR starttime = '{Now(fmt="dtd")}')""")
+    if inevent:
+        stime = d2dt_maint(inevent['starttime'])
+        etime = d2dt_maint(inevent['endtime'])
+        now = Now(fmt='dt')
+        if now > stime and now < etime:
+            return inevent
+        else:
+            return False
+    else:
+        return False
 
 
 def iseventtime():
