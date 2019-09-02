@@ -226,9 +226,13 @@ async def asyncmainloop():
             onlinecheck_timer = asyncloop.time()
         await asyncio.sleep(.1)
     pendingtasks = asyncio.Task.all_tasks()
-    currenttask = asyncio.Task.current_task()
+    tasklist = []
+    for each in pendingtasks:
+        if each != asyncio.Task.current_task():
+            tasklist.append(each)
+    # currenttask = asyncio.Task.current_task()
 
-    log.debug(f'still running tasks: {pendingtasks}')
+    log.debug(f'still running tasks: {tasklist}')
     await db.close()
     return True
 
