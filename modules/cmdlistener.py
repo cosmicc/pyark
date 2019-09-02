@@ -619,7 +619,7 @@ def deconstructchatline(line):
 
 
 @log.catch
-async def asyncchatlinedetected(chatdict, inst):
+async def asyncchatlinedetected(inst, chatdict):
     log.debug(f'chatline detected: {chatdict}')
     transmsg = trans_to_eng(chatdict['line'])
     tstamp = chatdict['time'].strftime('%m-%d %I:%M%p')
