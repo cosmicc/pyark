@@ -894,7 +894,9 @@ async def checkcommands(inst, dtime, stop_event):
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
         starttime = time()
-        asyncio.create_task(processcmdchunk(inst, chunk))
+        chunkfuture = asyncio.ensure_future(processcmdchunk(inst, chunk), loop=asyncloop)
+        asyncio.run_until_complete(chunkfuture)
+        await asyncio.wait(chunkfuture, loop=asyncloop)
         while time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
