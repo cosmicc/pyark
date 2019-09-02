@@ -607,7 +607,7 @@ def deconstructchatline(line):
         chatnamefull = line.rsplit(':', 1)[0].split(':', 1)[1].strip()
         chatname = chatnamefull.rsplit(')', 1)[0].rsplit('(', 1)[1]
         chatline = line.rsplit(f'({chatname})', 1)[1][2:]
-        chattime = datetime.strptime(line.split(':', 1)[0].strip('"'), '%y.%m.%d_%H.%M.%S')
+        chattime = datetime.strptime(line.split(':', 1)[0].strip('"'), '%Y.%m.%d_%H.%M.%S')
         log.debug(f'Full name from chat: {chatnamefull}')
         log.debug(f'Got name from chat: {chatname}')
         log.debug(f'Got time from chat: {chattime}')
