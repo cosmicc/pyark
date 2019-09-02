@@ -5,7 +5,7 @@ import time
 from loguru import logger as log
 
 from modules.asyncdb import DB as db
-from modules.clusterevents import getcurrenteventinfo, asynciseventtime, iseventtime
+from modules.clusterevents import getcurrenteventinfo, asynciseventtime, asynciseventtime, iseventtime
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.players import getplayer, newplayer
 from modules.servertools import asyncserverexec, asyncserverchat, asyncserverchatto, asyncserverscriptcmd, serverexec
@@ -177,7 +177,7 @@ async def asyncplayergreet(steamid, steamname, inst):
                 # serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
                 # writechat(inst, 'ALERT', f'<<< {oplayer[1].capitalize()} has joined the server', wcstamp())
                 await asyncserverisinrestart(steamid, inst, player)
-                currentevent = await iseventtime()
+                currentevent = await asynciseventtime()
                 if currentevent:
                     await asyncio.sleep(2)
                     mtxt = f'{currentevent[4]} event is currently active!'
