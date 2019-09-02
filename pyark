@@ -204,6 +204,7 @@ async def asyncmainloop():
     await db.connect()
     starttime = asyncloop.time()
     kickcheck_timer, cmdcheck_timer, onlinecheck_timer = starttime, starttime, starttime
+    log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
     while not main_stop_event:
         if asyncloop.time() - kickcheck_timer > kickcheck_delay and len(instances) > 0:
             kicktask = asyncio.create_task(asynckickcheck(instances))
@@ -247,12 +248,17 @@ def main():
     dbupdate('DELETE FROM globalbuffer')
     arkupdt = threading.Thread(name='arkupdater', target=arkupdater_thread, args=(stop_event,), daemon=False)
     threads.append(arkupdt)
+    log.debug(f'Starting {len(threads)} threads')
+    for thread in threads:
+        thread.start()
+    log.debug('All threads have started')
+    sleep(1)
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     asyncio.run(asyncmainloop())
 
     #thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
     #threads.append(thread)
-
+'''
     if is_eventwatcher == "True":
         thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(60, stop_event), daemon=False)
         threads.append(thread)
@@ -274,13 +280,6 @@ def main():
     if is_statscollector == "True":
         thread = threading.Thread(name='stat-collector', target=statcollector_thread, args=(300, stop_event), daemon=False)
         threads.append(thread)
-    log.debug(f'Starting {len(threads)} threads')
-    for thread in threads:
-        thread.start()
-    log.debug('All threads have started')
-    sleep(1)
-    log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
-
     while True:
         try:
             if shutil.disk_usage('/').free < 2000000000:
@@ -310,7 +309,7 @@ def main():
             checkgit += 1
         sleep(60)
         checkthreads()
-
+'''
 
 if __name__ == 'pyark':
     # gitupdatecheck()
