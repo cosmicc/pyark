@@ -2,10 +2,10 @@ import asyncio
 import threading
 import time
 
-import uvloop
 from loguru import logger as log
+
+from modules.asyncdb import DB as db
 from modules.clusterevents import getcurrenteventinfo, iseventtime
-from modules.asyncdb import asyncDB
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.players import getplayer, newplayer
 from modules.servertools import serverexec
@@ -13,8 +13,6 @@ from modules.timehelper import Now, elapsedTime, playedTime
 
 welcomthreads = []
 greetthreads = []
-
-global instance
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -211,13 +209,14 @@ def playergreet(steamid, steamname, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
-async def asynckicker(inst):
+async def asynckickcheck(instances):
     log.debug('!')
-    kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
-    if kicked:
-        # serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
-        log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
-        await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
+    for inst in instances:
+        kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
+        if kicked:
+            serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
+            log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
+            await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
     return True
 
 
@@ -253,36 +252,11 @@ async def processplayerchunk(inst, chunk):
     return True
 
 
-async def asynconlineupdate(inst, dtime, stop_event):
-    global db
+async def asynconlinecheck(instances):
     global greetthreads
-    asyncloop = asyncio.get_running_loop()
-    db = asyncDB(asyncloop)
-    await db.connect()
-    while not stop_event.is_set():
-        kickstart = time.time()
-        liststart = time.time()
+    for inst in instances:
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
-        chunktask = asyncloop.create_task(processplayerchunk(inst, chunk))
+        chunktask = asyncio.create_task(processplayerchunk(inst, chunk))
         await chunktask
-        while time.time() - liststart < dtime:
-            if time.time() - kickstart < 5:
-                # await asynckicker(inst)
-                kickstart = time.time()
-            await asyncio.sleep(1)
-    pendingtasks = asyncio.Task.all_tasks()
-    await asyncio.gather(*pendingtasks)
-    await db.close()
-    asyncloop.stop()
-    log.debug('Online monitor thread has ended')
-    exit(0)
-
-
-@log.catch
-def onlinemonitor_thread(inst, dtime, stop_event):
-    log.debug(f'Online monitor thread for {inst} is starting')
-    log.patch(lambda record: record["extra"].update(instance=inst))
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    time.sleep(1)
-    asyncio.run(asynconlineupdate(inst, dtime, stop_event))
+    return True

@@ -30,6 +30,7 @@ eventlet = "*"
 asyncpg = "*"
 sh = "*"
 aiofiles = "*"
+apscheduler = "*"
 
 [requires]
 python_version = "3.7"

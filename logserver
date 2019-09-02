@@ -10,8 +10,9 @@ from datetime import datetime
 from queue import Queue
 from time import sleep
 
-import modules.tail
 from loguru import logger as log
+
+import modules.tail
 
 HEADER = 5
 HEADERSIZE = HEADER * 4 + 4

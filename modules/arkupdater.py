@@ -9,6 +9,8 @@ from datetime import time as dt
 from time import sleep
 
 from loguru import logger as log
+from timebetween import is_time_between
+
 from modules.clusterevents import getcurrenteventext, iseventrebootday, iseventtime
 from modules.configreader import arkroot, hstname, instance, instr, is_arkupdater, maint_hour, numinstances, sharedpath
 from modules.dbhelper import dbquery, dbupdate
@@ -18,7 +20,6 @@ from modules.players import getliveplayersonline, getplayersonline
 from modules.pushover import pushover
 from modules.servertools import serverexec, serverneedsrestart
 from modules.timehelper import Now, Secs, wcstamp
-from timebetween import is_time_between
 
 confupdtimer = 0
 dwtimer = 0

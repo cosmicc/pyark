@@ -4,6 +4,7 @@ from time import sleep
 from urllib.request import Request, urlopen
 
 from loguru import logger as log
+
 from modules.configreader import steamapikey
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now

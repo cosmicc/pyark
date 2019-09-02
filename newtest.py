@@ -7,4 +7,3 @@ c = b.splitlines
 
 print(len(b.splitlines))
 #for line in iter(b.splitlines()):
-

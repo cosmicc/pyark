@@ -5,6 +5,7 @@ from sys import exit
 from time import sleep
 
 from loguru import logger as log
+
 from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import instancelist, serverchat

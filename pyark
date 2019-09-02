@@ -1,30 +1,33 @@
 #!/usr/bin/env python3.7
 
 import argparse
+import asyncio
 import shutil
 import signal
 import sys
 import threading
 from os import _exit, nice, stat
-from time import sleep
+from time import sleep, time
+
+import uvloop
+from git import Repo
+from loguru import logger as log
 
 import modules.logging
 import modules.lottery as lottery
-from git import Repo
-from loguru import logger as log
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
 from modules.arkupdater import arkupdater_thread
+from modules.asyncdb import DB as db
 from modules.clusterevents import eventwatcher_thread
 from modules.cmdlistener import cmdlistener_thread
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
-                                  debugfile, gamelogfile, hstname, instances, instr, is_asdatapuller,
-                                  is_eventwatcher, is_gamelogger, is_lotterymanager,
-                                  is_statscollector, jsondebugfile, jsonlogfile, loglevel, pointsfile, gamelograwfile)
+                                  debugfile, gamelogfile, gamelograwfile, hstname, instances, instr,
+                                  is_asdatapuller, is_eventwatcher, is_gamelogger, is_lotterymanager,
+                                  is_statscollector, jsondebugfile, jsonlogfile, loglevel, pointsfile)
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
 from modules.gchatrelay import gchatrelay_thread
-from modules.kicker import kicker_thread
-from modules.onlinemonitor import onlinemonitor_thread
+from modules.onlinemonitor import asynckickcheck, asynconlinecheck
 from modules.processlock import plock
 from modules.servertools import serverexec
 from modules.statcollector import statcollector_thread
@@ -51,12 +54,10 @@ args = parser.parse_args()
 
 
 def sig_handler(signal, frame):
+    global main_stop_event
     log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
+    main_stop_event = True
     stop_event.set()
-    log.debug(f'Waiting for {len(threads)} threads to exit...')
-    for thread in threads:
-        thread.join
-    exit(0)
 
 
 signal.signal(signal.SIGTERM, sig_handler)
@@ -193,6 +194,41 @@ def checkthreads():
             log.critical(f'!!!! CRITICAL ERROR! thread {thread.name} has crashed!!')
 
 
+async def asyncmainloop():
+    global main_stop_event
+    main_stop_event = False
+    kickcheck_delay = 5
+    cmdcheck_delay = 2
+    onlinecheck_delay = 10
+    asyncloop = asyncio.get_running_loop()
+    await db.connect()
+    starttime = asyncloop.time()
+    kickcheck_timer, cmdcheck_timer, onlinecheck_timer = starttime, starttime, starttime
+    while not main_stop_event:
+        if asyncloop.time() - kickcheck_timer > kickcheck_delay and len(instances) > 0:
+            kicktask = asyncio.create_task(asynckickcheck(instances))
+            await kicktask
+            kickcheck_timer = asyncloop.time()
+        if asyncloop.time() - cmdcheck_timer > cmdcheck_delay and len(instances) > 0:
+            cmdtask = asyncio.create_task(asynccmdcheck(instances))
+            await cmdtask
+            cmdcheck_timer = asyncloop.time()
+        if asyncloop.time() - onlinecheck_timer > onlinecheck_delay and len(instances) > 0:
+            asyncio.create_task(asynconlinecheck(instances))
+            await cmdtask
+            onlinecheck_timer = asyncloop.time()
+        asyncio.sleep(.1)
+    pendingtasks = asyncio.Task.all_tasks()
+    await asyncio.gather(*pendingtasks)
+    await db.close()
+    asyncloop.stop()
+    log.debug(f'Waiting for {len(threads)} threads to exit...')
+    for thread in threads:
+        thread.join
+    log.debug('Pyark has ended')
+    exit(0)
+
+
 @log.catch
 def main():
     log.debug(f'Pyark is sarting on {hstname.upper()}')
@@ -211,15 +247,12 @@ def main():
     dbupdate('DELETE FROM globalbuffer')
     arkupdt = threading.Thread(name='arkupdater', target=arkupdater_thread, args=(stop_event,), daemon=False)
     threads.append(arkupdt)
-    for inst in instances:
-        # thread = threading.Thread(name=f'{inst}-kicker', target=kicker_thread, args=(inst, 5, stop_event), daemon=False)
-        # threads.append(thread)
-        thread = threading.Thread(name=f'{inst}-cmdlistener', target=cmdlistener_thread, args=(inst, 2, stop_event), daemon=False)
-        threads.append(thread)
-        thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
-        threads.append(thread)
-        thread = threading.Thread(name=f'{inst}-onlinemon', target=onlinemonitor_thread, args=(inst, 10, stop_event), daemon=False)
-        threads.append(thread)
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    asyncio.run(asyncmainloop())
+
+    #thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
+    #threads.append(thread)
+
     if is_eventwatcher == "True":
         thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(60, stop_event), daemon=False)
         threads.append(thread)

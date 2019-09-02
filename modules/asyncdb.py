@@ -1,20 +1,20 @@
 import asyncio
+import threading
 
 import asyncpg
 from loguru import logger as log
+
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
-import threading
 
 
 class asyncDB:
-    def __init__(self, asyncloop):
+    def __init__(self):
         log.trace(f'Starting async db connection engine for {threading.current_thread().name}')
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
         self.databases = ('pyark', 'py', 'stats', 'st', 'gamelog', 'gl')
         self.dbpyark = ('pyark', 'py')
         self.dbstats = ('stats', 'st')
         self.dbgamelog = ('gamelog', 'gl')
-        self.asyncloop = asyncloop
         self.cpool = None
         self.connecting = False
 
@@ -134,3 +134,6 @@ class asyncDB:
         # log.trace(f'Executing DB [{db}] update {query}')
         await self._execute(query, db)
         return True
+
+
+DB = asyncDB()

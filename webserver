@@ -3,8 +3,9 @@
 import argparse
 from os import nice
 
-import modules.logging
 from loguru import logger as log
+
+import modules.logging
 from modules.configreader import colorlogfile, debugfile, jsondebugfile, jsonlogfile, webserver_ip, webserver_port
 from modules.processlock import plock
 from web import create_app, socketio

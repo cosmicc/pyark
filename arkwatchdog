@@ -6,9 +6,10 @@ import sys
 from sys import exit
 from time import sleep
 
-import modules.logging
 import psutil
 from loguru import logger as log
+
+import modules.logging
 from modules.arkupdater import instancerestart
 from modules.configreader import (colorlogfile, critlogfile, hstname, instance,
                                   instr, jsondebugfile, jsonlogfile, loglevel)

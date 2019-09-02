@@ -4,8 +4,9 @@ import argparse
 import sys
 from os import nice
 
-import modules.logging
 from loguru import logger as log
+
+import modules.logging
 from modules.configreader import (adminfile, colorlogfile, crashlogfile, critlogfile, debugfile, hstname, instance,
                                   instr, is_asdatapuller, is_eventwatcher, is_lotterymanager, is_statscollector,
                                   jsondebugfile, jsonlogfile, loglevel, numinstances, pointsfile)

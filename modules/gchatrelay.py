@@ -1,6 +1,7 @@
 from time import sleep
 
 from loguru import logger as log
+
 from modules.cmdlistener import writechatlog
 from modules.dbhelper import db_getall, dbupdate
 from modules.instances import writechat

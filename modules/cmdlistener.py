@@ -6,10 +6,9 @@ import threading
 from datetime import datetime, timedelta
 from time import time
 
-import aiofiles
-import uvloop
 from loguru import logger as log
-from modules.asyncdb import asyncDB
+
+from modules.asyncdb import DB as db
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist
@@ -883,32 +882,13 @@ async def processcmdchunk(inst, chunk):
 
 
 @log.catch
-async def checkcommands(inst, dtime, stop_event):
+async def asynccmdcheck(instances):
     global db
     global isvoting
     isvoting = False
-    asyncloop = asyncio.get_running_loop()
-    db = asyncDB(asyncloop)
-    await db.connect()
-    while not stop_event.is_set():
+    for inst in instances:
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
-        starttime = time()
         task = asyncio.create_task(processcmdchunk(inst, chunk))
         await task
-        while time() - starttime < dtime:
-            await asyncio.sleep(1)
-    pendingtasks = asyncio.Task.all_tasks()
-    await asyncio.gather(*pendingtasks)
-    await db.close()
-    asyncloop.stop()
-    log.debug('Command listener thread has ended')
-    exit(0)
-
-
-@log.catch
-def cmdlistener_thread(inst, dtime, stop_event):
-    log.debug(f'Command listener thread for {inst} is starting')
-    log.patch(lambda record: record["extra"].update(instance=inst))
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncio.run(checkcommands(inst, dtime, stop_event))
+    return True
