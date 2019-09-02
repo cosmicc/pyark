@@ -653,38 +653,38 @@ async def asyncprocessline(minst, line):
     elif line.find('joined this ARK!') != -1:
         await playerjoin(line, minst)
     elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|ADMIN|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'ADMIN', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|ADMIN|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'ADMIN', line.replace('"', '').strip()], db='gl')
     elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|DEMO|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'DEMO', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|DEMO|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'DEMO', line.replace('"', '').strip()], db='gl')
     elif line.find('released:') != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|RELEASE|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'RELEASE', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|RELEASE|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'RELEASE', line.replace('"', '').strip()], db='gl')
     elif line.find('trapped:') != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|TRAP|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'TRAP', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|TRAP|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'TRAP', line.replace('"', '').strip()], db='gl')
     elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|DEATH|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'DEATH', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|DEATH|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'DEATH', line.replace('"', '').strip()], db='gl')
     elif line.find('Tamed a') != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|TAME|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'TAME', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|TAME|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'TAME', line.replace('"', '').strip()], db='gl')
     elif line.find(" claimed '") != -1 or line.find(" unclaimed '") != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|CLAIM|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'CLAIM', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|CLAIM|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'CLAIM', line.replace('"', '').strip()], db='gl')
     elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 or line.find(' Tribe to ') != -1 or line.find(' was removed from the Tribe!') != -1 or line.find(' set to Rank Group ') != -1 or line.find(' requested an Alliance with ') != -1 or line.find(' was added to the Tribe!') != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|TRIBE|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'TRIBE', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|TRIBE|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'TRIBE', line.replace('"', '').strip()], db='gl')
     elif line.find('starved to death!') != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|DECAY|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|DECAY|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
     elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
-        log.log('GLRAW', f"""|{inst.upper()}|DECAY|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|DECAY|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
     elif line.startswith('Error:'):
-        log.log('GLRAW', f"""|{inst.upper()}|UNKNOWN|{line.replace('"', '')}""".strip())
-        # await db.update([inst, 'UNKNOWN', line.replace('"', '').strip()], db='gl')
+        # log.log('GLRAW', f"""|{inst.upper()}|UNKNOWN|{line.replace('"', '')}""".strip())
+        await db.update([inst, 'UNKNOWN', line.replace('"', '').strip()], db='gl')
     else:
         whoasked = getnamefromchat(line)
         log.trace(f'chatline who: {whoasked}')
