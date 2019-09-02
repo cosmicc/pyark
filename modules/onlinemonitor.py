@@ -12,7 +12,7 @@ from modules.servertools import asyncserverexec, asyncserverchat, asyncservercha
 from modules.timehelper import Now, elapsedTime, playedTime
 
 welcomthreads = []
-greetthreads = []
+greetings = []
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -188,96 +188,6 @@ async def asyncplayergreet(steamid, steamname, inst):
                     mtxt = annc[0]
                     await asyncserverchatto(inst, steamid, mtxt)
     greetings.remove(steamid)
-
-
-@log.catch
-def playergreet(steamid, steamname, inst):
-    global greetthreads
-    global welcomthreads
-    gogo = 0
-    xferpoints = 0
-    if checkifbanned(steamid):
-        log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
-        # serverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
-        # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
-    else:
-        oplayer = getplayer(steamid)
-        if not oplayer:
-            welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, steamname, inst))
-            welcom.start()
-        else:
-            if oplayer[16] != 0 and oplayer[15] == inst:
-                xferpoints = int(oplayer[16])
-                log.log('POINTS', f'Transferred {xferpoints} non-home server points for \
-[{oplayer[1].title()}] on [{inst.title()}]')
-                dbupdate("UPDATE players SET transferpoints = 0 WHERE steamid = '%s'" % (steamid,))
-                serverexec(['arkmanager', 'rconcmd', f'ScriptCommand tcsar addarctotal {steamid} {xferpoints}', f'@{inst}'], nice=19, null=True)
-            if Now() - int(oplayer[2]) < 300:  # existing online player
-                log.trace(f'Existing online player [{oplayer[1].title()}] was found on [{inst.title()}]. updating info.')
-                dbupdate("UPDATE players SET online = True, lastseen = '%s', server = '%s' WHERE steamid = '%s'" % (Now(), inst, steamid))
-            else:  # new player connection
-                log.debug(f'New online player [{oplayer[1].title()}] was found on [{inst.title()}]. updating info.')
-                dbupdate("UPDATE players SET online = True, lastseen = %s, server = '%s', connects = %s, refreshauctions = True, refreshsteam = True WHERE steamid = '%s'" % (Now(), inst, int(oplayer[7]) + 1, steamid))
-                laston = elapsedTime(Now(), int(oplayer[2]))
-                totplay = playedTime(int(oplayer[4]))
-                newpoints = int(oplayer[5]) + xferpoints
-                mtxt = f'Welcome back {oplayer[1].title()}, you have {newpoints} reward points on \
-{oplayer[15].capitalize()}, last online {laston} ago, total time played {totplay}'
-                serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-                time.sleep(1)
-                flast = dbquery("SELECT * FROM players WHERE server = '%s' AND steamid != '%s'" % (inst, steamid))
-                pcnt = 0
-                plist = ''
-                potime = 40
-                for row in flast:
-                    chktme = Now() - int(row[2])
-                    if chktme < potime:
-                        pcnt += 1
-                        if plist == '':
-                            plist = '%s' % (row[1].title())
-                        else:
-                            plist = plist + ', %s' % (row[1].title())
-                if pcnt != 0:
-                    msg = f'There are {pcnt} other players online: {plist}'
-                else:
-                    msg = f'There are no other players are online on this server.'
-                serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {msg}', f'@{inst}'], nice=19, null=True)
-                time.sleep(2)
-                if int(oplayer[14]) == 1 and int(oplayer[13]) == 1 and oplayer[3] == inst and inst != 'extiction':
-                    mtxt = f'WARNING: Server has restarted since you logged in, vivarium your primordials!'
-                    serverexec([f'arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-                    resetplayerbit(steamid)
-                if oplayer[8] == '':
-                    time.sleep(5)
-                    mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
-                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-                if not isinlottery(steamid):
-                    time.sleep(3)
-                    mtxt = f'A lottery you have not entered yet is underway. Type !lotto for more information'
-                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-
-            if xferpoints != 0:
-                    time.sleep(2)
-                    mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
-                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-            lottodeposits(steamid, inst)
-            if int(oplayer[2]) + 60 < Now() and gogo == 0:
-                # mtxt = f'{oplayer[1].capitalize()} has joined the server'
-                # serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
-                # writechat(inst, 'ALERT', f'<<< {oplayer[1].capitalize()} has joined the server', wcstamp())
-                serverisinrestart(steamid, inst, oplayer)
-                if iseventtime():
-                    eventinfo = getcurrenteventinfo()
-                    time.sleep(2)
-                    mtxt = f'{eventinfo[4]} event is currently active!'
-                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-                annc = dbquery("SELECT announce FROM general", fetch='one')
-                if annc and annc[0] is not None:
-                    time.sleep(2)
-                    mtxt = annc[0]
-                    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-
-    greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
 async def asynckickcheck(instances):
