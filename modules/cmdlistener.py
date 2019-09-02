@@ -14,7 +14,7 @@ from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import newplayer
-from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd, serverexec
+from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd, asyncserverexec
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 lastvoter = 0.1
@@ -569,27 +569,28 @@ async def playerjoin(line, inst):
 @log.catch
 async def asyncleavingplayerwatch(player, inst):
     log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
-    starttime = time()
+    asyncloop = asyncio.get_running_loop()
+    starttime = asyncloop.time()
     stop_watch = False
     transferred = False
-    while time() - starttime < 250 and not stop_watch:
+    while asyncloop.time() - starttime < 250 and not stop_watch:
         queryplayer = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{player['steamid']}'")
         if queryplayer['server'] != inst:
             fromtxt = f'{player["playername"].title()} has transferred here from {inst.title()}'
             totxt = f'{player["playername"].title()} has transferred to {queryplayer["server"].title()}'
-            serverexec(['arkmanager', 'rconcmd', f'ServerChat {totxt}', f'@{inst}'], nice=19, null=True)
+            await asyncserverchat(inst, totxt)
             await asyncwriteglobal(queryplayer["server"].lower(), 'ALERT', fromtxt)
             await asyncwritechat(inst, 'ALERT', f'>><< {player["playername"].title()} has transferred from {inst.title()} to {queryplayer["server"].title()}', wcstamp())
             log.log('XFER', f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{queryplayer["server"].title()}]')
             transferred = True
             stop_watch = True
         await asyncio.sleep(1)
-    if not transferred and time() - int(queryplayer['lastseen']) >= 240:
+    if not transferred and asyncloop.time() - int(queryplayer['lastseen']) >= 240:
         steamid = player["steamid"]
         await db.update(f"UPDATE players SET online = False, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
-        serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
+        await asyncserverchat(inst, mtxt)
     return True
 
 
@@ -845,8 +846,8 @@ async def asyncprocessline(minst, atinstances, line):
 
 
 @log.catch
-async def processcmdchunk(inst, atinstances, chunk):
-    for line in iter(chunk.splitlines()):
+async def processcmdchunk(inst, atinstances, cmdpipe):
+    for line in iter(cmdpipe.stdout.decode("utf-8").splitlines()):
         await asyncprocessline(inst, atinstances, line)
     return True
 
@@ -855,8 +856,7 @@ async def processcmdchunk(inst, atinstances, chunk):
 async def asynccmdcheck(instances, atinstances):
     global db
     for inst in instances:
-        cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
-        chunk = cmdpipe.stdout.decode("utf-8")
-        task = asyncio.create_task(processcmdchunk(inst, atinstances, chunk))
+        cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
+        task = asyncio.create_task(processcmdchunk(inst, atinstances, cmdpipe))
         await task
     return True

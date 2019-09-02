@@ -8,7 +8,7 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import getcurrenteventinfo, iseventtime
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.players import getplayer, newplayer
-from modules.servertools import serverexec
+from modules.servertools import asyncserverexec, serverexec
 from modules.timehelper import Now, elapsedTime, playedTime
 
 welcomthreads = []
@@ -245,8 +245,8 @@ async def asyncprocessline(inst, line):
         log.exception('Exception in online monitor process line')
 
 
-async def processplayerchunk(inst, chunk):
-    for line in iter(chunk.splitlines()):
+async def processplayerchunk(inst, cmdpipe):
+    for line in iter(cmdpipe.stdout.decode("utf-8").splitlines()):
         await asyncprocessline(inst, line)
     return True
 
@@ -254,8 +254,7 @@ async def processplayerchunk(inst, chunk):
 async def asynconlinecheck(instances):
     global greetthreads
     for inst in instances:
-        cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
-        chunk = cmdpipe.stdout.decode("utf-8")
-        chunktask = asyncio.create_task(processplayerchunk(inst, chunk))
+        cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
+        chunktask = asyncio.create_task(processplayerchunk(inst, cmdpipe))
         await chunktask
     return True
