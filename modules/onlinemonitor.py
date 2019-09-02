@@ -246,8 +246,8 @@ async def asyncprocessline(inst, line):
         log.exception('Exception in online monitor process line')
 
 
-async def processplayerchunk(inst, cmdpipe):
-    for line in iter(cmdpipe.stdout.decode("utf-8").splitlines()):
+async def processplayerchunk(inst, chunk):
+    for line in iter(chunk.decode("utf-8").splitlines()):
         await asyncprocessline(inst, line)
     return True
 
@@ -256,6 +256,6 @@ async def asynconlinecheck(instances):
     global greetthreads
     for inst in instances:
         cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'])
-        chunktask = asyncio.create_task(processplayerchunk(inst, cmdpipe))
+        chunktask = asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
         await chunktask
     return True

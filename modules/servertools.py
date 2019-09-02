@@ -47,16 +47,21 @@ async def asyncserverbcast(inst, bcast, nice=10):
 
 
 @log.catch
-async def asyncserverexec(cmdlist, nice=19):
+async def asyncserverexec(cmdlist, wait=False, nice=19):
     asyncloop = asyncio.get_running_loop()
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)
     # cmdstring = quote(' '.join(fullcmdlist)).strip("'")
     log.debug(f'server rcon cmd executing [{cmdstring}]')
-    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
-    result = await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
-    log.debug(f'server rcon process completed [{cmdstring}]')
-    return result
+    if wait:
+        proc = asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, loop=asyncloop)
+        stdout, stderr = await proc.communicate()
+        return {'returncode': proc.returncode, 'stdout': stdout, 'stderr': stderr}
+    else:
+        proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+        asyncio.wait_for(proc, timeout=10, loop=asyncloop)
+        log.debug(f'server rcon process completed [{cmdstring}]')
+        return True
 
 
 def removerichtext(text):
