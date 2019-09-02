@@ -211,6 +211,18 @@ def playergreet(steamid, steamname, inst):
     greetthreads[:] = [d for d in greetthreads if d.get('steamid') != steamid]
 
 
+async def asynckicker(inst, dtime, stop_event):
+    log.debug(f'Starting kicker loop for {inst}')
+    while not stop_event.is_set():
+        kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
+        if kicked:
+            serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
+            log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
+            await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
+        await asyncio.sleep(dtime)
+    return True
+
+
 async def asyncprocessline(inst, line):
     try:
         if line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
@@ -249,12 +261,13 @@ async def asynconlineupdate(inst, dtime, stop_event):
     db = asyncDB()
     await db.connect()
     asyncloop = asyncio.get_running_loop()
+    asyncloop.create_task(asynckicker(inst, 5, stop_event))
     while not stop_event.is_set():
         starttime = time.time()
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
-        task = asyncloop.create_task(processplayerchunk(inst, chunk))
-        await task
+        chunktask = asyncloop.create_task(processplayerchunk(inst, chunk))
+        await chunktask
         while time.time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()

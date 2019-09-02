@@ -212,8 +212,8 @@ def main():
     arkupdt = threading.Thread(name='arkupdater', target=arkupdater_thread, args=(stop_event,), daemon=False)
     threads.append(arkupdt)
     for inst in instances:
-        thread = threading.Thread(name=f'{inst}-kicker', target=kicker_thread, args=(inst, 5, stop_event), daemon=False)
-        threads.append(thread)
+        # thread = threading.Thread(name=f'{inst}-kicker', target=kicker_thread, args=(inst, 5, stop_event), daemon=False)
+        # threads.append(thread)
         thread = threading.Thread(name=f'{inst}-cmdlistener', target=cmdlistener_thread, args=(inst, 2, stop_event), daemon=False)
         threads.append(thread)
         thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
