@@ -373,7 +373,7 @@ async def asyncstartvoter(inst, whoasked):
 def getnamefromchat(chat):
     try:
         log.debug(f'getnamefromchat: {chat}')
-        chatnamefull = chat.rsplit(':', 1)[0].split(':', 1).strip()
+        chatnamefull = chat.rsplit(':', 1)[0].split(':', 1)[1].strip()
         chatname = chatnamefull.rsplit(')', 1)[0].rsplit('(', 1)[1].lower()
         log.debug(f'Full name from chat: {chatnamefull}')
         log.debug(f'Got name from chat: {chatname}')
