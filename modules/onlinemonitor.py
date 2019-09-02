@@ -240,6 +240,7 @@ async def asyncprocessline(inst, line):
 async def processplayerchunk(inst, chunk):
     for line in iter(chunk.splitlines()):
         await asyncprocessline(inst, line)
+    return True
 
 
 async def asynconlineupdate(inst, dtime, stop_event):
