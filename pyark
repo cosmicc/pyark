@@ -21,8 +21,7 @@ from modules.instances import instancelist
 from modules.cmdlistener import asynccmdcheck
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
                                   debugfile, gamelogfile, gamelograwfile, hstname, instances, instr,
-                                  is_asdatapuller, is_eventwatcher, is_gamelogger, is_lotterymanager,
-                                  is_statscollector, jsondebugfile, jsonlogfile, loglevel, pointsfile)
+                                  jsondebugfile, jsonlogfile, loglevel, pointsfile)
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
 from modules.gchatrelay import gchatrelay_thread
@@ -211,7 +210,7 @@ async def asyncmainloop():
     for each in instancelist():
         serverpre.append(f'@{each}')
     atinstances = tuple(serverpre)
-
+    log.log('START', instances)
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
     asyncio.create_task(faketestwork())
     while not main_stop_event:
@@ -268,10 +267,10 @@ def main():
     log.debug('Pyark Exited.')
     exit(0)
 
-
-
     #thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
     #threads.append(thread)
+
+    if len() == 0:
 '''
     if is_eventwatcher == "True":
         thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(60, stop_event), daemon=False)
