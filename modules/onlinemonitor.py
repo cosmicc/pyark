@@ -244,7 +244,9 @@ async def processplayerchunk(inst, chunk):
 
 
 async def asynconlineupdate(inst, dtime, stop_event):
+    global db
     global greetthreads
+    db = asyncDB()
     await db.connect()
     asyncloop = asyncio.get_running_loop()
     while not stop_event.is_set():
@@ -264,9 +266,7 @@ async def asynconlineupdate(inst, dtime, stop_event):
 
 @log.catch
 def onlinemonitor_thread(inst, dtime, stop_event):
-    global db
     log.debug(f'Online monitor thread for {inst} is starting')
-    db = asyncDB()
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     time.sleep(1)

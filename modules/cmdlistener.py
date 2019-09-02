@@ -884,9 +884,11 @@ async def processcmdchunk(inst, chunk):
 
 @log.catch
 async def checkcommands(inst, dtime, stop_event):
+    global db
     global isvoting
     isvoting = False
     asyncloop = asyncio.get_running_loop()
+    db = asyncDB()
     await db.connect()
     while not stop_event.is_set():
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
@@ -905,9 +907,7 @@ async def checkcommands(inst, dtime, stop_event):
 
 @log.catch
 def cmdlistener_thread(inst, dtime, stop_event):
-    global db
     log.debug(f'Command listener thread for {inst} is starting')
-    db = asyncDB()
     log.patch(lambda record: record["extra"].update(instance=inst))
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     asyncio.run(checkcommands(inst, dtime, stop_event))
