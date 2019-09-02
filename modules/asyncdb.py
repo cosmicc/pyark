@@ -123,6 +123,7 @@ class asyncDB:
                 log.exception(f'Exception in db update {query}')
             finally:
                 await self._release(con)
+        return True
 
     async def update(self, query, db='pyark'):
         if db not in self.databases:
