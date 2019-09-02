@@ -213,6 +213,7 @@ def playergreet(steamid, steamname, inst):
 
 async def asynckicker(inst, dtime, stop_event):
     log.debug(f'Starting kicker loop for {inst}')
+    await asyncio.sleep(5)
     while not stop_event.is_set():
         kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
         if kicked:
