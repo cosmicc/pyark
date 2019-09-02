@@ -684,7 +684,7 @@ async def asyncprocessline(minst, atinstances, line):
         chatdict = deconstructchatline(line)
         whoasked = chatdict['name']
         log.trace(f'chatline who: {whoasked}')
-        incmd = chatdict(['line'])
+        incmd = chatdict['line']
         if incmd.startswith('!test'):
             log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
             message = 'hi'
