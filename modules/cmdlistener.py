@@ -888,7 +888,7 @@ async def checkcommands(inst, dtime, stop_event):
     global isvoting
     isvoting = False
     asyncloop = asyncio.get_running_loop()
-    db = asyncDB()
+    db = asyncDB(asyncloop)
     await db.connect()
     while not stop_event.is_set():
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)

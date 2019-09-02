@@ -7,20 +7,21 @@ import threading
 
 
 class asyncDB:
-    def __init__(self):
+    def __init__(self, asyncloop):
         log.trace(f'Starting async db connection engine for {threading.current_thread().name}')
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
         self.databases = ('pyark', 'py', 'stats', 'st', 'gamelog', 'gl')
         self.dbpyark = ('pyark', 'py')
         self.dbstats = ('stats', 'st')
         self.dbgamelog = ('gamelog', 'gl')
+        self.asyncloop = asyncloop
         self.cpool = None
         self.connecting = False
 
     async def connect(self):
         self.connecting = True
         try:
-            self.cpool = await asyncpg.create_pool(min_size=2, max_size=20, max_inactive_connection_lifetime=120.0, database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            self.cpool = await asyncpg.create_pool(min_size=2, max_size=20, max_inactive_connection_lifetime=120.0, database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw, loop=self.asyncloop)
         except:
             log.critical('Error connecting to database server.. waiting to reconnect')
             await asyncio.sleep(5)

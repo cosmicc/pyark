@@ -256,9 +256,9 @@ async def processplayerchunk(inst, chunk):
 async def asynconlineupdate(inst, dtime, stop_event):
     global db
     global greetthreads
-    db = asyncDB()
-    await db.connect()
     asyncloop = asyncio.get_running_loop()
+    db = asyncDB(asyncloop)
+    await db.connect()
     while not stop_event.is_set():
         kickstart = time.time()
         liststart = time.time()
