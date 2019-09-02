@@ -268,7 +268,7 @@ async def asynconlineupdate(inst, dtime, stop_event):
         await chunktask
         while time.time() - liststart < dtime:
             if time.time() - kickstart < 5:
-                await asynckicker(inst)
+                # await asynckicker(inst)
                 kickstart = time.time()
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
