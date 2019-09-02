@@ -6,7 +6,7 @@ from modules.cmdlistener import writechatlog
 from modules.dbhelper import db_getall, dbupdate
 from modules.instances import writechat
 from modules.players import getplayer
-from modules.servertools import serverexec
+from modules.servertools import serverexec, asynserverchat, asyncserverchatto, asyncserverbcast
 from modules.timehelper import Now
 
 # globalbuffer (chat TO servers)
@@ -18,6 +18,44 @@ def stopsleep(sleeptime, stop_event):
             log.debug('Gchatrelay thread has ended')
             exit(0)
         sleep(1)
+
+
+@log.catch
+async def asyncgchatrelay(instances):
+        chatbuffer = await db.fetchall(f"SELECT * from globalbuffer")
+        if chatbuffer:
+            for chatline in chatbuffer:
+                if chatline['server'].lower() in instances:
+                    if chatline['name'] == 'LOTTERY':
+                        await asyncserverbcast(chatline['server'], chatline["message"])
+                        await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')
+                    elif chatline['name'] == 'ALERT':
+                        await asyncserverchat(chatline['server'], chatline["message"])
+                        await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')
+                    elif not chatline['private'] and not chatline['broadcast']:
+                        await asyncserverchat(chatline['server'], f'Admin: {chatline["message"]}')
+                        log.log('CHAT', f'{inst} | ADMIN | {chatline["message"]}')
+                        await asyncwritechatlog(inst, 'ADMIN', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
+                        await asyncwritechat(inst, 'Admin', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
+                        await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')
+                    elif chatline['broadcast'] and not chatline['private']:
+                        await asyncserverbcast(chatline['server'], chatline["message"])
+                        log.log('CHAT', f'{inst} | BROADCAST | {chatline["message"]}')
+                        await asyncwritechatlog(inst, 'BROADCAST', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
+                        await asyncwritechat(inst, 'Broadcast', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
+                        await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')
+                    elif chatline['private'] and not chatline['broadcast']:
+                        player = await db.fetchone(f"SELECT * FROM players WHERE playername = '{chatline['name']}'")
+                        if player:
+                            if player['server'].lower() is in instances:
+                                log.log('CHAT', f'{inst} | Admin_to_{cplayer["playername"].title()} | {chatline["message"]}')
+                                await asyncwritechatlog(inst, f'Admin to {cplayer["playername"].title()}', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
+                                await asyncserverchatto(chatline['server'], player['steamid'], f'AdminPrivate: {chatline["message"]}')
+                                log.log('CHAT', f'{inst} | Admin_to_{cplayer["playername"].title()} | {chatline["message"]}')
+                        await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')
+                    else:
+                        log.error(f'gchatrelay error: {chatline}')
+        return True
 
 
 @log.catch

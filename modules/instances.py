@@ -193,13 +193,20 @@ def writechat(inst, whos, msg, tstamp):
 
 
 async def asyncwriteglobal(inst, whos, msg, db):
-    await db.update("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-                    (inst, whos, msg, Now()))
+    if inst.lower() == 'all' or inst.lower() == 'alert':
+        for instance in instancelist():
+            await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{instance.lower()}', '{whos}', '{msg}', '{Now()}')")
+    else:
+        await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{instance.lower()}', '{whos}', '{msg}', '{Now()}')")
 
 
 def writeglobal(inst, whos, msg):
-    dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-             (inst, whos, msg, Now()))
+    if inst.lower() == 'all' or inst.lower() == 'alert':
+        for instance in instancelist():
+            dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
+                     (instance.lower(), whos, msg, Now()))
+    else:
+        dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (instance.lower(), whos, msg, Now()))
 
 
 def serverchat(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False):

@@ -24,12 +24,13 @@ from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlog
                                   jsondebugfile, jsonlogfile, loglevel, pointsfile)
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
-from modules.gchatrelay import gchatrelay_thread
+from modules.gchatrelay import asyncgchatrelay
 from modules.lottery import lotterywatcher_thread
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck
 from modules.processlock import plock
 from modules.servertools import serverexec
 from modules.statcollector import statcollector_thread
+from modules.timehelper import Secs
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
@@ -203,10 +204,11 @@ async def asyncmainloop():
     kickcheck_delay = 5
     cmdcheck_delay = 2
     onlinecheck_delay = 10
+    gchatrelay_delay = 2
     asyncloop = asyncio.get_running_loop()
     await db.connect()
     starttime = asyncloop.time()
-    kickcheck_timer, cmdcheck_timer, onlinecheck_timer = starttime, starttime, starttime
+    kickcheck_timer, gchatrelay_timer, cmdcheck_timer, onlinecheck_timer = starttime, starttime, starttime, starttime
     serverpre = ['@all']
     for each in instancelist():
         serverpre.append(f'@{each}')
@@ -224,13 +226,15 @@ async def asyncmainloop():
         if asyncloop.time() - onlinecheck_timer > onlinecheck_delay and len(instances) > 0:
             asyncio.create_task(asynconlinecheck(instances))
             onlinecheck_timer = asyncloop.time()
+        if asyncloop.time() - gchatrelay_timer > gchatrelay_delay and len(instances) > 0:
+            asyncio.create_task(asyncgchatrelay(instances))
+            gchatrelay_timer = asyncloop.time()
         await asyncio.sleep(.1)
     pendingtasks = asyncio.Task.all_tasks()
     tasklist = []
-    for each in pendingtasks:
+    for each in list(pendingtasks):
         if each != asyncio.Task.current_task():
             tasklist.append(each)
-    # currenttask = asyncio.Task.current_task()
 
     log.debug(f'still running tasks: {list(pendingtasks)}')
     await db.close()
@@ -244,23 +248,24 @@ def main():
     global instance
     global stop_event
     global threads
+    checkgit = 0
     threads = []
     stop_event = threading.Event()
     checklist = dbquery("SELECT name FROM instances", fmt='list', single=True)
     if not any(x in instances for x in checklist) and instr != 'Master Server':
         log.critical(f'Instance does not exist in the database!')
         exit(1)
-    checkgit = 0
-    log.trace('deleting global chat buffer')
-    dbupdate('DELETE FROM globalbuffer')
+    for each in instances:
+        log.trace('deleting global chat buffer for {instance}')
+        dbupdate("DELETE FROM globalbuffer WHERE server = '{each}'")
     arkupdt = threading.Thread(name='arkupdater', target=arkupdater_thread, args=(stop_event,), daemon=False)
     threads.append(arkupdt)
     if len(instances) == 0:
-        thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(60, stop_event), daemon=False)
+        thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(1, stop_event), daemon=False)
         threads.append(thread)
-        thread = threading.Thread(name='arkservernet', target=arkservernet_thread, args=(900, stop_event), daemon=False)
+        thread = threading.Thread(name='arkservernet', target=arkservernet_thread, args=(Secs['15min'], stop_event), daemon=False)
         threads.append(thread)
-        thread = threading.Thread(name='lotterywatcher', target=lotterywatcher_thread, args=(300, stop_event), daemon=False)
+        thread = threading.Thread(name='lotterywatcher', target=lotterywatcher_thread, args=(Secs['5min'], stop_event), daemon=False)
         threads.append(thread)
         thread = threading.Thread(name='gamelogger', target=gamelogger_thread, args=(stop_event,), daemon=False)
         threads.append(thread)
@@ -270,23 +275,19 @@ def main():
         threads.append(thread)
         thread = threading.Thread(name='dblcheckonline', target=dblcheckonline_thread, args=(30, stop_event), daemon=False)
         threads.append(thread)
-        thread = threading.Thread(name='stat-collector', target=statcollector_thread, args=(300, stop_event), daemon=False)
+        thread = threading.Thread(name='stat-collector', target=statcollector_thread, args=(Secs['5min'], stop_event), daemon=False)
         threads.append(thread)
     log.debug(f'Starting {len(threads)} threads')
     for thread in threads:
         thread.start()
     log.debug('All threads have started')
-    sleep(1)
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncio.run(asyncmainloop())
+    asyncio.run(asyncmainloop())  # Async branch to main loop
     log.debug(f'Waiting for {len(threads)} threads to exit...')
     for thread in threads:
         thread.join
     log.debug('Pyark Exited.')
     exit(0)
-
-    #thread = threading.Thread(name=f'{inst}-gchatrelay', target=gchatrelay_thread, args=(inst, 5, stop_event), daemon=False)
-    #threads.append(thread)
 
     '''
     while True:

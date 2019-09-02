@@ -15,12 +15,12 @@ from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe,
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import newplayer
 from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd, serverexec
-from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, tzfix, wcstamp
+from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 lastvoter = 0.1
 votertable = []
 votestarttime = Now()
-arewevoting = False
+isvoting = False
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -59,7 +59,7 @@ def writechat(inst, whos, msg, tstamp):
 
 
 async def asyncgetsteamid(whoasked):
-    player = await db.fetchone(f"SELECT * FROM players WHERE (playername = '{whoasked}') or (alias = '{whoasked}')")
+    player = await db.fetchone(f"SELECT * FROM players WHERE (playername = '{whoasked.lower()}') or (alias = '{whoasked.lower()}')")
     if player is None:
         log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
         return None
@@ -183,7 +183,7 @@ async def asyncpopulatevoters(inst):
     global votertable
     votertable = []
     playercount = 0
-    players = await db.fetchall(f"SELECT * FROM players WHERE server = '{inst}' and online = True")
+    players = await db.fetchall(f"SELECT * FROM players WHERE server = '{inst}' and lastseen > '{time() - 40}'")
     for player in players:
         checktime = time() - float(player['lastseen'])
         if checktime < 90:
@@ -210,6 +210,7 @@ async def asyncgetvote(whoasked):
 
 async def asynccastedvote(inst, whoasked, myvote):
     global arewevoting
+    global isvoting
     if not isvoting:
         message = f'No vote is taking place now'
         await asyncserverchat(inst, message)
@@ -237,7 +238,7 @@ async def asynccastedvote(inst, whoasked, myvote):
                 message = 'Your NO vote has been cast'
                 await asyncserverchatto(inst, steamid, message)
                 log.log('VOTE', f'Voting NO has won, NO wild dino wipe will be performed for {inst}')
-                arewevoting = False
+                isvoting = False
                 bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
                 await asyncserverbcast(inst, bcast)
                 await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has failed with a NO vote from \
@@ -315,15 +316,16 @@ async def asyncvoter(inst, whoasked):
     await asyncsetvote(whoasked, 2)
     bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">             A Wild dino wipe vote has started with {votercount} online players</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe\n                           Voting lasts 3 minutes"""
     await asyncserverbcast(inst, bcast)
-    votestarttime = time()
+    asyncloop = asyncio.get_running_loop()
+    votestarttime = asyncloop.time()
     await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp())
     warned = False
     while isvoting:
-        await asyncio.sleep(5)
-        if votingpassed() and time() - votestarttime >= Secs['2min']:
+        await asyncio.sleep(1)
+        if votingpassed() and asyncloop.time() - votestarttime >= Secs['2min']:
             isvoting = False
             asyncio.create_task(asyncwipeit(inst))
-        elif time() - votestarttime > Secs['2min']:
+        elif asyncloop.time() - votestarttime > Secs['2min']:
             if enoughvotes():
                 isvoting = False
                 asyncio.create_task(asyncwipeit(inst))
@@ -335,7 +337,7 @@ async def asyncvoter(inst, whoasked):
                 log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({yesvoters}/{totvoters})')
                 await asyncwritechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of \
 {totvoters})', wcstamp())
-        elif time() - votestarttime > 60 and not warned:
+        elif asyncloop.time() - votestarttime > 60 and not warned:
             warned = True
             log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title()}]')
             bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                  A Wild dino wipe vote is waiting for votes!</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe"""
@@ -368,7 +370,6 @@ async def asyncstartvoter(inst, whoasked):
     else:
         isvoting = True
         asyncio.create_task(asyncvoter(inst, whoasked))
-
 
 
 def isserver(line):
@@ -406,14 +407,14 @@ async def asynclinker(inst, whoasked):
 async def asyncwritechatlog(inst, whos, msg, tstamp):
     steamid = await asyncgetsteamid(whos)
     if steamid:
-        clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
+        # clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
         if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
             log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
             os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
             os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
-        #with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
-        #    await f.write(clog)
-        #await f.close()
+        # with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
+        #   await f.write(clog)
+        # await f.close()
 
 
 @log.catch
@@ -853,8 +854,6 @@ async def processcmdchunk(inst, atinstances, chunk):
 @log.catch
 async def asynccmdcheck(instances, atinstances):
     global db
-    global isvoting
-    isvoting = False
     for inst in instances:
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
