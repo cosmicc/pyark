@@ -267,7 +267,7 @@ async def asynconlineupdate(inst, dtime, stop_event):
         chunktask = asyncloop.create_task(processplayerchunk(inst, chunk))
         await chunktask
         while time.time() - liststart < dtime:
-            if time.time() == kickstart < 5:
+            if time.time() - kickstart < 5:
                 kicker = asyncloop.create_task(asynckicker(inst, 5))
                 await kicker
                 kickstart = time.time()
