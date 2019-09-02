@@ -891,6 +891,7 @@ async def checkcommands(inst, dtime, stop_event):
     db = asyncDB()
     await db.connect()
     while not stop_event.is_set():
+        log.debug('!')
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
         starttime = time()
