@@ -876,7 +876,7 @@ async def asyncprocessline(minst, line):
 
 
 @log.catch
-async def processchunk(inst, chunk):
+async def processcmdchunk(inst, chunk):
     for line in iter(chunk.splitlines()):
         await asyncprocessline(inst, line)
     return True
@@ -892,7 +892,7 @@ async def checkcommands(inst, dtime, stop_event):
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
         starttime = time()
-        asyncio.create_task(processchunk(inst, chunk))
+        asyncio.create_task(processcmdchunk(inst, chunk))
         while time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()

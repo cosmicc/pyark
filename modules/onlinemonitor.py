@@ -237,7 +237,7 @@ async def asyncprocessline(inst, line):
         log.exception('Exception in online monitor process line')
 
 
-async def processchunk(inst, chunk):
+async def processplayerchunk(inst, chunk):
     for line in iter(chunk.splitlines()):
         await asyncprocessline(inst, line)
 
@@ -250,7 +250,7 @@ async def asynconlineupdate(inst, dtime, stop_event):
         starttime = time.time()
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
-        asyncloop.create_task(processchunk(inst, chunk))
+        asyncloop.create_task(processplayerchunk(inst, chunk))
         while time.time() - starttime < dtime:
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
