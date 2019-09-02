@@ -25,6 +25,7 @@ from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlog
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
 from modules.gchatrelay import gchatrelay_thread
+from modules.lottery import lotterywatcher_thread
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck
 from modules.processlock import plock
 from modules.servertools import serverexec
@@ -259,7 +260,7 @@ def main():
         threads.append(thread)
         thread = threading.Thread(name='arkservernet', target=arkservernet_thread, args=(900, stop_event), daemon=False)
         threads.append(thread)
-        thread = threading.Thread(name='lotterywatcher', target=lottery.lotterywatcher_thread, args=(300, stop_event), daemon=False)
+        thread = threading.Thread(name='lotterywatcher', target=lotterywatcher_thread, args=(300, stop_event), daemon=False)
         threads.append(thread)
         thread = threading.Thread(name='gamelogger', target=gamelogger_thread, args=(stop_event,), daemon=False)
         threads.append(thread)
