@@ -895,7 +895,6 @@ async def checkcommands(inst, dtime, stop_event):
         chunk = cmdpipe.stdout.decode("utf-8")
         starttime = time()
         chunkfuture = asyncio.ensure_future(processcmdchunk(inst, chunk), loop=asyncloop)
-        asyncloop.run_until_complete(chunkfuture)
         await asyncio.wait(chunkfuture, loop=asyncloop)
         while time() - starttime < dtime:
             await asyncio.sleep(1)
