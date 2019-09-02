@@ -215,7 +215,7 @@ async def asynckicker(inst):
     log.debug('!')
     kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
     if kicked:
-        serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
+        # serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
         log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
         await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
     return True
@@ -268,8 +268,7 @@ async def asynconlineupdate(inst, dtime, stop_event):
         await chunktask
         while time.time() - liststart < dtime:
             if time.time() - kickstart < 5:
-                #kicker = asyncloop.create_task(asynckicker(inst))
-                #await kicker
+                await asynckicker(inst)
                 kickstart = time.time()
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
