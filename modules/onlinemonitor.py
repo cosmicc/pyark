@@ -212,15 +212,11 @@ def playergreet(steamid, steamname, inst):
 
 
 async def asynckicker(inst, dtime, stop_event):
-    log.debug(f'Starting kicker loop for {inst}')
-    await asyncio.sleep(5)
-    while not stop_event.is_set():
-        kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
-        if kicked:
-            serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
-            log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
-            await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
-        await asyncio.sleep(dtime)
+    kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
+    if kicked:
+        serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
+        log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
+        await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
     return True
 
 
@@ -262,14 +258,18 @@ async def asynconlineupdate(inst, dtime, stop_event):
     db = asyncDB()
     await db.connect()
     asyncloop = asyncio.get_running_loop()
-    #asyncloop.create_task(asynckicker(inst, 5, stop_event))
     while not stop_event.is_set():
-        starttime = time.time()
+        kickstart = time.time()
+        liststart = time.time()
         cmdpipe = serverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], nice=19, null=False)
         chunk = cmdpipe.stdout.decode("utf-8")
         chunktask = asyncloop.create_task(processplayerchunk(inst, chunk))
         await chunktask
-        while time.time() - starttime < dtime:
+        while time.time() - liststart < dtime:
+            if time.time() == kickstart < 5:
+                kicker = asyncloop.create_task(asynckicker(inst, 5))
+                await kicker
+                kickstart = time.time()
             await asyncio.sleep(1)
     pendingtasks = asyncio.Task.all_tasks()
     await asyncio.gather(*pendingtasks)
