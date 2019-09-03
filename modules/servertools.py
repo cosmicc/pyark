@@ -24,6 +24,16 @@ async def gettotaldbconnections():
 
 
 @log.catch
+async def asyncserverrconcmd(inst, command, nice=5):
+    asyncloop = asyncio.get_running_loop()
+    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "{command}" @{inst}'
+    log.debug(f'cmd: {cmdstring}')
+    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    asyncio.create_task(proc)
+    return True
+
+
+@log.catch
 async def asyncserverscriptcmd(inst, command, nice=5):
     asyncloop = asyncio.get_running_loop()
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{inst}'
