@@ -570,7 +570,7 @@ async def playerjoin(line, inst):
 async def asyncleavingplayerwatch(player, inst):
     log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
     asyncloop = asyncio.get_running_loop()
-    starttime = time.time()
+    starttime = asyncloop.time()
     stop_watch = False
     transferred = False
     while asyncloop.time() - starttime < 250 and not stop_watch:
