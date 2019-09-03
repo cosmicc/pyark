@@ -585,7 +585,7 @@ async def asyncleavingplayerwatch(player, inst):
             transferred = True
             stop_watch = True
         await asyncio.sleep(2)
-        log.debug(f'{asyncloop.time()} ({time.time()}) - {starttime}')
+        log.debug(f'{asyncloop.time()} ({time()}) - {starttime}')
     if not transferred and asyncloop.time() - int(queryplayer['lastseen']) >= 240:
         steamid = player["steamid"]
         await db.update(f"UPDATE players SET online = False, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
