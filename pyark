@@ -236,11 +236,14 @@ async def asyncmain():
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
                 loop(asyncloop, delay, atinstances, gl)
-                await asyncio.sleep(.5)
+                await asyncio.sleep(.1)
     else:
         while not main_stop_event:
             loop(asyncloop, delay, atinstances, False)
-            await asyncio.sleep(.5)
+            if hstname == 'svr1':
+                await asyncio.sleep(.5)
+            else:
+                await asyncio.sleep(.1)
 
     #async with aiohttp.ClientSession() as session:
     #    asyncio.create_task(asyncdblcheckonline())

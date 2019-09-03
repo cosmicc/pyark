@@ -27,8 +27,8 @@ async def gettotaldbconnections():
 async def asyncserverrconcmd(inst, command, nice=5):
     asyncloop = asyncio.get_running_loop()
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "{command}" @{inst}'
-    log.debug(f'cmd: {cmdstring}')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    log.debug(f'cmd: {cmdstring}')
     asyncio.create_task(proc)
     return True
 
@@ -37,8 +37,8 @@ async def asyncserverrconcmd(inst, command, nice=5):
 async def asyncserverscriptcmd(inst, command, nice=5):
     asyncloop = asyncio.get_running_loop()
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{inst}'
-    log.debug(f'cmd: {cmdstring}')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    log.debug(f'cmd: {cmdstring}')
     asyncio.create_task(proc)
     return True
 
@@ -47,8 +47,8 @@ async def asyncserverscriptcmd(inst, command, nice=5):
 async def asyncserverchat(inst, message, nice=15):
     asyncloop = asyncio.get_running_loop()
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{inst}'
-    log.debug(f'cmd: {cmdstring}')
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    log.debug(f'cmd: {cmdstring}')
     asyncio.create_task(proc)
     return True
 
@@ -58,6 +58,7 @@ async def asyncserverchatto(inst, steamid, message, nice=15):
     asyncloop = asyncio.get_running_loop()
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'ServerChatTo "{steamid}" {message}' @{inst}"""
     proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    log.debug(f'cmd: {cmdstring}')
     asyncio.create_task(proc)
     return True
 
