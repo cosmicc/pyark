@@ -13,8 +13,6 @@ from modules.servertools import removerichtext
 from modules.timehelper import Now, Secs
 from modules.tribes import gettribeinfo, putplayerintribe
 
-__name__ = 'masterserverscript'
-
 
 @log.catch
 class GameLogger():
@@ -189,6 +187,3 @@ def masterserver():
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     asyncio.run(masterserverloop())  # Async branch to main loop
 
-
-if __name__ == "masterserverscript":
-    masterserver()
