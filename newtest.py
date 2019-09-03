@@ -1,9 +1,10 @@
 from modules.servertools import serverexec
 
-inst = 'crystal'
-cmdpipe = serverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], nice=5, null=False)
-b = cmdpipe.stdout.decode("utf-8")
-c = b.splitlines
 
-print(len(b.splitlines))
-#for line in iter(b.splitlines()):
+def getopenfiles():
+    result = serverexec(['sysctl', 'fs.file-nr'], nice=19, null=False)
+    newresult = result.stdout.decode('utf-8').strip().split(' ')[2].split('\t')
+    print(newresult)
+
+
+getopenfiles()

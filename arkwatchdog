@@ -80,6 +80,12 @@ def float_trunc_1dec(num):
 
 
 @log.catch
+def getopenfiles():
+    result = serverexec(['sysctl', 'fs.file-nr'], nice=19, null=False)
+    print(result.split(' '))
+
+
+@log.catch
 def arkprocesscpu(inst):
     arkprocess = psutil.Process(getinstpid(inst))
     return arkprocess.cpu_percent(interval=2)

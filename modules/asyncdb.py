@@ -1,33 +1,36 @@
 import asyncio
-import threading
 
 import asyncpg
 from loguru import logger as log
+from datetime import datetime
 
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 
 
 class asyncDB:
-    def __init__(self):
-        log.trace(f'Starting async db connection engine for {threading.current_thread().name}')
+    def __init__(self, min=3, max=10, timeout=300):
+        log.trace(f'Starting async db connection engine for {__name__}')
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
         self.databases = ('pyark', 'py', 'stats', 'st', 'gamelog', 'gl')
         self.dbpyark = ('pyark', 'py')
         self.dbstats = ('stats', 'st')
         self.dbgamelog = ('gamelog', 'gl')
+        self.min = min
+        self.max = max
+        self.timeout = timeout
         self.cpool = None
         self.connecting = False
 
     async def connect(self):
         self.connecting = True
         try:
-            self.cpool = await asyncpg.create_pool(min_size=5, max_size=20, max_inactive_connection_lifetime=300.0, database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            self.cpool = await asyncpg.create_pool(min_size=self.min, max_size=self.max, max_inactive_connection_lifetime=float(self.timeout), database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
         except:
             log.critical('Error connecting to database server.. waiting to reconnect')
             await asyncio.sleep(5)
             self.connect()
         else:
-            log.debug(f'Database connection pool initilized and connected for {threading.current_thread().name}')
+            log.debug(f'Database connection pool initilized and connected for {__name__}')
             self.connecting = False
         # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
@@ -134,6 +137,9 @@ class asyncDB:
         # log.trace(f'Executing DB [{db}] update {query}')
         await self._execute(query, db)
         return True
+
+    async def statsupdate(self, inst, value):
+        await self.update(f"INSERT INTO {inst.lower()}_stats (date, value) VALUES ('{datetime.now().replace(microsecond=0)}', {value})")
 
 
 DB = asyncDB()

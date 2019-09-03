@@ -4,7 +4,7 @@ from time import sleep
 from urllib.request import Request, urlopen
 
 from loguru import logger as log
-
+from modules.asyncdb import DB as db
 from modules.configreader import steamapikey
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now
@@ -16,6 +16,11 @@ def stopsleep(sleeptime, stop_event, name):
             log.debug(f'{name} thread has ended')
             exit(0)
         sleep(1)
+
+
+async def asyncfetch(session, url):
+    async with session.get(url) as response:
+        return await response.text()
 
 
 def fetcharkserverdata():
@@ -39,6 +44,23 @@ def arkservernet_thread(dtime, stop_event):
         stopsleep(dtime, stop_event, 'ArkserversnetAPI')
     log.debug(f'ArkservernetAPI thread has ended')
     exit(0)
+
+
+@log.catch
+async def asyncfetchauctiondata(session, steamid):
+    try:
+        url = f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}"
+        data = await asyncfetch(session, url)
+        data = data.decode().encode()
+        adata = json.loads(data)
+        auctions = adata['Auctions']
+        log.trace(f'fetched auction data {data}')
+        if auctions:
+            return auctions
+        else:
+            return False
+    except:
+        return False
 
 
 @log.catch
@@ -73,6 +95,11 @@ def getauctionstats(auctiondata):
         return numauctions, numitems, numdinos
     else:
         return 0, 0, 0
+
+
+@log.catch
+async def asyncwriteauctionstats(steamid, numauctions, numitems, numdinos):
+    await db.update("UPDATE players SET totalauctions = '%s', itemauctions = '%s', dinoauctions = '%s' WHERE steamid = '%s'" % (numauctions, numitems, numdinos, steamid))
 
 
 @log.catch

@@ -69,7 +69,7 @@ async def asyncgchatrelay(instances):
                         await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')
                     elif not chatline['private'] and not chatline['broadcast']:
                         await asyncserverchat(chatline['server'], f'Admin: {chatline["message"]}')
-                        log.log('CHAT', '{chatline["server"]} | ADMIN | {chatline["message"]}')
+                        log.log('CHAT', f'{chatline["server"]} | ADMIN | {chatline["message"]}')
                         await asyncwritechatlog(chatline['server'], 'ADMIN', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
                         await asyncwritechat(chatline['server'], 'Admin', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
                         await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')

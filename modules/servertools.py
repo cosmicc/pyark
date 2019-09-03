@@ -8,6 +8,11 @@ from psutil import Process
 
 
 @log.catch
+async def gettotaldbconnections():
+    return await db.fetchone(f'SELECT count(*) FROM pg_stat_activity;')
+
+
+@log.catch
 async def asyncserverscriptcmd(inst, command, nice=5):
     asyncloop = asyncio.get_running_loop()
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{inst}'

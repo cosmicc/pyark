@@ -125,12 +125,12 @@ async def asyncplayergreet(steamid, steamname, inst):
             welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, steamname, inst))
             welcom.start()
         else:
-            if player[16] != 0 and player[15] == inst:
+            if player['transferpoints'] != 0 and player['homeserver'] == inst:
                 xferpoints = int(player[16])
                 log.log('POINTS', f'Transferred {xferpoints} non-home server points for [{player[1].title()}] on [{inst.title()}]')
                 await db.update(f"UPDATE players SET transferpoints = 0 WHERE steamid = '{steamid}'")
                 await asyncserverscriptcmd(inst, f'tcsar addarctotal {steamid} {xferpoints}')
-            if Now() - int(player[2]) < 300:  # existing online player
+            if Now() - int(player['lastseen']) < 300:  # existing online player
                 log.trace(f'Existing online player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
                 await db.update(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}' WHERE steamid = '{steamid}'")
             else:  # new player connection

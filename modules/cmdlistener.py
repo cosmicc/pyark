@@ -49,13 +49,14 @@ async def asyncwritechat(inst, whos, msg, tstamp):
 
 @log.catch
 async def asyncwritechatlog(inst, whos, msg, tstamp):
-    steamid = await asyncgetsteamid(whos)
-    if steamid:
+    pass
+    # steamid = await asyncgetsteamid(whos)
+    # if steamid:
         # clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
-        if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
-            log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
-            os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
-            os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
+        # if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
+        #    log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
+        #    os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
+        #    os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
         # with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
         #   await f.write(clog)
         # await f.close()
@@ -274,12 +275,10 @@ async def asynccastedvote(inst, whoasked, myvote):
 
 def votingpassed():
     votecount = 0
-    totalvoters = 0
     for each in votertable:
-        totalvoters += 1
         if each[2] == 1 or each[2] == 2:
             votecount += 1
-    if votecount == totalvoters:
+    if votecount == len(votertable):
         return True
     else:
         return False
@@ -287,12 +286,10 @@ def votingpassed():
 
 def enoughvotes():
     votecount = 0
-    totalvoters = 0
     for each in votertable:
-        totalvoters += 1
         if each[2] == 1 or each[2] == 2:
             votecount += 1
-    if votecount >= totalvoters / 2:
+    if votecount >= len(votertable) / 2:
         return True
     else:
         return False
@@ -300,12 +297,10 @@ def enoughvotes():
 
 def howmanyvotes():
     votecount = 0
-    totalvoters = 0
     for each in votertable:
-        totalvoters += 1
         if each[2] == 1 or each[2] == 2:
             votecount += 1
-    return votecount, totalvoters
+    return votecount, len(votertable)
 
 
 async def asyncresetlastvote(inst):
@@ -320,10 +315,9 @@ async def asyncresetlastwipe(inst):
 async def asyncwipeit(inst):
     yesvoters, totvoters = howmanyvotes()
     log.log('VOTE', f'YES has won ({yesvoters}/{totvoters}), wild dinos are wiping on [{inst.title()}] in 15 seconds')
-    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n<RichColor Color="0,1,0,1">                     YES votes have won! ('%s' of '%s' Players)</>\n\n  <RichColor Color="1,1,0,1">               !! WIPING ALL WILD DINOS IN 10 SECONDS !!</>""" % (yesvoters, totvoters)
+    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n<RichColor Color="0,1,0,1">                     YES votes have won! ('%s' of '%s' Players)</>\n\n  <RichColor Color="1,1,0,1">               !! WIPING ALL WILD DINOS IN 10 SECONDS !!</>"""
     await asyncserverbcast(inst, bcast)
-    await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). \
-Wiping wild dinos now.', wcstamp())
+    await asyncwritechat(inst, 'ALERT', f'A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.', wcstamp())
     await asyncio.sleep(7)
     ##########################################
     subprocess.run('arkmanager rconcmd "Destroyall BeeHive_C" @%s' % (inst), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
@@ -358,7 +352,7 @@ async def asyncvoter(inst, whoasked):
                 asyncio.create_task(asyncwipeit(inst))
             else:
                 isvoting = False
-                yesvoters, totvoters = await howmanyvotes()
+                yesvoters, totvoters = howmanyvotes()
                 message = f'Not enough votes ({yesvoters} of {totvoters}). voting has ended.'
                 await asyncserverchat(inst, message)
                 log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({yesvoters}/{totvoters})')
@@ -557,7 +551,7 @@ async def playerjoin(line, inst):
     player = await db.fetchone(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'")
     if player:
         steamid = player['steamid']
-        await db.update(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, lastseen = '{Now()}', server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
+        await db.update(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
         if Now() - player['lastseen'] > 250:
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             message = f'{player["playername"].title()} has joined the server'
@@ -568,7 +562,6 @@ async def playerjoin(line, inst):
 @log.catch
 async def asyncleavingplayerwatch(player, inst):
     log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
-    asyncloop = asyncio.get_running_loop()
     starttime = time()
     stop_watch = False
     transferred = False
