@@ -1,5 +1,5 @@
 import asyncio
-from datetime import now
+from datetime.datetime import now
 from datetime import time as dt
 from datetime import timedelta
 
