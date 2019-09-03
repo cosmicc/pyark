@@ -310,7 +310,7 @@ async def asyncresetlastvote(inst):
 
 
 async def asyncresetlastwipe(inst):
-    await db.update("UPDATE instances SET lastdinowipe = '{time()}' WHERE name = '{inst}'")
+    await db.update(f"UPDATE instances SET lastdinowipe = '{time()}' WHERE name = '{inst}'")
 
 
 @log.catch
