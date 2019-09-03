@@ -28,7 +28,7 @@ class asyncDB:
         except:
             log.critical('Error connecting to database server.. waiting to reconnect')
             await asyncio.sleep(5)
-            self.connect()
+            await self.connect()
         else:
             log.debug(f'Database connection pool initilized and connected for {__name__}')
             self.connecting = False
