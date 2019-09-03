@@ -192,7 +192,7 @@ def loop(asyncloop, delay, atinstances, gl=False):
     if not gl:
         if asyncloop.time() - timer['kickcheck'] > delay['kickcheck']:
             asyncio.create_task(asynckickcheck(instances))
-            print(f'kickcheck wait time: {asyncloop.time() - timer["timer"]}')
+            print(f'kickcheck wait time: {asyncloop.time() - timer["kickcheck"]}')
             timer.update({'kickcheck': asyncloop.time()})
         if asyncloop.time() - timer['cmdcheck'] > delay['cmdcheck']:
             asyncio.create_task(asynccmdcheck(instances, atinstances))
