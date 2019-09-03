@@ -9,11 +9,11 @@ from psutil import Process
 
 
 def asynctimeit(func):
-    def wrapper(*args, **kwargs):
+    async def wrapper(*args, **kwargs):
         asyncloop = asyncio.get_running_loop()
         astart_time = asyncloop.time()
         dstart_time = time()
-        func(*args, **kwargs)
+        await func(*args, **kwargs)
         print(f'Execution times for [{func.__name__}]: Async: {asyncloop.time() - astart_time} Normal: {time() - dstart_time}')
     return wrapper
 
