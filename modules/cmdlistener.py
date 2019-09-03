@@ -15,7 +15,7 @@ from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe,
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import newplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
-                                 asyncserverexec, asyncserverscriptcmd)
+                                 asyncserverexec, asyncserverscriptcmd, asynctimeit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 lastvoter = 0.1
@@ -845,13 +845,12 @@ async def processcmdchunk(inst, atinstances, chunk):
     return True
 
 
+@asynctimeit
 @log.catch
 async def asynccmdcheck(instances, atinstances):
     global db
-    asyncloop = asyncio.get_running_loop()
-    start = asyncloop.time()
     for inst in instances:
         cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
         await processcmdchunk(inst, atinstances, cmdpipe['stdout'])
         # await task
-    return asyncloop.time() - start
+    return True

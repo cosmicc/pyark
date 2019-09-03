@@ -8,7 +8,7 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime, getcurrenteventinfo, iseventtime
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.players import getplayer, newplayer
-from modules.servertools import asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverscriptcmd, serverexec
+from modules.servertools import asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverscriptcmd, serverexec, asynctimeit
 from modules.timehelper import Now, elapsedTime, playedTime
 
 welcomthreads = []
@@ -190,16 +190,15 @@ async def asyncplayergreet(steamid, steamname, inst):
     greetings.remove(steamid)
 
 
+@asynctimeit
 async def asynckickcheck(instances):
-    asyncloop = asyncio.get_running_loop()
-    start = asyncloop.time()
     for inst in instances:
         kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
         if kicked:
             serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
             log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
             await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
-    return asyncloop.time() - start
+    return True
 
 
 async def asyncprocessline(inst, line):
@@ -229,12 +228,11 @@ async def processplayerchunk(inst, chunk):
     return True
 
 
+@asynctimeit
 async def asynconlinecheck(instances):
     global greetthreads
-    asyncloop = asyncio.get_running_loop()
-    start = asyncloop.time()
     for inst in instances:
         cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
         await processplayerchunk(inst, cmdpipe['stdout'])
         # await chunktask
-    return asyncloop.time() - start
+    return True
