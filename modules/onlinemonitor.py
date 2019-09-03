@@ -191,7 +191,6 @@ async def asyncplayergreet(steamid, steamname, inst):
     greetings.remove(steamid)
 
 
-@asynctimeit
 async def asynckickcheck(instances):
     for inst in instances:
         kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
@@ -229,7 +228,6 @@ async def processplayerchunk(inst, chunk):
     return True
 
 
-@asynctimeit
 async def asynconlinecheck(instances):
     if 'onlinecheck' not in onlineworkers:
         onlineworkers.append('onlinecheck')

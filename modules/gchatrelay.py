@@ -55,7 +55,6 @@ async def asyncwritechatlog(inst, whos, msg, tstamp):
         # await f.close()
 
 
-@asynctimeit
 @log.catch
 async def asyncgchatrelay(instances):
         chatbuffer = await db.fetchall(f"SELECT * from globalbuffer")

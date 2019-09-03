@@ -203,18 +203,19 @@ async def asyncmainloop():
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
     while not main_stop_event:
         if asyncloop.time() - kickcheck_timer > kickcheck_delay and len(instances) > 0:
-            kicktask = asyncio.create_task(asynckickcheck(instances))
+            asyncio.create_task(asynckickcheck(instances))
             print(f'kickcheck wait time: {asyncloop.time() - kickcheck_timer}')
             kickcheck_timer = asyncloop.time()
         if asyncloop.time() - cmdcheck_timer > cmdcheck_delay and len(instances) > 0:
-            cmdtask = asyncio.create_task(asynccmdcheck(instances, atinstances))
+            asyncio.create_task(asynccmdcheck(instances, atinstances))
             print(f'cmdcheck wait time: {asyncloop.time() - cmdcheck_timer}')
             cmdcheck_timer = asyncloop.time()
         if asyncloop.time() - onlinecheck_timer > onlinecheck_delay and len(instances) > 0:
-            onlinetask = asyncio.create_task(asynconlinecheck(instances))
+            asyncio.create_task(asynconlinecheck(instances))
+            print(f'onlinehceck wait time: {asyncloop.time() - onlinecheck_timer}')
             onlinecheck_timer = asyncloop.time()
         if asyncloop.time() - gchatrelay_timer > gchatrelay_delay and len(instances) > 0:
-            gchattask = asyncio.create_task(asyncgchatrelay(instances))
+            asyncio.create_task(asyncgchatrelay(instances))
             print(f'gchatrelay wait time: {asyncloop.time() - gchatrelay_timer}')
             gchatrelay_timer = asyncloop.time()
         await asyncio.sleep(.1)
