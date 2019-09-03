@@ -302,7 +302,7 @@ def howmanyvotes():
     for each in votertable:
         if each[2] == 1 or each[2] == 2:
             votecount += 1
-    return votecount, len(votertable)
+    return votecount
 
 
 async def asyncresetlastvote(inst):
@@ -315,9 +315,10 @@ async def asyncresetlastwipe(inst):
 
 @log.catch
 async def asyncwipeit(inst):
-    yesvoters, totvoters = howmanyvotes()
+    yesvoters = howmanyvotes()
+    totvoters = len(votertable)
     log.log('VOTE', f'YES has won ({yesvoters}/{totvoters}), wild dinos are wiping on [{inst.title()}] in 15 seconds')
-    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n<RichColor Color="0,1,0,1">                     YES votes have won! ('%s' of '%s' Players)</>\n\n  <RichColor Color="1,1,0,1">               !! WIPING ALL WILD DINOS IN 10 SECONDS !!</>"""
+    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n<RichColor Color="0,1,0,1">                     YES votes have won! ('{yesvoters}' of '{totvoters}' Players)</>\n\n  <RichColor Color="1,1,0,1">               !! WIPING ALL WILD DINOS IN 10 SECONDS !!</>"""
     await asyncserverbcast(inst, bcast)
     await asyncwritechat(inst, 'ALERT', f'A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.', wcstamp())
     await asyncio.sleep(7)
@@ -344,7 +345,7 @@ async def asyncvoter(inst, whoasked):
     await asyncwritechat(inst, 'ALERT', f'### A wild dino wipe vote has been started by {whoasked.capitalize()}', wcstamp())
     warned = False
     while isvoting:
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
         if votingpassed() and asyncloop.time() - votestarttime >= Secs['2min']:
             isvoting = False
             asyncio.create_task(asyncwipeit(inst))
@@ -354,19 +355,16 @@ async def asyncvoter(inst, whoasked):
                 asyncio.create_task(asyncwipeit(inst))
             else:
                 isvoting = False
-                yesvoters, totvoters = howmanyvotes()
-                message = f'Not enough votes ({yesvoters} of {totvoters}). voting has ended.'
+                message = f'Not enough votes ({howmanyvotes()} of {len(votertable)}). voting has ended.'
                 await asyncserverchat(inst, message)
-                log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({yesvoters}/{totvoters})')
-                await asyncwritechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({yesvoters} of \
-{totvoters})', wcstamp())
+                log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({howmanyvotes()}/{len(votertable)})')
+                await asyncwritechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({howmanyvotes()} of i{len(votertable)})', wcstamp())
         elif asyncloop.time() - votestarttime > 60 and not warned:
             warned = True
             log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title()}]')
-            bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                  A Wild dino wipe vote is waiting for votes!</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe"""
+            bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">         A Wild dino wipe vote is waiting for votes! ({howmanyvotes()} of {len(votertable)})</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe"""
             await asyncserverbcast(inst, bcast)
     log.debug(votertable)
-    votertable = []
     lastvoter = time()
     await asyncresetlastvote(inst)
     log.debug(f'voting thread has ended on {inst}')
