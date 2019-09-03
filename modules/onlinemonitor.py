@@ -131,7 +131,7 @@ async def asyncplayergreet(steamid, steamname, inst):
                 log.log('POINTS', f'Transferred {xferpoints} non-home server points for [{player[1].title()}] on [{inst.title()}]')
                 await db.update(f"UPDATE players SET transferpoints = 0 WHERE steamid = '{steamid}'")
                 await asyncserverscriptcmd(inst, f'tcsar addarctotal {steamid} {xferpoints}')
-            if not player['welcomeannouce']:  # existing online player
+            if not player['welcomeannounce']:  # existing online player
                 log.trace(f'Existing online player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
                 await db.update(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}' WHERE steamid = '{steamid}'")
             else:  # new player connection
