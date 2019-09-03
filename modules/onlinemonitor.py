@@ -11,6 +11,7 @@ from modules.players import getplayer, newplayer
 from modules.servertools import asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverscriptcmd, serverexec, asynctimeit
 from modules.timehelper import Now, elapsedTime, playedTime
 
+onlineworkers = []
 welcomthreads = []
 greetings = []
 
@@ -230,9 +231,10 @@ async def processplayerchunk(inst, chunk):
 
 @asynctimeit
 async def asynconlinecheck(instances):
-    global greetthreads
-    for inst in instances:
-        cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
-        await processplayerchunk(inst, cmdpipe['stdout'])
-        # await chunktask
-    return True
+    if 'onlinecheck' not in onlineworkers:
+        onlineworkers.append('onlinecheck')
+        for inst in instances:
+            cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
+            asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
+        onlineworkers.remove('onlinecheck')
+        return True

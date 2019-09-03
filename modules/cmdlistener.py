@@ -18,6 +18,7 @@ from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverc
                                  asyncserverexec, asyncserverscriptcmd, asynctimeit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
+cmdworkers = []
 lastvoter = 0.1
 votertable = []
 votestarttime = Now()
@@ -840,17 +841,18 @@ async def asyncprocessline(minst, atinstances, line):
 
 @log.catch
 async def processcmdchunk(inst, atinstances, chunk):
-    for line in iter(chunk.decode("utf-8").splitlines()):
-        await asyncprocessline(inst, atinstances, line)
-    return True
+        for line in iter(chunk.decode("utf-8").splitlines()):
+            await asyncprocessline(inst, atinstances, line)
+        return True
 
 
 @asynctimeit
 @log.catch
 async def asynccmdcheck(instances, atinstances):
-    global db
-    for inst in instances:
-        cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
-        await processcmdchunk(inst, atinstances, cmdpipe['stdout'])
-        # await task
-    return True
+    if 'cmdcheck' not in cmdworkers:
+        cmdworkers.append('cmdcheck')
+        for inst in instances:
+            cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
+            asyncio.create_task(processcmdchunk(inst, atinstances, cmdpipe['stdout']))
+        cmdworkers.remove('cmdcheck')
+        return True

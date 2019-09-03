@@ -203,6 +203,7 @@ async def asyncmainloop():
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
     while not main_stop_event:
         if asyncloop.time() - kickcheck_timer > kickcheck_delay and len(instances) > 0:
+            
             kicktask = asyncio.create_task(asynckickcheck(instances))
             await kicktask
             kickcheck_timer = asyncloop.time()
@@ -237,8 +238,10 @@ def main():
     global instance
     global stop_event
     global threads
+    global workers
     checkgit = 0
     threads = []
+    workers = []
     stop_event = threading.Event()
     checklist = dbquery("SELECT name FROM instances", fmt='list', single=True)
     if not any(x in instances for x in checklist) and instr != 'Master Server':
