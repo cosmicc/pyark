@@ -212,13 +212,12 @@ def loop(asyncloop, delay, atinstances, gl=False):
         #if asyncloop.time() - dblcheck_timer > dblcheck_delay:
         #    asyncio.create_task(asyncdblcheckonline())
         #    dblcheck_timer = asyncloop.time()
- 
+
 
 async def asyncmain():
     global main_stop_event
     global timers
     main_stop_event = False
-    localinstancecount = len(instances)
     delay = {'kickcheck_delay': 5, 'cmdcheck_delay': 2, 'onlinecheck_delay': 10, 'gchatrelay_delay': 2, 'dblcheck_delay': 30}
     serverpre = ['@all']
     for each in instancelist():
@@ -227,12 +226,12 @@ async def asyncmain():
     await db.connect()
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
-    if localinstancecount > 0:
+    if len(instances) > 0:
         timers = {'kickcheck_timer': starttime, 'gchatrelay_timer': starttime, 'cmdcheck_timer': starttime, 'onlinecheck_timer': starttime}
     else:
-        timers =  {'dblcheck_timer': starttime}
+        timers = {'dblcheck_timer': starttime}
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
-    if localinstancecount == 0:
+    if len(instances) == 0:
         gl = GameLogger()
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
@@ -241,15 +240,12 @@ async def asyncmain():
         while not main_stop_event:
             loop(asyncloop, delay, atinstances, False)
 
-    async with aiohttp.ClientSession() as session:
-        asyncio.create_task(asyncdblcheckonline())
-        asyncio.create_task(asyncstatcollector())
-        asyncio.create_task(gl.process())
-        asyncio.create_task(asynccheckdbconnections())
-        asyncio.create_task(asyncauctionapi(session))
-
-
-
+    #async with aiohttp.ClientSession() as session:
+    #    asyncio.create_task(asyncdblcheckonline())
+    #    asyncio.create_task(asyncstatcollector())
+    #    asyncio.create_task(gl.process())
+    #    asyncio.create_task(asynccheckdbconnections())
+    #    asyncio.create_task(asyncauctionapi(session))
 
         await asyncio.sleep(.1)
     pendingtasks = asyncio.Task.all_tasks()
