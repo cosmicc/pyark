@@ -60,7 +60,7 @@ def isgreeting(steamid):
 
 @log.catch
 async def asyncserverisinrestart(steamid, inst, player):
-    rbt = await db.fetchone("SELECT * FROM instances WHERE name = '{inst}'")
+    rbt = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     if rbt[3] == "True":
         log.log('UPDATE', f'Notifying player [{player[1].title()}] that [{inst.title()}] will be restarting in {rbt[7]} min')
         mtxt = f'WARNING: server is restarting in {rbt[7]} minutes for a {rbt[5]}'
