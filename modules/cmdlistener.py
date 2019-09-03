@@ -570,7 +570,7 @@ async def playerjoin(line, inst):
 async def asyncleavingplayerwatch(player, inst):
     log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
     asyncloop = asyncio.get_running_loop()
-    starttime = asyncloop.time()
+    starttime = time.time()
     stop_watch = False
     transferred = False
     while asyncloop.time() - starttime < 250 and not stop_watch:
@@ -584,7 +584,8 @@ async def asyncleavingplayerwatch(player, inst):
             log.log('XFER', f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{queryplayer["server"].title()}]')
             transferred = True
             stop_watch = True
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
+        log.debug(f'{asyncloop.time()} ({time.time()}) - {starttime}')
     if not transferred and asyncloop.time() - int(queryplayer['lastseen']) >= 240:
         steamid = player["steamid"]
         await db.update(f"UPDATE players SET online = False, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
