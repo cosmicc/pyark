@@ -192,19 +192,19 @@ def loop(asyncloop, delay, atinstances, gl=False):
     if not gl:
         if asyncloop.time() - timer['kickcheck'] > delay['kickcheck']:
             asyncio.create_task(asynckickcheck(instances))
-            print(f'kickcheck wait time: {asyncloop.time() - timer["kickcheck"]}')
+            # print(f'kickcheck wait time: {asyncloop.time() - timer["kickcheck"]}')
             timer.update({'kickcheck': asyncloop.time()})
         if asyncloop.time() - timer['cmdcheck'] > delay['cmdcheck']:
             asyncio.create_task(asynccmdcheck(instances, atinstances))
-            print(f'cmdcheck wait time: {asyncloop.time() - timer["cmdcheck"]}')
+            # print(f'cmdcheck wait time: {asyncloop.time() - timer["cmdcheck"]}')
             timer.update({'cmdcheck': asyncloop.time()})
         if asyncloop.time() - timer['onlinecheck'] > delay['onlinecheck']:
             asyncio.create_task(asynconlinecheck(instances))
-            print(f'onlinehceck wait time: {asyncloop.time() - timer["onlinecheck"]}')
+            # print(f'onlinehceck wait time: {asyncloop.time() - timer["onlinecheck"]}')
             timer.update({'onlinecheck': asyncloop.time()})
         if asyncloop.time() - timer['gchatrelay'] > delay['gchatrelay']:
             asyncio.create_task(asyncgchatrelay(instances))
-            print(f'gchatrelay wait time: {asyncloop.time() - timer["gchatrelay"]}')
+            # print(f'gchatrelay wait time: {asyncloop.time() - timer["gchatrelay"]}')
             timer.update({'gchatrelay': asyncloop.time()})
     else:
         pass
