@@ -240,7 +240,7 @@ async def asyncmain():
     else:
         while not main_stop_event:
             loop(asyncloop, delay, atinstances, False)
-            if hstname == 'svr1':
+            if hstname == 'SVR1':
                 await asyncio.sleep(.5)
             else:
                 await asyncio.sleep(.1)
