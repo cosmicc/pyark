@@ -191,13 +191,15 @@ async def asyncplayergreet(steamid, steamname, inst):
 
 
 async def asynckickcheck(instances):
+    asyncloop = asyncio.get_running_loop()
+    start = asyncloop.time()
     for inst in instances:
         kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
         if kicked:
             serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
             log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
             await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
-    return True
+    return asyncloop.time() - start
 
 
 async def asyncprocessline(inst, line):
@@ -229,8 +231,10 @@ async def processplayerchunk(inst, chunk):
 
 async def asynconlinecheck(instances):
     global greetthreads
+    asyncloop = asyncio.get_running_loop()
+    start = asyncloop.time()
     for inst in instances:
         cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
-        chunktask = asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
-        await chunktask
-    return True
+        await processplayerchunk(inst, cmdpipe['stdout'])
+        # await chunktask
+    return asyncloop.time() - start

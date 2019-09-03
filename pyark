@@ -204,19 +204,19 @@ async def asyncmainloop():
     while not main_stop_event:
         if asyncloop.time() - kickcheck_timer > kickcheck_delay and len(instances) > 0:
             kicktask = asyncio.create_task(asynckickcheck(instances))
-            await kicktask
+            log.debug(f'kicktask execute time: {await kicktask}')
             kickcheck_timer = asyncloop.time()
         if asyncloop.time() - cmdcheck_timer > cmdcheck_delay and len(instances) > 0:
             cmdtask = asyncio.create_task(asynccmdcheck(instances, atinstances))
-            await cmdtask
+            log.debug(f'cmdtask execute time: {await cmdtask}')
             cmdcheck_timer = asyncloop.time()
         if asyncloop.time() - onlinecheck_timer > onlinecheck_delay and len(instances) > 0:
             onlinetask = asyncio.create_task(asynconlinecheck(instances))
-            await onlinetask
+            log.debug(f'online execute time: {await onlinetask}')
             onlinecheck_timer = asyncloop.time()
         if asyncloop.time() - gchatrelay_timer > gchatrelay_delay and len(instances) > 0:
             gchattask = asyncio.create_task(asyncgchatrelay(instances))
-            await gchattask
+            log.debug(f'gchatrelay execute time: {await gchattask}')
             gchatrelay_timer = asyncloop.time()
         await asyncio.sleep(.1)
     pendingtasks = asyncio.Task.all_tasks()
