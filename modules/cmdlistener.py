@@ -840,6 +840,7 @@ async def asyncprocessline(minst, atinstances, line):
 
 @log.catch
 async def processcmdchunk(inst, atinstances, chunk):
+    log.debug('!')
     for line in iter(chunk.decode("utf-8").splitlines()):
         await asyncprocessline(inst, atinstances, line)
     return True
