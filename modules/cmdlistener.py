@@ -569,10 +569,10 @@ async def playerjoin(line, inst):
 async def asyncleavingplayerwatch(player, inst):
     log.debug(f'Player [{player["playername"].title()}] Waiting on transfer from [{inst.title()}]')
     asyncloop = asyncio.get_running_loop()
-    starttime = asyncloop.time()
+    starttime = time()
     stop_watch = False
     transferred = False
-    while asyncloop.time() - starttime < 250 and not stop_watch:
+    while time() - starttime < 250 and not stop_watch:
         queryplayer = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{player['steamid']}'")
         if queryplayer['server'] != inst:
             fromtxt = f'{player["playername"].title()} has transferred here from {inst.title()}'
@@ -585,7 +585,7 @@ async def asyncleavingplayerwatch(player, inst):
             stop_watch = True
         await asyncio.sleep(2)
         log.debug(f'{asyncloop.time()} ({time()}) - {starttime}')
-    if not transferred and asyncloop.time() - int(queryplayer['lastseen']) >= 240:
+    if not transferred and time() - int(queryplayer['lastseen']) >= 240:
         steamid = player["steamid"]
         await db.update(f"UPDATE players SET online = False, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
