@@ -851,6 +851,7 @@ async def processcmdchunk(inst, atinstances, chunk):
 async def asynccmdcheck(instances, atinstances):
     if 'cmdcheck' not in cmdworkers:
         cmdworkers.append('cmdcheck')
+        print(cmdworkers)
         for inst in instances:
             cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
             asyncio.create_task(processcmdchunk(inst, atinstances, cmdpipe['stdout']))
