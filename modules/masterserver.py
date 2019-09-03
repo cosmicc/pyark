@@ -1,7 +1,5 @@
 import asyncio
-from datetime.datetime import now
-from datetime import time as dt
-from datetime import timedelta
+from datetime import time as dt, timedelta, datetime
 
 import aiohttp
 import uvloop
@@ -159,7 +157,7 @@ async def asyncdblcheckonline():
 async def asyncstatcollector():
     log.trace('Running stat collector...')
     stinst = await db.fetchall('SELECT name FROM instances')
-    t, s, e = now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
+    t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
     dailycollect = is_time_between(t, s, e)
     if dailycollect:
         await db.update("INSERT INTO clusterstats (timestamp, dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (Now(fmt='dt'), len(getactiveplayers(Secs['day'])), len(getactiveplayers(Secs['week'])), len(getactiveplayers(Secs['month'])), len(gethitnruns(Secs['day'])), len(getnewplayers(Secs['day']))), db='statsdb')
