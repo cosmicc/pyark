@@ -185,10 +185,6 @@ def checkthreads():
             log.critical(f'!!!! CRITICAL ERROR! thread {thread.name} has crashed!!')
 
 
-async def faketestwork():
-    await asyncio.sleep(900)
-
-
 async def asyncmainloop():
     global main_stop_event
     main_stop_event = False
@@ -204,9 +200,7 @@ async def asyncmainloop():
     for each in instancelist():
         serverpre.append(f'@{each}')
     atinstances = tuple(serverpre)
-    log.log('START', instances)
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
-    asyncio.create_task(faketestwork())
     while not main_stop_event:
         if asyncloop.time() - kickcheck_timer > kickcheck_delay and len(instances) > 0:
             asyncio.create_task(asynckickcheck(instances))
