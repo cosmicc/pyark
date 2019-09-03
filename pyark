@@ -187,30 +187,31 @@ def checkthreads():
             log.critical(f'!!!! CRITICAL ERROR! thread {thread.name} has crashed!!')
 
 
-def loop(asyncloop, delay, gl=False):
+def loop(asyncloop, delay, atinstances, gl=False):
     global timer
     if not gl:
         if asyncloop.time() - timer['kickcheck'] > delay['kickcheck']:
             asyncio.create_task(asynckickcheck(instances))
-            # print(f'kickcheck wait time: {asyncloop.time() - kickcheck_timer}')
-            timer.update('kickcheck': asyncloop.time())
+            print(f'kickcheck wait time: {asyncloop.time() - timer["timer"]}')
+            timer.update({'kickcheck': asyncloop.time()})
         if asyncloop.time() - timer['cmdcheck'] > delay['cmdcheck']:
             asyncio.create_task(asynccmdcheck(instances, atinstances))
-            # print(f'cmdcheck wait time: {asyncloop.time() - cmdcheck_timer}')
-            timer.update('cmdcheck': asyncloop.time())
-        if asyncloop.time() - onlinecheck_timer > onlinecheck_delay:
+            print(f'cmdcheck wait time: {asyncloop.time() - timer["cmdcheck"]}')
+            timer.update({'cmdcheck': asyncloop.time()})
+        if asyncloop.time() - timer['onlinecheck'] > delay['onlinecheck']:
             asyncio.create_task(asynconlinecheck(instances))
-            # print(f'onlinehceck wait time: {asyncloop.time() - onlinecheck_timer}')
-            onlinecheck_timer = asyncloop.time()
-        if asyncloop.time() - gchatrelay_timer > gchatrelay_delay:
+            print(f'onlinehceck wait time: {asyncloop.time() - timer["onlinecheck"]}')
+            timer.update({'onlinecheck': asyncloop.time()})
+        if asyncloop.time() - timer['gchatrelay'] > delay['gchatrelay']:
             asyncio.create_task(asyncgchatrelay(instances))
-            # print(f'gchatrelay wait time: {asyncloop.time() - gchatrelay_timer}')
-            gchatrelay_timer = asyncloop.time()
+            print(f'gchatrelay wait time: {asyncloop.time() - timer["gchatrelay"]}')
+            timer.update({'gchatrelay': asyncloop.time()})
     else:
-        gl = GameLogger()
-        if asyncloop.time() - dblcheck_timer > dblcheck_delay:
-            asyncio.create_task(asyncdblcheckonline())
-            dblcheck_timer = asyncloop.time()
+        pass
+        #gl = GameLogger()
+        #if asyncloop.time() - dblcheck_timer > dblcheck_delay:
+        #    asyncio.create_task(asyncdblcheckonline())
+        #    dblcheck_timer = asyncloop.time()
  
 
 async def asyncmain():
