@@ -7,8 +7,7 @@ from os import nice
 from loguru import logger as log
 
 import modules.logging
-from modules.configreader import (colorlogfile, critlogfile,
-                                  jsondebugfile, jsonlogfile, loglevel)
+from modules.configreader import colorlogfile, critlogfile, jsondebugfile, jsonlogfile, loglevel
 from modules.discordbot import pyarkbot
 from modules.processlock import plock
 

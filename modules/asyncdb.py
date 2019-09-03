@@ -1,8 +1,8 @@
 import asyncio
+from datetime import datetime
 
 import asyncpg
 from loguru import logger as log
-from datetime import datetime
 
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 

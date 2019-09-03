@@ -14,7 +14,8 @@ from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import newplayer
-from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd, asyncserverexec
+from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
+                                 asyncserverexec, asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 lastvoter = 0.1

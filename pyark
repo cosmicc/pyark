@@ -17,14 +17,14 @@ from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_t
 from modules.arkupdater import arkupdater_thread
 from modules.asyncdb import DB as db
 from modules.clusterevents import eventwatcher_thread
-from modules.instances import instancelist
 from modules.cmdlistener import asynccmdcheck
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
-                                  debugfile, gamelogfile, gamelograwfile, hstname, instances, instr,
-                                  jsondebugfile, jsonlogfile, loglevel, pointsfile)
+                                  debugfile, gamelogfile, gamelograwfile, hstname, instances,
+                                  instr, jsondebugfile, jsonlogfile, loglevel, pointsfile)
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
 from modules.gchatrelay import asyncgchatrelay
+from modules.instances import instancelist
 from modules.lottery import lotterywatcher_thread
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck
 from modules.processlock import plock
