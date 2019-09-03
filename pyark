@@ -218,7 +218,7 @@ async def asyncmain():
     global main_stop_event
     global timer
     main_stop_event = False
-    delay = {'kickcheck_delay': 5, 'cmdcheck_delay': 2, 'onlinecheck_delay': 10, 'gchatrelay_delay': 2, 'dblcheck_delay': 30}
+    delay = {'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     serverpre = ['@all']
     for each in instancelist():
         serverpre.append(f'@{each}')
@@ -227,9 +227,9 @@ async def asyncmain():
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
     if len(instances) > 0:
-        timer = {'kickcheck_timer': starttime, 'gchatrelay_timer': starttime, 'cmdcheck_timer': starttime, 'onlinecheck_timer': starttime}
+        timer = {'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
     else:
-        timer = {'dblcheck_timer': starttime}
+        timer = {'dblcheck': starttime}
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
     if len(instances) == 0:
         gl = GameLogger()
