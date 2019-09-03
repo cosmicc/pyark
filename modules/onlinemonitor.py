@@ -118,7 +118,7 @@ async def asyncplayergreet(steamid, steamname, inst):
     xferpoints = 0
     if await asynccheckifbanned(steamid):
         log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
-        # serverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
+        #### serverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
         # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
         player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
@@ -131,12 +131,12 @@ async def asyncplayergreet(steamid, steamname, inst):
                 log.log('POINTS', f'Transferred {xferpoints} non-home server points for [{player[1].title()}] on [{inst.title()}]')
                 await db.update(f"UPDATE players SET transferpoints = 0 WHERE steamid = '{steamid}'")
                 await asyncserverscriptcmd(inst, f'tcsar addarctotal {steamid} {xferpoints}')
-            if Now() - int(player['lastseen']) < 300:  # existing online player
+            if not player['welcomeannouce']:  # existing online player
                 log.trace(f'Existing online player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
                 await db.update(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}' WHERE steamid = '{steamid}'")
             else:  # new player connection
                 log.debug(f'New online player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
-                await db.update(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}', connects = {int(player[7]) + 1}, refreshauctions = True, refreshsteam = True WHERE steamid = '{steamid}'")
+                await db.update(f"UPDATE players SET online = True, welcomeannounce = False, lastseen = '{Now()}', server = '{inst}', connects = {int(player[7]) + 1}, refreshauctions = True, refreshsteam = True WHERE steamid = '{steamid}'")
                 laston = elapsedTime(Now(), int(player[2]))
                 totplay = playedTime(int(player[4]))
                 newpoints = int(player[5]) + xferpoints

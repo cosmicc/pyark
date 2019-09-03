@@ -152,7 +152,7 @@ async def asyncdblcheckonline():
     players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 280}")
     for player in players:
         log.warning(f'Player [{player["playername"].title()}] wasnt found logging off. Clearing player from online status')
-        await db.update("UPDATE players SET online = False, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
+        await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
 
 
 @log.catch

@@ -2,6 +2,7 @@
 
 import argparse
 import asyncio
+import aiohttp
 import signal
 import sys
 import threading
@@ -27,6 +28,7 @@ from modules.gchatrelay import asyncgchatrelay
 from modules.instances import instancelist
 from modules.lottery import lotterywatcher_thread
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck
+from modules.masterserver import asyncdblcheckonline, GameLogger
 from modules.processlock import plock
 from modules.servertools import serverexec
 from modules.statcollector import statcollector_thread
@@ -185,45 +187,69 @@ def checkthreads():
             log.critical(f'!!!! CRITICAL ERROR! thread {thread.name} has crashed!!')
 
 
-async def asyncmainloop():
+def loop(asyncloop, delay, gl=False):
+    global timer
+    if not gl:
+        if asyncloop.time() - timer['kickcheck'] > delay['kickcheck']:
+            asyncio.create_task(asynckickcheck(instances))
+            # print(f'kickcheck wait time: {asyncloop.time() - kickcheck_timer}')
+            timer.update('kickcheck': asyncloop.time())
+        if asyncloop.time() - timer['cmdcheck'] > delay['cmdcheck']:
+            asyncio.create_task(asynccmdcheck(instances, atinstances))
+            # print(f'cmdcheck wait time: {asyncloop.time() - cmdcheck_timer}')
+            timer.update('cmdcheck': asyncloop.time())
+        if asyncloop.time() - onlinecheck_timer > onlinecheck_delay:
+            asyncio.create_task(asynconlinecheck(instances))
+            # print(f'onlinehceck wait time: {asyncloop.time() - onlinecheck_timer}')
+            onlinecheck_timer = asyncloop.time()
+        if asyncloop.time() - gchatrelay_timer > gchatrelay_delay:
+            asyncio.create_task(asyncgchatrelay(instances))
+            # print(f'gchatrelay wait time: {asyncloop.time() - gchatrelay_timer}')
+            gchatrelay_timer = asyncloop.time()
+    else:
+        gl = GameLogger()
+        if asyncloop.time() - dblcheck_timer > dblcheck_delay:
+            asyncio.create_task(asyncdblcheckonline())
+            dblcheck_timer = asyncloop.time()
+ 
+
+async def asyncmain():
     global main_stop_event
+    global timers
     main_stop_event = False
-    kickcheck_delay = 5
-    cmdcheck_delay = 2
-    onlinecheck_delay = 10
-    gchatrelay_delay = 2
-    dblcheck_delay = 30
-    asyncloop = asyncio.get_running_loop()
-    await db.connect()
-    starttime = asyncloop.time()
-    kickcheck_timer, gchatrelay_timer, cmdcheck_timer, onlinecheck_timer, dblcheck_timer = starttime, starttime, starttime, starttime, starttime
+    localinstancecount = len(instances)
+    delay = {'kickcheck_delay': 5, 'cmdcheck_delay': 2, 'onlinecheck_delay': 10, 'gchatrelay_delay': 2, 'dblcheck_delay': 30}
     serverpre = ['@all']
     for each in instancelist():
         serverpre.append(f'@{each}')
     atinstances = tuple(serverpre)
+    await db.connect()
+    asyncloop = asyncio.get_running_loop()
+    starttime = asyncloop.time()
+    if localinstancecount > 0:
+        timers = {'kickcheck_timer': starttime, 'gchatrelay_timer': starttime, 'cmdcheck_timer': starttime, 'onlinecheck_timer': starttime}
+    else:
+        timers =  {'dblcheck_timer': starttime}
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
-    while not main_stop_event:
-        if len(instances) > 0:
-            if asyncloop.time() - kickcheck_timer > kickcheck_delay and len(instances) > 0:
-                asyncio.create_task(asynckickcheck(instances))
-                # print(f'kickcheck wait time: {asyncloop.time() - kickcheck_timer}')
-                kickcheck_timer = asyncloop.time()
-            if asyncloop.time() - cmdcheck_timer > cmdcheck_delay and len(instances) > 0:
-                asyncio.create_task(asynccmdcheck(instances, atinstances))
-                # print(f'cmdcheck wait time: {asyncloop.time() - cmdcheck_timer}')
-                cmdcheck_timer = asyncloop.time()
-            if asyncloop.time() - onlinecheck_timer > onlinecheck_delay and len(instances) > 0:
-                asyncio.create_task(asynconlinecheck(instances))
-                # print(f'onlinehceck wait time: {asyncloop.time() - onlinecheck_timer}')
-                onlinecheck_timer = asyncloop.time()
-            if asyncloop.time() - gchatrelay_timer > gchatrelay_delay and len(instances) > 0:
-                asyncio.create_task(asyncgchatrelay(instances))
-                # print(f'gchatrelay wait time: {asyncloop.time() - gchatrelay_timer}')
-                gchatrelay_timer = asyncloop.time()
-        if len(instances) == 0:
-            if asyncloop.time() - dblcheck_timer > dblcheck_delay and len(instances) == 0:
-                asyncio.create_task(asyncdblecheckonline())
-                dblcheck_timer = asyncloop.time()
+    if localinstancecount == 0:
+        gl = GameLogger()
+        async with aiohttp.ClientSession() as session:
+            while not main_stop_event:
+                loop(asyncloop, delay, atinstances, gl)
+    else:
+        while not main_stop_event:
+            loop(asyncloop, delay, atinstances, False)
+
+    async with aiohttp.ClientSession() as session:
+        asyncio.create_task(asyncdblcheckonline())
+        asyncio.create_task(asyncstatcollector())
+        asyncio.create_task(gl.process())
+        asyncio.create_task(asynccheckdbconnections())
+        asyncio.create_task(asyncauctionapi(session))
+
+
+
+
         await asyncio.sleep(.1)
     pendingtasks = asyncio.Task.all_tasks()
     tasklist = []

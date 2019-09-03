@@ -551,7 +551,7 @@ async def playerjoin(line, inst):
     player = await db.fetchone(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'")
     if player:
         steamid = player['steamid']
-        await db.update(f"""UPDATE players SET online = True, refreshsteam = True, refreshauctions = True, server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
+        await db.update(f"""UPDATE players SET online = True, refreshsteam = True, lastseen = '{Now()}', refreshauctions = True, server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
         if Now() - player['lastseen'] > 250:
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             message = f'{player["playername"].title()} has joined the server'
@@ -579,7 +579,7 @@ async def asyncleavingplayerwatch(player, inst):
         await asyncio.sleep(2)
     if not transferred and time() - int(queryplayer['lastseen']) >= 240:
         steamid = player["steamid"]
-        await db.update(f"UPDATE players SET online = False, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
+        await db.update(f"UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         await asyncserverchat(inst, mtxt)
