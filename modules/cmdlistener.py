@@ -828,7 +828,6 @@ async def processcmdchunk(inst, atinstances, chunk):
         return True
 
 
-@asynctimeit
 @log.catch
 async def asynccmdcheck(instances, atinstances):
     if 'cmdcheck' not in globvars.taskworkers:

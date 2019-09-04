@@ -243,9 +243,27 @@ async def asyncmain():
                 await asyncio.sleep(.1)
     else:
         while not main_stop_event:
-            await loop(asyncloop, atinstances, False)
+            asynclooptime = asyncloop.time()
+            if asynclooptime - globvars.timer['kickcheck'] > globvars.delay['kickcheck'] and 'kickcheck' not in globvars.taskworkers:
+                await asynckickcheck(instances)
+                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
+                globvars.timer.update({'kickcheck': asyncloop.time()})
+            if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers and 'onlinecheck' not in globvars.taskworkers:
+                await asynccmdcheck(instances, atinstances)
+                # print(f'cmdcheck wait time: {asyncloop.time() - globvars.timer["cmdcheck"]}')
+                globvars.timer.update({'cmdcheck': asyncloop.time()})
+            if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers and 'cmdcheck' not in globvars.taskworkers:
+                await asynconlinecheck(instances)
+                # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
+                globvars.timer.update({'onlinecheck': asyncloop.time()})
+            if asynclooptime - globvars.timer['gchatrelay'] > globvars.delay['gchatrelay'] and 'gchatrelay' not in globvars.taskworkers:
+                await asyncgchatrelay(instances)
+                # print(f'gchatrelay wait time: {asyncloop.time() - globvars.timer["gchatrelay"]}')
+                globvars.timer.update({'gchatrelay': asyncloop.time()})
+
             if asyncloop.time() - tasktimer > 10:
                 alltasks = asyncio.Task.all_tasks()
+                print(len(alltasks))
                 if len(alltasks) > 15:
                     log.debug(f'###### High number of async tasks running on {hstname} ({len(alltasks)})')
                 tasktimer = asyncloop.time()
