@@ -334,11 +334,11 @@ async def asyncvoter(inst, whoasked):
         await asyncio.sleep(5)
         if votingpassed():
             globvars.isvoting = False
-            await asyncwipeit(inst)
+            asyncio.create_task(asyncwipeit(inst))
         elif asyncloop.time() - globvars.votestarttime > Secs['2min']:
             if enoughvotes():
                 globvars.isvoting = False
-                await asyncwipeit(inst)
+                asyncio.create_task(asyncwipeit(inst))
             else:
                 globvars.isvoting = False
                 message = f'Not enough votes ({howmanyvotes()} of {len(globvars.votertable)}). voting has ended.'
@@ -374,7 +374,7 @@ async def asyncstartvoter(inst, whoasked):
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 10 min timer')
     else:
         globvars.isvoting = True
-        await asyncvoter(inst, whoasked)
+        asyncio.create_task(asyncvoter(inst, whoasked))
 
 
 def isserver(line):

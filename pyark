@@ -221,7 +221,7 @@ async def asyncmain():
     main_stop_event = False
     globvars.delay = {'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
-        globvars.delay.update({'cmdcheck': 5, 'kickcheck': 10, 'onlinecheck': 20, 'gchatrelay': 5})
+        globvars.delay.update({'cmdcheck': 5})
     serverpre = ['@all']
     for each in instancelist():
         serverpre.append(f'@{each}')
@@ -248,11 +248,11 @@ async def asyncmain():
                 await asynckickcheck(instances)
                 # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'kickcheck': asyncloop.time()})
-            if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers and 'onlinecheck' not in globvars.taskworkers:
+            if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers:
                 await asynccmdcheck(instances, atinstances)
                 # print(f'cmdcheck wait time: {asyncloop.time() - globvars.timer["cmdcheck"]}')
                 globvars.timer.update({'cmdcheck': asyncloop.time()})
-            if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers and 'cmdcheck' not in globvars.taskworkers:
+            if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers:
                 await asynconlinecheck(instances)
                 # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
                 globvars.timer.update({'onlinecheck': asyncloop.time()})
@@ -261,8 +261,8 @@ async def asyncmain():
                 # print(f'gchatrelay wait time: {asyncloop.time() - globvars.timer["gchatrelay"]}')
                 globvars.timer.update({'gchatrelay': asyncloop.time()})
             if asyncloop.time() - tasktimer > 10:
-                if len(asyncio.Task.all_tasks()) > 1:
-                    log.debug(f'###### High number of async tasks running on {hstname} ({len(asyncio.Task.all_tasks())})')
+                if len(asyncio.Task.all_tasks()) > 15:
+                    log.warning(f'High number of async tasks running on {hstname} ({len(asyncio.Task.all_tasks())})')
                     tasktimer = asyncloop.time()
             if hstname == 'SVR1':
                 await asyncio.sleep(.1)
@@ -331,8 +331,8 @@ def main():
         thread.start()
     log.debug('All threads have started')
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    warnings.simplefilter('always', ResourceWarning)
-    asyncio.run(asyncmain(), debug=True)  # Async branch to main loop
+    # warnings.simplefilter('always', ResourceWarning)
+    asyncio.run(asyncmain())  # Async branch to main loop
     log.debug(f'Waiting for {len(threads)} threads and tasks to exit...')
     for thread in threads:
         thread.join
