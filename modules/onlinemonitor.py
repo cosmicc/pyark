@@ -227,8 +227,10 @@ async def asyncprocessline(inst, line):
 
 
 async def processplayerchunk(inst, chunk):
+    global onlineworkers
     for line in iter(chunk.decode("utf-8").splitlines()):
         await asyncprocessline(inst, line)
+    onlineworkers.remove('onlinecheck')
     return True
 
 
@@ -239,5 +241,4 @@ async def asynconlinecheck(instances):
         for inst in instances:
             cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
             asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
-        onlineworkers.remove('onlinecheck')
         return True

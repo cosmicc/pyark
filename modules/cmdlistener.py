@@ -837,8 +837,10 @@ async def asyncprocessline(minst, atinstances, line):
 
 @log.catch
 async def processcmdchunk(inst, atinstances, chunk):
+        global cmdworkers
         for line in iter(chunk.decode("utf-8").splitlines()):
             await asyncprocessline(inst, atinstances, line)
+        cmdworkers.remove('cmdcheck')
         return True
 
 
@@ -850,5 +852,4 @@ async def asynccmdcheck(instances, atinstances):
         for inst in instances:
             cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
             asyncio.create_task(processcmdchunk(inst, atinstances, cmdpipe['stdout']))
-        cmdworkers.remove('cmdcheck')
         return True
