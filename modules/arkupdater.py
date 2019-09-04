@@ -405,26 +405,37 @@ def buildconfig(inst):
         config.read(basecfgfile)
 
         if os.path.isfile(servercfgfile):
-            with open(servercfgfile, 'r') as f:
-                lines = f.readlines()
-                for each in lines:
-                    each = each.strip().split(',')
-                    config.set(each[0], each[1], each[2])
+            try:
+                with open(servercfgfile, 'r') as f:
+                    lines = f.readlines()
+                    for each in lines:
+                        each = each.strip().split(',')
+                        config.set(each[0], each[1], each[2])
+            except:
+                log.exception('arkupdater 415')
 
         if iseventtime():
             eventext = getcurrenteventext()
             eventcfgfile = f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini'
             if os.path.isfile(eventcfgfile):
-                with open(eventcfgfile, 'r') as f:
-                    lines = f.readlines()
-                    for each in lines:
-                        each = each.strip().split(',')
-                        config.set(each[0], each[1], each[2])
+                try:
+                    with open(eventcfgfile, 'r') as f:
+                        lines = f.readlines()
+                        for each in lines:
+                            each = each.strip().split(',')
+                            config.set(each[0], each[1], each[2])
+                except:
+                    f.close()
+                    log.exception('arkupdater 428')
             else:
                 log.error('Cannot find Event GUS config file to merge in')
 
-        with open(newcfgfile, 'w') as configfile:
-            config.write(configfile)
+        try:
+            with open(newcfgfile, 'w') as configfile:
+                config.write(configfile)
+        except:
+            configfile.close()
+            log.exception('arkupdater 438')
 
         fname = f'{sharedpath}/config/Game-{inst.lower()}.ini'
         if os.path.isfile(fname):
