@@ -480,7 +480,7 @@ def isnewarkver(inst):
         else:
             return True, curver, avlver
     except:
-        return False, False, False`
+        return False, False, False
 
 
 @log.catch
