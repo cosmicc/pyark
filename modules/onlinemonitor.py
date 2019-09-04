@@ -1,19 +1,16 @@
 import asyncio
 import threading
-import time
 
 from loguru import logger as log
-
+import globvars
 from modules.asyncdb import DB as db
-from modules.clusterevents import asynciseventtime, getcurrenteventinfo, iseventtime
+from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring, dbquery, dbupdate
-from modules.players import getplayer, newplayer
+from modules.players import newplayer
 from modules.servertools import asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverscriptcmd, serverexec, asynctimeit, asyncserverrconcmd
 from modules.timehelper import Now, elapsedTime, playedTime
 
-onlineworkers = []
 welcomthreads = []
-greetings = []
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -114,7 +111,6 @@ async def asynccheckifbanned(steamid):
 
 @log.catch
 async def asyncplayergreet(steamid, steamname, inst):
-    global greetings
     xferpoints = 0
     if await asynccheckifbanned(steamid):
         log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
@@ -188,25 +184,23 @@ async def asyncplayergreet(steamid, steamname, inst):
                     await asyncio.sleep(2)
                     mtxt = annc[0]
                     await asyncserverchatto(inst, steamid, mtxt)
-    greetings.remove(steamid)
+    globvars.greetings.remove(steamid)
 
 
 async def asynckickcheck(instances):
-    global onlineworkers
-    if 'kickcheck' not in onlineworkers:
-        onlineworkers.append('kickcheck')
+    if 'kickcheck' not in globvars.taskworkers:
+        globvars.taskworkers.append('kickcheck')
         for inst in instances:
             kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
             if kicked:
                 serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
                 log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
                 await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
-        onlineworkers.remove('kickcheck')
+        globvars.taskworkers.remove('kickcheck')
         return True
 
 
 async def asyncprocessline(inst, line):
-    global greetings
     try:
         if line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
             pass
@@ -215,8 +209,8 @@ async def asyncprocessline(inst, line):
             if len(rawline) > 1:
                 steamid = rawline[1].strip()
                 steamname = cleanstring(rawline[0].split('. ', 1)[1])
-                if steamid not in greetings:
-                    greetings.append(steamid)
+                if steamid not in globvars.greetings:
+                    globvars.greetings.append(steamid)
                     asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
                 else:
                     log.debug(f'online player greeting aleady running for {steamname}')
@@ -227,18 +221,16 @@ async def asyncprocessline(inst, line):
 
 
 async def processplayerchunk(inst, chunk):
-    global onlineworkers
     for line in iter(chunk.decode("utf-8").splitlines()):
         await asyncprocessline(inst, line)
     return True
 
 
 async def asynconlinecheck(instances):
-    global onlineworkers
-    if 'onlinecheck' not in onlineworkers:
-        onlineworkers.append('onlinecheck')
+    if 'onlinecheck' not in globvars.taskworkers:
+        globvars.taskworkers.append('onlinecheck')
         for inst in instances:
             cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
             asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
-        onlineworkers.remove('onlinecheck')
+        globvars.taskworkers.remove('onlinecheck')
         return True

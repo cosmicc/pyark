@@ -8,7 +8,7 @@ import sys
 import threading
 from os import _exit, nice, stat
 from time import sleep, time
-
+import globvars
 import uvloop
 from git import Repo
 from loguru import logger as log
@@ -187,44 +187,42 @@ def checkthreads():
             log.critical(f'!!!! CRITICAL ERROR! thread {thread.name} has crashed!!')
 
 
-def loop(asyncloop, delay, atinstances, gl=False):
-    global timer
+def loop(asyncloop, atinstances, gl=False):
     if not gl:
-        if asyncloop.time() - timer['kickcheck'] > delay['kickcheck']:
+        if asyncloop.time() - globvars.timer['kickcheck'] > globvars.delay['kickcheck']:
             asyncio.create_task(asynckickcheck(instances))
-            # print(f'kickcheck wait time: {asyncloop.time() - timer["kickcheck"]}')
-            timer.update({'kickcheck': asyncloop.time()})
-        if asyncloop.time() - timer['cmdcheck'] > delay['cmdcheck']:
+            # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
+            globvars.timer.update({'kickcheck': asyncloop.time()})
+        if asyncloop.time() - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck']:
             asyncio.create_task(asynccmdcheck(instances, atinstances))
-            # print(f'cmdcheck wait time: {asyncloop.time() - timer["cmdcheck"]}')
-            timer.update({'cmdcheck': asyncloop.time()})
-        if asyncloop.time() - timer['onlinecheck'] > delay['onlinecheck']:
+            # print(f'cmdcheck wait time: {asyncloop.time() - globvars.timer["cmdcheck"]}')
+            globvars.timer.update({'cmdcheck': asyncloop.time()})
+        if asyncloop.time() - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck']:
             asyncio.create_task(asynconlinecheck(instances))
             t = asyncio.Task.all_tasks()
             for each in t:
                 log.debug(f'Task: {each}')
             log.debug(f'Tasks running: {len(asyncio.Task.all_tasks()) - 1}')
-            # print(f'onlinehceck wait time: {asyncloop.time() - timer["onlinecheck"]}')
-            timer.update({'onlinecheck': asyncloop.time()})
-        if asyncloop.time() - timer['gchatrelay'] > delay['gchatrelay']:
+            # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
+            globvars.timer.update({'onlinecheck': asyncloop.time()})
+        if asyncloop.time() - globvars.timer['gchatrelay'] > globvars.delay['gchatrelay']:
             asyncio.create_task(asyncgchatrelay(instances))
-            # print(f'gchatrelay wait time: {asyncloop.time() - timer["gchatrelay"]}')
-            timer.update({'gchatrelay': asyncloop.time()})
+            # print(f'gchatrelay wait time: {asyncloop.time() - globvars.timer["gchatrelay"]}')
+            globvars.timer.update({'gchatrelay': asyncloop.time()})
     else:
         pass
         #gl = GameLogger()
-        #if asyncloop.time() - dblcheck_timer > dblcheck_delay:
+        #if asyncloop.time() - dblcheck_globvars.timer > dblcheck_globvars.delay:
         #    asyncio.create_task(asyncdblcheckonline())
-        #    dblcheck_timer = asyncloop.time()
+        #    dblcheck_globvars.timer = asyncloop.time()
 
 
 async def asyncmain():
     global main_stop_event
-    global timer
     main_stop_event = False
-    delay = {'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
+    globvars.delay = {'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
-        delay.update({'cmdcheck': 5, 'kickcheck': 10, 'onlinecheck': 20, 'gchatrelay': 5})
+        globvars.delay.update({'cmdcheck': 5, 'kickcheck': 10, 'onlinecheck': 20, 'gchatrelay': 5})
     serverpre = ['@all']
     for each in instancelist():
         serverpre.append(f'@{each}')
@@ -233,20 +231,20 @@ async def asyncmain():
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
     if len(instances) > 0:
-        timer = {'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
+        globvars.timer = {'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
     else:
-        timer = {'dblcheck': starttime}
+        globvars.timer = {'dblcheck': starttime}
     log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
     tasktimer = asyncloop.time()
     if len(instances) == 0:
         gl = GameLogger()
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
-                loop(asyncloop, delay, atinstances, gl)
+                loop(asyncloop, atinstances, gl)
                 await asyncio.sleep(.1)
     else:
         while not main_stop_event:
-            loop(asyncloop, delay, atinstances, False)
+            loop(asyncloop, atinstances, False)
             if asyncloop.time() - tasktimer > 10:
                 alltasks = asyncio.Task.all_tasks()
                 if len(alltasks) > 15:
@@ -285,10 +283,8 @@ def main():
     global instance
     global stop_event
     global threads
-    global workers
     checkgit = 0
     threads = []
-    workers = []
     stop_event = threading.Event()
     checklist = dbquery("SELECT name FROM instances", fmt='list', single=True)
     if not any(x in instances for x in checklist) and instr != 'Master Server':
