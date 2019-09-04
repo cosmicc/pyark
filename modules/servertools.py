@@ -74,7 +74,7 @@ async def asyncserverexec(cmdlist, nice=19, wait=False):
     cmdstring = ' '.join(fullcmdlist)
     # cmdstring = quote(' '.join(fullcmdlist)).strip("'")
     if wait:
-        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
+        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE)
         stdout = await proc.communicate()
         return {'returncode': proc.returncode, 'stdout': stdout}
     else:
