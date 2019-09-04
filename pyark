@@ -260,9 +260,9 @@ async def asyncmain():
                 await asyncgchatrelay(instances)
                 # print(f'gchatrelay wait time: {asyncloop.time() - globvars.timer["gchatrelay"]}')
                 globvars.timer.update({'gchatrelay': asyncloop.time()})
-            if asyncloop.time() - tasktimer > 10:
+            if asyncloop.time() - tasktimer > 30:
                 if len(asyncio.Task.all_tasks()) > 15:
-                    log.warning(f'High number of async tasks running on {hstname} ({len(asyncio.Task.all_tasks())})')
+                    log.error(f'High number of async tasks running on {hstname} ({len(asyncio.Task.all_tasks())})')
                     tasktimer = asyncloop.time()
             if hstname == 'SVR1':
                 await asyncio.sleep(.1)
