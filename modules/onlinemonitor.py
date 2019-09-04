@@ -228,6 +228,7 @@ async def processplayerchunk(inst, chunk):
     return True
 
 
+@asynctimeit
 async def asynconlinecheck(instances):
     if 'onlinecheck' not in globvars.taskworkers:
         globvars.taskworkers.append('onlinecheck')
