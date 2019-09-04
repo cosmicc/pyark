@@ -78,10 +78,10 @@ def gettribeinfo(linesplit, inst, ptype):
             indb = dbquery(f"SELECT tribeid from tribes where tribeid = '{tribeid}'", fetch='one', single=True)
             if not indb:
                 dbupdate(f"INSERT INTO tribes (tribename, tribeid, server) VALUES ('{tribename}', '{int(tribeid)}', '{inst}')")
+                log.debug(f'Added new tribe to tribe database {tribename} id: [{int(tribeid)}] on [{inst}]')
             if ptype != 'DECAY' and ptype != 'DEATH':
                 dbupdate(f"""UPDATE tribes SET lastseen = '{Now(fmt="dt")}' WHERE tribeid = '{tribeid}'""")
-
-            log.debug(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
+            log.trace(f'Got tribe information for tribe [{tribename}] id [{tribeid}]')
             return tribename, tribeid
         else:
             return None, None
