@@ -251,7 +251,7 @@ async def asyncmain():
                     log.debug(f'###### High number of async tasks running on {hstname} ({len(alltasks)})')
                 tasktimer = asyncloop.time()
             if hstname == 'SVR1':
-                await asyncio.sleep(1)
+                await asyncio.sleep(.1)
             else:
                 await asyncio.sleep(.1)
 

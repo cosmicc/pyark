@@ -192,13 +192,17 @@ async def asyncplayergreet(steamid, steamname, inst):
 
 
 async def asynckickcheck(instances):
-    for inst in instances:
-        kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
-        if kicked:
-            serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
-            log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
-            await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
-    return True
+    global onlineworkers
+    if 'kickcheck' not in onlineworkers:
+        onlineworkers.append('kickcheck')
+        for inst in instances:
+            kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
+            if kicked:
+                serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
+                log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
+                await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
+        onlineworkers.remove('kickcheck')
+        return True
 
 
 async def asyncprocessline(inst, line):
@@ -229,6 +233,7 @@ async def processplayerchunk(inst, chunk):
 
 
 async def asynconlinecheck(instances):
+    global onlineworkers
     if 'onlinecheck' not in onlineworkers:
         onlineworkers.append('onlinecheck')
         for inst in instances:

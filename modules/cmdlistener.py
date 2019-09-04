@@ -844,6 +844,7 @@ async def processcmdchunk(inst, atinstances, chunk):
 
 @log.catch
 async def asynccmdcheck(instances, atinstances):
+    global cmdworkers
     if 'cmdcheck' not in cmdworkers:
         cmdworkers.append('cmdcheck')
         for inst in instances:
