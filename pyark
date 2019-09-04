@@ -196,11 +196,11 @@ async def loop(asyncloop, atinstances, gl=False):
             await asynckickcheck(instances)
             # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
             globvars.timer.update({'kickcheck': asyncloop.time()})
-        if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers:
+        if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers and 'onlinecheck' not in globvars.taskworkers:
             await asynccmdcheck(instances, atinstances)
             # print(f'cmdcheck wait time: {asyncloop.time() - globvars.timer["cmdcheck"]}')
             globvars.timer.update({'cmdcheck': asyncloop.time()})
-        if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers:
+        if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers and 'cmdcheck' not in globvars.taskworkers:
             await asynconlinecheck(instances)
             # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
             globvars.timer.update({'onlinecheck': asyncloop.time()})
