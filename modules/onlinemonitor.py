@@ -233,6 +233,6 @@ async def asynconlinecheck(instances):
         globvars.taskworkers.append('onlinecheck')
         for inst in instances:
             cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
-            asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
+            await processplayerchunk(inst, cmdpipe['stdout'])
         globvars.taskworkers.remove('onlinecheck')
         return True
