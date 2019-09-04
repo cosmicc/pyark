@@ -334,11 +334,11 @@ async def asyncvoter(inst, whoasked):
         await asyncio.sleep(5)
         if votingpassed():
             globvars.isvoting = False
-            asyncio.create_task(asyncwipeit(inst))
+            await asyncwipeit(inst)
         elif asyncloop.time() - globvars.votestarttime > Secs['2min']:
             if enoughvotes():
                 globvars.isvoting = False
-                asyncio.create_task(asyncwipeit(inst))
+                await asyncwipeit(inst)
             else:
                 globvars.isvoting = False
                 message = f'Not enough votes ({howmanyvotes()} of {len(globvars.votertable)}). voting has ended.'
@@ -374,7 +374,7 @@ async def asyncstartvoter(inst, whoasked):
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 10 min timer')
     else:
         globvars.isvoting = True
-        asyncio.create_task(asyncvoter(inst, whoasked))
+        await asyncvoter(inst, whoasked)
 
 
 def isserver(line):
@@ -575,7 +575,7 @@ async def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = await db.fetchone(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'")
     if player:
-        asyncio.create_task(asyncleavingplayerwatch(player, inst))
+        await asyncleavingplayerwatch(player, inst)
     else:
         log.error(f'Player with steam name [{newline[1].strip()}] was not found while leaving server')
 
@@ -789,7 +789,7 @@ async def asyncprocessline(minst, atinstances, line):
 
         elif incmd.startswith(('!linkme', '!link')):
             log.log('CMD', f'Responding to a [!linkme] request from [{whoasked.title()}] on [{minst.title()}]')
-            asyncio.create_task(asynclinker(minst, whoasked))
+            await asynclinker(minst, whoasked)
 
         elif incmd.startswith(('!lottery', '!lotto')):
             rawline = line.split(':')
@@ -799,7 +799,7 @@ async def asyncprocessline(minst, atinstances, line):
                     lchoice = lastlline[1]
                 else:
                     lchoice = False
-                asyncio.create_task(asynclottery(whoasked, lchoice, minst))
+                await asynclottery(whoasked, lchoice, minst)
 
         elif incmd.startswith(('!lastlotto', '!winner')):
             log.log('CMD', f'Responding to a [!lastlotto] request from [{whoasked.title()}] on [{minst.title()}]')

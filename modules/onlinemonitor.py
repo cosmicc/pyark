@@ -213,7 +213,7 @@ async def asyncprocessline(inst, line):
                 steamname = cleanstring(rawline[0].split('. ', 1)[1])
                 if steamid not in globvars.greetings:
                     globvars.greetings.append(steamid)
-                    asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
+                    await asyncplayergreet(steamid, steamname, inst)
                 else:
                     log.debug(f'online player greeting aleady running for {steamname}')
             else:
