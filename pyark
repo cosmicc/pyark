@@ -12,7 +12,7 @@ import aiohttp
 import uvloop
 from git import Repo
 from loguru import logger as log
-
+import logging
 import globvars
 import modules.logging
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
@@ -34,6 +34,7 @@ from modules.processlock import plock
 from modules.servertools import serverexec
 from modules.statcollector import statcollector_thread
 from modules.timehelper import Secs
+logging.basicConfig(level=logging.DEBUG)
 
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
