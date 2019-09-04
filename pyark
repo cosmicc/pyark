@@ -255,6 +255,8 @@ async def asyncmain():
                 await asyncio.sleep(.1)
             else:
                 await asyncio.sleep(.1)
+                print(globvars.timer)
+                print(globvars.taskworkers)
 
     #async with aiohttp.ClientSession() as session:
     #    asyncio.create_task(asyncdblcheckonline())
