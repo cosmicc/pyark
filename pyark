@@ -260,6 +260,8 @@ async def asyncmain():
             tasklist.append(each)
 
     log.debug(f'still running tasks: {list(pendingtasks)}')
+    yield from asyncio.gather(*asyncio.Task.all_tasks())
+    await db.close()
     return True
 
 
@@ -308,11 +310,6 @@ def main():
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     asyncio.run(asyncmain())  # Async branch to main loop
     log.debug(f'Waiting for {len(threads)} threads and tasks to exit...')
-    asyncloop = asyncio.get_running_loop()
-    pending = asyncio.Task.all_tasks()
-    asyncloop.run_until_complete(asyncio.gather(*pending))
-    asyncloop.run_until_complete(db.close())
-    asyncloop.stop()
     for thread in threads:
         thread.join
     log.debug('Pyark Exited.')
