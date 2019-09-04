@@ -223,6 +223,8 @@ async def asyncmain():
     global timer
     main_stop_event = False
     delay = {'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
+    if hstname == 'SVR1':
+        delay.update({'cmdcheck': 5})
     serverpre = ['@all']
     for each in instancelist():
         serverpre.append(f'@{each}')
