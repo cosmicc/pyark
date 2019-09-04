@@ -201,10 +201,6 @@ async def loop(asyncloop, atinstances, gl=False):
             globvars.timer.update({'cmdcheck': asyncloop.time()})
         if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers:
             await asynconlinecheck(instances)
-            t = asyncio.Task.all_tasks()
-            for each in t:
-                log.debug(f'Task: {each}')
-            log.debug(f'Tasks running: {len(asyncio.Task.all_tasks()) - 1}')
             # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
             globvars.timer.update({'onlinecheck': asyncloop.time()})
         if asynclooptime - globvars.timer['gchatrelay'] > globvars.delay['gchatrelay'] and 'gchatrelay' not in globvars.taskworkers:
@@ -256,7 +252,6 @@ async def asyncmain():
                 await asyncio.sleep(.1)
             else:
                 await asyncio.sleep(.1)
-                print(globvars.taskworkers)
 
     #async with aiohttp.ClientSession() as session:
     #    asyncio.create_task(asyncdblcheckonline())
