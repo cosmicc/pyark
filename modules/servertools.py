@@ -3,7 +3,7 @@ import subprocess
 from os.path import isfile
 from re import sub
 from time import time
-
+from modules.asyncdb import DB as db
 from loguru import logger as log
 from psutil import Process
 
@@ -25,9 +25,8 @@ async def gettotaldbconnections():
 
 @log.catch
 async def asyncserverrconcmd(inst, command, nice=5):
-    asyncloop = asyncio.get_running_loop()
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "{command}" @{inst}'
-    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     log.debug(f'cmd: {cmdstring}')
     asyncio.create_task(proc)
     return True
@@ -35,9 +34,8 @@ async def asyncserverrconcmd(inst, command, nice=5):
 
 @log.catch
 async def asyncserverscriptcmd(inst, command, nice=5):
-    asyncloop = asyncio.get_running_loop()
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{inst}'
-    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
     return True
@@ -45,9 +43,8 @@ async def asyncserverscriptcmd(inst, command, nice=5):
 
 @log.catch
 async def asyncserverchat(inst, message, nice=15):
-    asyncloop = asyncio.get_running_loop()
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{inst}'
-    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
     return True
@@ -55,9 +52,8 @@ async def asyncserverchat(inst, message, nice=15):
 
 @log.catch
 async def asyncserverchatto(inst, steamid, message, nice=15):
-    asyncloop = asyncio.get_running_loop()
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'ServerChatTo "{steamid}" {message}' @{inst}"""
-    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
     return True
@@ -65,29 +61,25 @@ async def asyncserverchatto(inst, steamid, message, nice=15):
 
 @log.catch
 async def asyncserverbcast(inst, bcast, nice=10):
-    asyncloop = asyncio.get_running_loop()
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'Broadcast {bcast}' @{inst}"""
-    proc = asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
+    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.debug(f"""{repr(cmdstring)}""")
+    log.debug(f"""cmd: {repr(cmdstring)}""")
     return True
 
 
 @log.catch
-async def asyncserverexec(cmdlist, wait=False, nice=19):
-    asyncloop = asyncio.get_running_loop()
+async def asyncserverexec(cmdlist, nice=19, wait=False):
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)
     # cmdstring = quote(' '.join(fullcmdlist)).strip("'")
-    log.trace(f'server rcon cmd executing [{cmdstring}]')
     if wait:
-        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, loop=asyncloop)
-        stdout, stderr = await proc.communicate()
-        return {'returncode': proc.returncode, 'stdout': stdout, 'stderr': stderr}
+        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
+        stdout = await proc.communicate()
+        return {'returncode': proc.returncode, 'stdout': stdout}
     else:
-        proc = await asyncio.create_subprocess_shell(cmdstring, loop=asyncloop)
-        # await asyncio.wait_for(proc, timeout=10, loop=asyncloop)
-        log.trace(f'server rcon process completed [{cmdstring}]')
+        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+        log.trace(f'cmd: [{cmdstring}]')
         return True
 
 
