@@ -188,17 +188,18 @@ def checkthreads():
             log.critical(f'!!!! CRITICAL ERROR! thread {thread.name} has crashed!!')
 
 
-def loop(asyncloop, atinstances, gl=False):
+async def loop(asyncloop, atinstances, gl=False):
     if not gl:
-        if asyncloop.time() - globvars.timer['kickcheck'] > globvars.delay['kickcheck'] and 'kickcheck' not in globvars.taskworkers:
+        asynclooptime = asyncloop.time()
+        if asynclooptime - globvars.timer['kickcheck'] > globvars.delay['kickcheck'] and 'kickcheck' not in globvars.taskworkers:
             asyncio.create_task(asynckickcheck(instances))
             # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
             globvars.timer.update({'kickcheck': asyncloop.time()})
-        if asyncloop.time() - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers:
+        if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers:
             asyncio.create_task(asynccmdcheck(instances, atinstances))
             # print(f'cmdcheck wait time: {asyncloop.time() - globvars.timer["cmdcheck"]}')
             globvars.timer.update({'cmdcheck': asyncloop.time()})
-        if asyncloop.time() - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers:
+        if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers:
             asyncio.create_task(asynconlinecheck(instances))
             t = asyncio.Task.all_tasks()
             for each in t:
@@ -206,7 +207,7 @@ def loop(asyncloop, atinstances, gl=False):
             log.debug(f'Tasks running: {len(asyncio.Task.all_tasks()) - 1}')
             # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
             globvars.timer.update({'onlinecheck': asyncloop.time()})
-        if asyncloop.time() - globvars.timer['gchatrelay'] > globvars.delay['gchatrelay'] and 'gchatrelay' not in globvars.taskworkers:
+        if asynclooptime - globvars.timer['gchatrelay'] > globvars.delay['gchatrelay'] and 'gchatrelay' not in globvars.taskworkers:
             asyncio.create_task(asyncgchatrelay(instances))
             # print(f'gchatrelay wait time: {asyncloop.time() - globvars.timer["gchatrelay"]}')
             globvars.timer.update({'gchatrelay': asyncloop.time()})
@@ -241,11 +242,11 @@ async def asyncmain():
         gl = GameLogger()
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
-                loop(asyncloop, atinstances, gl)
+                await loop(asyncloop, atinstances, gl)
                 await asyncio.sleep(.1)
     else:
         while not main_stop_event:
-            loop(asyncloop, atinstances, False)
+            await loop(asyncloop, atinstances, False)
             if asyncloop.time() - tasktimer > 10:
                 alltasks = asyncio.Task.all_tasks()
                 if len(alltasks) > 15:
