@@ -2,17 +2,18 @@
 
 import argparse
 import asyncio
-import aiohttp
 import signal
 import sys
 import threading
 from os import _exit, nice, stat
 from time import sleep, time
-import globvars
+
+import aiohttp
 import uvloop
 from git import Repo
 from loguru import logger as log
 
+import globvars
 import modules.logging
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
 from modules.arkupdater import arkupdater_thread
@@ -27,8 +28,8 @@ from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
 from modules.gchatrelay import asyncgchatrelay
 from modules.instances import instancelist
 from modules.lottery import lotterywatcher_thread
+from modules.masterserver import GameLogger, asyncdblcheckonline
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck
-from modules.masterserver import asyncdblcheckonline, GameLogger
 from modules.processlock import plock
 from modules.servertools import serverexec
 from modules.statcollector import statcollector_thread

@@ -1,5 +1,7 @@
 import asyncio
-from datetime import time as dt, timedelta, datetime
+from datetime import datetime
+from datetime import time as dt
+from datetime import timedelta
 
 import aiohttp
 import uvloop
@@ -186,4 +188,3 @@ async def masterserverloop():
 def masterserver():
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     asyncio.run(masterserverloop())  # Async branch to main loop
-
