@@ -8,7 +8,7 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime, getcurrenteventinfo, iseventtime
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.players import getplayer, newplayer
-from modules.servertools import asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverscriptcmd, serverexec, asynctimeit
+from modules.servertools import asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverscriptcmd, serverexec, asynctimeit, asyncserverrconcmd
 from modules.timehelper import Now, elapsedTime, playedTime
 
 onlineworkers = []
@@ -118,7 +118,7 @@ async def asyncplayergreet(steamid, steamname, inst):
     xferpoints = 0
     if await asynccheckifbanned(steamid):
         log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
-        #### serverexec(['arkmanager', 'rconcmd', f'kickplayer {steamid}', f'@{inst}'], nice=5, null=True)
+        await asyncserverrconcmd(inst, f'kickplayer {steamid}')
         # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
         player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")

@@ -430,7 +430,7 @@ def _length():
 @webui.context_processor
 def _lastactive():
     def ui_lastactive(inst):
-        retime = dbquery("SELECT date FROM %s WHERE value != 0 ORDER BY date DESC LIMIT 1" % (inst,), db='statsdb', fetch='one')[0]
+        retime = dbquery(f"SELECT date FROM {inst}_stats WHERE value != 0 ORDER BY date DESC LIMIT 1", fetch='one')[0]
         if datetime.now() - retime > timedelta(seconds=300):
             return f'{elapsedTime(Now(), datetimeto(retime, "epoch"))} ago'
         else:
@@ -480,7 +480,7 @@ def _statpull():
             df = pd.DataFrame.from_records(ret, columns=['date', 'value'])
             df = df.set_index(pd.DatetimeIndex(df['date']))
         else:
-            df = pd.read_sql("SELECT * FROM {} WHERE date > '{}' ORDER BY date DESC".format(inst, datetime.now() - timedelta(hours=hours)), conn, parse_dates=['date'], index_col='date')
+            df = pd.read_sql(f"SELECT * FROM {inst}_stats WHERE date > '{datetime.now() - timedelta(hours=hours)}' ORDER BY date DESC", conn, parse_dates=['date'], index_col='date')
             conn.close()
         df = df.tz_localize(tz='UTC')
         df = df.tz_convert(tz=current_user.timezone)

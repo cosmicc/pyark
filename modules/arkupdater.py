@@ -464,20 +464,23 @@ def checkconfig():
 
 @log.catch
 def isnewarkver(inst):
-    isarkupd = serverexec(['arkmanager', 'checkupdate', f'@{inst}'], nice=19, null=False)
-    for each in isarkupd.stdout.decode('utf-8').split('\n'):
-        if each.find('Current version:') != -1:
-            m = each.split(':')
-            k = m[1].split(' ')
-            curver = int((k[2]))
-        elif each.find('Available version:') != -1:
-            m = each.split(':')
-            k = m[1].split(' ')
-            avlver = int((k[2]))
-    if curver == avlver:
-        return False, curver, avlver
-    else:
-        return True, curver, avlver
+    try:
+        isarkupd = serverexec(['arkmanager', 'checkupdate', f'@{inst}'], nice=19, null=False)
+        for each in isarkupd.stdout.decode('utf-8').split('\n'):
+            if each.find('Current version:') != -1:
+                m = each.split(':')
+                k = m[1].split(' ')
+                curver = int((k[2]))
+            elif each.find('Available version:') != -1:
+                m = each.split(':')
+                k = m[1].split(' ')
+                avlver = int((k[2]))
+        if curver == avlver:
+            return False, curver, avlver
+        else:
+            return True, curver, avlver
+    except:
+        return False, False, False`
 
 
 @log.catch
