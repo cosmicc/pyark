@@ -207,6 +207,7 @@ def loop(asyncloop, delay, atinstances, gl=False):
             # print(f'gchatrelay wait time: {asyncloop.time() - timer["gchatrelay"]}')
             timer.update({'gchatrelay': asyncloop.time()})
     else:
+        pass
         #gl = GameLogger()
         #if asyncloop.time() - dblcheck_timer > dblcheck_delay:
         #    asyncio.create_task(asyncdblcheckonline())
