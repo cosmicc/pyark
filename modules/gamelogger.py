@@ -117,6 +117,7 @@ def processgameline(inst, ptype, line):
                 else:
                     log.warning(f'not found gameparse death: {deathsplit}')
             else:
+                pass
                 #log.debug(f'deathskip: {linesplit}')
         elif ptype == 'TAME':
                 #clog.debug(f'{ptype} - {linesplit}')
