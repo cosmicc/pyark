@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.7
-
+import warnings
 import argparse
 import asyncio
 import signal
@@ -320,6 +320,8 @@ def main():
         thread.start()
     log.debug('All threads have started')
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    asyncio.set_debug(True)
+    warnings.simplefilter('always', ResourceWarning)
     asyncio.run(asyncmain())  # Async branch to main loop
     log.debug(f'Waiting for {len(threads)} threads and tasks to exit...')
     for thread in threads:
