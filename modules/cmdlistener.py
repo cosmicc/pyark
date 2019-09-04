@@ -306,11 +306,11 @@ def howmanyvotes():
 
 
 async def asyncresetlastvote(inst):
-    await db.update(f"UPDATE instances SET lastvote = '{time()}' WHERE name = '{inst}'")
+    await db.update(f"UPDATE instances SET lastvote = '{int(time())}' WHERE name = '{inst}'")
 
 
 async def asyncresetlastwipe(inst):
-    await db.update(f"UPDATE instances SET lastdinowipe = '{time()}' WHERE name = '{inst}'")
+    await db.update(f"UPDATE instances SET lastdinowipe = '{int(time())}' WHERE name = '{inst}'")
 
 
 @log.catch
