@@ -11,11 +11,11 @@ import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
-from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist
+from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, asyncgetlastvote, homeablelist, asyncwipeit
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import newplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec,
-                                 asyncserverrconcmd, asyncserverscriptcmd, asynctimeit)
+                                 asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 
@@ -48,14 +48,14 @@ async def asyncwritechatlog(inst, whos, msg, tstamp):
     pass
     # steamid = await asyncgetsteamid(whos)
     # if steamid:
-        # clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
-        # if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
-        #    log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
-        #    os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
-        #    os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
-        # with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
-        #   await f.write(clog)
-        # await f.close()
+    # clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
+    # if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
+    #    log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
+    #    os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
+    #    os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
+    # with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
+    #   await f.write(clog)
+    # await f.close()
 
 
 @log.catch
@@ -197,11 +197,6 @@ async def asyncwhoisonline(inst, oinst, whoasked, filt, crnt):
         await asyncserverchat(oinst, message)
 
 
-async def asyncgetlastvote(inst):
-    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    return insts['lastvote']
-
-
 async def asyncpopulatevoters(inst):
     log.debug(f'populating vote table for {inst}')
     globvars.votertable = []
@@ -295,31 +290,6 @@ def howmanyvotes():
     return votecount
 
 
-async def asyncresetlastvote(inst):
-    await db.update(f"UPDATE instances SET lastvote = '{int(time())}' WHERE name = '{inst}'")
-
-
-async def asyncresetlastwipe(inst):
-    await db.update(f"UPDATE instances SET lastdinowipe = '{int(time())}' WHERE name = '{inst}'")
-
-
-@log.catch
-async def asyncwipeit(inst):
-    yesvoters = howmanyvotes()
-    totvoters = len(globvars.votertable)
-    log.log('VOTE', f'YES has won ({yesvoters}/{totvoters}), wild dinos are wiping on [{inst.title()}] in 15 seconds')
-    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n<RichColor Color="0,1,0,1">                     YES votes have won! ('{yesvoters}' of '{totvoters}' Players)</>\n\n  <RichColor Color="1,1,0,1">               !! WIPING ALL WILD DINOS IN 10 SECONDS !!</>"""
-    await asyncserverbcast(inst, bcast)
-    await asyncwritechat(inst, 'ALERT', f'A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.', wcstamp())
-    await asyncio.sleep(7)
-    await asyncserverrconcmd(inst, 'Destroyall BeeHive_C')
-    await asyncio.sleep(3)
-    await asyncserverrconcmd(inst, 'DestroyWildDinos')
-    await asyncresetlastwipe(inst)
-    log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
-    return True
-
-
 async def asyncvoter(inst, whoasked):
     log.log('VOTE', f'A wild dino wipe vote has started for [{inst.title()}] by [{whoasked.title()}]')
     votercount = await asyncpopulatevoters(inst)
@@ -332,26 +302,28 @@ async def asyncvoter(inst, whoasked):
     warned = False
     while globvars.isvoting:
         await asyncio.sleep(5)
-        if votingpassed():
+        if votingpassed() or (asyncloop.time() - globvars.votestarttime >= Secs['2min'] and enoughvotes()):
             globvars.isvoting = False
+            yesvoters = howmanyvotes()
+            totvoters = len(globvars.votertable)
+            log.log('VOTE', f'YES has won ({yesvoters}/{totvoters}), wild dinos are wiping on [{inst.title()}] in 15 seconds')
+            bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n<RichColor Color="0,1,0,1">                     YES votes have won! ('{yesvoters}' of '{totvoters}' Players)</>\n\n  <RichColor Color="1,1,0,1">               !! WIPING ALL WILD DINOS IN 10 SECONDS !!</>"""
+            await asyncserverbcast(inst, bcast)
+            await asyncwritechat(inst, 'ALERT', f'A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.', wcstamp())
             asyncio.create_task(asyncwipeit(inst))
-        elif asyncloop.time() - globvars.votestarttime > Secs['2min']:
-            if enoughvotes():
-                globvars.isvoting = False
-                asyncio.create_task(asyncwipeit(inst))
-            else:
-                globvars.isvoting = False
-                message = f'Not enough votes ({howmanyvotes()} of {len(globvars.votertable)}). voting has ended.'
-                await asyncserverchat(inst, message)
-                log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({howmanyvotes()}/{len(globvars.votertable)})')
-                await asyncwritechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({howmanyvotes()} of i{len(globvars.votertable)})', wcstamp())
+        elif asyncloop.time() - globvars.votestarttime >= Secs['2min'] and not enoughvotes():
+            globvars.isvoting = False
+            message = f'Not enough votes ({howmanyvotes()} of {len(globvars.votertable)}). voting has ended.'
+            await asyncserverchat(inst, message)
+            log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({howmanyvotes()}/{len(globvars.votertable)})')
+            await asyncwritechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({howmanyvotes()} of i{len(globvars.votertable)})', wcstamp())
         elif asyncloop.time() - globvars.votestarttime > 60 and not warned:
             warned = True
             log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title()}]')
             bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">         A Wild dino wipe vote is waiting for votes! ({howmanyvotes()} of {len(globvars.votertable)})</>\n\n<RichColor Color="1,1,0,1">                 Vote now by typing</><RichColor Color="0,1,0,1"> !yes or !no</><RichColor Color="1,1,0,1"> in global chat</>\n\n         A wild dino wipe does not affect tame dinos already knocked out\n                    A single NO vote will cancel the wipe"""
             await asyncserverbcast(inst, bcast)
     globvars.lastvoter = time()
-    await asyncresetlastvote(inst)
+    await db.update(f"UPDATE instances SET lastvote = '{int(time())}' WHERE name = '{inst}'")
     log.debug(f'voting thread has ended on {inst}')
     return True
 
@@ -360,14 +332,14 @@ async def asyncstartvoter(inst, whoasked):
     if globvars.isvoting:
         message = 'Voting has already started. cast your vote now'
         await asyncserverchat(inst, message)
-    elif time() - float(await asyncgetlastvote(inst)) < Secs['4hour']:   # 4 hours between wipes
-        rawtimeleft = Secs['4hour'] - (Now() - float(await asyncgetlastvote(inst)))
+    elif time() - float(await asyncgetlastwipe(inst)) < Secs['4hour']:   # 4 hours between wipes
+        rawtimeleft = Secs['4hour'] - (Now() - float(await asyncgetlastwipe(inst)))
         timeleft = playedTime(rawtimeleft)
         message = f'You must wait {timeleft} until the next wild wipe vote can start'
         await asyncserverchat(inst, message)
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 4 hour timer')
-    elif time() - float(globvars.lastvoter) < Secs['10min']:                      # 10 min between failed attempts
-        rawtimeleft = Secs['10min'] - (Now() - globvars.lastvoter)
+    elif time() - float(await asyncgetlastvote(inst)) < Secs['10min']:   # 10 min between failed attempts
+        rawtimeleft = Secs['10min'] - (Now() - float(await asyncgetlastvote(inst)))
         timeleft = playedTime(rawtimeleft)
         message = f'You must wait {timeleft} until the next wild wipe vote can start'
         await asyncserverchat(inst, message)
@@ -685,13 +657,13 @@ async def asyncprocessline(minst, atinstances, line):
             await asyncserverchat(inst, message)
 
         elif incmd.startswith(('!lastdinowipe', '!lastwipe')):
-            lastwipe = elapsedTime(Now(), getlastwipe(minst))
+            lastwipe = elapsedTime(Now(), await asyncgetlastwipe(minst))
             message = f'Last wild dino wipe was {lastwipe} ago'
             await asyncserverchat(inst, message)
             log.log('CMD', f'Responding to a [!lastwipe] request from [{whoasked.title()}] on [{minst.title()}]')
 
         elif incmd.startswith('!lastrestart'):
-            lastrestart = elapsedTime(Now(), getlastrestart(minst))
+            lastrestart = elapsedTime(Now(), await asyncgetlastrestart(minst))
             message = f'Last server restart was {lastrestart} ago'
             await asyncserverchat(inst, message)
             log.log('CMD', f'Responding to a [!lastrestart] request from [{whoasked.title()}] on [{minst.title()}]')
