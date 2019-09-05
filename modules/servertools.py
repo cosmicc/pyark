@@ -72,7 +72,6 @@ async def asyncserverbcast(inst, bcast, nice=10):
 async def asyncserverexec(cmdlist, nice=19, wait=False):
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)
-    # cmdstring = quote(' '.join(fullcmdlist)).strip("'")
     if wait:
         proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
         stdout, stderr = await proc.communicate()

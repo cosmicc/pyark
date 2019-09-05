@@ -1,30 +1,32 @@
 from re import compile as rcompile
 from sys import exit
-
+import asyncio
 from loguru import logger as log
+from modules.asyncdb import DB as db
 
-from modules.dbhelper import asyncdbquery, asyncdbupdate, dbquery, dbupdate
+from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
-from modules.servertools import serverexec
+from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, serverexec
 from modules.timehelper import Now
-
-
-'''
-def writechat(inst, whos, msg, tstamp):
-    isindb = False
-    if whos != 'ALERT':
-        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
-        if isindb:
-            dbupdate("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')""" % (inst, whos, msg.replace("'", ""), tstamp))
-
-    elif whos == "ALERT":
-        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
-'''
 
 
 def stripansi(stripstr):
     ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     return(ansi_escape.sub('', stripstr))
+
+
+@log.catch
+async def asyncwipeit(inst, extra=False):
+    if extra:
+        await asyncserverscriptcmd(inst, 'MatingOff_DS')
+        await asyncio.sleep(3)
+        await asyncserverscriptcmd(inst, 'DestroyUnclaimed_DS')
+        await asyncio.sleep(3)
+    await asyncserverrconcmd(inst, 'DestroyWildDinos')
+    await asyncio.sleep(3)
+    await asyncserverrconcmd(inst, 'Destroyall BeeHive_C')
+    await db.update(f"UPDATE instances SET lastdinowipe = '{int(Now())}' WHERE name = '{inst}'")
+    log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
 def getinststatus(inst):
@@ -84,6 +86,11 @@ def getinststatus(inst):
             except:
                 log.exception('Error writing extra stats to database')
     return serverrunning, serverlistening, serveronline
+
+
+async def asyncisinstanceenabled(inst):
+    sen = await db.fetchone(f"SELECT enabled FROM instances WHERE name = '{inst}'")
+    return sen[0]
 
 
 def isinstanceenabled(inst):
@@ -157,6 +164,21 @@ def instancelist():
 def homeablelist():
     dbdata = dbquery('SELECT name FROM instances WHERE homeable = true', fmt='list', single=True)
     return dbdata
+
+
+async def asyncgetlastwipe(inst):
+    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    return insts['lastdinowipe']
+
+
+async def asyncgetlastvote(inst):
+    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    return insts['lastvote']
+
+
+async def asyncgetlastrestart(inst):
+    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    return insts['lastrestart']
 
 
 def getlastwipe(inst):

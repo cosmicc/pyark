@@ -1,22 +1,21 @@
-import asyncio
 import configparser
-# import os
+import os
 import random
 import shutil
 import subprocess
+import threading
 from datetime import datetime
 from datetime import time as dt
 from time import sleep
-import globvars
-from modules.asyncdb import DB as db
+
 from loguru import logger as log
 from timebetween import is_time_between
-from pathlib import Path
+
 from modules.clusterevents import getcurrenteventext, iseventrebootday, iseventtime
-from modules.configreader import arkroot, hstname, instance, instr, is_arkupdater, maint_hour, numinstances, sharedpath, instances
+from modules.configreader import arkroot, hstname, instance, instr, is_arkupdater, maint_hour, numinstances, sharedpath
 from modules.dbhelper import dbquery, dbupdate
 from modules.discordbot import writediscord
-from modules.instances import getlastwipe, instancelist, isinstanceenabled, isinstancerunning, isinstanceup, asyncwipeit, asyncisinstanceenabled, asyncserverexec
+from modules.instances import getlastwipe, instancelist, isinstanceenabled, isinstancerunning, isinstanceup
 from modules.players import getliveplayersonline, getplayersonline
 from modules.pushover import pushover
 from modules.servertools import serverexec, serverneedsrestart
@@ -25,6 +24,14 @@ from modules.timehelper import Now, Secs, wcstamp
 confupdtimer = 0
 dwtimer = 0
 updgennotify = Now() - Secs['hour']
+
+
+def stopsleep(sleeptime, stop_event):
+    for ntime in range(sleeptime):
+        if stop_event.is_set():
+            log.debug('Arkupdater thread has ended')
+            exit(0)
+        sleep(1)
 
 
 @log.catch
@@ -37,28 +44,19 @@ def writechat(inst, whos, msg, tstamp):
 
 
 @log.catch
-def checkdirs(inst):  # pathlib
-    if not os.path.exists('/home/ark/shared/logs/arkmanager'):
-        log.error(f'Log directory /home/ark/shared/logs/arkmanager does not exist! creating')
-        os.mkdir('/home/ark/shared/logs/arkmanager', 0o777)
-        os.chown('/home/ark/shared/logs/arkmanager', 1001, 1005)
-    if not os.path.exists(f'/home/ark/shared/logs/arkmanager/{inst}'):
-        log.error(f'Log directory /home/ark/shared/logs/arkmanager/{inst} does not exist! creating')
-        os.mkdir(f'/home/ark/shared/logs/arkmanager/{inst}', 0o777)
-        os.chown(f'/home/ark/shared/logs/arkmanager/{inst}', 1001, 1005)
-
-
-
-@log.catch
 def checkdirs(inst):
     if not os.path.exists('/home/ark/shared/logs/arkmanager'):
         log.error(f'Log directory /home/ark/shared/logs/arkmanager does not exist! creating')
         os.mkdir('/home/ark/shared/logs/arkmanager', 0o777)
         os.chown('/home/ark/shared/logs/arkmanager', 1001, 1005)
+    else:
+        log.trace('Log directory /home/ark/shared/logs/arkmanager exists')
     if not os.path.exists(f'/home/ark/shared/logs/arkmanager/{inst}'):
         log.error(f'Log directory /home/ark/shared/logs/arkmanager/{inst} does not exist! creating')
         os.mkdir(f'/home/ark/shared/logs/arkmanager/{inst}', 0o777)
         os.chown(f'/home/ark/shared/logs/arkmanager/{inst}', 1001, 1005)
+    else:
+        log.trace(f'Log directory /home/ark/shared/logs/arkmanager/{inst} exists')
 
 
 @log.catch
@@ -108,13 +106,27 @@ def setrestartbit(inst):
     dbupdate("UPDATE instances SET needsrestart = 'True' WHERE name = '%s'" % (inst, ))
 
 
-async def asyncunsetstartbit(inst):
-    await db.update(f"UPDATE instances SET needsrestart = 'False' WHERE name = '{inst}'")
+def unsetstartbit(inst):
+    dbupdate("UPDATE instances SET needsrestart = 'False' WHERE name = '%s'" % (inst, ))
 
 
 def playerrestartbit(inst):
     dbupdate("UPDATE players SET restartbit = 1 WHERE server = '%s'" % (inst, ))
 
+
+@log.catch
+def wipeit(inst, extra=False):
+    checkdirs(inst)
+    if extra:
+        serverexec(['arkmanager', 'rconcmd', f'ScriptCommand MatingOff_DS', f'@{inst}'], nice=0, null=True)
+        sleep(3)
+        serverexec(['arkmanager', 'rconcmd', f'ScriptCommand DestroyUnclaimed_DS', f'@{inst}'], nice=0, null=True)
+        sleep(3)
+    resetlastwipe(inst)
+    serverexec(['arkmanager', 'rconcmd', 'DestroyWildDinos', f'@{inst}'], nice=0, null=True)
+    sleep(3)
+    serverexec(['arkmanager', 'rconcmd', 'Destroyall BeeHive_C' f'@{inst}'], nice=0, null=True)
+    log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
 @log.catch
@@ -171,22 +183,22 @@ def stillneedsrestart(inst):
 
 
 @log.catch
-async def asyncrestartinstnow(inst, startonly=False):
+def restartinstnow(inst, startonly=False):
     checkdirs(inst)
     if not startonly:
-        await asyncwipeit(inst, extra=True)
-        await asyncio.sleep(5)
-        await asyncserverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'])
+        wipeit(inst, extra=True)
+        sleep(5)
+        serverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'], nice=0, null=True)
         log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
-        await db.update(f"UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '{inst}'")
-    await asyncserverexec(['arkmanager', 'backup', f'@{inst}'])
-    if not await asyncisinstanceenabled(inst):
+        dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
+    serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
+    if not isinstanceenabled(inst):
         log.log('UPDATE', f'Instance [{inst.title()}] remaining off because not enabled.')
-        await asyncunsetstartbit(inst)
-    elif serverneedsrestart() and inst != 'coliseum' and inst != 'crystal' and not startonly:
-        await db.update(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
+        unsetstartbit(inst)
+    elif serverneedsrestart() and inst != 'coliseum' and inst != 'crystal'and not startonly:
+        dbupdate(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
         log.log('MAINT', f'REBOOTING Server [{hstname.upper()}] for maintenance server reboot')
-        await asyncserverexec(['reboot'])
+        serverexec(['reboot'], nice=0, null=True)
     else:
         log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
         buildconfig(inst)
@@ -502,16 +514,20 @@ def checkbackup():
 
 
 @log.catch
-async def asynccheckifenabled(inst):
-    instdata = await db.fetchone(f"SELECT enabled, isrunning FROM instances WHERE name = '{inst}'")
+def checkifenabled(inst):
+    lastwipe = dbquery("SELECT enabled, isrunning FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
     if serverneedsrestart():
-        await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
-    if instdata['enabled'] and instdata['isrunning'] == 0 and f'{inst}-restart' not in globvars.taskworkers:
+        dbupdate(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
+    if lastwipe[0] and lastwipe[1] == 0:
         log.log('MAINT', f'Instance [{inst.title()}] is set to [enabled]. Starting server')
         restartinstnow(inst, startonly=True)
-    elif not instdata['enabled'] and instdata['isrunning'] == 1 and f'{inst}-restart' not in globvars.taskworkers:
-        log.warning(f'Instance [{inst.title()}] is set to [disabled]. Stopping server')
-        instancerestart(inst, 'admin restart')
+    elif not lastwipe[0] and lastwipe[1] == 1:
+        for each in range(numinstances):
+            if not isrebooting(instance[each]['name']):
+                if instance[each]['name'] == inst:
+                    checkifalreadyrestarting(instance[each]['name'])
+                    log.warning(f'Instance [{inst.title()}] is set to [disabled]. Stopping server')
+                    instancerestart(inst, 'admin restart')
 
 
 @log.catch
@@ -583,7 +599,7 @@ def checkupdates():
 
 @log.catch
 def restartcheck():
-    for inst in instances:
+    for each in range(numinstances):
         checkifenabled(instance[each]['name'])
         if not isrebooting(instance[each]['name']):
             checkifalreadyrestarting(instance[each]['name'])
@@ -591,7 +607,12 @@ def restartcheck():
 
 
 @log.catch
-def asyncarkupdater(stop_event):
+def arkupdater_thread(stop_event):
+    log.debug('Arkupdater thread is starting')
+    if numinstances > 0:
+        log.debug(f'Found {numinstances} ARK server instances: [{instr}]')
+    else:
+        log.debug(f'No ARK game instances found, running as [Master Bot]')
     while not stop_event.is_set():
         stopsleep(30, stop_event)
         checkconfig()

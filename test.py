@@ -1,29 +1,24 @@
-import asyncio
-
-import uvloop
+import sys
+import pyinotify
+from time import sleep
 from loguru import logger as log
+from pathlib import Path
 
-from modules.asyncdb import DB as db
-
-
-@log.catch
-async def gettotaldbconnections():
-    result = await db.fetchone(f'SELECT count(*) FROM pg_stat_activity;')
-    return int(result['count'])
+testfile = Path('/home/ark/shared/config/test.old')
 
 
-async def looper():
-    while True:
-        connections = await gettotaldbconnections()
-        print(connections)
-        await asyncio.sleep(30)
+class EventProcessor(pyinotify.ProcessEvent):
+    def process_IN_CLOSE_WRITE(self, event):
+        print(event.pathname)
+        if event.pathname == str(testfile):
+            print('yes!')
 
 
-def loop():
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncio.run(looper())
-    log.debug(f'Shutting down thread')
-    asyncio.run(db.close())
+file_watch_manager = pyinotify.WatchManager()
+file_event_notifier = pyinotify.Notifier(file_watch_manager, EventProcessor())
+file_watch_manager.add_watch('/home/ark/shared/config', pyinotify.IN_CLOSE_WRITE)
 
 
-loop()
+while True:
+    file_event_notifier.loop()
+    sleep(1)
