@@ -21,4 +21,5 @@ file_watch_manager.add_watch('/home/ark/shared/config', pyinotify.IN_CLOSE_WRITE
 
 while True:
     file_event_notifier.loop()
+    print('.')
     sleep(1)
