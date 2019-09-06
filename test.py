@@ -1,5 +1,6 @@
-from fsmonitor import FSMonitorThread
 from time import sleep
+
+from fsmonitor import FSMonitorThread
 
 
 def cb(event):

@@ -3,9 +3,11 @@ import subprocess
 from os.path import isfile
 from re import sub
 from time import time
-from modules.asyncdb import DB as db
+
 from loguru import logger as log
 from psutil import Process
+
+from modules.asyncdb import DB as db
 
 
 def asynctimeit(func):

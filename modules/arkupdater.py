@@ -2,19 +2,21 @@ import configparser
 # import os
 import random
 import shutil
-from pathlib import Path
-import pyinotify
 import subprocess
 import threading
 from datetime import datetime
 from datetime import time as dt
-from time import sleep
 from os import chown
+from pathlib import Path
+from time import sleep
+
 from loguru import logger as log
 from timebetween import is_time_between
 
+import pyinotify
 from modules.clusterevents import getcurrenteventext, iseventrebootday, iseventtime
-from modules.configreader import arkroot, hstname, instance, instr, is_arkupdater, maint_hour, numinstances, sharedpath, instances
+from modules.configreader import (arkroot, hstname, instance, instances, instr,
+                                  is_arkupdater, maint_hour, numinstances, sharedpath)
 from modules.dbhelper import dbquery, dbupdate
 from modules.discordbot import writediscord
 from modules.instances import getlastwipe, isinstanceenabled, isinstanceup

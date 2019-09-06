@@ -1,9 +1,10 @@
+import asyncio
 from re import compile as rcompile
 from sys import exit
-import asyncio
-from loguru import logger as log
-from modules.asyncdb import DB as db
 
+from loguru import logger as log
+
+from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, serverexec

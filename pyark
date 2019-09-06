@@ -1,10 +1,11 @@
 #!/usr/bin/env python3.7
-import warnings
 import argparse
 import asyncio
+import logging
 import signal
 import sys
 import threading
+import warnings
 from os import _exit, nice, stat
 from time import sleep, time
 
@@ -12,7 +13,7 @@ import aiohttp
 import uvloop
 from git import Repo
 from loguru import logger as log
-import logging
+
 import globvars
 import modules.logging
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
@@ -34,6 +35,7 @@ from modules.processlock import plock
 from modules.servertools import serverexec
 from modules.statcollector import statcollector_thread
 from modules.timehelper import Secs
+
 logging.basicConfig(level=logging.DEBUG)
 
 __author__ = "Ian Perry"

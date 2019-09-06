@@ -1,8 +1,10 @@
 import asyncio
+
 import uvloop
+from fastapi import FastAPI
 from hypercorn.asyncio import serve
 from hypercorn.config import Config
-from fastapi import FastAPI
+
 from modules.asyncdb import asyncDB
 
 api = FastAPI()
