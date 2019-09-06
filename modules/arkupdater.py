@@ -44,6 +44,7 @@ for inst in instances:
 class EventProcessor(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
         log.debug('!')
+        print(event)
         if event.pathname == str(gameini_baseconfig_file):
             configupdatedetected('all')
         elif event.pathname == str(gusini_baseconfig_file):
@@ -75,7 +76,6 @@ def stopsleep(sleeptime, stop_event):
             log.debug('Arkupdater thread has ended')
             exit(0)
         sleep(1)
-        print('.')
 
 
 @log.catch

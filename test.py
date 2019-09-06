@@ -4,7 +4,7 @@ from time import sleep
 from loguru import logger as log
 from pathlib import Path
 
-testfile = Path('/home/ark/shared/config/test.old')
+testfile = Path('/home/ark/shared/config/Game-coliseum.ini')
 
 
 class EventProcessor(pyinotify.ProcessEvent):
@@ -15,11 +15,10 @@ class EventProcessor(pyinotify.ProcessEvent):
 
 
 file_watch_manager = pyinotify.WatchManager()
-file_event_notifier = pyinotify.Notifier(file_watch_manager, EventProcessor())
+file_event_notifier = pyinotify.ThreadedNotifier(file_watch_manager, EventProcessor())
 file_watch_manager.add_watch('/home/ark/shared/config', pyinotify.IN_CLOSE_WRITE)
-
+file_event_notifier.start()
 
 while True:
-    file_event_notifier.loop()
     print('.')
     sleep(1)
