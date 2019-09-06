@@ -585,8 +585,12 @@ def arkupdater_thread(stop_event):
         log.debug(f'No ARK game instances found, running as [Master Bot]')
     global file_event_notifier
     file_watch_manager = pyinotify.WatchManager()
+    print('1')
+    breakpoint()
     file_event_notifier = pyinotify.Notifier(file_watch_manager, EventProcessor())
+    print('2')
     file_watch_manager.add_watch('/home/ark/shared/config', pyinotify.IN_CLOSE_WRITE)
+    print('3')
     log.debug(f'gameini_customconfig_files: {gameini_customconfig_files}')
     log.debug(f'gusini_customconfig_files: {gusini_customconfig_files}')
 
