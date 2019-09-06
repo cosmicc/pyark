@@ -71,6 +71,7 @@ def configupdatedetected(cinst):
 def stopsleep(sleeptime, stop_event):
     for ntime in range(sleeptime):
         if stop_event.is_set():
+            file_event_notifier.stop()
             log.debug('Arkupdater thread has ended')
             exit(0)
         sleep(1)
