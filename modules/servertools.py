@@ -18,6 +18,7 @@ def asynctimeit(func):
     return wrapper
 
 
+
 @log.catch
 async def gettotaldbconnections():
     return await db.fetchone(f'SELECT count(*) FROM pg_stat_activity;')

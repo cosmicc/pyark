@@ -17,7 +17,7 @@ from modules.clusterevents import getcurrenteventext, iseventrebootday, iseventt
 from modules.configreader import arkroot, hstname, instance, instr, is_arkupdater, maint_hour, numinstances, sharedpath, instances
 from modules.dbhelper import dbquery, dbupdate
 from modules.discordbot import writediscord
-from modules.instances import getlastwipe, instancelist, isinstanceenabled, isinstancerunning, isinstanceup
+from modules.instances import getlastwipe, isinstanceenabled, isinstanceup
 from modules.players import getliveplayersonline, getplayersonline
 from modules.pushover import pushover
 from modules.servertools import serverexec, serverneedsrestart
@@ -40,10 +40,13 @@ for inst in instances:
     gusini_customconfig_files.update({inst: Path(f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini')})
     gameini_customconfig_files.update({inst: Path(f'{sharedpath}/config/Game-{inst.lower()}.ini')})
 
+log.debug(f'gameini_customconfig_files: {gameini_customconfig_files}')
+log.debug(f'gusini_customconfig_files: {gusini_customconfig_files}')
+
 
 class EventProcessor(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
-        if event.pathname == str(gusini_baseconfig_file):
+        if event.pathname == str(gameini_baseconfig_file):
             configupdatedetected('all')
         elif event.pathname == str(gusini_baseconfig_file):
             configupdatedetected('all')
@@ -221,12 +224,14 @@ def installconfigs(inst):
     try:
         config = configparser.RawConfigParser()
         config.optionxform = str
-        config.read(str(gusini_baseconfig_file))
+        config.read(gusini_baseconfig_file)
         if inst in gusini_customconfig_files:
             gusbuildfile = gusini_customconfig_files[inst].read_text().split('\n')
             for each in gusbuildfile:
                 each = each.strip().split(',')
                 config.set(each[0], each[1], each[2])
+        else:
+            log.debug(f'No custom config found for {inst}')
 
         if iseventtime():
             eventext = getcurrenteventext()
@@ -241,13 +246,12 @@ def installconfigs(inst):
 
         if gusini_tempconfig_file.exists():
             gusini_tempconfig_file.unlink()
-        gusini_tempconfig_file.write_text(config.write(configfile))
-
+        config.write(gusini_tempconfig_file)
+        shutil.move(gusini_tempconfig_file, gusini_final_file)
         if inst in gameini_customconfig_files.exists():
             shutil.copy(gameini_customconfig_files[inst], gameini_final_file)
         else:
             shutil.copy(gameini_baseconfig_file, gameini_final_file)
-        shutil.move(gusini_tempconfig_file, gusini_final_file)
         chown(str(gameini_final_file), 1001, 1005)
         chown(str(gusini_final_file), 1001, 1005)
         log.debug(f'Server {inst} built and updated config files')
@@ -375,9 +379,9 @@ def maintenance():
                 sleep(30)
                 log.log('MAINT', f'Backing up server instance and archiving old players [{inst.title()}]...')
                 serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
-                sleep(30)
-                log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
-                os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
+                # sleep(30)
+                # log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
+                # os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
                 sleep(30)
                 log.log('MAINT', f'Running all dino and map maintenance on server [{inst.title()}]...')
                 log.debug(f'Shutting down dino mating on {inst}...')

@@ -125,7 +125,7 @@ async def asyncplayergreet(steamid, steamname, inst):
             welcom.start()
         else:
             if player['transferpoints'] != 0 and player['homeserver'] == inst:
-                xferpoints = int(player[16])
+                xferpoints = int(player['transferpoints'])
                 log.log('POINTS', f'Transferred {xferpoints} non-home server points for [{player[1].title()}] on [{inst.title()}]')
                 await db.update(f"UPDATE players SET transferpoints = 0 WHERE steamid = '{steamid}'")
                 await asyncserverscriptcmd(inst, f'tcsar addarctotal {steamid} {xferpoints}')
@@ -135,7 +135,7 @@ async def asyncplayergreet(steamid, steamname, inst):
             else:  # new player connection
                 log.debug(f'New online player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
                 await db.update(f"UPDATE players SET online = True, welcomeannounce = False, lastseen = '{Now()}', server = '{inst}', connects = {int(player[7]) + 1}, refreshauctions = True, refreshsteam = True WHERE steamid = '{steamid}'")
-                laston = elapsedTime(Now(), int(player[2]))
+                laston = elapsedTime(Now(), int(player['lastseen']))
                 totplay = playedTime(int(player[4]))
                 newpoints = int(player[5]) + xferpoints
                 mtxt = f'Welcome back {player[1].title()}, you have {newpoints} reward points on {player[15].capitalize()}, last online {laston} ago, total time played {totplay}'

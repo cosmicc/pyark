@@ -79,13 +79,12 @@ def float_trunc_1dec(num):
         return tnum
 
 
-@log.catch
 def getopenfiles():
-    result = serverexec(['sysctl', 'fs.file-nr'], nice=19, null=False)
-    print(result.split(' '))
+    result = serverexec(['sysctl', 'fs.file-nr'])
+    newresult = result.stdout.decode('utf-8').strip().split(' ')[2].split('\t')
+    return {'openfiles': newresult[0], 'openfilelimit': newresult[2]}
 
 
-@log.catch
 def arkprocesscpu(inst):
     arkprocess = psutil.Process(getinstpid(inst))
     return arkprocess.cpu_percent(interval=2)
@@ -212,7 +211,7 @@ def main():
                     memfree, memavail, swapused = getservermem()
                     cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
                     uptime = getserveruptime()
-
+                ofiles = getopenfiles()
             for eachinst in instance:
                 if isinstanceenabled(eachinst['name']):
                     isitrunning, isitlistening, isitonline = getinststatus(eachinst['name'])
@@ -279,7 +278,7 @@ def main():
                                 else:
                                     log.info(f'Skipping instance restart because players are actually online')
                     if serverstatcount == 1:
-                        dbupdate("UPDATE instances SET serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s' WHERE name = '%s'" % (hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, eachinst['name']))
+                        dbupdate("UPDATE instances SET serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', openfiles = '%s' WHERE name = '%s'" % (hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, ofiles['openfiles'], eachinst['name']))
 
         except KeyboardInterrupt:
             log.critical('Keyboard Interrupt Detected, Exiting.')

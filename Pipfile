@@ -32,6 +32,10 @@ sh = "*"
 aiofiles = "*"
 apscheduler = "*"
 pyinotify = "*"
+quart = "*"
+quart-openapi = "*"
+hypercorn = "*"
+fastapi = "*"
 
 [requires]
 python_version = "3.7"
