@@ -244,6 +244,8 @@ def installconfigs(inst):
             else:
                 log.error('Cannot find Event GUS config file to merge in')
 
+        with open(str(gusini_tempconfig_file), 'w') as configfile:
+                config.write(configfile)
         if gusini_tempconfig_file.exists():
             gusini_tempconfig_file.unlink()
         config.write(gusini_tempconfig_file)

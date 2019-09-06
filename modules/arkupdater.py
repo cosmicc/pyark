@@ -1,21 +1,23 @@
 import configparser
-import os
+# import os
 import random
 import shutil
+from pathlib import Path
+import pyinotify
 import subprocess
 import threading
 from datetime import datetime
 from datetime import time as dt
 from time import sleep
-
+from os import chown
 from loguru import logger as log
 from timebetween import is_time_between
 
 from modules.clusterevents import getcurrenteventext, iseventrebootday, iseventtime
-from modules.configreader import arkroot, hstname, instance, instr, is_arkupdater, maint_hour, numinstances, sharedpath
+from modules.configreader import arkroot, hstname, instance, instr, is_arkupdater, maint_hour, numinstances, sharedpath, instances
 from modules.dbhelper import dbquery, dbupdate
 from modules.discordbot import writediscord
-from modules.instances import getlastwipe, instancelist, isinstanceenabled, isinstancerunning, isinstanceup
+from modules.instances import getlastwipe, isinstanceenabled, isinstanceup
 from modules.players import getliveplayersonline, getplayersonline
 from modules.pushover import pushover
 from modules.servertools import serverexec, serverneedsrestart
@@ -24,6 +26,48 @@ from modules.timehelper import Now, Secs, wcstamp
 confupdtimer = 0
 dwtimer = 0
 updgennotify = Now() - Secs['hour']
+
+arkmanager_paths = []
+gameini_customconfig_files = {}
+gusini_customconfig_files = {}
+gameini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
+gameini_baseconfig_file = Path(f'{sharedpath}/config/Game-base.ini')
+gusini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
+gusini_baseconfig_file = Path(f'{sharedpath}/config/GameUserSettings-base.ini')
+gusini_tempconfig_file = Path(f'{sharedpath}/config/GameUserSettings.tmp')
+for inst in instances:
+    arkmanager_paths.append(Path(f'/home/ark/shared/logs/arkmanager/{inst}'))
+    gusini_customconfig_files.update({inst: Path(f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini')})
+    gameini_customconfig_files.update({inst: Path(f'{sharedpath}/config/Game-{inst.lower()}.ini')})
+
+log.debug(f'gameini_customconfig_files: {gameini_customconfig_files}')
+log.debug(f'gusini_customconfig_files: {gusini_customconfig_files}')
+
+
+class EventProcessor(pyinotify.ProcessEvent):
+    def process_IN_CLOSE_WRITE(self, event):
+        if event.pathname == str(gameini_baseconfig_file):
+            configupdatedetected('all')
+        elif event.pathname == str(gusini_baseconfig_file):
+            configupdatedetected('all')
+        for inst in instances:
+            if event.pathname == str(gameini_customconfig_files[inst]):
+                configupdatedetected(inst)
+            elif event.pathname == str(gusini_customconfig_files[inst]):
+                configupdatedetected(inst)
+
+
+def configupdatedetected(cinst):
+    if cinst == 'all':
+        cinst = instances
+    for inst in cinst:
+        if not isrebooting(inst):
+            log.log('UPDATE', f'Config update detected for [{inst.title()}]')
+            har = int(getcfgver(inst))
+            setpendingcfgver(inst, har + 1)
+        if getcfgver(inst) < getpendingcfgver(inst):
+            maintrest = "configuration update"
+            instancerestart(inst, maintrest)
 
 
 def stopsleep(sleeptime, stop_event):
@@ -45,18 +89,11 @@ def writechat(inst, whos, msg, tstamp):
 
 @log.catch
 def checkdirs(inst):
-    if not os.path.exists('/home/ark/shared/logs/arkmanager'):
-        log.error(f'Log directory /home/ark/shared/logs/arkmanager does not exist! creating')
-        os.mkdir('/home/ark/shared/logs/arkmanager', 0o777)
-        os.chown('/home/ark/shared/logs/arkmanager', 1001, 1005)
-    else:
-        log.trace('Log directory /home/ark/shared/logs/arkmanager exists')
-    if not os.path.exists(f'/home/ark/shared/logs/arkmanager/{inst}'):
-        log.error(f'Log directory /home/ark/shared/logs/arkmanager/{inst} does not exist! creating')
-        os.mkdir(f'/home/ark/shared/logs/arkmanager/{inst}', 0o777)
-        os.chown(f'/home/ark/shared/logs/arkmanager/{inst}', 1001, 1005)
-    else:
-        log.trace(f'Log directory /home/ark/shared/logs/arkmanager/{inst} exists')
+    for path in arkmanager_paths:
+        if not path.exists():
+            log.error(f'Log directory {str(path)} does not exist! creating')
+            path.mkdir(mode=0o777, parents=True)
+            chown(str(path), 1001, 1005)
 
 
 @log.catch
@@ -183,6 +220,48 @@ def stillneedsrestart(inst):
 
 
 @log.catch
+def installconfigs(inst):
+    try:
+        config = configparser.RawConfigParser()
+        config.optionxform = str
+        config.read(gusini_baseconfig_file)
+        if inst in gusini_customconfig_files:
+            gusbuildfile = gusini_customconfig_files[inst].read_text().split('\n')
+            for each in gusbuildfile:
+                each = each.strip().split(',')
+                config.set(each[0], each[1], each[2])
+        else:
+            log.debug(f'No custom config found for {inst}')
+
+        if iseventtime():
+            eventext = getcurrenteventext()
+            gusini_event_file = Path(f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini')
+            if gusini_event_file.exists():
+                guseventfile = gusini_customconfig_files[inst].read_text().split('\n')
+                for each in guseventfile:
+                    each = each.strip().split(',')
+                    config.set(each[0], each[1], each[2])
+            else:
+                log.error('Cannot find Event GUS config file to merge in')
+
+        with open(str(gusini_tempconfig_file), 'w') as configfile:
+                config.write(configfile)
+        if gusini_tempconfig_file.exists():
+            gusini_tempconfig_file.unlink()
+        config.write(gusini_tempconfig_file)
+        shutil.move(gusini_tempconfig_file, gusini_final_file)
+        if inst in gameini_customconfig_files.exists():
+            shutil.copy(gameini_customconfig_files[inst], gameini_final_file)
+        else:
+            shutil.copy(gameini_baseconfig_file, gameini_final_file)
+        chown(str(gameini_final_file), 1001, 1005)
+        chown(str(gusini_final_file), 1001, 1005)
+        log.debug(f'Server {inst} built and updated config files')
+    except:
+        log.exception(f'Problem building config for inst {inst}')
+
+
+@log.catch
 def restartinstnow(inst, startonly=False):
     checkdirs(inst)
     if not startonly:
@@ -201,11 +280,7 @@ def restartinstnow(inst, startonly=False):
         serverexec(['reboot'], nice=0, null=True)
     else:
         log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
-        buildconfig(inst)
-        shutil.copy(f'{sharedpath}/stagedconfig/Game-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
-        subprocess.run('chown ark.ark %s/ShooterGame/Saved/Config/LinuxServer/Game.ini' % (arkroot, ), stdout=subprocess.DEVNULL, shell=True)
-        shutil.copy(f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini', f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
-        log.debug(f'server {inst} built and updated config files')
+        installconfigs(inst)
         log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
         serverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'], nice=0, null=True),
         dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
@@ -213,9 +288,7 @@ def restartinstnow(inst, startonly=False):
         resetlastrestart(inst)
         unsetstartbit(inst)
         playerrestartbit(inst)
-        os.nice(-19)
         serverexec(['arkmanager', 'start', f'@{inst}'], nice=-10, null=True)
-        os.nice(10)
 
 
 @log.catch
@@ -308,9 +381,9 @@ def maintenance():
                 sleep(30)
                 log.log('MAINT', f'Backing up server instance and archiving old players [{inst.title()}]...')
                 serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
-                sleep(30)
-                log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
-                os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
+                # sleep(30)
+                # log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
+                # os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
                 sleep(30)
                 log.log('MAINT', f'Running all dino and map maintenance on server [{inst.title()}]...')
                 log.debug(f'Shutting down dino mating on {inst}...')
@@ -369,108 +442,6 @@ def instancerestart(inst, reason, startonly=False):
                 instance[each]['restartthread'].start()
     else:
         log.debug(f'skipping start/restart for {inst} because restart thread already running')
-
-
-@log.catch
-def compareconfigs(config1, config2):
-    if not os.path.isfile(config2):
-        serverexec(['touch', '{config2}'], nice=15, null=True)
-    try:
-        f1 = open(config1)
-        text1Lines = f1.readlines()
-        f2 = open(config2)
-        text2Lines = f2.readlines()
-        set1 = set(text1Lines)
-        set2 = set(text2Lines)
-        diffList = (set1 | set2) - (set1 & set2)
-        if diffList:
-            return True
-        else:
-            return False
-    except:
-        log.critical('Problem comparing configs for build')
-        return False
-
-
-@log.catch
-def buildconfig(inst):
-    try:
-        basecfgfile = f'{sharedpath}/config/GameUserSettings-base.ini'
-        servercfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini'
-        newcfgfile = f'{sharedpath}/config/GameUserSettings-{inst.lower()}.tmp'
-        stgcfgfile = f'{sharedpath}/stagedconfig/GameUserSettings-{inst.lower()}.ini'
-        stggamefile = f'{sharedpath}/stagedconfig/Game-{inst.lower()}.ini'
-        config = configparser.RawConfigParser()
-        config.optionxform = str
-        config.read(basecfgfile)
-
-        if os.path.isfile(servercfgfile):
-            try:
-                with open(servercfgfile, 'r') as f:
-                    lines = f.readlines()
-                    for each in lines:
-                        each = each.strip().split(',')
-                        config.set(each[0], each[1], each[2])
-            except:
-                log.exception('arkupdater 415')
-
-        if iseventtime():
-            eventext = getcurrenteventext()
-            eventcfgfile = f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini'
-            if os.path.isfile(eventcfgfile):
-                try:
-                    with open(eventcfgfile, 'r') as f:
-                        lines = f.readlines()
-                        for each in lines:
-                            each = each.strip().split(',')
-                            config.set(each[0], each[1], each[2])
-                except:
-                    f.close()
-                    log.exception('arkupdater 428')
-            else:
-                log.error('Cannot find Event GUS config file to merge in')
-
-        try:
-            with open(newcfgfile, 'w') as configfile:
-                config.write(configfile)
-        except:
-            configfile.close()
-            log.exception('arkupdater 438')
-
-        fname = f'{sharedpath}/config/Game-{inst.lower()}.ini'
-        if os.path.isfile(fname):
-            gamebasefile = f'{sharedpath}/config/Game-{inst.lower()}.ini'
-        else:
-            gamebasefile = f'{sharedpath}/config/Game-base.ini'
-
-        if compareconfigs(newcfgfile, stgcfgfile) or compareconfigs(gamebasefile, stggamefile):
-            shutil.move(newcfgfile, stgcfgfile)
-            shutil.copy(gamebasefile, stggamefile)
-            subprocess.run('chown ark.ark "%s"' % (stgcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            subprocess.run('chown ark.ark "%s"' % (stggamefile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            return True
-        else:
-            subprocess.run('rm -f "%s"' % (newcfgfile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            return False
-    except:
-        log.exception(f'Problem building config for inst {inst}')
-        return False
-
-
-@log.catch
-def checkconfig():
-    for each in range(numinstances):
-        inst = instance[each]['name']
-        if not isrebooting(inst):
-            if buildconfig(inst):
-                log.log('UPDATE', f'Config update detected for [{inst.title()}]')
-                har = int(getcfgver(inst))
-                setpendingcfgver(inst, har + 1)
-            if getcfgver(inst) < getpendingcfgver(inst):
-                maintrest = "configuration update"
-                instancerestart(inst, maintrest)
-            else:
-                log.trace(f'no config changes detected for instance {inst}')
 
 
 @log.catch
@@ -605,7 +576,6 @@ def restartcheck():
             checkifalreadyrestarting(instance[each]['name'])
 
 
-
 @log.catch
 def arkupdater_thread(stop_event):
     log.debug('Arkupdater thread is starting')
@@ -613,9 +583,14 @@ def arkupdater_thread(stop_event):
         log.debug(f'Found {numinstances} ARK server instances: [{instr}]')
     else:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
+
+    file_watch_manager = pyinotify.WatchManager()
+    file_event_notifier = pyinotify.Notifier(file_watch_manager, EventProcessor())
+    file_watch_manager.add_watch('/home/ark/shared/config', pyinotify.IN_CLOSE_WRITE)
+
     while not stop_event.is_set():
+        file_event_notifier.loop()
         stopsleep(30, stop_event)
-        checkconfig()
         restartcheck()
         stopsleep(30, stop_event)
         restartcheck()
