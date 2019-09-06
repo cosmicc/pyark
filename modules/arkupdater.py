@@ -40,9 +40,6 @@ for inst in instances:
     gusini_customconfig_files.update({inst: Path(f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini')})
     gameini_customconfig_files.update({inst: Path(f'{sharedpath}/config/Game-{inst.lower()}.ini')})
 
-log.debug(f'gameini_customconfig_files: {gameini_customconfig_files}')
-log.debug(f'gusini_customconfig_files: {gusini_customconfig_files}')
-
 
 class EventProcessor(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
@@ -587,6 +584,8 @@ def arkupdater_thread(stop_event):
     file_watch_manager = pyinotify.WatchManager()
     file_event_notifier = pyinotify.Notifier(file_watch_manager, EventProcessor())
     file_watch_manager.add_watch('/home/ark/shared/config', pyinotify.IN_CLOSE_WRITE)
+    log.debug(f'gameini_customconfig_files: {gameini_customconfig_files}')
+    log.debug(f'gusini_customconfig_files: {gusini_customconfig_files}')
 
     while not stop_event.is_set():
         file_event_notifier.loop()
