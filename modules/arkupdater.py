@@ -74,6 +74,7 @@ def stopsleep(sleeptime, stop_event):
             log.debug('Arkupdater thread has ended')
             exit(0)
         sleep(1)
+        print('.')
 
 
 @log.catch
