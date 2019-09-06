@@ -73,6 +73,7 @@ def stopsleep(sleeptime, stop_event):
             log.debug('Arkupdater thread has ended')
             exit(0)
         sleep(1)
+        file_event_notifier.loop()
 
 
 @log.catch
@@ -580,7 +581,7 @@ def arkupdater_thread(stop_event):
         log.debug(f'Found {numinstances} ARK server instances: [{instr}]')
     else:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
-
+    global file_event_notifier
     file_watch_manager = pyinotify.WatchManager()
     file_event_notifier = pyinotify.Notifier(file_watch_manager, EventProcessor())
     file_watch_manager.add_watch('/home/ark/shared/config', pyinotify.IN_CLOSE_WRITE)
@@ -588,7 +589,6 @@ def arkupdater_thread(stop_event):
     log.debug(f'gusini_customconfig_files: {gusini_customconfig_files}')
 
     while not stop_event.is_set():
-        file_event_notifier.loop()
         stopsleep(30, stop_event)
         restartcheck()
         stopsleep(30, stop_event)
