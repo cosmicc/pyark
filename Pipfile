@@ -31,11 +31,11 @@ asyncpg = "*"
 sh = "*"
 aiofiles = "*"
 apscheduler = "*"
-pyinotify = "*"
 quart = "*"
 quart-openapi = "*"
 hypercorn = "*"
 fastapi = "*"
+fsmonitor = "*"
 
 [requires]
 python_version = "3.7"

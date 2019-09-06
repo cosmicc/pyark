@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f1c6230713c0154f40cb7a24045932fa918fe64a1785b0ef090c9e0ba6a0ebd3"
+            "sha256": "b668503e4742304ea99b5f57b161b82ff7e00abab7e0afdecb4a75511753458d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -250,6 +250,13 @@
                 "sha256:d9a9e366b32dcbb98ef17228e76be15702cd2600675668bca23f63a7947fd5ac"
             ],
             "version": "==0.14.2"
+        },
+        "fsmonitor": {
+            "hashes": [
+                "sha256:397fc47e339ce8aaa6f7a27fe376d4e614579038ff9c61bf28c6733fb1d0c5cd"
+            ],
+            "index": "pypi",
+            "version": "==0.1"
         },
         "gitdb2": {
             "hashes": [
@@ -581,13 +588,6 @@
                 "sha256:ede2d65ae33788d4e26e12b330b4a32c53cb14131c65bca3a59f037c73f6ee7a"
             ],
             "version": "==0.32.2"
-        },
-        "pyinotify": {
-            "hashes": [
-                "sha256:9c998a5d7606ca835065cdabc013ae6c66eb9ea76a00a1e3bc6e0cfe2b4f71f4"
-            ],
-            "index": "pypi",
-            "version": "==0.9.6"
         },
         "python-dateutil": {
             "hashes": [

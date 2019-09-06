@@ -31,8 +31,8 @@ arkmanager_paths = []
 gameini_customconfig_files = {}
 gusini_customconfig_files = {}
 gameini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
-gameini_baseconfig_file = Path(f'{sharedpath}/config/Game-base.ini')
 gusini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
+gameini_baseconfig_file = Path(f'{sharedpath}/config/Game-base.ini')
 gusini_baseconfig_file = Path(f'{sharedpath}/config/GameUserSettings-base.ini')
 gusini_tempconfig_file = Path(f'{sharedpath}/config/GameUserSettings.tmp')
 for inst in instances:
@@ -237,8 +237,7 @@ def installconfigs(inst):
             eventext = getcurrenteventext()
             gusini_event_file = Path(f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini')
             if gusini_event_file.exists():
-                guseventfile = gusini_customconfig_files[inst].read_text().split('\n')
-                for each in guseventfile:
+                for each in gusini_event_file.read_text().split('\n'):
                     each = each.strip().split(',')
                     config.set(each[0], each[1], each[2])
             else:
