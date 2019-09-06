@@ -223,45 +223,42 @@ def stillneedsrestart(inst):
 
 @log.catch
 def installconfigs(inst):
-    try:
-        config = configparser.RawConfigParser()
-        config.optionxform = str
-        config.read(gusini_baseconfig_file)
-        if inst in gusini_customconfig_files:
-            gusbuildfile = gusini_customconfig_files[inst].read_text().split('\n')
-            log.debug(gusbuildfile)
-            for each in gusbuildfile:
-                log.debug(each)
+    config = configparser.RawConfigParser()
+    config.optionxform = str
+    config.read(gusini_baseconfig_file)
+    if inst in gusini_customconfig_files:
+        gusbuildfile = gusini_customconfig_files[inst].read_text().split('\n')
+        log.debug(gusbuildfile)
+        for each in gusbuildfile:
+            log.debug(each)
+            each = each.strip().split(',')
+            config.set(each[0], each[1], each[2])
+    else:
+        log.debug(f'No custom config found for {inst}')
+
+    if iseventtime():
+        eventext = getcurrenteventext()
+        gusini_event_file = Path(f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini')
+        if gusini_event_file.exists():
+            for each in gusini_event_file.read_text().split('\n'):
                 each = each.strip().split(',')
                 config.set(each[0], each[1], each[2])
         else:
-            log.debug(f'No custom config found for {inst}')
+            log.error('Cannot find Event GUS config file to merge in')
 
-        if iseventtime():
-            eventext = getcurrenteventext()
-            gusini_event_file = Path(f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini')
-            if gusini_event_file.exists():
-                for each in gusini_event_file.read_text().split('\n'):
-                    each = each.strip().split(',')
-                    config.set(each[0], each[1], each[2])
-            else:
-                log.error('Cannot find Event GUS config file to merge in')
-
-        with open(str(gusini_tempconfig_file), 'w') as configfile:
-                config.write(configfile)
-        if gusini_tempconfig_file.exists():
-            gusini_tempconfig_file.unlink()
-        config.write(gusini_tempconfig_file)
-        shutil.move(gusini_tempconfig_file, gusini_final_file)
-        if inst in gameini_customconfig_files.exists():
-            shutil.copy(gameini_customconfig_files[inst], gameini_final_file)
-        else:
-            shutil.copy(gameini_baseconfig_file, gameini_final_file)
-        chown(str(gameini_final_file), 1001, 1005)
-        chown(str(gusini_final_file), 1001, 1005)
-        log.debug(f'Server {inst} built and updated config files')
-    except:
-        log.exception(f'Problem building config for inst {inst}')
+    with open(str(gusini_tempconfig_file), 'w') as configfile:
+            config.write(configfile)
+    if gusini_tempconfig_file.exists():
+        gusini_tempconfig_file.unlink()
+    config.write(gusini_tempconfig_file)
+    shutil.move(gusini_tempconfig_file, gusini_final_file)
+    if inst in gameini_customconfig_files.exists():
+        shutil.copy(gameini_customconfig_files[inst], gameini_final_file)
+    else:
+        shutil.copy(gameini_baseconfig_file, gameini_final_file)
+    chown(str(gameini_final_file), 1001, 1005)
+    chown(str(gusini_final_file), 1001, 1005)
+    log.debug(f'Server {inst} built and updated config files')
 
 
 @log.catch
