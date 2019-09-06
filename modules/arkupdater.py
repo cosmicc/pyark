@@ -229,7 +229,9 @@ def installconfigs(inst):
         config.read(gusini_baseconfig_file)
         if inst in gusini_customconfig_files:
             gusbuildfile = gusini_customconfig_files[inst].read_text().split('\n')
+            log.debug(gusbuildfile)
             for each in gusbuildfile:
+                log.debug(each)
                 each = each.strip().split(',')
                 config.set(each[0], each[1], each[2])
         else:
