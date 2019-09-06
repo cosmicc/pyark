@@ -123,4 +123,4 @@ def serverexec(cmdlist, nice=10, null=False):
         return sproc.returncode
     else:
         sproc = subprocess.run(fullcmdlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-        return sproc.stdout
+        return sproc
