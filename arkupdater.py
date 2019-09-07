@@ -540,7 +540,7 @@ async def asyncupdaterloop():
         await asyncio.sleep(10)
         await asyncrestartcheck()
         await asyncio.sleep(10)
-        await asynccheckupdates()
+        asyncio.create_task(asynccheckupdates())
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asyncrestartcheck()
