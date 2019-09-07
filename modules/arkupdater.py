@@ -228,10 +228,9 @@ def installconfigs(inst):
     config.read(gusini_baseconfig_file)
     if inst in gusini_customconfig_files:
         gusbuildfile = gusini_customconfig_files[inst].read_text().split('\n')
-        print(gusbuildfile)
         for each in gusbuildfile:
-            print(each)
-            a = each.strip().split(',')
+            a = each.split(',')
+            print(a)
             config.set(a[0], a[1], a[2])
     else:
         log.debug(f'No custom config found for {inst}')
@@ -241,7 +240,8 @@ def installconfigs(inst):
         gusini_event_file = Path(f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini')
         if gusini_event_file.exists():
             for each in gusini_event_file.read_text().split('\n'):
-                a = each.strip().split(',')
+                a = each.split(',')
+                print(a)
                 config.set(a[0], a[1], a[2])
         else:
             log.error('Cannot find Event GUS config file to merge in')
