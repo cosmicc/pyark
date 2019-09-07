@@ -432,7 +432,7 @@ async def asynccheckbackup(instances):
             if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
                 asyncio.create_task(asyncperformbackup(inst))
             else:
-                log.trace(f'no backups needed for {inst}'
+                log.trace(f'no backups needed for {inst}')
 
 
 @log.catch
