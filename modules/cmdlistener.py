@@ -550,19 +550,16 @@ async def asyncleavingplayerwatch(player, inst):
             transferred = True
             stop_watch = True
         await asyncio.sleep(2)
-        if player['homeserver'] != inst:
-            command = f'tcsar setarctotal {player["steamid"]} 0'
-            await asyncserverscriptcmd(inst, command)
 
-    if not transferred and time() - int(queryplayer['lastseen']) >= 240:
+    if not transferred and time() - int(queryplayer['lastseen']) >= 250:
         steamid = player["steamid"]
         await db.update(f"UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         await asyncserverchat(inst, mtxt)
-        if player['homeserver'] != inst:
-            command = f'tcsar setarctotal {player["steamid"]} 0'
-            await asyncserverscriptcmd(inst, command)
+    if player['homeserver'] != inst:
+        command = f'tcsar setarctotal {player["steamid"]} 0'
+        await asyncserverscriptcmd(inst, command)
     return True
 
 
