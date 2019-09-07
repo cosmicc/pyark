@@ -27,7 +27,7 @@ from modules.instances import (asyncgetlastrestart, asyncgetlastwipe,
 from modules.players import asyncgetplayersonline
 from modules.pushover import pushover
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverrconcmd,
-                                 asyncservernotify, asynctimeit, serverexec, serverneedsrestart)
+                                 asyncservernotify, asynctimeit, serverexec, serverneedsrestart, asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, wcstamp
 
 logging.basicConfig(level=logging.DEBUG)
