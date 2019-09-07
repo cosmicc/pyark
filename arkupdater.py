@@ -29,7 +29,7 @@ from modules.pushover import pushover
 from modules.servertools import asyncserverexec, asyncservernotify, asyncserverbcast, asyncserverchat, asyncserverchatto, serverexec, serverneedsrestart
 from modules.timehelper import Now, Secs, wcstamp
 
-logging.basicConfig(level=logging.TRACE)
+logging.basicConfig(level=logging.DEBUG)
 
 confupdtimer = 0
 dwtimer = 0
