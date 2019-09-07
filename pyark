@@ -17,12 +17,12 @@ from loguru import logger as log
 import globvars
 import modules.logging
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
-from modules.arkupdater import arkupdater_thread
+from modules.arkupdater import asynccheckrestart, asynccheckmaint, asynccheckupdates, asynccheckbackup, asynccheckwipe
 from modules.asyncdb import DB as db
 from modules.clusterevents import eventwatcher_thread
 from modules.cmdlistener import asynccmdcheck
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
-                                  debugfile, gamelogfile, gamelograwfile, hstname, instances,
+                                  debugfile, gamelogfile, gamelograwfile, hstname, instances, is_arkupdater,
                                   instr, jsondebugfile, jsonlogfile, loglevel, pointsfile)
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
@@ -191,37 +191,11 @@ def checkthreads():
             log.critical(f'!!!! CRITICAL ERROR! thread {thread.name} has crashed!!')
 
 
-async def loop(asyncloop, atinstances, gl=False):
-    if not gl:
-        asynclooptime = asyncloop.time()
-        if asynclooptime - globvars.timer['kickcheck'] > globvars.delay['kickcheck'] and 'kickcheck' not in globvars.taskworkers:
-            await asynckickcheck(instances)
-            # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
-            globvars.timer.update({'kickcheck': asyncloop.time()})
-        if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers and 'onlinecheck' not in globvars.taskworkers:
-            await asynccmdcheck(instances, atinstances)
-            # print(f'cmdcheck wait time: {asyncloop.time() - globvars.timer["cmdcheck"]}')
-            globvars.timer.update({'cmdcheck': asyncloop.time()})
-        if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers and 'cmdcheck' not in globvars.taskworkers:
-            await asynconlinecheck(instances)
-            # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
-            globvars.timer.update({'onlinecheck': asyncloop.time()})
-        if asynclooptime - globvars.timer['gchatrelay'] > globvars.delay['gchatrelay'] and 'gchatrelay' not in globvars.taskworkers:
-            await asyncgchatrelay(instances)
-            # print(f'gchatrelay wait time: {asyncloop.time() - globvars.timer["gchatrelay"]}')
-            globvars.timer.update({'gchatrelay': asyncloop.time()})
-    else:
-        pass
-        #gl = GameLogger()
-        #if asyncloop.time() - dblcheck_globvars.timer > dblcheck_globvars.delay:
-        #    asyncio.create_task(asyncdblcheckonline())
-        #    dblcheck_globvars.timer = asyncloop.time()
-
-
 async def asyncmain():
     global main_stop_event
+    global file_event_notifier
     main_stop_event = False
-    globvars.delay = {'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
+    globvars.delay = {'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     serverpre = ['@all']
@@ -231,45 +205,64 @@ async def asyncmain():
     await db.connect()
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
-    if len(instances) > 0:
-        globvars.timer = {'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
-    else:
-        globvars.timer = {'dblcheck': starttime}
-    log.log('START', f'Pyark is ready and serving [{instr.title()}] on {hstname}...')
     tasktimer = asyncloop.time()
     if len(instances) == 0:
+        log.debug(f'No ARK game instances found, running as [Master Bot]')
+        globvars.timer = {'dblcheck': starttime}
+
         gl = GameLogger()
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
                 await loop(asyncloop, atinstances, gl)
                 await asyncio.sleep(.1)
     else:
+        globvars.timer = {'backupcheck': starttime, 'wipecheck': starttime, 'updatecheck': starttime, 'maintcheck': starttime, 'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
+        log.debug(f'Found {len(instances)} ARK server instances: [{instr}]')
+
         while not main_stop_event:
             asynclooptime = asyncloop.time()
             if asynclooptime - globvars.timer['kickcheck'] > globvars.delay['kickcheck'] and 'kickcheck' not in globvars.taskworkers:
-                await asynckickcheck(instances)
+                asyncio.create_task(asynckickcheck(instances))
                 # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'kickcheck': asyncloop.time()})
             if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers:
-                await asynccmdcheck(instances, atinstances)
+                asyncio.create_task(asynccmdcheck(instances, atinstances))
                 # print(f'cmdcheck wait time: {asyncloop.time() - globvars.timer["cmdcheck"]}')
                 globvars.timer.update({'cmdcheck': asyncloop.time()})
             if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] and 'onlinecheck' not in globvars.taskworkers:
-                await asynconlinecheck(instances)
+                asyncio.create_task(asynconlinecheck(instances))
                 # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
                 globvars.timer.update({'onlinecheck': asyncloop.time()})
             if asynclooptime - globvars.timer['gchatrelay'] > globvars.delay['gchatrelay'] and 'gchatrelay' not in globvars.taskworkers:
-                await asyncgchatrelay(instances)
+                asyncio.create_task(asyncgchatrelay(instances))
                 # print(f'gchatrelay wait time: {asyncloop.time() - globvars.timer["gchatrelay"]}')
                 globvars.timer.update({'gchatrelay': asyncloop.time()})
+            if asynclooptime - globvars.timer['wipecheck'] > globvars.delay['wipecheck']:
+                asyncio.create_task(asynccheckwipe(instances))
+                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
+                globvars.timer.update({'wipecheck': asyncloop.time()})
+            if asynclooptime - globvars.timer['restartcheck'] > globvars.delay['restartcheck']:
+                asyncio.create_task(asynccheckrestart(instances))
+                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
+                globvars.timer.update({'restartcheck': asyncloop.time()})
+            if asynclooptime - globvars.timer['backupcheck'] > globvars.delay['backupcheck']:
+                asyncio.create_task(asynccheckbackup(instances))
+                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
+                globvars.timer.update({'backupcheck': asyncloop.time()})
+            if asynclooptime - globvars.timer['maintcheck'] > globvars.delay['maintcheck']:
+                asyncio.create_task(asynccheckmaint(instances))
+                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
+                globvars.timer.update({'maintcheck': asyncloop.time()})
+            if asynclooptime - globvars.timer['updatecheck'] > globvars.delay['updatecheck'] and is_arkupdater:
+                asyncio.create_task(asynccheckupdates(instances))
+                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
+                globvars.timer.update({'updatecheck': asyncloop.time()})
+
             if asyncloop.time() - tasktimer > 30:
                 if len(asyncio.Task.all_tasks()) > 15:
                     log.error(f'High number of async tasks running on {hstname} ({len(asyncio.Task.all_tasks())})')
                     tasktimer = asyncloop.time()
-            if hstname == 'SVR1':
-                await asyncio.sleep(.1)
-            else:
-                await asyncio.sleep(.1)
+            await asyncio.sleep(.1)
 
     #async with aiohttp.ClientSession() as session:
     #    asyncio.create_task(asyncdblcheckonline())
@@ -285,7 +278,7 @@ async def asyncmain():
     if len(pendingtasks) > 1:
         log.debug(f'Waiting for {len(pendingtasks) - 1} async tasks to finish...')
         while len(asyncio.Task.all_tasks()) > 1:
-            await asyncio.sleep(1)
+            await asyncio.sleep(.1)
     else:
         log.debug(f'No async pending tasks to finish.')
     await db.close()
@@ -333,7 +326,7 @@ def main():
         thread.start()
     log.debug('All threads have started')
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    # warnings.simplefilter('always', ResourceWarning)
+    warnings.simplefilter('always', ResourceWarning)
     asyncio.run(asyncmain())  # Async branch to main loop
     log.debug(f'Waiting for {len(threads)} threads and tasks to exit...')
     for thread in threads:

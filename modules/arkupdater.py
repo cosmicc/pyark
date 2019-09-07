@@ -1,8 +1,10 @@
+import asyncio
 import configparser
-# import os
+import logging
 import random
 import shutil
 import subprocess
+import sys
 import threading
 from datetime import datetime
 from datetime import time as dt
@@ -10,55 +12,48 @@ from os import chown
 from pathlib import Path
 from time import sleep
 
+import uvloop
 from loguru import logger as log
 from timebetween import is_time_between
 
-import pyinotify
-from modules.clusterevents import getcurrenteventext, iseventrebootday, iseventtime
-from modules.configreader import (arkroot, hstname, instance, instances, instr,
-                                  is_arkupdater, maint_hour, numinstances, sharedpath)
-from modules.dbhelper import dbquery, dbupdate
-from modules.discordbot import writediscord
-from modules.instances import getlastwipe, isinstanceenabled, isinstanceup
-from modules.players import getliveplayersonline, getplayersonline
+import globvars
+from fsmonitor import FSMonitorThread
+from modules.asyncdb import DB as db
+from modules.clusterevents import asynciseventrebootday, getcurrenteventext, iseventtime
+from modules.configreader import arkroot, hstname, instr, maint_hour, sharedpath
+from modules.discordbot import asyncwritediscord
+from modules.instances import (asyncgetlastrestart, asyncgetlastwipe,
+                               asyncisinstanceenabled, asyncisinstanceup, asyncwipeit)
+from modules.players import asyncgetplayersonline
 from modules.pushover import pushover
-from modules.servertools import serverexec, serverneedsrestart
+from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverrconcmd,
+                                 asyncservernotify, asynctimeit, serverexec, serverneedsrestart, asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, wcstamp
+
+logging.basicConfig(level=logging.DEBUG)
 
 confupdtimer = 0
 dwtimer = 0
 updgennotify = Now() - Secs['hour']
 
-arkmanager_paths = []
-gameini_customconfig_files = {}
-gusini_customconfig_files = {}
-gameini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
-gusini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
-gameini_baseconfig_file = Path(f'{sharedpath}/config/Game-base.ini')
-gusini_baseconfig_file = Path(f'{sharedpath}/config/GameUserSettings-base.ini')
-gusini_tempconfig_file = Path(f'{sharedpath}/config/GameUserSettings.tmp')
-for inst in instances:
-    arkmanager_paths.append(Path(f'/home/ark/shared/logs/arkmanager/{inst}'))
-    gusini_customconfig_files.update({inst: Path(f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini')})
-    gameini_customconfig_files.update({inst: Path(f'{sharedpath}/config/Game-{inst.lower()}.ini')})
+log.add(sink=sys.stdout, level=1, backtrace=True, diagnose=True, colorize=True)
 
 
-class EventProcessor(pyinotify.ProcessEvent):
-    def process_IN_CLOSE_WRITE(self, event):
-        log.debug('!')
-        print(event)
-        if event.pathname == str(gameini_baseconfig_file):
-            configupdatedetected('all')
-        elif event.pathname == str(gusini_baseconfig_file):
-            configupdatedetected('all')
-        for inst in instances:
-            if event.pathname == str(gameini_customconfig_files[inst]):
-                configupdatedetected(inst)
-            elif event.pathname == str(gusini_customconfig_files[inst]):
-                configupdatedetected(inst)
+def file_event(event):
+    if event.action_name == 'modify':
+        if event.name == globvars.gameini_baseconfig_file.name:
+            asyncio.create_task(configupdatedetected('all'))
+        elif event.name == globvars.gusini_baseconfig_file.name:
+            asyncio.create_task(configupdatedetected('all'))
+        else:
+            for inst in instances:
+                if event.name == globvars.gameini_customconfig_files[inst].name:
+                    asyncio.create_task(configupdatedetected(inst))
+                elif event.name == globvars.gusini_customconfig_files[inst].name:
+                    asyncio.create_task(configupdatedetected(inst))
 
 
-def configupdatedetected(cinst):
+async def configupdatedetected(cinst):
     if cinst == 'all':
         cinst = instances
     for inst in cinst:
@@ -68,30 +63,26 @@ def configupdatedetected(cinst):
             setpendingcfgver(inst, har + 1)
         if getcfgver(inst) < getpendingcfgver(inst):
             maintrest = "configuration update"
-            instancerestart(inst, maintrest)
+            await asyncinstancerestart(inst, maintrest)
 
 
-def stopsleep(sleeptime, stop_event):
-    for ntime in range(sleeptime):
-        if stop_event.is_set():
-            file_event_notifier.stop()
-            log.debug('Arkupdater thread has ended')
-            exit(0)
-        sleep(1)
+def pushoverthread(title, message):
+    pushoverthread = threading.Thread(name='pushover', target=pushover, args=(title, message), daemon=True)
+    pushoverthread.start()
 
 
 @log.catch
-def writechat(inst, whos, msg, tstamp):
+async def asyncwritechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
-        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,))
+        isindb = await db.fetchone(f"SELECT * from players WHERE playername = '{whos}'")
     elif whos == "ALERT" or isindb:
-        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
+        await db.update(f"INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('{inst}', '{whos}', '{msg}', '{tstamp}')")
 
 
 @log.catch
 def checkdirs(inst):
-    for path in arkmanager_paths:
+    for path in globvars.arkmanager_paths:
         if not path.exists():
             log.error(f'Log directory {str(path)} does not exist! creating')
             path.mkdir(mode=0o777, parents=True)
@@ -99,123 +90,92 @@ def checkdirs(inst):
 
 
 @log.catch
-def updatetimer(inst, ctime):
-    dbupdate("UPDATE instances SET restartcountdown = '%s' WHERE name = '%s'" % (ctime, inst))
+async def asyncupdatetimer(inst, ctime):
+    await db.update(f"UPDATE instances SET restartcountdown = '{ctime}' WHERE name = '{inst}'")
 
 
-def setcfgver(inst, cver):
-    dbupdate("UPDATE instances SET cfgver = %s WHERE name = '%s'" % (int(cver), inst))
+async def asyncsetcfgver(inst, cver):
+    await db.update(f"UPDATE instances SET cfgver = {int(cver)} WHERE name = '{inst}'")
 
 
-def setpendingcfgver(inst, cver):
-    dbupdate("UPDATE instances SET pendingcfg = %s WHERE name = '%s'" % (int(cver), inst))
+async def asyncsetpendingcfgver(inst, cver):
+    await db.update(f"UPDATE instances SET pendingcfg = {int(cver)} WHERE name = '{inst}'")
 
 
-def getcfgver(inst):
-    lastwipe = dbquery("SELECT cfgver FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    return int(lastwipe[0])
+async def asyncgetcfgver(inst):
+    cfgver = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    return int(cfgver['cfgver'])
 
 
-def getlastmaint(svr):
-    lastmaint = dbquery("SELECT lastmaint FROM lastmaintenance WHERE name = '%s'" % (svr.upper(),), fetch='one', single=True)
-    return lastmaint[0]
+async def asyncgetlastmaint(svr):
+    lastmaint = await db.fetchone(f"SELECT * FROM lastmaintenance WHERE name = '{svr.upper()}'")
+    return lastmaint['lastmaint']
 
 
-def setlastmaint(svr):
-    dbupdate("UPDATE lastmaintenance SET lastmaint = '%s' WHERE name = '%s'" % (Now(fmt='dtd'), svr.upper()))
+async def asyncsetlastmaint(svr):
+    await db.update(f"UPDATE lastmaintenance SET lastmaint = '{Now(fmt='dtd')}' WHERE name = 'svr.upper()'")
 
 
-def getpendingcfgver(inst):
-    lastwipe = dbquery("SELECT pendingcfg FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    return int(lastwipe[0])
+async def asyncgetpendingcfgver(inst):
+    instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    return int(instdata['cfgver'])
 
 
-def resetlastwipe(inst):
-    dbupdate("UPDATE instances SET lastdinowipe = '%s' WHERE name = '%s'" % (Now(), inst))
+async def getlastrestart(inst):
+    dbdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    return dbdata['lastrestart']
 
 
-def resetlastrestart(inst):
-    dbupdate("UPDATE instances SET lastrestart = '%s' WHERE name = '%s'" % (Now(), inst))
-    dbupdate("UPDATE instances SET needsrestart = 'False' WHERE name = '%s'" % (inst, ))
-    dbupdate("UPDATE instances SET cfgver = %s WHERE name = '%s'" % (getpendingcfgver(inst), inst))
-    dbupdate("UPDATE instances SET restartcountdown = 30")
+async def asyncresetlastrestart(inst):
+    await db.update(f"UPDATE instances SET lastrestart = '{Now()}', needsrestart = 'False', cfgver = {await asyncgetpendingcfgver(inst)}, restartcountdown = 30 WHERE name = '{inst}'")
 
 
-def setrestartbit(inst):
-    dbupdate("UPDATE instances SET needsrestart = 'True' WHERE name = '%s'" % (inst, ))
+async def asyncsetrestartbit(inst):
+    await db.update(f"UPDATE instances SET needsrestart = 'True' WHERE name = '{inst}'")
 
 
-def unsetstartbit(inst):
-    dbupdate("UPDATE instances SET needsrestart = 'False' WHERE name = '%s'" % (inst, ))
+async def asyncunsetstartbit(inst):
+    await db.update(f"UPDATE instances SET needsrestart = 'False' WHERE name = '{inst}'")
 
 
-def playerrestartbit(inst):
-    dbupdate("UPDATE players SET restartbit = 1 WHERE server = '%s'" % (inst, ))
-
-
-@log.catch
-def wipeit(inst, extra=False):
-    checkdirs(inst)
-    if extra:
-        serverexec(['arkmanager', 'rconcmd', f'ScriptCommand MatingOff_DS', f'@{inst}'], nice=0, null=True)
-        sleep(3)
-        serverexec(['arkmanager', 'rconcmd', f'ScriptCommand DestroyUnclaimed_DS', f'@{inst}'], nice=0, null=True)
-        sleep(3)
-    resetlastwipe(inst)
-    serverexec(['arkmanager', 'rconcmd', 'DestroyWildDinos', f'@{inst}'], nice=0, null=True)
-    sleep(3)
-    serverexec(['arkmanager', 'rconcmd', 'Destroyall BeeHive_C' f'@{inst}'], nice=0, null=True)
-    log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
+async def asyncplayerrestartbit(inst):
+    await db.update(f"UPDATE players SET restartbit = 1 WHERE server = '{inst}'")
 
 
 @log.catch
-def checkwipe(inst):
+async def asynccheckwipe(instances):
     global dwtimer
-    lastwipe = getlastwipe(inst)
-    if Now() - lastwipe > Secs['12hour'] and isinstanceup(inst):
-        splayers, aplayers = getliveplayersonline(inst)
-        if aplayers == 0 and int(getplayersonline(inst, fmt='count')) == 0:
-            log.log('WIPE', f'Dino wipe needed for [{inst.title()}], server is empty, wiping now')
-            writechat(inst, 'ALERT', f'### Empty server is over 12 hours since wild dino wipe. Wiping now.', wcstamp())
-            wipeit(inst)
+    for inst in instances:
+        lastwipe = await asyncgetlastwipe(inst)
+        if Now() - lastwipe > Secs['12hour'] and await asyncisinstanceup(inst):
+            if await asyncgetliveplayersonline(inst)['activeplayers'] == 0 and len(await asyncgetplayersonline()) == 0:
+                log.log('WIPE', f'Dino wipe needed for [{inst.title()}], server is empty, wiping now')
+                await asyncwritechat(inst, 'ALERT', f'### Empty server is over 12 hours since wild dino wipe. Wiping now.', wcstamp())
+                asyncio.create_task(asyncwipeit(inst))
+                dwtimer = 0
+            else:
+                if dwtimer == 0:
+                    log.log('WIPE', f'12 Hour dino wipe needed for [{inst.title()}], but players are online. Waiting...')
+                    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 12 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Consider doing a</><RichColor Color="0,1,0,1">!vote </><RichColor Color="1,1,0,1">for fresh new dino selection</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
+                    await asyncserverbcast(inst, bcast)
+                dwtimer += 1
+                if dwtimer == 24:
+                    dwtimer = 0
+        elif Now() - lastwipe > Secs['day'] and await asyncsinstanceup(inst):
+            log.log('WIPE', f'Dino wipe needed for [{inst.title()}], players online but forced, wiping now')
+            bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 24 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Forcing a maintenance wild dino wipe in 10 seconds</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
+            await asyncserverbcast(inst, bcast)
+            await asyncio.sleep(10)
+            await asyncwritechat(inst, 'ALERT', f'### Server is over 24 hours since wild dino wipe. Forcing wipe now.', wcstamp())
+            asyncio.create_task(wipeit(inst))
             dwtimer = 0
         else:
-            if dwtimer == 0:
-                log.log('WIPE', f'12 Hour dino wipe needed for [{inst.title()}], but players are online. Waiting...')
-                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 12 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Consider doing a</><RichColor Color="0,1,0,1">!vote </><RichColor Color="1,1,0,1">for fresh new dino selection</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
-                subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
-            dwtimer += 1
-            if dwtimer == 24:
-                dwtimer = 0
-    elif Now() - lastwipe > Secs['day'] and isinstanceup(inst):
-        log.log('WIPE', f'Dino wipe needed for [{inst.title()}], players online but forced, wiping now')
-        bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 24 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Forcing a maintenance wild dino wipe in 10 seconds</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
-        subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
-        sleep(10)
-        writechat(inst, 'ALERT', f'### Server is over 24 hours since wild dino wipe. Forcing wipe now.', wcstamp())
-        wipeit(inst)
-        dwtimer = 0
-    else:
-        log.trace(f'no dino wipe is needed for {inst}')
+            log.trace(f'no dino wipe is needed for {inst}')
 
 
-@log.catch
-def isrebooting(inst):
-    for each in range(numinstances):
-        if instance[each]['name'] == inst:
-            if 'restartthread' in instance[each]:
-                if instance[each]['restartthread'].is_alive():
-                    return True
-                else:
-                    return False
-            else:
-                return False
-
-
-def stillneedsrestart(inst):
-    lastwipe = dbquery("SELECT needsrestart FROM instances WHERE name = '%s'" % (inst,))
-    ded = ''.join(lastwipe[0])
-    if ded == "True":
+async def asyncstillneedsrestart(inst):
+    instdata = db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    if instdata['needsrestart'] == "True":
         return True
     else:
         return False
@@ -225,9 +185,9 @@ def stillneedsrestart(inst):
 def installconfigs(inst):
     config = configparser.RawConfigParser()
     config.optionxform = str
-    config.read(gusini_baseconfig_file)
-    if inst in gusini_customconfig_files:
-        gusbuildfile = gusini_customconfig_files[inst].read_text().split('\n')
+    config.read(globvars.gusini_baseconfig_file)
+    if inst in globvars.gusini_customconfig_files:
+        gusbuildfile = globvars.gusini_customconfig_files[inst].read_text().split('\n')
         for each in gusbuildfile:
             a = each.split(',')
             if len(a) == 3:
@@ -237,220 +197,208 @@ def installconfigs(inst):
 
     if iseventtime():
         eventext = getcurrenteventext()
-        gusini_event_file = Path(f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini')
-        if gusini_event_file.exists():
-            for each in gusini_event_file.read_text().split('\n'):
+        globvars.gusini_event_file = Path(f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini')
+        if globvars.gusini_event_file.exists():
+            for each in globvars.gusini_event_file.read_text().split('\n'):
                 a = each.split(',')
                 if len(a) == 3:
                     config.set(a[0], a[1], a[2])
         else:
             log.error('Cannot find Event GUS config file to merge in')
 
-    if gusini_tempconfig_file.exists():
-        gusini_tempconfig_file.unlink()
+    if globvars.gusini_tempconfig_file.exists():
+        globvars.gusini_tempconfig_file.unlink()
 
-    with open(str(gusini_tempconfig_file), 'w') as configfile:
+    with open(str(globvars.gusini_tempconfig_file), 'w') as configfile:
             config.write(configfile)
 
-    shutil.copy(gusini_tempconfig_file, gusini_final_file)
-    gusini_tempconfig_file.unlink()
-    if inst in gameini_customconfig_files:
-        shutil.copy(gameini_customconfig_files[inst], gameini_final_file)
+    shutil.copy(globvars.gusini_tempconfig_file, globvars.gusini_final_file)
+    globvars.gusini_tempconfig_file.unlink()
+    if inst in globvars.gameini_customconfig_files:
+        shutil.copy(globvars.gameini_customconfig_files[inst], globvars.gameini_final_file)
     else:
-        shutil.copy(gameini_baseconfig_file, gameini_final_file)
-    chown(str(gameini_final_file), 1001, 1005)
-    chown(str(gusini_final_file), 1001, 1005)
+        shutil.copy(globvars.gameini_baseconfig_file, globvars.gameini_final_file)
+    chown(str(globvars.gameini_final_file), 1001, 1005)
+    chown(str(globvars.gusini_final_file), 1001, 1005)
     log.debug(f'Server {inst} built and updated config files')
 
 
 @log.catch
-def restartinstnow(inst, startonly=False):
+async def asyncrestartinstnow(inst, startonly=False):
     checkdirs(inst)
     if not startonly:
-        wipeit(inst, extra=True)
-        sleep(5)
-        serverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'], nice=0, null=True)
+        await asyncwipeit(inst, extra=True)
+        await asyncio.sleep(5)
+        await asyncserverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'])
         log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
-        dbupdate("UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '%s'" % (inst,))
-    serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
-    if not isinstanceenabled(inst):
+        await db.update(f"UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '{inst}'")
+    await asyncserverexec(['arkmanager', 'backup', f'@{inst}'])
+    if not await asyncisinstanceenabled(inst):
         log.log('UPDATE', f'Instance [{inst.title()}] remaining off because not enabled.')
-        unsetstartbit(inst)
-    elif serverneedsrestart() and inst != 'coliseum' and inst != 'crystal'and not startonly:
-        dbupdate(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
+        await asyncunsetstartbit(inst)
+    elif serverneedsrestart() and inst != 'coliseum' and inst != 'crystal' and not startonly:
+        await db.update(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
         log.log('MAINT', f'REBOOTING Server [{hstname.upper()}] for maintenance server reboot')
-        serverexec(['reboot'], nice=0, null=True)
+        await asyncserverexec(['reboot'])
     else:
         log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
         installconfigs(inst)
         log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
-        serverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'], nice=0, null=True),
-        dbupdate("UPDATE instances SET isrunning = 1 WHERE name = '%s'" % (inst,))
+        await asyncserverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'])
+        await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
         log.log('UPDATE', f'Instance [{inst.title()}] is starting')
-        resetlastrestart(inst)
-        unsetstartbit(inst)
-        playerrestartbit(inst)
-        serverexec(['arkmanager', 'start', f'@{inst}'], nice=-10, null=True)
+        await asyncresetlastrestart(inst)
+        await asyncunsetstartbit(inst)
+        await asyncplayerrestartbit(inst)
+        await asyncserverexec(['arkmanager', 'start', f'@{inst}'])
+        globvars.taskworkers.remove(f'{inst}-restarting')
 
 
 @log.catch
-def restartloop(inst, startonly=False):
+async def asyncrestartloop(inst, startonly=False):
     checkdirs(inst)
     log.debug(f'{inst} restart loop has started')
     if startonly:
-        restartinstnow(inst, startonly=True)
-    timeleftraw = dbquery("SELECT restartcountdown, restartreason from instances WHERE name = '%s'" % (inst,), fetch='one')
-    timeleft = int(timeleftraw[0])
-    reason = timeleftraw[1]
-    splayers, aplayers = getliveplayersonline(inst)
-    if splayers == 0 and int(getplayersonline(inst, fmt='count')) == 0:
-        setrestartbit(inst)
+        await asyncrestartinstnow(inst, startonly=True)
+    instdata = await db.fetchone(f"SELECT * from instances WHERE name = '{inst}'")
+    timeleft = int(instdata['restartcountdown'])
+    reason = instdata['restartreason']
+    if instdata['connectingplayers'] == 0 and instdata['activeplayers'] == 0 and len(await asyncgetonlineplayers(inst)) == 0:
+        await asyncsetrestartbit(inst)
         log.log('UPDATE', f'Server [{inst.title()}] is empty and restarting now for a [{reason}]')
-        writechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
+        await asyncwritechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
         message = f'server {inst.capitalize()} is restarting now for a {reason}'
-        serverexec(['arkmanager', f'notify "{message}"', f'@{inst}'], nice=19, null=True)
-        pushover('Instance Restart', message)
-        restartinstnow(inst)
-    elif reason != 'configuration update':
-            setrestartbit(inst)
-            if timeleft == 30:
-                log.log('UPDATE', f'Starting 30 min restart countdown for [{inst.title()}] for a [{reason}]')
-                writechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}', wcstamp())
-            else:
-                log.log('UPDATE', f'Resuming {timeleft} min retart countdown for [{inst.title()}] for a [{reason}]')
-            gotime = False
-            snr = stillneedsrestart(inst)
-            while snr and not gotime:
-                if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
-                    log.log('UPDATE', f'{timeleft} min broadcast message sent to [{inst.title()}]')
-                    bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">{reason}</>\n\n<RichColor Color="1,1,0,1">                   The server will be restarting in</><RichColor Color="1,0,0,1">{timeleft}</><RichColor Color="1,1,0,1"> minutes</>"""
-                    subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
-
-                sleep(Secs['1min'])
-                timeleft = timeleft - 1
-                updatetimer(inst, timeleft)
-                snr = stillneedsrestart(inst)
-                splayers, aplayers = getliveplayersonline(inst)
-                if (aplayers == 0 and int(getplayersonline(inst, fmt='count')) == 0) or timeleft == 0:
-                    gotime = True
-            if stillneedsrestart(inst):
-                log.log('UPDATE', f'Server [{inst.title()}] is restarting now for a [{reason}]')
-                message = f'server {inst.capitalize()} is restarting now for a {reason}'
-                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">Ark Game Update</>\n\n<RichColor Color="1,1,0,1">                     !! THE SERVER IS RESTARTING</><RichColor Color="1,0,0,1">NOW</><RichColor Color="1,1,0,1"> !!</>\n\n     The server will be back up in 10 minutes, you can check status in Discord"""
-                subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
-                writechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
-                serverexec(['arkmanager', f'notify "{message}"', f'@{inst}'], nice=19, null=True)
-                pushover('Instance Restart', message)
-                sleep(10)
-                restartinstnow(inst)
-            else:
-                log.warning(f'server restart on {inst} has been canceled from forced cancel')
-                bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n\n<RichColor Color="1,1,0,1">                    The server restart has been cancelled!</>"""
-                subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
-                writechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
+        await asyncserverexec(['arkmanager', f'notify "{message}"', f'@{inst}'])
+        pushoverthread('Instance Restart', message)
+        await asyncrestartinstnow(inst)
+    if reason != 'configuration update':
+        await asyncsetrestartbit(inst)
+        if timeleft == 30:
+            log.log('UPDATE', f'Starting 30 min restart countdown for [{inst.title()}] for a [{reason}]')
+            await asyncwritechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}', wcstamp())
+        else:
+            log.log('UPDATE', f'Resuming {timeleft} min retart countdown for [{inst.title()}] for a [{reason}]')
+        while await asyncstillneedsrestart(inst) and await len(await asyncgetplayersonline(inst)) != 0 and timeleft != 0 and await asyncgetliveplayersonline(inst)['activeplayers'] != 0:
+            if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
+                log.log('UPDATE', f'{timeleft} min broadcast message sent to [{inst.title()}]')
+                bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">{reason}</>\n\n<RichColor Color="1,1,0,1">                   The server will be restarting in</><RichColor Color="1,0,0,1">{timeleft}</><RichColor Color="1,1,0,1"> minutes</>"""
+                await asyncserverbcast(inst, bcast)
+            await asyncio.sleep(Secs['1min'])
+            timeleft = timeleft - 1
+            await asyncupdatetimer(inst, timeleft)
+        if await asyncstillneedsrestart(inst):
+            log.log('UPDATE', f'Server [{inst.title()}] is restarting now for a [{reason}]')
+            message = f'server {inst.capitalize()} is restarting now for a {reason}'
+            bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">Ark Game Update</>\n\n<RichColor Color="1,1,0,1">                     !! THE SERVER IS RESTARTING</><RichColor Color="1,0,0,1">NOW</><RichColor Color="1,1,0,1"> !!</>\n\n     The server will be back up in 10 minutes, you can check status in Discord"""
+            await asyncserverbcast(inst, bcast)
+            await asyncwritechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
+            await asyncservernotify(inst, message)
+            pushoverthread('Instance Restart', message)
+            await asyncio.sleep(10)
+            await asyncrestartinstnow(inst)
+        else:
+            log.warning(f'server restart on {inst} has been canceled from forced cancel')
+            bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n\n<RichColor Color="1,1,0,1">                    The server restart has been cancelled!</>"""
+            await asyncserverbcast(inst, bcast)
+            await asyncwritechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
     else:
         log.debug(f'configuration restart skipped because {splayers} players and {aplayers} active players')
 
 
 @log.catch
-def maintenance():
+async def asynccheckmaint(instances):
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
-    if inmaint and getlastmaint(hstname) < Now(fmt='dtd'):
-        setlastmaint(hstname)
+    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{hstname}-maintenance' not in globvars.taskworkers:
+        globvars.taskworkers.append(f'{hstname}-maintenance')
+        await asyncsetlastmaint(hstname)
         log.log('MAINT', f'Daily maintenance window has opened for server [{hstname.upper()}]...')
-        for each in range(numinstances):
-            inst = instance[each]['name']
-            bcast = f"""Broadcast <RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="0,1,0,1">           Daily server maintenance has started (4am EST/8am GMT)</>\n\n<RichColor Color="1,1,0,1">    All dino mating will be toggled off, and all unclaimed dinos will be cleared</>\n<RichColor Color="1,1,0,1">            The server will also be performing updates and backups</>"""
-            subprocess.run(f"""arkmanager rconcmd '''{bcast}''' @'%s'""" % (inst,), shell=True)
+        for inst in instances:
+            bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="0,1,0,1">           Daily server maintenance has started (4am EST/8am GMT)</>\n\n<RichColor Color="1,1,0,1">    All dino mating will be toggled off, and all unclaimed dinos will be cleared</>\n<RichColor Color="1,1,0,1">            The server will also be performing updates and backups</>"""
+            await asyncserverbcast(inst, bcast)
         log.log('MAINT', f'Running server os maintenance on [{hstname.upper()}]...')
         log.debug(f'OS update started for {hstname}')
-        serverexec(['apt', 'update'], nice=5, null=True)
+        await asyncserverexec(['apt', 'update'], wait=True)
         log.debug(f'OS upgrade started for {hstname}')
-        serverexec(['apt', 'upgrade', '-y'], nice=5, null=True)
+        await asyncserverexec(['apt', 'upgrade', '-y'], wait=True)
         log.debug(f'OS autoremove started for {hstname}')
-        serverexec(['apt', 'autoremove', '-y'], nice=5, null=True)
+        await asyncserverexec(['apt', 'autoremove', '-y'], wait=True)
         if serverneedsrestart():
             log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
-        for each in range(numinstances):
-            inst = instance[each]['name']
+        for inst in instances:
             checkdirs(inst)
             if serverneedsrestart():
-                dbupdate(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
+                await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
             try:
                 log.log('MAINT', f'Performing a world data save on [{inst.title()}]...')
-                serverexec(['arkmanager', 'saveworld', f'@{inst}'], nice=0, null=True)
-                sleep(30)
+                await asyncserverexec(['arkmanager', 'saveworld', f'@{inst}'])
+                await asyncio.sleep(30)
                 log.log('MAINT', f'Backing up server instance and archiving old players [{inst.title()}]...')
-                serverexec(['arkmanager', 'backup', f'@{inst}'], nice=0, null=True)
+                await asyncserverexec(['arkmanager', 'backup', f'@{inst}'])
                 # sleep(30)
                 # log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
                 # os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
-                sleep(30)
+                await asyncio.sleep(30)
                 log.log('MAINT', f'Running all dino and map maintenance on server [{inst.title()}]...')
                 log.debug(f'Shutting down dino mating on {inst}...')
-                serverexec(['arkmanager', 'rconcmd', 'ScriptCommand MatingOff_DS', f'@{inst}'], nice=0, null=True)
-                sleep(30)
+                await asyncserverscriptcmd(inst, 'MatingOff_DS')
+                await asyncio.sleep(30)
                 log.debug(f'Clearing all unclaimed dinos on [{inst.title()}]...')
-                serverexec(['arkmanager', 'rconcmd', 'ScriptCommand DestroyUnclaimed_DS', f'@{inst}'], nice=0, null=True)
-                sleep(30)
+                await asyncserverscriptcmd(inst, 'DestroyUnclaimed_DS')
+                await asyncio.sleep(30)
                 log.debug(f'Clearing all wild wyvern eggs on [{inst.title()}]...')
-                serverexec(['arkmanager', 'rconcmd', 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsWyvern_C', f'@{inst}'], nice=0, null=True)
-                sleep(30)
+                await asyncserverrconcmd(inst, 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsWyvern_C')
+                await asyncio.sleep(30)
                 log.debug(f'Clearing all wild Deinonychus eggs on [{inst.title()}]...')
-                serverexec(['arkmanager', 'rconcmd', 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsDeinonychus_C', f'@{inst}'], nice=0, null=True)
-                sleep(30)
+                await asyncserverrconcmd(inst, 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsDeinonychus_C')
+                await asyncio.sleep(30)
                 log.debug(f'Clearing all wild drake eggs on [{inst.title()}]...')
-                serverexec(['arkmanager', 'rconcmd', 'destroyall DroppedItemGeneric_FertilizedEgg_RockDrake_NoPhysics_C', f'@{inst}'], nice=0, null=True)
-                sleep(30)
+                await asyncserverrconcmd(inst, 'destroyall DroppedItemGeneric_FertilizedEgg_RockDrake_NoPhysics_C')
+                await asyncio.sleep(30)
                 log.debug(f'Clearing all beehives on [{inst.title()}]...')
-                serverexec(['arkmanager', 'rconcmd', 'Destroyall BeeHive_C', f'@{inst}'], nice=0, null=True)
-                sleep(30)
-                log.debug(f'Clearing all wild Deinonychus eggs on [{inst.title()}]...')
-                serverexec(['arkmanager', 'rconcmd', 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsDeinonychus_C', f'@{inst}'], nice=0, null=True)
-                sleep(30)
+                await asyncserverrconcmd(inst, 'Destroyall BeeHive_C')
+                await asyncio.sleep(30)
                 log.debug(f'Clearing all beaver dams on [{inst.title()}]...')
-                serverexec(['arkmanager', 'rconcmd', 'destroyall BeaverDam_C', f'@{inst}'], nice=0, null=True)
-                sleep(30)
-                checkwipe(inst)
-                lstsv = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-                eventreboot = iseventrebootday()
-
+                await asyncserverrconcmd(inst, 'destroyall BeaverDam_C')
+                await asyncio.sleep(30)
+                await asynccheckwipe(inst)
+                lstsv = await asyncgetlastrestart(inst)
+                eventreboot = await asynciseventrebootday()
                 if eventreboot:
                     maintrest = f"{eventreboot}"
-                    instancerestart(inst, maintrest)
-                elif Now() - float(lstsv[0]) > Secs['3day'] or getcfgver(inst) < getpendingcfgver(inst):
+                    await asyncinstancerestart(inst, maintrest)
+                elif Now() - float(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst):
                     maintrest = "maintenance restart"
-                    instancerestart(inst, maintrest)
+                    await asyncinstancerestart(inst, maintrest)
                 else:
                     message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
-                    serverexec(['arkmanager', 'rconcmd', f'ServerChat {message}', f'@{inst}'], nice=19, null=True)
+                    await asyncserverchat(inst, message)
             except:
-                log.exception(f'Error during {inst} instance daily maintenance')
+                log.exception(f'Error during {hstname} instance daily maintenance')
+                globvars.taskworkers.remove(f'{hstname}-maintenance')
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
+        globvars.taskworkers.remove(f'{hstname}-maintenance')
+    else:
+        log.trace(f'no maintenance needed, not in maintenance time window')
 
 
 @log.catch
-def instancerestart(inst, reason, startonly=False):
+async def asyncinstancerestart(inst, reason, startonly=False):
     checkdirs(inst)
     log.debug(f'instance restart verification starting for {inst}')
-    global instance
-    global confupdtimer
-    if not isrebooting(inst):
-        dbupdate("UPDATE instances SET restartreason = '%s' WHERE name = '%s'" % (reason, inst))
-        for each in range(numinstances):
-            if instance[each]['name'] == inst:
-                instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst, startonly))
-                instance[each]['restartthread'].start()
+    if f'{inst}-restarting' not in globvars.taskworkers:
+        await db.update(f"UPDATE instances SET restartreason = '{reason}' WHERE name = '{inst}'")
+        globvars.taskworkers.append(f'{inst}-restarting')
+        asyncio.create_task(restartloop(inst, startonly))
     else:
-        log.debug(f'skipping start/restart for {inst} because restart thread already running')
+        log.debug(f'skipping start/restart for {inst} because restart already running')
 
 
 @log.catch
-def isnewarkver(inst):
+async def asyncisnewarkver(inst):
     try:
-        isarkupd = serverexec(['arkmanager', 'checkupdate', f'@{inst}'], nice=19, null=False)
-        for each in isarkupd.stdout.decode('utf-8').split('\n'):
+        isarkupd = await asyncserverexec(['arkmanager', 'checkupdate', f'@{inst}'], wait=True)
+        for each in isarkupd['stdout'].decode('utf-8').split('\n'):
             if each.find('Current version:') != -1:
                 m = each.split(':')
                 k = m[1].split(' ')
@@ -468,84 +416,78 @@ def isnewarkver(inst):
 
 
 @log.catch
-def performbackup(inst):
-    sleep(random.randint(1, 5) * 6)
+async def asyncperformbackup(inst):
+    await asyncio.sleep(random.randint(1, 5) * 6)
     log.log('MAINT', f'Performing a world data backup on [{inst.title()}]')
-    serverexec(['arkmanager', 'backup', f'@{inst}'], nice=19, null=True)
+    await asyncserverexec(['arkmanager', 'backup', f'@{inst}'])
 
 
 @log.catch
-def checkbackup():
-    for seach in range(numinstances):
-        sinst = instance[seach]['name']
-        checkdirs(sinst)
-        if not isrebooting(sinst):
-            lastrestr = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (sinst, ))
-            lt = Now() - float(lastrestr[0][0])
+async def asynccheckbackup(instances):
+    for inst in instances:
+        checkdirs(inst)
+        if f'{inst}-restarting' not in globvars.taskworkers:
+            lastrestart = await asyncgetlastrestart(inst)
+            lt = Now() - float(lastrestart)
             if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
-                performbackup(sinst)
+                asyncio.create_task(asyncperformbackup(inst))
+            else:
+                log.trace(f'no backups needed for {inst}'
 
 
 @log.catch
-def checkifenabled(inst):
-    lastwipe = dbquery("SELECT enabled, isrunning FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
+async def asynccheckifenabled(inst):
+    instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     if serverneedsrestart():
-        dbupdate(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
-    if lastwipe[0] and lastwipe[1] == 0:
+        await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
+    if instdata['enabled'] and instdata['isrunning'] == 0 and f'{inst}-restarting' not in globvars.taskworkers:
         log.log('MAINT', f'Instance [{inst.title()}] is set to [enabled]. Starting server')
         restartinstnow(inst, startonly=True)
-    elif not lastwipe[0] and lastwipe[1] == 1:
-        for each in range(numinstances):
-            if not isrebooting(instance[each]['name']):
-                if instance[each]['name'] == inst:
-                    checkifalreadyrestarting(instance[each]['name'])
-                    log.warning(f'Instance [{inst.title()}] is set to [disabled]. Stopping server')
-                    instancerestart(inst, 'admin restart')
+    elif not instdata['enabled'] and instdata['isrunning'] == 1:
+        if f'{inst}-restarting' not in globvars.taskworkers:
+            log.warning(f'Instance [{inst.title()}] is set to [disabled]. Stopping server')
+            await asyncinstancerestart(inst, 'admin restart')
 
 
 @log.catch
-def checkifalreadyrestarting(inst):
-    global instance
-    lastwipe = dbquery("SELECT needsrestart FROM instances WHERE name = '%s'" % (inst, ), fetch='one')
-    ded = lastwipe[0]
-    if ded == "True":
-        if not isrebooting(inst):
+async def asynccheckifalreadyrestarting(inst):
+    instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    if instdata['needsrestart'] == "True":
+        if f'{inst}-restarting' not in globvars.taskworkers:
             log.debug(f'restart flag set for instance {inst}, starting restart loop')
-            for each in range(numinstances):
-                if instance[each]['name'] == inst:
-                    instance[each]['restartthread'] = threading.Thread(name='%s-restart' % inst, target=restartloop, args=(inst,))
-                    instance[each]['restartthread'].start()
+            globvars.append[f'{inst}-restarting']
+            asyncio.create_task(restartloop(inst))
 
 
+@asynctimeit
 @log.catch
-def checkupdates():
+async def asynccheckupdates(instances):
     global updgennotify
-    global ugennotify
     if is_arkupdater == "True" and Now() - updgennotify > Secs['hour']:
         try:
-            ustate, curver, avlver = isnewarkver('all')
+            ustate, curver, avlver = await asyncisnewarkver('all')
             if not ustate:
-                log.debug('ark update check found no ark updates available')
+                log.trace('ark update check found no ark updates available')
             else:
                 updgennotify = Now()
                 log.log('UPDATE', f'ARK update found ({curver}>{avlver}) downloading update.')
-                serverexec(['arkmanager', 'update', '--downloadonly', f'@{instance[0]["name"]}'], nice=0, null=True)
+                await asyncserverexec(['arkmanager', 'update', '--downloadonly', f'@{instances[0]}'])
                 log.debug('ark update downloaded to staging area')
                 # msg = f'Ark update has been released. Servers will begin restart countdown now.\n\
 # https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes/'
-                writediscord('ARK Game Update', Now(), name='https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes', server='UPDATE')
+                await asyncwritediscord('ARK Game Update', Now(), name='https://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes', server='UPDATE')
                 msg = f'Ark Game Updare Released\nhttps://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes'
                 log.log('UPDATE', f'ARK update download complete. Update is staged. Notifying servers')
-                dbupdate(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
-                pushover('Ark Update', msg)
+                await db.update(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
+                pushoverthread('Ark Update', msg)
         except:
             log.exception(f'error in determining ark version')
 
-    for each in range(numinstances):
-        checkdirs(instance[each]['name'])
-        if not isrebooting(instance[each]['name']):
-            ismodupdd = serverexec(['arkmanager', 'checkmodupdate', f'@{instance[each]["name"]}'], nice=19, null=False)
-            ismodupd = ismodupdd.stdout.decode('utf-8')
+    for inst in instances:
+        checkdirs(inst)
+        if f'{inst}-restarting' not in globvars.taskworkers:
+            ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{inst}'], wait=True)
+            ismodupd = ismodupdd['stdout'].decode('utf-8')
             modchk = 0
             ismodupd = ismodupd.split('\n')
             for teach in ismodupd:
@@ -555,70 +497,22 @@ def checkupdates():
                     modid = al[1]
                     modname = al[2]
             if modchk != 0:
-                ugennotify = Now()
-                log.log('UPDATE', f'ARK mod update [{modname}] id [{modid}] detected for instance [{instance[each]["name"].title()}]')
-                log.debug(f'downloading mod updates for instance {instance[each]["name"]}')
-                serverexec(['arkmanager', 'update', '--downloadonly', '--update-mods', f'@{instance[each]["name"]}'], nice=0, null=True)
-                log.debug(f'mod updates for instance {instance[each]["name"]} download complete')
+                log.log('UPDATE', f'ARK mod update [{modname}] id [{modid}] detected for instance [{inst.title()}]')
+                log.debug(f'downloading mod updates for instance {inst}')
+                await asyncserverexec(['arkmanager', 'update', '--downloadonly', '--update-mods', f'@{inst}'])
+                log.debug(f'mod updates for instance {inst} download complete')
                 aname = f'{modname} Mod Update'
-                writediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
+                await asyncwritediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
                 msg = f'{modname} Mod Update\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
-                pushover('Mod Update', msg)
-                for neo in range(numinstances):
-                        instancerestart(instance[neo]['name'], aname)
+                pushoverthread('Mod Update', msg)
+                await asyncinstancerestart(inst, aname)
         else:
-            log.debug(f'no updated mods were found for instance {instance[each]["name"]}')
+            log.trace(f'no updated mods were found for instance {inst}')
 
 
+@asynctimeit
 @log.catch
-def restartcheck():
-    for each in range(numinstances):
-        checkifenabled(instance[each]['name'])
-        if not isrebooting(instance[each]['name']):
-            checkifalreadyrestarting(instance[each]['name'])
-
-
-@log.catch
-def arkupdater_thread(stop_event):
-    log.debug('Arkupdater thread is starting')
-    if numinstances > 0:
-        log.debug(f'Found {numinstances} ARK server instances: [{instr}]')
-    else:
-        log.debug(f'No ARK game instances found, running as [Master Bot]')
-    global file_event_notifier
-    file_watch_manager = pyinotify.WatchManager()
-    file_event_notifier = pyinotify.ThreadedNotifier(file_watch_manager, EventProcessor())
-    file_watch_manager.add_watch('/home/ark/shared/config', pyinotify.IN_CLOSE_WRITE)
-    file_event_notifier.start()
-    log.debug(f'gameini_customconfig_files: {gameini_customconfig_files}')
-    log.debug(f'gusini_customconfig_files: {gusini_customconfig_files}')
-
-    while not stop_event.is_set():
-        stopsleep(30, stop_event)
-        restartcheck()
-        stopsleep(30, stop_event)
-        restartcheck()
-        stopsleep(30, stop_event)
-        checkupdates()
-        restartcheck()
-        stopsleep(30, stop_event)
-        restartcheck()
-        stopsleep(30, stop_event)
-        maintenance()
-        restartcheck()
-        stopsleep(30, stop_event)
-        restartcheck()
-        stopsleep(30, stop_event)
-        checkbackup()
-        restartcheck()
-        stopsleep(30, stop_event)
-        restartcheck()
-        stopsleep(30, stop_event)
-        for each in range(numinstances):
-            if not isrebooting(instance[each]['name']):
-                checkwipe(instance[each]['name'])
-        restartcheck()
-        stopsleep(30, stop_event)
-        restartcheck()
-    log.debug('Arkupdater thread has ended')
-    exit(0)
+async def asynccheckrestart(instances):
+    for inst in instances:
+        await asynccheckifenabled(inst)
+        await asynccheckifalreadyrestarting(inst)
