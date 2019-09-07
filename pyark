@@ -30,7 +30,7 @@ from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
 from modules.gchatrelay import asyncgchatrelay
 from modules.instances import instancelist
 from modules.lottery import lotterywatcher_thread
-from modules.masterserver import GameLogger, asyncdblcheckonline
+from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck, asynconlinedblchecker
 from modules.processlock import plock
 from modules.servertools import serverexec
