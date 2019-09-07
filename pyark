@@ -6,6 +6,7 @@ import signal
 import sys
 import threading
 import warnings
+
 from os import _exit, nice, stat
 from time import sleep, time
 
@@ -332,8 +333,11 @@ def main():
         thread.start()
     log.debug('All threads have started')
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    warnings.simplefilter('always', ResourceWarning)
-    asyncio.run(asyncmain())  # Async branch to main loop
+    if args.trace:
+        warnings.simplefilter('always', ResourceWarning)
+        asyncio.run(asyncmain(), debug=True)  # Async branch to main loop
+    else:
+        asyncio.run(asyncmain())
     log.debug(f'Waiting for {len(threads)} threads and tasks to exit...')
     for thread in threads:
         thread.join

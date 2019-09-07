@@ -30,8 +30,6 @@ from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverc
                                  asyncservernotify, asynctimeit, serverexec, serverneedsrestart, asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, wcstamp
 
-logging.basicConfig(level=logging.DEBUG)
-
 confupdtimer = 0
 dwtimer = 0
 updgennotify = Now() - Secs['hour']
