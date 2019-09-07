@@ -406,7 +406,7 @@ async def asyncinstancerestart(inst, reason, startonly=False):
 async def asyncisnewarkver(inst):
     try:
         isarkupd = await asyncserverexec(['arkmanager', 'checkupdate', f'@{inst}'], wait=True)
-        for each in isarkupd.decode('utf-8').split('\n'):
+        for each in isarkupd.stdout.decode('utf-8').split('\n'):
             if each.find('Current version:') != -1:
                 m = each.split(':')
                 k = m[1].split(' ')
@@ -492,7 +492,7 @@ async def asynccheckupdates():
         checkdirs(inst)
         if f'{inst}-restarting' not in globvars.taskworkers:
             ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{inst}'], wait=True)
-            ismodupd = ismodupdd.decode('utf-8')
+            ismodupd = ismodupdd.stdout.decode('utf-8')
             modchk = 0
             ismodupd = ismodupd.split('\n')
             for teach in ismodupd:
