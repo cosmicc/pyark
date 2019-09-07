@@ -307,8 +307,8 @@ async def asyncrestartloop(inst, startonly=False):
 async def asyncmaintenance():
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
-    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{inst}-maintenance' not in globvars.taskworkers:
-        globvars.taskworkers.append[f'{inst}-maintenance']
+    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{hstname}-maintenance' not in globvars.taskworkers:
+        globvars.taskworkers.append[f'{hstname}-maintenance']
         await asyncsetlastmaint(hstname)
         log.log('MAINT', f'Daily maintenance window has opened for server [{hstname.upper()}]...')
         for inst in instances:
@@ -367,19 +367,19 @@ async def asyncmaintenance():
                 eventreboot = await asynciseventrebootday()
                 if eventreboot:
                     maintrest = f"{eventreboot}"
-                    globvars.taskworkers.remove(f'{inst}-maintenance')
+                    globvars.taskworkers.remove(f'{hstname}-maintenance')
                     await asyncinstancerestart(inst, maintrest)
                 elif Now() - float(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst):
                     maintrest = "maintenance restart"
-                    globvars.taskworkers.remove(f'{inst}-maintenance')
+                    globvars.taskworkers.remove(f'{hstname}-maintenance')
                     await asyncinstancerestart(inst, maintrest)
                 else:
                     message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
-                    globvars.taskworkers.remove(f'{inst}-maintenance')
+                    globvars.taskworkers.remove(f'{hstname}-maintenance')
                     await asyncserverchat(inst, message)
             except:
-                log.exception(f'Error during {inst} instance daily maintenance')
-                globvars.taskworkers.remove(f'{inst}-maintenance')
+                log.exception(f'Error during {hstname} instance daily maintenance')
+                globvars.taskworkers.remove(f'{hstname}-maintenance')
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
 
 @asynctimeit
