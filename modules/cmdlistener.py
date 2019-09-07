@@ -12,7 +12,7 @@ from modules.configreader import hstname
 from modules.asyncdb import DB as db
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
-from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist
+from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist, asyncwipeit
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import newplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec,
@@ -312,10 +312,8 @@ async def asyncwipeit(inst):
     bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n<RichColor Color="0,1,0,1">                     YES votes have won! ('{yesvoters}' of '{totvoters}' Players)</>\n\n  <RichColor Color="1,1,0,1">               !! WIPING ALL WILD DINOS IN 10 SECONDS !!</>"""
     await asyncserverbcast(inst, bcast)
     await asyncwritechat(inst, 'ALERT', f'A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.', wcstamp())
-    await asyncio.sleep(7)
-    await asyncserverrconcmd(inst, 'Destroyall BeeHive_C')
-    await asyncio.sleep(3)
-    await asyncserverrconcmd(inst, 'DestroyWildDinos')
+    await asyncio.sleep(5)
+    asyncio.create_task(asyncwipeit())
     await asyncresetlastwipe(inst)
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
     return True

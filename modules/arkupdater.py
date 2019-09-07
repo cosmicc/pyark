@@ -20,7 +20,7 @@ import globvars
 from fsmonitor import FSMonitorThread
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventrebootday, getcurrenteventext, iseventtime
-from modules.configreader import arkroot, hstname, instr, maint_hour, sharedpath
+from modules.configreader import arkroot, hstname, instr, maint_hour, sharedpath, is_arkupdater
 from modules.discordbot import asyncwritediscord
 from modules.instances import (asyncgetlastrestart, asyncgetlastwipe,
                                asyncisinstanceenabled, asyncisinstanceup, asyncwipeit)
