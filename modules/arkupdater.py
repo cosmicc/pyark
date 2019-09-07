@@ -24,7 +24,7 @@ from modules.configreader import arkroot, hstname, instr, maint_hour, sharedpath
 from modules.discordbot import asyncwritediscord
 from modules.instances import (asyncgetlastrestart, asyncgetlastwipe,
                                asyncisinstanceenabled, asyncisinstanceup, asyncwipeit)
-from modules.players import asyncgetplayersonline
+from modules.players import asyncgetplayersonline, asyncgetliveplayersonline
 from modules.pushover import pushover
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverrconcmd,
                                  asyncservernotify, asynctimeit, serverexec, serverneedsrestart, asyncserverscriptcmd)
