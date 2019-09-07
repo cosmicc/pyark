@@ -522,8 +522,8 @@ async def asyncupdaterloop():
     if len(instances) > 0:
         log.info(f'Found {len(instances)} ARK server instances: [{instr}]')
         global file_event_notifier
-        file_watch_manager = FSMonitorThread(callback=file_event)
-        file_watch_manager.add_dir_watch("/home/ark/shared/config")
+        #file_watch_manager = FSMonitorThread(callback=file_event)
+        #file_watch_manager.add_dir_watch("/home/ark/shared/config")
     else:
         log.info(f'No ARK game instances found, running as [Master Bot]')
 
