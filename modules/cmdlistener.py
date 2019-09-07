@@ -8,6 +8,7 @@ from time import time
 from loguru import logger as log
 
 import globvars
+from modules.confighelper import hstname
 from modules.asyncdb import DB as db
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
@@ -15,7 +16,7 @@ from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe,
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import newplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec,
-                                 asyncserverrconcmd, asyncserverscriptcmd, asynctimeit)
+                                 asyncserverrconcmd, asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 
@@ -360,7 +361,7 @@ async def asyncstartvoter(inst, whoasked):
     if globvars.isvoting:
         message = 'Voting has already started. cast your vote now'
         await asyncserverchat(inst, message)
-    elif f'{inst}-maintenance' in globvars.taskworkers:
+    elif f'{hstname}-maintenance' in globvars.taskworkers:
         message = 'You cannot start a vote during server maintenance'
         await asyncserverchat(inst, message)
     elif f'{inst}-restarting' in globvars.taskworkers:

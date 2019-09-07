@@ -38,6 +38,7 @@ updgennotify = Now() - Secs['hour']
 
 log.add(sink=sys.stdout, level=1, backtrace=True, diagnose=True, colorize=True)
 
+
 def file_event(event):
     if event.action_name == 'modify':
         if event.name == globvars.gameini_baseconfig_file.name:
@@ -364,20 +365,18 @@ async def asyncmaintenance():
                 eventreboot = await asynciseventrebootday()
                 if eventreboot:
                     maintrest = f"{eventreboot}"
-                    globvars.taskworkers.remove(f'{hstname}-maintenance')
                     await asyncinstancerestart(inst, maintrest)
                 elif Now() - float(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst):
                     maintrest = "maintenance restart"
-                    globvars.taskworkers.remove(f'{hstname}-maintenance')
                     await asyncinstancerestart(inst, maintrest)
                 else:
                     message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
-                    globvars.taskworkers.remove(f'{hstname}-maintenance')
                     await asyncserverchat(inst, message)
             except:
                 log.exception(f'Error during {hstname} instance daily maintenance')
                 globvars.taskworkers.remove(f'{hstname}-maintenance')
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
+        globvars.taskworkers.remove(f'{hstname}-maintenance')
 
 @asynctimeit
 @log.catch
