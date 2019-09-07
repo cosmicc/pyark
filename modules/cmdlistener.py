@@ -521,6 +521,10 @@ async def playerjoin(line, inst):
     newline = line[:-17].split(':')
     player = await db.fetchone(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'")
     if player:
+        if player['homeserver'] != inst:
+            xferpointsdata = await db.fetchone(f"""SELECT * FROM transferpoints WHERE steamid = '{player["steamid"]}' and server = '{inst}'""")
+            command = f'tcsar setarctotal {player["steamid"]} {xferpointsdata["points"]}'
+            await asyncserverscriptcmd(inst, command)
         steamid = player['steamid']
         await db.update(f"""UPDATE players SET online = True, refreshsteam = True, lastseen = '{Now()}', refreshauctions = True, server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
         if Now() - player['lastseen'] > 250:
