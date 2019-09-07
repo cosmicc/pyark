@@ -17,6 +17,15 @@ def stripansi(stripstr):
 
 
 @log.catch
+async def asyncgetinstancelist():
+    namelist = []
+    names = await db.fetchall("SELECT * FROM instances")
+    for name in names:
+        namelist.append(name['name'])
+    return namelist
+
+
+@log.catch
 async def asyncwipeit(inst, extra=False):
     if extra:
         await asyncserverscriptcmd(inst, 'MatingOff_DS')
