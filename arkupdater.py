@@ -23,10 +23,10 @@ from modules.clusterevents import getcurrenteventext, asynciseventrebootday, ise
 from modules.configreader import (arkroot, hstname, instances, instr,
                                   is_arkupdater, maint_hour, numinstances, sharedpath)
 from modules.discordbot import asyncwritediscord
-from modules.instances import asyncisinstanceenabled, asyncwipeit, asyncgetlastwipe, asyncisinstanceup
+from modules.instances import asyncisinstanceenabled, asyncwipeit, asyncgetlastwipe, asyncisinstanceup, asyncgetlastrestart
 from modules.players import asyncgetplayersonline
 from modules.pushover import pushover
-from modules.servertools import asyncserverexec, asyncservernotify, asyncserverbcast, asyncserverchat, asyncserverchatto, serverexec, serverneedsrestart
+from modules.servertools import asyncserverexec, asyncservernotify, asyncserverbcast, asyncserverchat, asyncserverchatto, serverexec, serverneedsrestart, asynctimeit
 from modules.timehelper import Now, Secs, wcstamp
 
 logging.basicConfig(level=logging.DEBUG)
@@ -465,6 +465,7 @@ async def asynccheckifalreadyrestarting(inst):
             asyncio.create_task(restartloop(inst))
 
 
+@asynctimeit
 @log.catch
 async def asynccheckupdates():
     global updgennotify
@@ -535,25 +536,25 @@ async def asyncupdaterloop():
     while True:
         await asyncio.sleep(10)
         await asyncrestartcheck()
-        print('.')
+        log.trace('.')
         await asyncio.sleep(10)
         await asyncrestartcheck()
-        print('.')
+        log.trace('.')
         await asyncio.sleep(10)
         await asynccheckupdates()
-        print('.')
+        log.trace('.')
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asyncmaintenance()
-        print('.')
+        log.trace('.')
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asynccheckbackup()
-        print('.')
+        log.trace('.')
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asyncrestartcheck()
