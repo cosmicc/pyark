@@ -36,8 +36,6 @@ confupdtimer = 0
 dwtimer = 0
 updgennotify = Now() - Secs['hour']
 
-log.add(sink=sys.stdout, level=1, backtrace=True, diagnose=True, colorize=True)
-
 
 def file_event(event):
     if event.action_name == 'modify':
