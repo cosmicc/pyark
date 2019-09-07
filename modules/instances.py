@@ -132,6 +132,14 @@ def isinstancerunning(inst):
         return False
 
 
+async def asyncisinstanceup(inst):
+    dbdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    if dbdata['isup'] == 1:
+        return True
+    else:
+        return False
+
+
 def isinstanceup(inst):
     dbdata = dbquery("SELECT isup FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     if dbdata[0] == 1:
@@ -146,15 +154,6 @@ def getlastcrash(inst):
         return dbdata[0]
     else:
         return 'Never'
-
-
-@log.catch
-async def asyncgetinstancelist():
-    namelist = []
-    names = await asyncdbquery("SELECT name FROM instances", 'tuple', 'all')
-    for name in names:
-        namelist.append(name['name'])
-    return namelist
 
 
 def instancelist():

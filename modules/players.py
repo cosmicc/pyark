@@ -2,6 +2,7 @@ from time import sleep
 
 from loguru import logger as log
 
+from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.servertools import serverexec
 from modules.timehelper import Now, Secs, wcstamp
@@ -42,6 +43,11 @@ def newplayer(steamid, playername, inst):
     serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
     log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
     writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
+
+
+async def asyncgetliveplayersonline(inst):
+    dbdata = db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    return {'connectingplayers': dbdata['connectingplayers'], 'activeplayers': dbdata['activeplayers']}
 
 
 def getliveplayersonline(inst):
@@ -125,6 +131,14 @@ def getplayerlastserver(steamid='', playername=''):
     else:
         raise ValueError
         return None
+    return dbdata
+
+
+async def asyncgetplayersonline(inst):
+    if inst == 'all' or inst == 'ALL':
+        dbdata = await db.fetchall("SELECT * FROM players WHERE online = True ORDER BY lastseen DESC")
+    else:
+        dbdata = await db.fetchall(f"SELECT * FROM players WHERE online = True AND server = '{inst.lower()}' ORDER BY lastseen DESC")
     return dbdata
 
 

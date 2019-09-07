@@ -72,6 +72,15 @@ async def asyncserverbcast(inst, bcast, nice=10):
 
 
 @log.catch
+async def asyncservernotify(inst, message, nice=10):
+    cmdstring = f"""/usr/bin/nice -n {nice} arkmanager notify "{message}" @{inst}"""
+    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+    asyncio.create_task(proc)
+    log.debug(f"""cmd: {repr(cmdstring)}""")
+    return True
+
+
+@log.catch
 async def asyncserverexec(cmdlist, nice=19, wait=False):
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)

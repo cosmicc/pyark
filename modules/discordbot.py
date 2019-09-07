@@ -9,6 +9,7 @@ from os import _exit, getpid
 import discord
 from discord.ext import commands
 from loguru import logger as log
+
 import modules.logging
 from modules.asyncdb import DB as db
 from modules.clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo, iseventtime
@@ -40,6 +41,10 @@ async def shutdown(signal, client):
     except:
         log.warning('task ending error skipped')
     client.stop()
+
+
+async def asyncwritediscord(msg, tstamp, server='generalchat', name='ALERT'):
+    await db.update(f"INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('{server}', '{name}', '{msg}', '{tstamp}')")
 
 
 def writediscord(msg, tstamp, server='generalchat', name='ALERT'):

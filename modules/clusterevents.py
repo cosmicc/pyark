@@ -48,6 +48,15 @@ def autoschedevolution():
         log.log('EVENTS', f'Skipping auto-schedule of next Evo weekend to do existing next event')
 
 
+async def asynciseventrebootday():
+    startday = await db.fetchone(f"SELECT title FROM events WHERE starttime = '{Now(fmt='dtd')}'")
+    endday = await db.fetchone(f"SELECT title FROM events WHERE endtime = '{Now(fmt='dtd')}'")
+    if startday:
+        return f'{startday["title"]} Event Start'
+    elif endday:
+        return f'{startday["title"]} Event End'
+
+
 def iseventrebootday():
     startday = dbquery("SELECT title FROM events WHERE starttime = '%s'" % (Now(fmt='dtd'),), fmt='string', fetch='one')
     endday = dbquery("SELECT title FROM events WHERE endtime = '%s'" % (Now(fmt='dtd'),), fmt='string', fetch='one')
