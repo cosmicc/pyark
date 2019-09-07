@@ -1,5 +1,4 @@
 import asyncio
-import threading
 
 from loguru import logger as log
 
@@ -7,9 +6,9 @@ import globvars
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring, dbquery, dbupdate
-from modules.players import newplayer
+from modules.players import asyncnewplayer
 from modules.servertools import (asyncserverchat, asyncserverchatto, asyncserverexec,
-                                 asyncserverrconcmd, asyncserverscriptcmd, asynctimeit, serverexec)
+                                 asyncserverrconcmd, asyncserverscriptcmd, serverexec)
 from modules.timehelper import Now, elapsedTime, playedTime
 
 welcomthreads = []
@@ -43,16 +42,6 @@ def iswelcoming(steamid):
     for each in welcomthreads:
         if each['steamid'] == steamid:
             if each['sthread'].is_alive():
-                return True
-            else:
-                return False
-
-
-@log.catch
-def isgreeting(steamid):
-    for each in greetthreads:
-        if each['steamid'] == steamid:
-            if each['gthread'].is_alive():
                 return True
             else:
                 return False
@@ -116,13 +105,14 @@ async def asyncplayergreet(steamid, steamname, inst):
     xferpoints = 0
     if await asynccheckifbanned(steamid):
         log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
+        await asyncserverchatto(inst, steamid, 'You are not welcome here. Goodbye')
+        await asyncio.sleep(3)
         await asyncserverrconcmd(inst, f'kickplayer {steamid}')
         # subprocess.run("""arkmanager rconcmd 'banplayer %s' @%s""" % (steamid, inst), shell=True)
     else:
         player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
         if not player:
-            welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, steamname, inst))
-            welcom.start()
+            asyncio.create_task(asyncnewplayer(steamid, steamname, inst))
         else:
             if player['transferpoints'] != 0 and player['homeserver'] == inst:
                 xferpoints = int(player['transferpoints'])
@@ -159,26 +149,16 @@ async def asyncplayergreet(steamid, steamname, inst):
                     await asyncserverchatto(inst, steamid, mtxt)
                     await asyncresetplayerbit(steamid)
                 if player[8] == '':
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(3)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
                     await asyncserverchatto(inst, steamid, mtxt)
                 if not isinlottery(steamid):
                     await asyncio.sleep(3)
                     mtxt = f'A lottery you have not entered yet is underway. Type !lotto for more information'
                     await asyncserverchatto(inst, steamid, mtxt)
-            if xferpoints != 0:
-                    await asyncio.sleep(2)
-                    mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
-                    await asyncserverchatto(inst, steamid, mtxt)
-            await asynclottodeposits(player, inst)
-            if int(player[2]) + 60 < Now():
-                # mtxt = f'{oplayer[1].capitalize()} has joined the server'
-                # serverexec(['arkmanager', 'rconcmd', f'ServerChat {mtxt}', f'@{inst}'], nice=19, null=True)
-                # writechat(inst, 'ALERT', f'<<< {oplayer[1].capitalize()} has joined the server', wcstamp())
-                await asyncserverisinrestart(steamid, inst, player)
                 currentevent = await asynciseventtime()
                 if currentevent:
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(3)
                     mtxt = f'{currentevent[4]} event is currently active!'
                     await asyncserverchatto(inst, steamid, mtxt)
                 annc = await db.fetchone("SELECT announce FROM general")
@@ -186,6 +166,12 @@ async def asyncplayergreet(steamid, steamname, inst):
                     await asyncio.sleep(2)
                     mtxt = annc[0]
                     await asyncserverchatto(inst, steamid, mtxt)
+            if xferpoints != 0:
+                    await asyncio.sleep(5)
+                    mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
+                    await asyncserverchatto(inst, steamid, mtxt)
+            await asynclottodeposits(player, inst)
+            await asyncserverisinrestart(steamid, inst, player)
     globvars.greetings.remove(steamid)
 
 
@@ -211,9 +197,9 @@ async def asyncprocessline(inst, line):
             if len(rawline) > 1:
                 steamid = rawline[1].strip()
                 steamname = cleanstring(rawline[0].split('. ', 1)[1])
-                if steamid not in globvars.greetings:
+                if steamid not in globvars.greetings and steamid not in globvars.welcomes:
                     globvars.greetings.append(steamid)
-                    await asyncplayergreet(steamid, steamname, inst)
+                    asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
                 else:
                     log.debug(f'online player greeting aleady running for {steamname}')
             else:

@@ -118,6 +118,7 @@ class asyncDB:
                 await con.execute(sql, query[0].lower(), query[1].upper(), query[2])
             except:
                 log.exception(f'Exception in db stat update {query}')
+                return False
             finally:
                 await self._release(con)
         else:
@@ -125,6 +126,7 @@ class asyncDB:
                 await con.execute(query)
             except:
                 log.exception(f'Exception in db update {query}')
+                return False
             finally:
                 await self._release(con)
         return True
@@ -135,8 +137,7 @@ class asyncDB:
         # if (db not in self.dbgamelog and not isinstance(query, str)) or (db in self.dbgamelog and not isinstance(query, list)):
         #    raise TypeError(f'Query type is invalid [{type(query)}]')
         # log.trace(f'Executing DB [{db}] update {query}')
-        await self._execute(query, db)
-        return True
+        return await self._execute(query, db)
 
     async def statsupdate(self, inst, value):
         await self.update(f"INSERT INTO {inst.lower()}_stats (date, value) VALUES ('{datetime.now().replace(microsecond=0)}', {value})")

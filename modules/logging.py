@@ -1,10 +1,11 @@
 from loguru import logger as log
-
-from modules.configreader import hstname
+from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
+                                  debugfile, gamelogfile, hstname,
+                                  jsondebugfile, jsonlogfile, loglevel, pointsfile)
 
 log.remove()
 
-log.configure(extra={'hostname': hstname, 'instance': 'MAIN'})
+log.configure(extra={'hostname': hstname, 'instance': 'None'})
 
 log.level("START", no=38, color="<fg 39>", icon="¤")
 log.level("JOIN", no=21, color="<fg 201>", icon="¤")
@@ -46,3 +47,79 @@ gamelogformat = '<level>{message}</level>'
 chatlogformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {message}'
 
 longlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level><fg 248>|</fg 248><level>{extra[hostname]: >5}</level> <fg 248>|</fg 248> <level>{level: <7}</level> <fg 248>|</fg 248> <level>{message: <72}</level> <fg 243>|</fg 243> <fg 109>{name}:{function}:{line}</fg 109>'
+
+
+def checkdebuglog(record):
+    if record['level'] == 'DEBUG' or record['level'] == 'TRACE':
+        return True
+    else:
+        return False
+
+
+def checkgamelog(record):
+    if record['level'] == 'TRAP' or record['level'] == 'ADMIN' or record['level'] == 'DEATH' or record['level'] == 'TAME' or record['level'] == 'DECAY' or record['level'] == 'DEMO' or record['level'] == 'TRIBE' or record['level'] == 'CLAIM' or record['level'] == 'RELEASE':
+        return True
+    else:
+        return False
+
+
+def checklogadmin(record):
+    if record['level'] == 'ADMIN':
+        return True
+    else:
+        return False
+
+
+def checkchatlog(record):
+    if record['level'] == 'CHAT':
+        return True
+    else:
+        return False
+
+
+def checklogpoints(record):
+    if record['level'] == 'POINTS':
+        return True
+    else:
+        return False
+
+
+def checklogcrash(record):
+    if record['level'] == 'CRASH':
+        return True
+    else:
+        return False
+
+
+def checkerrorlog(record):
+    if record['level'] == 'ERROR' or record['level'] == 'CRITICAL':
+        return True
+    else:
+        return False
+
+
+# Json logging pyarklog.json
+log.add(sink=jsonlogfile, level=19, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat)
+# Color logging pyark.log
+log.add(sink=colorlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=longlogformat)
+# Debug json logging debuglog.json
+if loglevel == 'DEBUG' or loglevel == 'TRACE':
+    if loglevel == 'DEBUG':
+        lev = 10
+    else:
+        lev = 5
+    log.add(sink=jsondebugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=shortlogformat, delay=True, filter=checkdebuglog)
+    log.add(sink=debugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=False, colorize=True, format=longlogformat, delay=True)
+
+# Points Logging points.log
+log.add(sink=pointsfile, level=22, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogpoints)
+# Admin Logging admin.log
+log.add(sink=adminfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogadmin)
+# Crash Logging crash.log
+log.add(sink=crashlogfile, level=29, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=simplelogformat, delay=True, filter=checklogcrash)
+# Error Logging error.log
+log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True, filter=checkerrorlog)
+# chat Logging error.log
+log.add(sink=chatlogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=chatlogformat, delay=False, filter=checkchatlog)
+# game Logging game.log
+log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=True, format=gamelogformat, delay=False, filter=checkgamelog)

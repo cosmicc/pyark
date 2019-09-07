@@ -10,7 +10,6 @@ import discord
 from discord.ext import commands
 from loguru import logger as log
 
-import modules.logging
 from modules.asyncdb import DB as db
 from modules.clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo, iseventtime
 from modules.configreader import (changelog_id, discordtoken, generalchat_id,

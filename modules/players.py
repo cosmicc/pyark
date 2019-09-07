@@ -1,11 +1,23 @@
+import asyncio
 from time import sleep
 
 from loguru import logger as log
-
+import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
-from modules.servertools import serverexec
+from modules.servertools import serverexec, asyncserverchat, asyncserverchatto
 from modules.timehelper import Now, Secs, wcstamp
+
+
+async def asyncwritechat(inst, whos, msg, tstamp):
+    isindb = False
+    if whos != 'ALERT':
+        isindb = await db.fetchone(f"SELECT * from players WHERE playername = '{whos}'")
+        if isindb:
+            await db.update(f"""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('{inst}', '{whos}', '{msg.replace("'", "")}', '{tstamp}')""")
+
+    elif whos == "ALERT":
+        await db.update(f"INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('{inst}', '{whos}', '{msg}', '{tstamp}')")
 
 
 def writechat(inst, whos, msg, tstamp):
@@ -17,6 +29,39 @@ def writechat(inst, whos, msg, tstamp):
 
     elif whos == "ALERT":
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
+
+
+@log.catch
+async def asyncnewplayer(steamid, playername, inst):
+    if steamid not in globvars.welcomes:
+        log.log('NEW', f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
+        added = await db.update(f"INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
+                 firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
+                 primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, \
+                 steamlastlogoff, steamcreated, refreshauctions, refreshsteam) VALUES ('{steamid}', '{playername}', '{Now()}', \
+                 '{inst}', '0', '0', '{Now()}', '1', '', '', '0', '0', '0', '0', '0', '{inst}', '0', '{Now()}', '0', 'True', 'True', \
+                 '0', '0', False, True)")
+        if added:
+            log.debug(f'Sending welcome message to [{playername.title()}] on [{inst.title()}]')
+            await asyncio.sleep(3)
+            message = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
+            await asyncserverchatto(inst, steamid, message)
+            await asyncio.sleep(3)
+            message = 'Rewards points earned as you play (and many other ways), Public teleporters, many public resource areas.'
+            await asyncserverchatto(inst, steamid, message)
+            await asyncio.sleep(3)
+            message = 'Build a rewards vault, free starter items inside, thats where all the kits are'
+            await asyncserverchatto(inst, steamid, message)
+            await asyncio.sleep(3)
+            message = 'Press F1 or Discord at anytime for help. Careful out there, its a challenge. Have fun!'
+            await asyncserverchatto(inst, steamid, message)
+            await asyncio.sleep(3)
+            message = f'Everyone welcome new player {playername.title()} to the cluster!'
+            await asyncserverchat(inst, message)
+            log.debug(f'welcome message complete for new player {steamid} on {inst}')
+            await asyncwritechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
+    else:
+        log.debug(f'welcome message already running for [{playername}]')
 
 
 @log.catch

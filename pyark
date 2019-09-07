@@ -73,91 +73,6 @@ signal.signal(signal.SIGINT, sig_handler)
 signal.signal(signal.SIGQUIT, sig_handler)
 
 
-def checkdebuglog(record):
-    if record['level'] == 'DEBUG' or record['level'] == 'TRACE':
-        return True
-    else:
-        return False
-
-
-def checkgamelog(record):
-    if record['level'] == 'TRAP' or record['level'] == 'ADMIN' or record['level'] == 'DEATH' or record['level'] == 'TAME' or record['level'] == 'DECAY' or record['level'] == 'DEMO' or record['level'] == 'TRIBE' or record['level'] == 'CLAIM' or record['level'] == 'RELEASE':
-        return True
-    else:
-        return False
-
-
-def checklogadmin(record):
-    if record['level'] == 'ADMIN':
-        return True
-    else:
-        return False
-
-
-def checkchatlog(record):
-    if record['level'] == 'CHAT':
-        return True
-    else:
-        return False
-
-
-def checklogpoints(record):
-    if record['level'] == 'POINTS':
-        return True
-    else:
-        return False
-
-
-def checklogcrash(record):
-    if record['level'] == 'CRASH':
-        return True
-    else:
-        return False
-
-
-def checkerrorlog(record):
-    if record['level'] == 'ERROR' or record['level'] == 'CRITICAL':
-        return True
-    else:
-        return False
-
-
-# Console Logging
-if args.quiet:
-    log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=False, format=modules.logging.longlogformat)
-elif args.trace:
-    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat)
-elif args.debug:
-    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat)
-else:
-    log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat)
-
-# Json logging pyarklog.json
-log.add(sink=jsonlogfile, level=19, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=modules.logging.shortlogformat)
-# Color logging pyark.log
-log.add(sink=colorlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=modules.logging.longlogformat)
-# Debug json logging debuglog.json
-if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
-    if loglevel == 'DEBUG' or args.debug:
-        lev = 10
-    else:
-        lev = 5
-    log.add(sink=jsondebugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=modules.logging.shortlogformat, delay=True, filter=checkdebuglog)
-    log.add(sink=debugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=False, colorize=True, format=modules.logging.longlogformat, delay=True)
-
-# Points Logging points.log
-log.add(sink=pointsfile, level=22, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=modules.logging.simplelogformat, delay=True, filter=checklogpoints)
-# Admin Logging admin.log
-log.add(sink=adminfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=modules.logging.simplelogformat, delay=True, filter=checklogadmin)
-# Crash Logging crash.log
-log.add(sink=crashlogfile, level=29, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=modules.logging.simplelogformat, delay=True, filter=checklogcrash)
-# Error Logging error.log
-log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat, delay=True, filter=checkerrorlog)
-# chat Logging error.log
-log.add(sink=chatlogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=modules.logging.chatlogformat, delay=False, filter=checkchatlog)
-# game Logging game.log
-log.add(sink=gamelogfile, level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=True, format=modules.logging.gamelogformat, delay=False, filter=checkgamelog)
-
 plock()
 
 nice(10)
@@ -214,8 +129,7 @@ async def asyncmain():
         gl = GameLogger()
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
-                await loop(asyncloop, atinstances, gl)
-                await asyncio.sleep(.1)
+                await asyncio.sleep(1)
     else:
         globvars.timer = {'restartcheck': starttime, 'backupcheck': starttime, 'wipecheck': starttime, 'updatecheck': starttime, 'maintcheck': starttime, 'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
         log.debug(f'Found {len(instances)} ARK server instances: [{instr}]')

@@ -305,7 +305,7 @@ async def asyncresetlastwipe(inst):
 
 
 @log.catch
-async def asyncwipeit(inst):
+async def asyncwipeprep(inst):
     yesvoters = howmanyvotes()
     totvoters = len(globvars.votertable)
     log.log('VOTE', f'YES has won ({yesvoters}/{totvoters}), wild dinos are wiping on [{inst.title()}] in 10 seconds')
@@ -313,7 +313,7 @@ async def asyncwipeit(inst):
     await asyncserverbcast(inst, bcast)
     await asyncwritechat(inst, 'ALERT', f'A wild dino wipe vote has won by YES vote ({yesvoters}/{totvoters}). Wiping wild dinos now.', wcstamp())
     await asyncio.sleep(5)
-    asyncio.create_task(asyncwipeit())
+    asyncio.create_task(asyncwipeit(inst))
     await asyncresetlastwipe(inst)
     log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
     return True
@@ -333,11 +333,11 @@ async def asyncvoter(inst, whoasked):
         await asyncio.sleep(5)
         if votingpassed():
             globvars.isvoting = False
-            asyncio.create_task(asyncwipeit(inst))
+            asyncio.create_task(asyncwipeprep(inst))
         elif asyncloop.time() - globvars.votestarttime > Secs['2min']:
             if enoughvotes():
                 globvars.isvoting = False
-                asyncio.create_task(asyncwipeit(inst))
+                asyncio.create_task(asyncwipeprep(inst))
             else:
                 globvars.isvoting = False
                 message = f'Not enough votes ({howmanyvotes()} of {len(globvars.votertable)}). voting has ended.'
@@ -546,6 +546,8 @@ async def playerjoin(line, inst):
             message = f'{player["playername"].title()} has joined the server'
             await asyncserverchat(inst, message)
             await asyncwritechat(inst, 'ALERT', f'<<< {player["playername"].title()} has joined the server', wcstamp())
+    else:
+        log.debug(f'player [{cleanstring(newline[1].strip())}] joined that is not found in database')
 
 
 @log.catch
