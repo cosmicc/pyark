@@ -147,7 +147,7 @@ async def asynccheckwipe(instances):
         lastwipe = await asyncgetlastwipe(inst)
         if Now() - lastwipe > Secs['12hour'] and await asyncisinstanceup(inst):
             oplayers = await asyncgetliveplayersonline(inst)
-            if oplayers['activeplayers'] == 0 and len(await asyncgetplayersonline()) == 0:
+            if oplayers['activeplayers'] == 0 and len(await asyncgetplayersonline(inst)) == 0:
                 log.log('WIPE', f'Dino wipe needed for [{inst.title()}], server is empty, wiping now')
                 await asyncwritechat(inst, 'ALERT', f'### Empty server is over 12 hours since wild dino wipe. Wiping now.', wcstamp())
                 asyncio.create_task(asyncwipeit(inst))
