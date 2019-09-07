@@ -308,7 +308,7 @@ async def asyncmaintenance():
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
     if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{hstname}-maintenance' not in globvars.taskworkers:
-        globvars.taskworkers.append[f'{hstname}-maintenance']
+        globvars.taskworkers.append(f'{hstname}-maintenance')
         await asyncsetlastmaint(hstname)
         log.log('MAINT', f'Daily maintenance window has opened for server [{hstname.upper()}]...')
         for inst in instances:
