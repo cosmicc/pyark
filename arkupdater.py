@@ -402,7 +402,6 @@ async def asyncinstancerestart(inst, reason, startonly=False):
     else:
         log.debug(f'skipping start/restart for {inst} because restart thread already running')
 
-@asynctimeit
 @log.catch
 async def asyncisnewarkver(inst):
     try:
