@@ -527,6 +527,7 @@ async def asyncupdaterloop():
         log.info(f'No ARK game instances found, running as [Master Bot]')
 
     while True:
+        await asyncmaintenance()
         await asyncio.sleep(30)
         await asyncrestartcheck()
         await asyncio.sleep(30)
@@ -537,7 +538,6 @@ async def asyncupdaterloop():
         await asyncio.sleep(30)
         await asyncrestartcheck()
         await asyncio.sleep(30)
-        await asyncmaintenance()
         await asyncrestartcheck()
         await asyncio.sleep(30)
         await asyncrestartcheck()
