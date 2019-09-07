@@ -195,7 +195,7 @@ async def asyncmain():
     global main_stop_event
     global file_event_notifier
     main_stop_event = False
-    globvars.delay = {'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
+    globvars.delay = {'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     serverpre = ['@all']
@@ -216,7 +216,7 @@ async def asyncmain():
                 await loop(asyncloop, atinstances, gl)
                 await asyncio.sleep(.1)
     else:
-        globvars.timer = {'backupcheck': starttime, 'wipecheck': starttime, 'updatecheck': starttime, 'maintcheck': starttime, 'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
+        globvars.timer = {'restartcheck': starttime, 'backupcheck': starttime, 'wipecheck': starttime, 'updatecheck': starttime, 'maintcheck': starttime, 'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
         log.debug(f'Found {len(instances)} ARK server instances: [{instr}]')
 
         while not main_stop_event:
