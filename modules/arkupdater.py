@@ -250,7 +250,6 @@ def installconfigs(inst):
             config.write(configfile)
     if gusini_tempconfig_file.exists():
         gusini_tempconfig_file.unlink()
-    config.write(gusini_tempconfig_file)
     shutil.move(gusini_tempconfig_file, gusini_final_file)
     if inst in gameini_customconfig_files.exists():
         shutil.copy(gameini_customconfig_files[inst], gameini_final_file)
