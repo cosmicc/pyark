@@ -223,6 +223,8 @@ async def asyncmain():
             asynclooptime = asyncloop.time()
             if asynclooptime - globvars.timer['kickcheck'] > globvars.delay['kickcheck'] and 'kickcheck' not in globvars.taskworkers:
                 asyncio.create_task(asynckickcheck(instances))
+                if asynclooptime - globvars.timer['kickcheck'] > globvars.delay['kickcheck'] + 2:
+                    
                 # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'kickcheck': asyncloop.time()})
             if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] and 'cmdcheck' not in globvars.taskworkers:

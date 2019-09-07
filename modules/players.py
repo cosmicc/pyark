@@ -46,7 +46,7 @@ def newplayer(steamid, playername, inst):
 
 
 async def asyncgetliveplayersonline(inst):
-    dbdata = db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    dbdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     return {'connectingplayers': dbdata['connectingplayers'], 'activeplayers': dbdata['activeplayers']}
 
 

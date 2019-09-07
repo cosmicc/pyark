@@ -458,9 +458,12 @@ async def asynccheckifalreadyrestarting(inst):
             log.debug(f'restart flag set for instance {inst}, starting restart loop')
             globvars.append[f'{inst}-restarting']
             asyncio.create_task(restartloop(inst))
+        else:
+            log.trace(f'instance {inst} trying to restart but already restarting')
+    else:
+        log.trace(f'instace {inst} does not need a restart')
 
 
-@asynctimeit
 @log.catch
 async def asynccheckupdates(instances):
     global updgennotify
@@ -511,7 +514,6 @@ async def asynccheckupdates(instances):
             log.trace(f'no updated mods were found for instance {inst}')
 
 
-@asynctimeit
 @log.catch
 async def asynccheckrestart(instances):
     for inst in instances:
