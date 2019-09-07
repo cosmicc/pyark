@@ -491,7 +491,7 @@ async def asynccheckupdates():
     for inst in instances:
         checkdirs(inst)
         if f'{inst}-restarting' not in globvars.taskworkers:
-            ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{instance[each]["name"]}'], wait=True)
+            ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{inst}'], wait=True)
             ismodupd = ismodupdd.decode('utf-8')
             modchk = 0
             ismodupd = ismodupd.split('\n')
