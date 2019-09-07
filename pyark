@@ -299,9 +299,9 @@ def main():
     if not any(x in instances for x in checklist) and instr != 'Master Server':
         log.critical(f'Instance does not exist in the database!')
         exit(1)
-    for each in instances:
-        log.trace(f'deleting global chat buffer for {instance}')
-        dbupdate(f"DELETE FROM globalbuffer WHERE server = '{each}'")
+    for inst in instances:
+        log.trace(f'deleting global chat buffer for {inst}')
+        dbupdate(f"DELETE FROM globalbuffer WHERE server = '{inst}'")
     if len(instances) == 0:
         thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(1, stop_event), daemon=False)
         threads.append(thread)
