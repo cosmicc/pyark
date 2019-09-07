@@ -29,13 +29,13 @@ from modules.pushover import pushover
 from modules.servertools import asyncserverexec, asyncservernotify, asyncserverbcast, asyncserverchat, asyncserverchatto, serverexec, serverneedsrestart
 from modules.timehelper import Now, Secs, wcstamp
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.TRACE)
 
 confupdtimer = 0
 dwtimer = 0
 updgennotify = Now() - Secs['hour']
 
-log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=False)
+log.add(sink=sys.stdout, level=1, backtrace=True, diagnose=True, colorize=True)
 
 def file_event(event):
     if event.action_name == 'modify':
