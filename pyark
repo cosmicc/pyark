@@ -300,10 +300,8 @@ def main():
         log.critical(f'Instance does not exist in the database!')
         exit(1)
     for each in instances:
-        log.trace('deleting global chat buffer for {instance}')
-        dbupdate("DELETE FROM globalbuffer WHERE server = '{each}'")
-    arkupdt = threading.Thread(name='arkupdater', target=arkupdater_thread, args=(stop_event,), daemon=False)
-    threads.append(arkupdt)
+        log.trace(f'deleting global chat buffer for {instance}')
+        dbupdate(f"DELETE FROM globalbuffer WHERE server = '{each}'")
     if len(instances) == 0:
         thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(1, stop_event), daemon=False)
         threads.append(thread)
