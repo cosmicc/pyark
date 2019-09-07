@@ -1,5 +1,6 @@
-from time import sleep
 from pathlib import Path
+from time import sleep
+
 from fsmonitor import FSMonitorThread
 
 a = Path('home/ark/shared/config/GameUserSettings-coliseum.ini')

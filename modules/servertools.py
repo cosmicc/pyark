@@ -14,11 +14,9 @@ def asynctimeit(func):
     async def wrapper(*args, **kwargs):
         asyncloop = asyncio.get_running_loop()
         astart_time = asyncloop.time()
-        dstart_time = time()
         await func(*args, **kwargs)
-        print(f'Execution times for [{func.__name__}]: Async: {asyncloop.time() - astart_time} Normal: {time() - dstart_time}')
+        print(f'Execution times for [{func.__name__}]: Async: {asyncloop.time() - astart_time}')
     return wrapper
-
 
 
 @log.catch

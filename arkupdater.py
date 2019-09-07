@@ -1,11 +1,10 @@
-import sys
 import asyncio
-import uvloop
 import configparser
-import random
 import logging
+import random
 import shutil
 import subprocess
+import sys
 import threading
 from datetime import datetime
 from datetime import time as dt
@@ -13,20 +12,22 @@ from os import chown
 from pathlib import Path
 from time import sleep
 
+import uvloop
 from loguru import logger as log
 from timebetween import is_time_between
 
 import globvars
 from fsmonitor import FSMonitorThread
 from modules.asyncdb import DB as db
-from modules.clusterevents import getcurrenteventext, asynciseventrebootday, iseventtime
-from modules.configreader import (arkroot, hstname, instances, instr,
-                                  is_arkupdater, maint_hour, numinstances, sharedpath)
+from modules.clusterevents import asynciseventrebootday, getcurrenteventext, iseventtime
+from modules.configreader import arkroot, hstname, instances, instr, is_arkupdater, maint_hour, numinstances, sharedpath
 from modules.discordbot import asyncwritediscord
-from modules.instances import asyncisinstanceenabled, asyncwipeit, asyncgetlastwipe, asyncisinstanceup, asyncgetlastrestart
+from modules.instances import (asyncgetlastrestart, asyncgetlastwipe,
+                               asyncisinstanceenabled, asyncisinstanceup, asyncwipeit)
 from modules.players import asyncgetplayersonline
 from modules.pushover import pushover
-from modules.servertools import asyncserverexec, asyncservernotify, asyncserverbcast, asyncserverchat, asyncserverchatto, serverexec, serverneedsrestart, asynctimeit
+from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec,
+                                 asyncservernotify, asynctimeit, serverexec, serverneedsrestart)
 from modules.timehelper import Now, Secs, wcstamp
 
 logging.basicConfig(level=logging.DEBUG)
@@ -139,7 +140,7 @@ async def asyncunsetstartbit(inst):
 async def asyncplayerrestartbit(inst):
     await db.update(f"UPDATE players SET restartbit = 1 WHERE server = '{inst}'")
 
-
+@asynctimeit
 @log.catch
 async def asynccheckwipe(inst):
     global dwtimer
@@ -232,7 +233,7 @@ def installconfigs(inst):
     chown(str(globvars.gusini_final_file), 1001, 1005)
     log.debug(f'Server {inst} built and updated config files')
 
-
+@asynctimeit
 @log.catch
 async def asyncrestartinstnow(inst, startonly=False):
     checkdirs(inst)
@@ -262,7 +263,7 @@ async def asyncrestartinstnow(inst, startonly=False):
         await asyncplayerrestartbit(inst)
         await asyncserverexec(['arkmanager', 'start', f'@{inst}'])
 
-
+@asynctimeit
 @log.catch
 async def asyncrestartloop(inst, startonly=False):
     checkdirs(inst)
@@ -314,7 +315,7 @@ async def asyncrestartloop(inst, startonly=False):
     else:
         log.debug(f'configuration restart skipped because {splayers} players and {aplayers} active players')
 
-
+@asynctimeit
 @log.catch
 async def asyncmaintenance():
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
@@ -389,7 +390,7 @@ async def asyncmaintenance():
                 log.exception(f'Error during {inst} instance daily maintenance')
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
 
-
+@asynctimeit
 @log.catch
 async def asyncinstancerestart(inst, reason, startonly=False):
     checkdirs(inst)
@@ -401,7 +402,7 @@ async def asyncinstancerestart(inst, reason, startonly=False):
     else:
         log.debug(f'skipping start/restart for {inst} because restart thread already running')
 
-
+@asynctimeit
 @log.catch
 async def asyncisnewarkver(inst):
     try:
@@ -422,14 +423,14 @@ async def asyncisnewarkver(inst):
     except:
         return False, False, False
 
-
+@asynctimeit
 @log.catch
 async def asyncperformbackup(inst):
     await asyncio.sleep(random.randint(1, 5) * 6)
     log.log('MAINT', f'Performing a world data backup on [{inst.title()}]')
     await asyncserverexec(['arkmanager', 'backup', f'@{inst}'])
 
-
+@asynctimeit
 @log.catch
 async def asynccheckbackup():
     for inst in instances:
@@ -516,6 +517,7 @@ async def asynccheckupdates():
             log.debug(f'no updated mods were found for instance {inst}')
 
 
+@asynctimeit
 @log.catch
 async def asyncrestartcheck():
     for inst in instances:
@@ -536,25 +538,20 @@ async def asyncupdaterloop():
     while True:
         await asyncio.sleep(10)
         await asyncrestartcheck()
-        log.trace('.')
         await asyncio.sleep(10)
         await asyncrestartcheck()
-        log.trace('.')
         await asyncio.sleep(10)
         await asynccheckupdates()
-        log.trace('.')
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asyncmaintenance()
-        log.trace('.')
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asynccheckbackup()
-        log.trace('.')
         await asyncrestartcheck()
         await asyncio.sleep(10)
         await asyncrestartcheck()

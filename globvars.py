@@ -1,6 +1,7 @@
-from modules.configreader import instances, arkroot, sharedpath
 from pathlib import Path
 from time import time
+
+from modules.configreader import arkroot, instances, sharedpath
 
 taskworkers = []  # list of working tasks
 votertable = []  # populated voter table for wild wipe votes
@@ -24,5 +25,3 @@ for inst in instances:
     arkmanager_paths.append(Path(f'/home/ark/shared/logs/arkmanager/{inst}'))
     gusini_customconfig_files.update({inst: Path(f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini')})
     gameini_customconfig_files.update({inst: Path(f'{sharedpath}/config/Game-{inst.lower()}.ini')})
-
-

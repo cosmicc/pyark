@@ -177,17 +177,17 @@ def homeablelist():
 
 async def asyncgetlastwipe(inst):
     insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    return insts['lastdinowipe']
+    return int(insts['lastdinowipe'])
 
 
 async def asyncgetlastvote(inst):
     insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    return insts['lastvote']
+    return int(insts['lastvote'])
 
 
 async def asyncgetlastrestart(inst):
     insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    return insts['lastrestart']
+    return int(insts['lastrestart'])
 
 
 def getlastwipe(inst):
