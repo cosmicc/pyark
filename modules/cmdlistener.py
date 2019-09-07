@@ -12,20 +12,12 @@ from modules.configreader import hstname
 from modules.asyncdb import DB as db
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
-from modules.instances import asyncgetinstancelist, getlastrestart, getlastwipe, homeablelist, asyncwipeit
+from modules.instances import asyncgetinstancelist, getlastrestart, asyncgetlastwipe, homeablelist, asyncwipeit
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import newplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec,
-                                 asyncserverrconcmd, asyncserverscriptcmd)
+                                 asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
-
-
-async def asyncstopsleep(sleeptime, stop_event):
-    for ntime in range(sleeptime):
-        if stop_event.is_set():
-            log.debug('Command listener thread has ended')
-            exit(0)
-        asyncio.sleep(1)
 
 
 async def asyncwriteglobal(inst, whos, msg):
@@ -49,14 +41,14 @@ async def asyncwritechatlog(inst, whos, msg, tstamp):
     pass
     # steamid = await asyncgetsteamid(whos)
     # if steamid:
-        # clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
-        # if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
-        #    log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
-        #    os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
-        #    os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
-        # with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
-        #   await f.write(clog)
-        # await f.close()
+    # clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
+    # if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
+    #    log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
+    #    os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
+    #    os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
+    # with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
+    #   await f.write(clog)
+    # await f.close()
 
 
 @log.catch
@@ -365,14 +357,14 @@ async def asyncstartvoter(inst, whoasked):
     elif f'{inst}-restarting' in globvars.taskworkers:
         message = 'You cannot start a vote while the server is in restart countdown'
         await asyncserverchat(inst, message)
-    elif time() - float(await asyncgetlastvote(inst)) < Secs['4hour']:   # 4 hours between wipes
-        rawtimeleft = Secs['4hour'] - (Now() - float(await asyncgetlastvote(inst)))
+    elif time() - float(await asyncgetlastwipe(inst)) < Secs['4hour']:   # 4 hours between wipes
+        rawtimeleft = Secs['4hour'] - (Now() - float(await asyncgetlastwipe(inst)))
         timeleft = playedTime(rawtimeleft)
         message = f'You must wait {timeleft} until the next wild wipe vote can start'
         await asyncserverchat(inst, message)
         log.log('VOTE', f'Vote start denied for [{whoasked.title()}] on [{inst.title()}] because 4 hour timer')
-    elif time() - float(globvars.lastvoter) < Secs['10min']:                      # 10 min between failed attempts
-        rawtimeleft = Secs['10min'] - (Now() - globvars.lastvoter)
+    elif Now() - float(await asyncgetlastvote(inst)) < Secs['10min']:                      # 10 min between failed attempts
+        rawtimeleft = Now() - await asyncgetlastvote(inst)
         timeleft = playedTime(rawtimeleft)
         message = f'You must wait {timeleft} until the next wild wipe vote can start'
         await asyncserverchat(inst, message)
@@ -426,27 +418,17 @@ async def processtcdata(inst, tcdata):
         rewardpoints = int(tcdata['Points'].replace(',', ''))
         if playername.lower() != player['playername'].lower():
             log.log('UPDATE', f'Player name update for [{player["playername"]}] to [{playername}]')
-            await db.update("UPDATE players SET playername = '%s' WHERE steamid = '%s'" % (playername, steamid))
+            await db.update(f"UPDATE players SET playername = '{playername}' WHERE steamid = '{steamid}'")
         if inst == player['homeserver']:
             log.trace(f'player {playername} with steamid {steamid} was found on HOME server {inst}. updating info.')
-            await db.update("UPDATE players SET playedtime = '%s', rewardpoints = '%s' WHERE steamid = '%s'" %
-                            (playtime, rewardpoints, steamid))
+            await db.update(f"UPDATE players SET playedtime = '{playtime}', rewardpoints = '{rewardpoints}' WHERE steamid = '{steamid}'")
         else:
-            log.trace(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info.')
-            if int(player['transferpoints']) != int(rewardpoints):
-                if int(rewardpoints) != 0:
-                    if Now() - float(player['lastpointtimestamp']) > 60:
-                        log.debug(f'adding {rewardpoints} non home points to {player["homeserver"]} transfer points for {playername} on {inst}')
-                        await db.update(f"UPDATE players SET transferpoints = '{int(rewardpoints)}', lastpointtimestamp = '{str(Now())}' WHERE steamid = '{str(steamid)}'")
-                        command = f'tcsar setarctotal {steamid} 0'
-                        await asyncserverscriptcmd(inst, command)
-                    else:
-                        log.trace(f'reward points not past threshold for wait (to avoid duplicates) for \
-{playername} on {inst}, skipping')
-                else:
-                    log.trace(f'zero reward points to account for {playername} on {inst}, skipping')
+            log.trace(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info')
+            transferdata = await db.fetchone(f"SELECT * from transferpoints WHERE steamid = '{steamid}' and server = '{inst}'")
+            if transferdata:
+                await db.update(f"UPDATE transferpoints SET points = '{rewardpoints}' WHERE steamid = '{steamid}' and server = '{inst}'")
             else:
-                log.trace(f'duplicate reward points to account for {playername} on {inst}, skipping')
+                await db.update(f"INSERT INTO transferpoints (steamid, server, points) VALUES ('{steamid}', '{inst}', {rewardpoints}")
 
 
 async def asynchomeserver(inst, whoasked, ext):
@@ -463,7 +445,7 @@ async def asynchomeserver(inst, whoasked, ext):
                         log.log('PLAYER', f'[{player["playername"].title()}] has transferred home servers from [{player["homeserver"].title()}] to [{ext.title()}] with {player["rewardpoints"]} points')
                         command = 'tcsar setarctotal {steamid} 0'
                         await asyncserverscriptcmd(inst, command)
-                        await db.update(f"""UPDATE players SET transferpoints = {player["rewardpoints"]}, homeserver = '{ext}' WHERE steamid = '{steamid}'""")
+                        await db.update(f"""UPDATE players SET homemovepoints = {player["rewardpoints"]}, homeserver = '{ext}' WHERE steamid = '{steamid}'""")
                         message = f'Your {player["rewardpoints"]} points have been transferred to your new home server: {ext.capitalize()}'
                         await asyncserverchatto(inst, steamid, message)
                     else:
@@ -568,12 +550,19 @@ async def asyncleavingplayerwatch(player, inst):
             transferred = True
             stop_watch = True
         await asyncio.sleep(2)
+        if player['homeserver'] != inst:
+            command = f'tcsar setarctotal {player["steamid"]} 0'
+            await asyncserverscriptcmd(inst, command)
+
     if not transferred and time() - int(queryplayer['lastseen']) >= 240:
         steamid = player["steamid"]
         await db.update(f"UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, refreshauctions = True WHERE steamid = '{steamid}'")
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         await asyncserverchat(inst, mtxt)
+        if player['homeserver'] != inst:
+            command = f'tcsar setarctotal {player["steamid"]} 0'
+            await asyncserverscriptcmd(inst, command)
     return True
 
 

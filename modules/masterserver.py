@@ -144,14 +144,6 @@ async def asyncauctionapi(session):
                     log.debug(f'retrieved auctions for player [{player[1]}] total: {totauctions}, items: {iauctions}, dinos: {dauctions}')
 
 
-@log.catch
-async def asyncdblcheckonline():
-    log.trace('Running online doublechecker...')
-    players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 280}")
-    for player in players:
-        log.warning(f'Player [{player["playername"].title()}] wasnt found logging off. Clearing player from online status')
-        await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
-
 
 @log.catch
 async def asyncstatcollector():

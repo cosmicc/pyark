@@ -7,7 +7,7 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.players import asyncnewplayer
-from modules.servertools import (asyncserverchat, asyncserverchatto, asyncserverexec,
+from modules.servertools import (asyncserverchatto, asyncserverexec,
                                  asyncserverrconcmd, asyncserverscriptcmd, serverexec)
 from modules.timehelper import Now, elapsedTime, playedTime
 
@@ -114,10 +114,18 @@ async def asyncplayergreet(steamid, steamname, inst):
         if not player:
             asyncio.create_task(asyncnewplayer(steamid, steamname, inst))
         else:
-            if player['transferpoints'] != 0 and player['homeserver'] == inst:
-                xferpoints = int(player['transferpoints'])
+            if player['homeserver'] == inst:
+                xfertable = await db.fetchall(f"""SELECT * FROM transferpoints WHERE steamid = '{player["steamid"]}'""")
+                xferpoints = 0
+                for each in xfertable:
+                    xferpoints = xferpoints + each['points']
+                await db.update(f"""DELETE FROM transferpoints WHERE steamid = '{player["steamid"]}'""")
                 log.log('POINTS', f'Transferred {xferpoints} non-home server points for [{player[1].title()}] on [{inst.title()}]')
-                await db.update(f"UPDATE players SET transferpoints = 0 WHERE steamid = '{steamid}'")
+                await asyncserverscriptcmd(inst, f'tcsar addarctotal {steamid} {xferpoints}')
+            if player['homemovepoints'] != 0 and player['homeserver'] == inst:
+                homemovepoints = int(player['homemovepoints'])
+                log.log('POINTS', f'Transferred {homemovepoints} points for [{player[1].title()}] on [{inst.title()}] from a home server move')
+                await db.update(f"UPDATE players SET homemovepoints = 0 WHERE steamid = '{steamid}'")
                 await asyncserverscriptcmd(inst, f'tcsar addarctotal {steamid} {xferpoints}')
             if not player['welcomeannounce']:  # existing online player
                 log.trace(f'Existing online player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
@@ -170,6 +178,10 @@ async def asyncplayergreet(steamid, steamname, inst):
                     await asyncio.sleep(5)
                     mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
                     await asyncserverchatto(inst, steamid, mtxt)
+            if int(player['homemovepoints']) != 0:
+                    await asyncio.sleep(5)
+                    mtxt = f'{xferpoints} rewards points were transferred here from a home server move'
+                    await asyncserverchatto(inst, steamid, mtxt)
             await asynclottodeposits(player, inst)
             await asyncserverisinrestart(steamid, inst, player)
     globvars.greetings.remove(steamid)
@@ -186,6 +198,19 @@ async def asynckickcheck(instances):
                 await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
         globvars.taskworkers.remove('kickcheck')
         return True
+
+
+@log.catch
+async def asynconlinedblchecker(instances):
+    for inst in instances:
+        log.trace(f'Running online doublechecker for {inst}')
+        players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = 'inst'")
+        for player in players:
+            log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
+            await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
+            if player['homeserver'] != inst:
+                command = f'tcsar setarctotal {player["steamid"]} 0'
+                await asyncserverscriptcmd(inst, command)
 
 
 async def asyncprocessline(inst, line):

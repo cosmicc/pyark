@@ -26,7 +26,7 @@ async def asyncgetinstancelist():
 
 
 @log.catch
-async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=True, bees=True):
+async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, bees=True):
     if mating:
         log.debug(f'Shutting down dino mating on {inst}...')
         await asyncserverscriptcmd(inst, 'MatingOff_DS')

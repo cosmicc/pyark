@@ -31,7 +31,7 @@ from modules.gchatrelay import asyncgchatrelay
 from modules.instances import instancelist
 from modules.lottery import lotterywatcher_thread
 from modules.masterserver import GameLogger, asyncdblcheckonline
-from modules.onlinemonitor import asynckickcheck, asynconlinecheck
+from modules.onlinemonitor import asynckickcheck, asynconlinecheck, asynconlinedblchecker
 from modules.processlock import plock
 from modules.servertools import serverexec
 from modules.statcollector import statcollector_thread
@@ -155,6 +155,7 @@ async def asyncmain():
                 if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] + 2:
                     log.error(f'kickcheck was delayed {asynclooptime - globvars.timer["onlinecheck"] - globvars.delay["onlinecheck"]}')
                 # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
+                asyncio.create_task(asynconlinedblchecker(instances))
                 globvars.timer.update({'onlinecheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['gchatrelay'] > globvars.delay['gchatrelay'] and 'gchatrelay' not in globvars.taskworkers:
@@ -246,8 +247,8 @@ def main():
         threads.append(thread)
         thread = threading.Thread(name='auctionapi', target=auctionapi_thread, args=(5, stop_event), daemon=False)
         threads.append(thread)
-        thread = threading.Thread(name='dblcheckonline', target=dblcheckonline_thread, args=(30, stop_event), daemon=False)
-        threads.append(thread)
+        # thread = threading.Thread(name='dblcheckonline', target=dblcheckonline_thread, args=(30, stop_event), daemon=False)
+        # threads.append(thread)
         thread = threading.Thread(name='stat-collector', target=statcollector_thread, args=(Secs['5min'], stop_event), daemon=False)
         threads.append(thread)
     log.debug(f'Starting {len(threads)} threads')
