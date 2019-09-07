@@ -360,6 +360,12 @@ async def asyncstartvoter(inst, whoasked):
     if globvars.isvoting:
         message = 'Voting has already started. cast your vote now'
         await asyncserverchat(inst, message)
+    elif f'{inst}-maintenance' in globvars.taskworkers:
+        message = 'You cannot start a vote during server maintenance'
+        await asyncserverchat(inst, message)
+    elif f'{inst}-restarting' in globvars.taskworkers:
+        message = 'You cannot start a vote while the server is in restart countdown'
+        await asyncserverchat(inst, message)
     elif time() - float(await asyncgetlastvote(inst)) < Secs['4hour']:   # 4 hours between wipes
         rawtimeleft = Secs['4hour'] - (Now() - float(await asyncgetlastvote(inst)))
         timeleft = playedTime(rawtimeleft)

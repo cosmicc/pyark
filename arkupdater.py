@@ -171,19 +171,6 @@ async def asynccheckwipe(inst):
         log.trace(f'no dino wipe is needed for {inst}')
 
 
-@log.catch
-def isrebooting(inst):
-    for each in range(numinstances):
-        if instance[each]['name'] == inst:
-            if 'restartthread' in instance[each]:
-                if instance[each]['restartthread'].is_alive():
-                    return True
-                else:
-                    return False
-            else:
-                return False
-
-
 async def asyncstillneedsrestart(inst):
     instdata = db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     if instdata['needsrestart'] == "True":
@@ -443,7 +430,7 @@ async def asynccheckbackup():
             lastrestart = await asyncgetlastrestart(inst)
             lt = Now() - float(lastrestart)
             if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
-                asyncio.create_task(asyncperformbackup(sinst))
+                asyncio.create_task(asyncperformbackup(inst))
 
 
 @log.catch
