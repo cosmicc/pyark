@@ -8,7 +8,7 @@ from time import time
 from loguru import logger as log
 
 import globvars
-from modules.confighelper import hstname
+from modules.configreader import hstname
 from modules.asyncdb import DB as db
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
