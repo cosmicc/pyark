@@ -146,7 +146,8 @@ async def asynccheckwipe(instances):
     for inst in instances:
         lastwipe = await asyncgetlastwipe(inst)
         if Now() - lastwipe > Secs['12hour'] and await asyncisinstanceup(inst):
-            if await asyncgetliveplayersonline(inst)['activeplayers'] == 0 and len(await asyncgetplayersonline()) == 0:
+            oplayers = await asyncgetliveplayersonline(inst)
+            if oplayers['activeplayers'] == 0 and len(await asyncgetplayersonline()) == 0:
                 log.log('WIPE', f'Dino wipe needed for [{inst.title()}], server is empty, wiping now')
                 await asyncwritechat(inst, 'ALERT', f'### Empty server is over 12 hours since wild dino wipe. Wiping now.', wcstamp())
                 asyncio.create_task(asyncwipeit(inst))
@@ -276,7 +277,8 @@ async def asyncrestartloop(inst, startonly=False):
             await asyncwritechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}', wcstamp())
         else:
             log.log('UPDATE', f'Resuming {timeleft} min retart countdown for [{inst.title()}] for a [{reason}]')
-        while await asyncstillneedsrestart(inst) and await len(await asyncgetplayersonline(inst)) != 0 and timeleft != 0 and await asyncgetliveplayersonline(inst)['activeplayers'] != 0:
+        oplayer = await asyncgetliveplayersonline(inst)
+        while await asyncstillneedsrestart(inst) and await len(await asyncgetplayersonline(inst)) != 0 and timeleft != 0 and oplayer['activeplayers'] != 0:
             if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
                 log.log('UPDATE', f'{timeleft} min broadcast message sent to [{inst.title()}]')
                 bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">{reason}</>\n\n<RichColor Color="1,1,0,1">                   The server will be restarting in</><RichColor Color="1,0,0,1">{timeleft}</><RichColor Color="1,1,0,1"> minutes</>"""
@@ -284,6 +286,7 @@ async def asyncrestartloop(inst, startonly=False):
             await asyncio.sleep(Secs['1min'])
             timeleft = timeleft - 1
             await asyncupdatetimer(inst, timeleft)
+            oplayer = await asyncgetliveplayersonline(inst)
         if await asyncstillneedsrestart(inst):
             log.log('UPDATE', f'Server [{inst.title()}] is restarting now for a [{reason}]')
             message = f'server {inst.capitalize()} is restarting now for a {reason}'
