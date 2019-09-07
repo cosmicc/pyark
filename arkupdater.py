@@ -41,18 +41,18 @@ log.add(sink=sys.stdout, level=1, backtrace=True, diagnose=True, colorize=True)
 def file_event(event):
     if event.action_name == 'modify':
         if event.name == globvars.gameini_baseconfig_file.name:
-            configupdatedetected('all')
+            asyncio.create_task(configupdatedetected('all'))
         elif event.name == globvars.gusini_baseconfig_file.name:
-            configupdatedetected('all')
+            asyncio.create_task(configupdatedetected('all'))
         else:
             for inst in instances:
                 if event.name == globvars.gameini_customconfig_files[inst].name:
-                    configupdatedetected(inst)
+                    asyncio.create_task(configupdatedetected(inst))
                 elif event.name == globvars.gusini_customconfig_files[inst].name:
-                    configupdatedetected(inst)
+                    asyncio.create_task(configupdatedetected(inst))
 
 
-def configupdatedetected(cinst):
+async def configupdatedetected(cinst):
     if cinst == 'all':
         cinst = instances
     for inst in cinst:
@@ -62,7 +62,7 @@ def configupdatedetected(cinst):
             setpendingcfgver(inst, har + 1)
         if getcfgver(inst) < getpendingcfgver(inst):
             maintrest = "configuration update"
-            instancerestart(inst, maintrest)
+            await asyncinstancerestart(inst, maintrest)
 
 
 def pushoverthread(title, message):
@@ -262,6 +262,7 @@ async def asyncrestartinstnow(inst, startonly=False):
         await asyncunsetstartbit(inst)
         await asyncplayerrestartbit(inst)
         await asyncserverexec(['arkmanager', 'start', f'@{inst}'])
+        globvars.taskworkers.remove(f'{inst}-restarting')
 
 @asynctimeit
 @log.catch
@@ -273,8 +274,7 @@ async def asyncrestartloop(inst, startonly=False):
     instdata = await db.fetchone(f"SELECT * from instances WHERE name = '{inst}'")
     timeleft = int(instdata['restartcountdown'])
     reason = instdata['restartreason']
-    # onlineplayers = await asyncgetplayersonline(inst)
-    if instdata['connectingplayers'] == 0:
+    if instdata['connectingplayers'] == 0 and instdata['activeplayers'] == 0 and len(await asyncgetonlineplayers(inst)) == 0:
         await asyncsetrestartbit(inst)
         log.log('UPDATE', f'Server [{inst.title()}] is empty and restarting now for a [{reason}]')
         await asyncwritechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
@@ -289,7 +289,7 @@ async def asyncrestartloop(inst, startonly=False):
             await asyncwritechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}', wcstamp())
         else:
             log.log('UPDATE', f'Resuming {timeleft} min retart countdown for [{inst.title()}] for a [{reason}]')
-        while await asyncstillneedsrestart(inst) and await asyncgetplayersonline(inst) != 0 and timeleft != 0 and await asyncgetliveplayersonline(inst)['activeplayers'] != 0:
+        while await asyncstillneedsrestart(inst) and await len(await asyncgetplayersonline(inst)) != 0 and timeleft != 0 and await asyncgetliveplayersonline(inst)['activeplayers'] != 0:
             if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
                 log.log('UPDATE', f'{timeleft} min broadcast message sent to [{inst.title()}]')
                 bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">{reason}</>\n\n<RichColor Color="1,1,0,1">                   The server will be restarting in</><RichColor Color="1,0,0,1">{timeleft}</><RichColor Color="1,1,0,1"> minutes</>"""
@@ -320,7 +320,8 @@ async def asyncrestartloop(inst, startonly=False):
 async def asyncmaintenance():
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
-    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd'):
+    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{inst}-maintenance' not in globvars.taskworkers:
+        globvars.taskworkers.append[f'{inst}-maintenance']
         await asyncsetlastmaint(hstname)
         log.log('MAINT', f'Daily maintenance window has opened for server [{hstname.upper()}]...')
         for inst in instances:
@@ -379,15 +380,19 @@ async def asyncmaintenance():
                 eventreboot = await asynciseventrebootday()
                 if eventreboot:
                     maintrest = f"{eventreboot}"
+                    globvars.taskworkers.remove(f'{inst}-maintenance')
                     await asyncinstancerestart(inst, maintrest)
                 elif Now() - float(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst):
                     maintrest = "maintenance restart"
+                    globvars.taskworkers.remove(f'{inst}-maintenance')
                     await asyncinstancerestart(inst, maintrest)
                 else:
                     message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
+                    globvars.taskworkers.remove(f'{inst}-maintenance')
                     await asyncserverchat(inst, message)
             except:
                 log.exception(f'Error during {inst} instance daily maintenance')
+                globvars.taskworkers.remove(f'{inst}-maintenance')
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
 
 @asynctimeit
@@ -395,9 +400,9 @@ async def asyncmaintenance():
 async def asyncinstancerestart(inst, reason, startonly=False):
     checkdirs(inst)
     log.debug(f'instance restart verification starting for {inst}')
-    global confupdtimer
     if f'{inst}-restarting' not in globvars.taskworkers:
         await db.update(f"UPDATE instances SET restartreason = '{reason}' WHERE name = '{inst}'")
+        globvars.taskworkers.append(f'{inst}-restarting')
         asyncio.create_task(restartloop(inst, startonly))
     else:
         log.debug(f'skipping start/restart for {inst} because restart thread already running')
@@ -452,7 +457,7 @@ async def asynccheckifenabled(inst):
     elif not instdata['enabled'] and instdata['isrunning'] == 1:
         if f'{inst}-restarting' not in globvars.taskworkers:
             log.warning(f'Instance [{inst.title()}] is set to [disabled]. Stopping server')
-            instancerestart(inst, 'admin restart')
+            await asyncinstancerestart(inst, 'admin restart')
 
 
 @log.catch
