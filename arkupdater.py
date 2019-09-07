@@ -443,7 +443,7 @@ async def asynccheckbackup():
 
 @log.catch
 async def asynccheckifenabled(inst):
-    instdata = await db.fetchone(f"SELECT * instances WHERE name = '{inst}'")
+    instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     if serverneedsrestart():
         await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
     if instdata['enabled'] and instdata['isrunning'] == 0 and f'{inst}-restarting' not in globvars.taskworkers:
