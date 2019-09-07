@@ -101,7 +101,7 @@ async def asyncsetpendingcfgver(inst, cver):
     await db.update(f"UPDATE instances SET pendingcfg = {int(cver)} WHERE name = '{inst}'")
 
 
-async def ayncgetcfgver(inst):
+async def asyncgetcfgver(inst):
     cfgver = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     return int(cfgver['cfgver'])
 
