@@ -558,8 +558,9 @@ async def asyncupdaterloop():
 
 
 def main():
+    print('start')
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    asyncio.run(asyncupdaterloop(), debug=True)  # Async branch to main loop
+    asyncio.run(asyncupdaterloop, debug=True)  # Async branch to main loop
 
 
 main()
