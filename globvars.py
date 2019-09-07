@@ -7,6 +7,7 @@ taskworkers = []  # list of working tasks
 votertable = []  # populated voter table for wild wipe votes
 votestarttime = time()
 isvoting = False  # is a vote taking place
+lastvoter = 0
 welcomes = []  # list of steamid new player welcomes
 greetings = []  # list of steamid returning player greets
 
