@@ -316,11 +316,11 @@ async def asyncmaintenance():
             await asyncserverbcast(inst, bcast)
         log.log('MAINT', f'Running server os maintenance on [{hstname.upper()}]...')
         log.debug(f'OS update started for {hstname}')
-        await asyncserverexec(['apt', 'update'])
+        await asyncserverexec(['apt', 'update'], wait=True)
         log.debug(f'OS upgrade started for {hstname}')
-        await asyncserverexec(['apt', 'upgrade', '-y'])
+        await asyncserverexec(['apt', 'upgrade', '-y'], wait=True)
         log.debug(f'OS autoremove started for {hstname}')
-        await asyncserverexec(['apt', 'autoremove', '-y'])
+        await asyncserverexec(['apt', 'autoremove', '-y'], wait=True)
         if serverneedsrestart():
             log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
         for inst in instances:
