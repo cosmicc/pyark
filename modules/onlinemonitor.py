@@ -232,6 +232,7 @@ async def asynconlinecheck(instances):
     if 'onlinecheck' not in globvars.taskworkers:
         globvars.taskworkers.append('onlinecheck')
         for inst in instances:
+            log.trace(f'running onlinecheck for {inst}')
             cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
             asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
         globvars.taskworkers.remove('onlinecheck')

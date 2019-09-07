@@ -838,6 +838,7 @@ async def asynccmdcheck(instances, atinstances):
     if 'cmdcheck' not in globvars.taskworkers:
         globvars.taskworkers.append('cmdcheck')
         for inst in instances:
+            log.trace(f'running command check for {inst}')
             cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
             asyncio.create_task(processcmdchunk(inst, atinstances, cmdpipe['stdout']))
         globvars.taskworkers.remove('cmdcheck')

@@ -142,6 +142,7 @@ async def asyncplayerrestartbit(inst):
 async def asynccheckwipe(instances):
     global dwtimer
     for inst in instances:
+        log.trace(f'running checkwipe for {inst}')
         lastwipe = await asyncgetlastwipe(inst)
         if Now() - lastwipe > Secs['12hour'] and await asyncisinstanceup(inst):
             oplayers = await asyncgetliveplayersonline(inst)
@@ -466,6 +467,7 @@ async def asynccheckifalreadyrestarting(inst):
 async def asynccheckupdates(instances):
     global updgennotify
     if is_arkupdater == "True" and Now() - updgennotify > Secs['hour']:
+        log.trace('running updatecheck for {hstname}')
         try:
             ustate, curver, avlver = await asyncisnewarkver('all')
             if not ustate:
@@ -515,5 +517,6 @@ async def asynccheckupdates(instances):
 @log.catch
 async def asynccheckrestart(instances):
     for inst in instances:
+        log.trace(f'running restartcheck for {inst}')
         await asynccheckifenabled(inst)
         await asynccheckifalreadyrestarting(inst)
