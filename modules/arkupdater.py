@@ -246,10 +246,12 @@ def installconfigs(inst):
         else:
             log.error('Cannot find Event GUS config file to merge in')
 
-    with open(str(gusini_tempconfig_file), 'w') as configfile:
-            config.write(configfile)
     if gusini_tempconfig_file.exists():
         gusini_tempconfig_file.unlink()
+
+    with open(str(gusini_tempconfig_file), 'w') as configfile:
+            config.write(configfile)
+
     shutil.copy(gusini_tempconfig_file, gusini_final_file)
     gusini_tempconfig_file.unlink()
     if inst in gameini_customconfig_files.exists():
