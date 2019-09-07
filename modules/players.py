@@ -9,18 +9,6 @@ from modules.servertools import serverexec, asyncserverchat, asyncserverchatto
 from modules.timehelper import Now, Secs, wcstamp
 
 
-                await db.update(f"UPDATE players SET transferpoints = '{int(rewardpoints)}', lastpointtimestamp = '{str(Now())}' WHERE steamid = '{str(steamid)}'")
-                command = f'tcsar setarctotal {steamid} 0'
-                await asyncserverscriptcmd(inst, command)
-            else:
-                log.trace(f'reward points not past threshold for wait (to avoid duplicates) for \
-{playername} on {inst}, skipping')
-        else:
-            log.trace(f'zero reward points to account for {playername} on {inst}, skipping')
-    else:
-        log.trace(f'duplicate reward points to account for {playername} on {inst}, skipping')
-
-
 async def asyncwritechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
