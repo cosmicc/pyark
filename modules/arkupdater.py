@@ -230,8 +230,8 @@ def installconfigs(inst):
         gusbuildfile = gusini_customconfig_files[inst].read_text().split('\n')
         for each in gusbuildfile:
             a = each.split(',')
-            print(a)
-            config.set(a[0], a[1], a[2])
+            if len(a) == 3:
+                config.set(a[0], a[1], a[2])
     else:
         log.debug(f'No custom config found for {inst}')
 
@@ -241,8 +241,8 @@ def installconfigs(inst):
         if gusini_event_file.exists():
             for each in gusini_event_file.read_text().split('\n'):
                 a = each.split(',')
-                print(a)
-                config.set(a[0], a[1], a[2])
+                if len(a) == 3:
+                    config.set(a[0], a[1], a[2])
         else:
             log.error('Cannot find Event GUS config file to merge in')
 
