@@ -428,7 +428,7 @@ async def processtcdata(inst, tcdata):
             if transferdata:
                 await db.update(f"UPDATE transferpoints SET points = '{rewardpoints}' WHERE steamid = '{steamid}' and server = '{inst}'")
             else:
-                await db.update(f"INSERT INTO transferpoints (steamid, server, points) VALUES ('{steamid}', '{inst}', {rewardpoints}")
+                await db.update(f"INSERT INTO transferpoints (steamid, server, points) VALUES ('{steamid}', '{inst}', {rewardpoints})")
 
 
 async def asynchomeserver(inst, whoasked, ext):
