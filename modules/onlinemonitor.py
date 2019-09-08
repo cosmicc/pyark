@@ -206,7 +206,7 @@ async def asynckickcheck(instances):
 async def asynconlinedblchecker(instances):
     for inst in instances:
         log.debug(f'Running online doublechecker for {inst}')
-        players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = 'inst'")
+        players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = 'inst.lower()'")
         log.debug(players)
         for player in players:
             log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
