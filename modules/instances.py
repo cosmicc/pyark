@@ -108,6 +108,7 @@ async def processstatusline(inst, statuslines):
         await db.update(f"UPDATE instances SET serverpid = '{int(serverpid)}', isonline = '{int(isonline)}', islistening = '{int(islistening)}', isrunning = '{int(isrunning)}', arkbuild = '{int(serverbuild)}', arkversion = '{serverversion}', WHERE name = '{inst}'")
         if players is not None and activeplayers is not None and steamlink is not None and arkserverslink is not None:
             await db.update(f"UPDATE instances SET steamlink = '{steamlink}', arkserverslink = '{arkserverslink}', connectingplayers = '{int(players)}', activeplayers = '{int(activeplayers)}' WHERE name = '{inst}'")
+        return True
 
 
 async def runstatus(inst):
@@ -115,12 +116,14 @@ async def runstatus(inst):
         statuslines = result.stdout.decode('utf-8').split('\n')
         asyncio.create_task(processstatusline(inst, statuslines))
         globvars.taskworkers.remove(f'{inst}-status')
+        return True
 
 
 async def asyncgetinststatus(instances):
     for inst in instances:
         if f'{inst}-status' not in globvars.taskworkers:
             asyncio.create_task(runstatus(inst))
+        return True
 
 
 def getinststatus(inst):
