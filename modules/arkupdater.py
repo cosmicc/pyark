@@ -262,7 +262,7 @@ async def asyncrestartloop(inst, startonly=False):
     instdata = await db.fetchone(f"SELECT * from instances WHERE name = '{inst}'")
     timeleft = int(instdata['restartcountdown'])
     reason = instdata['restartreason']
-    if instdata['connectingplayers'] == 0 and instdata['activeplayers'] == 0 and len(await asyncgetonlineplayers(inst)) == 0:
+    if instdata['connectingplayers'] == 0 and instdata['activeplayers'] == 0 and len(await asyncgetplayersonline(inst)) == 0:
         await asyncsetrestartbit(inst)
         log.log('UPDATE', f'Server [{inst.title()}] is empty and restarting now for a [{reason}]')
         await asyncwritechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
