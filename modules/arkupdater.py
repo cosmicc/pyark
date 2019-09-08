@@ -173,7 +173,7 @@ async def asynccheckwipe(instances):
 
 
 async def asyncstillneedsrestart(inst):
-    instdata = db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     if instdata['needsrestart'] == "True":
         return True
     else:
