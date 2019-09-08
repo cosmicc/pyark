@@ -546,9 +546,11 @@ async def asyncleavingplayerwatch(player, inst):
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         await asyncserverchat(inst, mtxt)
-    if player['homeserver'] != inst and not await asyncisplayeronline(player['steamid']):
-        command = f'tcsar setarctotal {player["steamid"]} 0'
-        await asyncserverscriptcmd(inst, command)
+    nplayer = await db.fetchone(f"SELECT * FROM players where steamid = '{steamid}'")
+    if player['homeserver'] != inst:
+        if not nplayer['online'] or (nplayer['online'] and nplayer['server'] != inst):
+            command = f'tcsar setarctotal {player["steamid"]} 0'
+            await asyncserverscriptcmd(inst, command)
     return True
 
 
