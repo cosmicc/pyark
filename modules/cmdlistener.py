@@ -523,6 +523,7 @@ async def playerjoin(line, inst):
     if player:
         if player['homeserver'] != inst:
             xferpointsdata = await db.fetchone(f"""SELECT * FROM transferpoints WHERE steamid = '{player["steamid"]}' and server = '{inst}'""")
+            log.debug(f'xferpointsdata: {xferpointsdata}')
             command = f'tcsar setarctotal {player["steamid"]} {xferpointsdata["points"]}'
             await asyncserverscriptcmd(inst, command)
         steamid = player['steamid']
