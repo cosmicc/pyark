@@ -438,7 +438,7 @@ async def asynccheckifalreadyrestarting(inst):
         if f'{inst}-restarting' not in globvars.taskworkers:
             log.debug(f'restart flag set for instance {inst}, starting restart loop')
             globvars.taskworkers.append(f'{inst}-restarting')
-            asyncio.create_task(restartloop(inst))
+            asyncio.create_task(asyncrestartloop(inst))
         else:
             log.trace(f'instance {inst} trying to restart but already restarting')
     else:
