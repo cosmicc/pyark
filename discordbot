@@ -7,9 +7,8 @@ from os import nice
 from loguru import logger as log
 
 import modules.logging
-from modules.configreader import colorlogfile, critlogfile, jsondebugfile, jsonlogfile, loglevel
 from modules.discordbot import pyarkbot
-from modules.processlock import plock
+from modules.processlock import PLock
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')
@@ -22,25 +21,9 @@ if args.trace:
     log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat)
 elif args.debug:
     log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat)
-else:
-    log.add(sink=sys.stdout, level=50, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat)
 
-# Json logging pyarklog.json
-log.add(sink=jsonlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=modules.logging.shortlogformat)
-# Color logging pyark.log
-log.add(sink=colorlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=modules.logging.longlogformat)
-# Debug json logging debuglog.json
-if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
-    if loglevel == 'DEBUG' or args.debug:
-        lev = 10
-    else:
-        lev = 5
-    log.add(sink=jsondebugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=modules.logging.longlogformat, delay=True)
-
-# Error Logging crit.log
-log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=modules.logging.longlogformat, delay=True)
-
-plock()
+processlock = PLock()
+processlock.lock()
 
 nice(10)
 

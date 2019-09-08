@@ -60,7 +60,7 @@ def GameThread(sid):
         try:
             msg = gamewatch.getline()
             if msg is not None and msg != 'None':
-                log.debug(f'Sending gameline to: {sid}')
+                log.trace(f'Sending gameline to: {sid}')
                 socketio.emit('gameline', {'line': msg}, namespace='/logstream', room=sid)
         except:
             log.exception('ERROR!!')
@@ -83,7 +83,7 @@ def ChatThread(sid):
         try:
             msg = chatwatch.getline()
             if msg is not None and msg != 'None':
-                log.debug(f'Sending chatline to: {sid}')
+                log.trace(f'Sending chatline to: {sid}')
                 socketio.emit('chatline', {'line': msg}, namespace='/logstream', room=sid)
         except:
             log.exception('ERROR!!')

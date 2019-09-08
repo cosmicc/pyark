@@ -3,11 +3,9 @@
 import argparse
 from os import nice
 
-from loguru import logger as log
-
 import modules.logging
-from modules.configreader import colorlogfile, debugfile, jsondebugfile, jsonlogfile, webserver_ip, webserver_port
-from modules.processlock import plock
+from modules.configreader import webserver_ip, webserver_port
+from modules.processlock import PLock
 from web import create_app, socketio
 
 __name__ = 'webserver'
@@ -17,24 +15,8 @@ parser.add_argument('-d', '--debug', action='store_true', help='verbose output (
 
 args = parser.parse_args()
 
-
-def checkdebuglog(record):
-    if record['level'] == 'DEBUG' or record['level'] == 'TRACE':
-        return True
-    else:
-        return False
-
-
-# Json logging pyarklog.json
-log.add(sink=jsonlogfile, level=19, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=modules.logging.shortlogformat)
-# Color logging pyark.log
-log.add(sink=colorlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=modules.logging.longlogformat)
-# Debug json logging debuglog.json
-
-if args.debug:
-    lev = 10
-    log.add(sink=jsondebugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=modules.logging.shortlogformat, delay=True, filter=checkdebuglog)
-    log.add(sink=debugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=False, colorize=True, format=modules.logging.longlogformat, delay=True)
+processlock = PLock()
+processlock.lock()
 
 nice(12)
 

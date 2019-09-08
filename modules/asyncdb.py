@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime
-
+from pathlib import Path
 import asyncpg
 from loguru import logger as log
 
@@ -9,7 +9,7 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_us
 
 class asyncDB:
     def __init__(self, min=3, max=10, timeout=300):
-        log.trace(f'Starting async db connection engine for {__name__}')
+        log.trace(f'Starting async db connection engine')
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
         self.databases = ('pyark', 'py', 'stats', 'st', 'gamelog', 'gl')
         self.dbpyark = ('pyark', 'py')
@@ -21,7 +21,8 @@ class asyncDB:
         self.cpool = None
         self.connecting = False
 
-    async def connect(self):
+    async def connect(self, process=__file__):
+        self.process = process
         self.connecting = True
         try:
             self.cpool = await asyncpg.create_pool(min_size=self.min, max_size=self.max, max_inactive_connection_lifetime=float(self.timeout), database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
@@ -30,7 +31,7 @@ class asyncDB:
             await asyncio.sleep(5)
             await self.connect()
         else:
-            log.debug(f'Database connection pool initilized and connected for {__name__}')
+            log.debug(f'New database connection pool initilized for {self.process.stem} [min={self.min}] [max={self.max}] [timeout={self.timeout}]')
             self.connecting = False
         # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 

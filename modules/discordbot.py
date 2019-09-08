@@ -108,6 +108,7 @@ def pyarkbot():
 
     @client.event
     async def on_ready():
+        await db.connect(process=__name__)
         log.log('SUCCESS', f'Discord logged in as {client.user.name} id {client.user.id}')
         activity = discord.Game(name="!help")
         try:

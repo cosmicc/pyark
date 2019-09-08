@@ -31,7 +31,7 @@ from modules.instances import instancelist
 from modules.lottery import lotterywatcher_thread
 from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck, asynconlinedblchecker
-from modules.processlock import plock
+from modules.processlock import PLock
 from modules.servertools import serverexec
 from modules.statcollector import statcollector_thread
 from modules.timehelper import Secs
@@ -71,8 +71,8 @@ signal.signal(signal.SIGHUP, sig_handler)
 signal.signal(signal.SIGINT, sig_handler)
 signal.signal(signal.SIGQUIT, sig_handler)
 
-
-plock()
+processlock = PLock()
+processlock.lock()
 
 nice(10)
 
@@ -117,7 +117,7 @@ async def asyncmain():
     for each in instancelist():
         serverpre.append(f'@{each}')
     atinstances = tuple(serverpre)
-    await db.connect()
+    await db.connect(process=__name__)
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
     tasktimer = asyncloop.time()

@@ -343,7 +343,6 @@ async def asynccheckmaint(instances):
                 log.log('MAINT', f'Running all dino and map maintenance on server [{inst.title()}]...')
                 await asyncwipeit(inst, dinos=False, eggs=True, dams=True, mating=True, bees=False)
                 await asyncio.sleep(30)
-                await asynccheckwipe(inst)
                 lstsv = await asyncgetlastrestart(inst)
                 eventreboot = await asynciseventrebootday()
                 if eventreboot:
@@ -358,6 +357,7 @@ async def asynccheckmaint(instances):
             except:
                 log.exception(f'Error during {hstname} instance daily maintenance')
                 globvars.taskworkers.remove(f'{hstname}-maintenance')
+        await asynccheckwipe(instances)
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
         globvars.taskworkers.remove(f'{hstname}-maintenance')
     else:

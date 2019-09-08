@@ -13,6 +13,7 @@ from time import sleep
 from loguru import logger as log
 
 import modules.tail
+from modules.processlock import PLock
 
 HEADER = 5
 HEADERSIZE = HEADER * 4 + 4
@@ -39,6 +40,9 @@ else:
     log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=True)
 
 log.add(sink=log_file, level=20, buffering=1, enqueue=False, backtrace=True, diagnose=True, serialize=False, colorize=False)
+
+processlock = PLock()
+processlock.lock()
 
 
 def checkconnections():

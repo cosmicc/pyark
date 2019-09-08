@@ -1,8 +1,7 @@
 #!/usr/bin/env python3.7
-
 import argparse
-import os
-import sys
+import asyncio
+from pathlib import Path
 from sys import exit
 from time import sleep
 
@@ -10,15 +9,13 @@ import psutil
 from loguru import logger as log
 
 import modules.logging
-from modules.arkupdater import instancerestart
-from modules.configreader import (colorlogfile, critlogfile, hstname, instance,
-                                  instr, jsondebugfile, jsonlogfile, loglevel)
-from modules.dbhelper import dbquery, dbupdate
+from modules.arkupdater import asyncinstancerestart
+from modules.asyncdb import asyncDB
+from modules.configreader import hstname, instances, sharedpath
 from modules.instances import getinststatus, isinstanceenabled
-from modules.logging import longlogformat, shortlogformat
-from modules.players import getliveplayersonline
+from modules.players import asyncgetliveplayersonline
 from modules.pushover import pushover
-from modules.servertools import getinstpid, serverexec, setarknice
+from modules.servertools import asyncserverexec, getinstpid, setarknice
 from modules.timehelper import Now, Secs, elapsedTime
 
 __author__ = "Ian Perry"
@@ -40,34 +37,18 @@ parser.add_argument('-d', '--debug', action='store_true', help='verbose output (
 parser.add_argument('-t', '--trace', action='store_true', help='super verbose output (trace)')
 args = parser.parse_args()
 
-# Console Logging
-if args.quiet:
-    log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=False, format=longlogformat)
-elif args.trace:
-    log.add(sink=sys.stdout, level=5, backtrace=True, diagnose=True, colorize=True, format=longlogformat)
-elif args.debug:
-    log.add(sink=sys.stdout, level=10, backtrace=True, diagnose=True, colorize=True, format=longlogformat)
-else:
-    log.add(sink=sys.stdout, level=20, backtrace=True, diagnose=True, colorize=True, format=longlogformat)
+sharepath = Path(sharedpath)
 
-# Json logging pyarklog.json
-log.add(sink=jsonlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat)
-# Color logging pyark.log
-log.add(sink=colorlogfile, level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=longlogformat)
-# Debug json logging debuglog.json
-if loglevel == 'DEBUG' or loglevel == 'TRACE' or args.debug or args.trace:
-    if loglevel == 'DEBUG' or args.debug:
-        lev = 10
-    else:
-        lev = 5
-    log.add(sink=jsondebugfile, level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=shortlogformat, delay=True)
+isrunning = {}
+isonline = {}
 
-# Error Logging crit.log
-log.add(sink=critlogfile, level=40, buffering=1, enqueue=True, backtrace=True, diagnose=True, colorize=True, format=longlogformat, delay=True)
+for inst in instances:
+    isrunning.update({inst: {'isit': 0, 'count': 0}})
+    isonline.update({inst: {'isit': 0, 'count': 0}})
 
 
 def issharedmounted():
-    return os.path.ismount('/home/ark/shared')
+    return sharepath.is_mount()
 
 
 def float_trunc_1dec(num):
@@ -79,8 +60,8 @@ def float_trunc_1dec(num):
         return tnum
 
 
-def getopenfiles():
-    result = serverexec(['sysctl', 'fs.file-nr'])
+async def asyncgetopenfiles():
+    result = await asyncserverexec(['sysctl', 'fs.file-nr'], nice=19)
     newresult = result.stdout.decode('utf-8').strip().split(' ')[2].split('\t')
     return {'openfiles': newresult[0], 'openfilelimit': newresult[2]}
 
@@ -91,9 +72,9 @@ def arkprocesscpu(inst):
 
 
 @log.catch
-def getlaststart(inst):
-    laststart = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst,), fetch='one', single=True)
-    return laststart
+async def asyncgetlaststart(inst):
+    laststart = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    return laststart['lastrestart']
 
 
 @log.catch
@@ -113,8 +94,8 @@ def getcpustats():
 
 
 @log.catch
-def getservermem():
-    process = serverexec(['free', '-m'], nice=19, null=False)
+async def asyncgetservermem():
+    process = await asyncserverexec(['free', '-m'], nice=19)
     lines = process.stdout.decode().split('\n')
     memvalues = lines[1].strip().split()
     swapvalues = lines[2].strip().split()
@@ -125,8 +106,8 @@ def getservermem():
 
 
 @log.catch
-def didserverjustboot():
-    rawuptime = serverexec(['tail', '/proc/uptime'], nice=19, null=False)
+async def asyncdidserverjustboot():
+    rawuptime = await asyncserverexec(['tail', '/proc/uptime'], nice=19)
     rawup = rawuptime.stdout.decode('utf-8').split(' ')
     if float(rawup[0]) < Secs['3min']:
         return True
@@ -135,9 +116,9 @@ def didserverjustboot():
 
 
 @log.catch
-def getinstmem(inst):
+async def asyncgetinstmem(inst):
     instpid = getinstpid(inst)
-    rawsts = serverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, null=False)
+    rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19)
     instrss, instvsz = rawsts.stdout.decode('utf-8').split('\n')[1].split(' ')
     instrss = int(instrss) / 1000000 // 0.01 / 100
     instvsz = int(instvsz) / 1000000 // 0.01 / 100
@@ -145,7 +126,7 @@ def getinstmem(inst):
 
 
 @log.catch
-def checkpyark():
+async def asynccheckpyark():
     try:
         for line in open('/tmp/pyark.pid', 'r'):
             pyarkpid = int(line)
@@ -168,26 +149,21 @@ def checkpyark():
 
 
 @log.catch
-def startserver(inst):
+async def asyncstartserver(inst):
     if issharedmounted():
         log.log('WATCH', f'Watchdog has initiated a start for [{inst.title()}]')
-        instancerestart(inst, 'auto start', startonly=True)
+        await asyncinstancerestart(inst, 'auto start', startonly=True)
     else:
         log.warning(f'Server {hstname} is waiting for drives to mount')
 
 
 @log.catch
-def main():
+async def asyncwatchdog():
     isrunning = {}
     isonline = {}
-    for seat in instance:
-        isrunning[seat['name']] = {}
-        isrunning[seat['name']].update({'isit': 0, 'count': 0})
-        isonline[seat['name']] = {}
-        isonline[seat['name']].update({'isit': 0, 'count': 0})
-    log.log('START', f'Watchdog Daemon is starting on [{hstname}] for [{instr.title()}]')
-    if len(instance) > 0:
-        if didserverjustboot():
+    log.log('START', f'Watchdog Daemon is starting on [{hstname}]')
+    if len(instances) > 0:
+        if await asyncdidserverjustboot():
             log.log('WATCH', 'server just booted, starting instances for the first time')
             while not issharedmounted():
                 log.log('WATCH', 'Shared drive is not mounted, waiting for mount to complete...')
@@ -227,12 +203,12 @@ def main():
                             log.log('WATCH', f'Failed to get ark process info for [{eachinst["name"]}]')
                         for neach in isrunning.copy():
                             if neach == eachinst['name']:
-                                isrunning[neach].update({'isit': 1, 'count': 0})
+                                isrunning.update({inst: {'isit': 1, 'count': 0}})
                     elif Now() - int(getlaststart(eachinst['name'])[0]) > Secs['3min']:
                         for neach in isrunning.copy():
                             if neach == eachinst['name']:
-                                isrunning[neach].update({'isit': 0, 'count': isrunning[neach]['count'] + 1})
-                                if isrunning[neach]['count'] > 2:
+                                isrunning.update({inst: {'isit': 0, 'count': isrunning[neach]['count'] + 1}})
+                                if isrunning[inst]['count'] > 2:
                                     log.warning(f'[{eachinst["name"].title()}] failed instance running check ({isrunning[neach]["count"]}/5)')
                                     dbupdate("UPDATE instances SET isup = 0 WHERE name = '%s'" % (eachinst['name'],))
                     else:
@@ -241,8 +217,8 @@ def main():
                     if isitrunning and not isitonline and Now() - int(getlaststart(eachinst['name'])[0]) > Secs['10min']:
                         for neach in isonline.copy():
                             if neach == eachinst['name']:
-                                isonline[neach].update({'isit': 0, 'count': isonline[neach]['count'] + 1})
-                                if isonline[neach]['count'] > 5:
+                                isonline.update({inst: {'isit': 0, 'count': isonline[neach]['count'] + 1}})
+                                if isonline[inst]['count'] > 5:
                                     log.warning(f'[{eachinst["name"].title()}] failed instance online check ({isonline[neach]["count"]}/10)')
                                     dbupdate("UPDATE instances SET isup = 0 WHERE name = '%s'" % (eachinst['name'],))
 
@@ -251,25 +227,25 @@ def main():
                         dbupdate("UPDATE instances SET uptimestamp = '%s', isup = 1 WHERE name = '%s'" % (Now(), eachinst['name']))
                         for neach in isonline.copy():
                             if neach == eachinst['name']:
-                                isonline[neach].update({'isit': 1, 'count': 0})
+                                isonline.update({inst: {'isit': 1, 'count': 0}})
                     else:
                         log.debug(f'skipping online check for 10 min startup for {eachinst["name"]}')
 
                     for feach in isrunning:
                         if feach == eachinst['name']:
-                            if isrunning[feach]['count'] == 5:
-                                isrunning[feach].update({'isit': 0, 'count': 0})
-                                isonline[feach].update({'isit': 0, 'count': 0})
+                            if isrunning[inst]['count'] == 5:
+                                isrunning.update({inst: {'isit': 0, 'count': 0}})
+                                isonline.update({inst: {'isit': 0, 'count': 0}})
                                 log.warning(f'Instance [{eachinst["name"]}] failed running checks! Starting Instance')
                                 pmsg = f'Instance {eachinst["name"]} failed running checks!\nStarting Instance'
                                 pushover('Watchdog', pmsg)
                                 startserver(eachinst['name'])
                     for feach in isonline:
                         if feach == eachinst['name']:
-                            if isonline[feach]['count'] == 10:
-                                oplayers = getliveplayersonline({eachinst["name"]})
-                                isrunning[feach].update({'isit': 0, 'count': 0})
-                                isonline[feach].update({'isit': 0, 'count': 0})
+                            if isonline[inst]['count'] == 10:
+                                oplayers = await asyncgetliveplayersonline({eachinst["name"]})
+                                isrunning.update({inst: {'isit': 0, 'count': 0}})
+                                isonline.update({inst: {'isit': 0, 'count': 0}})
                                 if int(oplayers[0]) == 0 and int(oplayers[1]) == 0:
                                     log.warning(f'Instance [{eachinst["name"]}] failed online checks! Restarting Instance')
                                     pmsg = f'Instance {eachinst["name"]} failed online checks!\nRestarting Instance'
@@ -278,7 +254,7 @@ def main():
                                 else:
                                     log.info(f'Skipping instance restart because players are actually online')
                     if serverstatcount == 1:
-                        dbupdate("UPDATE instances SET serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', openfiles = '%s' WHERE name = '%s'" % (hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, ofiles['openfiles'], eachinst['name']))
+                        await db.update("UPDATE instances SET serverhost = '%s', svrmemfree = '%s', svrmemavail = '%s', svrswapused = '%s', cpucores = '%s', cpufreq = '%s', cpuload1 = '%s', cpuload5 = '%s', cpuload15 = '%s', serveruptime = '%s', openfiles = '%s' WHERE name = '%s'" % (hstname, int(memfree), int(memavail), int(swapused), int(cpucores), cpufreq, cpuload1, cpuload5, cpuload15, uptime, ofiles['openfiles'], eachinst['name']))
 
         except KeyboardInterrupt:
             log.critical('Keyboard Interrupt Detected, Exiting.')
