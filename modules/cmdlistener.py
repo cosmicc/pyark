@@ -406,7 +406,7 @@ async def processtcdata(inst, tcdata):
             log.trace(f'player {playername} with steamid {steamid} was found on HOME server {inst}. updating info.')
             await db.update(f"UPDATE players SET playedtime = '{playtime}', rewardpoints = '{rewardpoints}' WHERE steamid = '{steamid}'")
         else:
-            if Now() - int(player['lastseen']) < 200 and Now() - int(player['lastseen']) > 30 and player['server'] == inst:
+            if Now() - int(player['lastseen']) < 200 and Now() - player['lastlogin'] > 30 and player['server'] == inst:
                 log.debug(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info')
                 transferdata = await db.fetchone(f"SELECT * from transferpoints WHERE steamid = '{steamid}' and server = '{inst}'")
                 if transferdata:
@@ -512,7 +512,7 @@ async def playerjoin(line, inst):
                 command = f'tcsar setarctotal {player["steamid"]} {xferpointsdata["points"]}'
             await asyncserverscriptcmd(inst, command)
         steamid = player['steamid']
-        await db.update(f"""UPDATE players SET online = True, refreshsteam = True, lastseen = '{Now()}', refreshauctions = True, server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
+        await db.update(f"""UPDATE players SET online = True, refreshsteam = True, lastlogin = '{Now()}', lastseen = '{Now()}', refreshauctions = True, server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
         if Now() - player['lastseen'] > 250:
             log.log('JOIN', f'Player [{player["playername"].title()}] joined the cluster on [{inst.title()}] Connections: {player["connects"] + 1}')
             message = f'{player["playername"].title()} has joined the server'
