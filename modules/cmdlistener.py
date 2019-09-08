@@ -1,7 +1,6 @@
 import asyncio
 import os
 import random
-import threading
 from datetime import datetime, timedelta
 from time import time
 
@@ -12,7 +11,7 @@ from modules.configreader import hstname
 from modules.asyncdb import DB as db
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
-from modules.instances import asyncgetinstancelist, getlastrestart, asyncgetlastwipe, homeablelist, asyncwipeit
+from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, homeablelist, asyncwipeit
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import asyncnewplayer, asyncisplayeronline
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec,
@@ -668,13 +667,13 @@ async def asyncprocessline(minst, atinstances, line):
             await asyncserverchat(inst, message)
 
         elif incmd.startswith(('!lastdinowipe', '!lastwipe')):
-            lastwipe = elapsedTime(Now(), getlastwipe(minst))
+            lastwipe = elapsedTime(Now(), await asyncgetlastwipe(minst))
             message = f'Last wild dino wipe was {lastwipe} ago'
             await asyncserverchat(inst, message)
             log.log('CMD', f'Responding to a [!lastwipe] request from [{whoasked.title()}] on [{minst.title()}]')
 
         elif incmd.startswith('!lastrestart'):
-            lastrestart = elapsedTime(Now(), getlastrestart(minst))
+            lastrestart = elapsedTime(Now(), await asyncgetlastrestart(minst))
             message = f'Last server restart was {lastrestart} ago'
             await asyncserverchat(inst, message)
             log.log('CMD', f'Responding to a [!lastrestart] request from [{whoasked.title()}] on [{minst.title()}]')
