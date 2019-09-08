@@ -297,7 +297,7 @@ async def asyncrestartloop(inst, startonly=False):
             await asyncservernotify(inst, message)
             pushoverthread('Instance Restart', message)
             await asyncio.sleep(10)
-            await asyncrestartinstnow(inst)
+            asyncio.create_task(asyncrestartinstnow(inst))
         else:
             log.warning(f'server restart on {inst} has been canceled from forced cancel')
             bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n\n<RichColor Color="1,1,0,1">                    The server restart has been cancelled!</>"""
