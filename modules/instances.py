@@ -113,7 +113,7 @@ async def processstatusline(inst, statuslines):
 
 async def runstatus(inst):
         result = await asyncserverexec(['arkmanager', 'status', f'@{inst}'], wait=True)
-        statuslines = result.stdout.decode('utf-8').split('\n')
+        statuslines = result['stdout'].decode('utf-8').split('\n')
         asyncio.create_task(processstatusline(inst, statuslines))
         globvars.taskworkers.remove(f'{inst}-status')
         return True
