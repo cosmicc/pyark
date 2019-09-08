@@ -195,7 +195,7 @@ async def asyncgetlastvote(inst):
 
 
 async def asyncpopulatevoters(inst):
-    log.debug(f'populating vote table for {inst}')
+    log.trace(f'populating vote table for {inst}')
     globvars.votertable = []
     playercount = 0
     players = await db.fetchall(f"SELECT * FROM players WHERE server = '{inst}' and lastseen > '{time() - 40}'")
@@ -205,7 +205,6 @@ async def asyncpopulatevoters(inst):
             playercount += 1
             newvoter = [player['steamid'], player['playername'], 3]
             globvars.votertable.append(newvoter)
-    log.debug(globvars.votertable)
     return playercount
 
 
@@ -546,7 +545,7 @@ async def asyncleavingplayerwatch(player, inst):
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         await asyncserverchat(inst, mtxt)
-    nplayer = await db.fetchone(f"SELECT * FROM players where steamid = '{steamid}'")
+    nplayer = await db.fetchone(f"""SELECT * FROM players where steamid = '{player["steamid"]}'""")
     if player['homeserver'] != inst:
         if not nplayer['online'] or (nplayer['online'] and nplayer['server'] != inst):
             command = f'tcsar setarctotal {player["steamid"]} 0'
@@ -582,7 +581,7 @@ def deconstructchatline(line):
 
 @log.catch
 async def asyncchatlinedetected(inst, chatdict):
-    log.debug(f'chatline detected: {chatdict}')
+    log.trace(f'chatline detected: {chatdict}')
     transmsg = trans_to_eng(chatdict['line'])
     tstamp = chatdict['time'].strftime('%m-%d %I:%M%p')
     log.log('CHAT', f'{inst} | {chatdict["name"]} | {transmsg}')
