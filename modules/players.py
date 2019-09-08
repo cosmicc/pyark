@@ -32,6 +32,15 @@ def writechat(inst, whos, msg, tstamp):
 
 
 @log.catch
+async def asyncisplayeronline(steamid):
+    player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
+    if player['online']:
+        return True
+    else:
+        return False
+
+
+@log.catch
 async def asyncnewplayer(steamid, playername, inst):
     if steamid not in globvars.welcomes:
         log.log('NEW', f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')

@@ -14,7 +14,7 @@ from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, getlastrestart, asyncgetlastwipe, homeablelist, asyncwipeit
 from modules.lottery import asyncgetlastlotteryinfo
-from modules.players import asyncnewplayer
+from modules.players import asyncnewplayer, asyncisplayeronline
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec,
                                  asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
@@ -547,7 +547,7 @@ async def asyncleavingplayerwatch(player, inst):
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         await asyncserverchat(inst, mtxt)
-    if player['homeserver'] != inst:
+    if player['homeserver'] != inst and not await asyncisplayeronline(player['steamid']):
         command = f'tcsar setarctotal {player["steamid"]} 0'
         await asyncserverscriptcmd(inst, command)
     return True
