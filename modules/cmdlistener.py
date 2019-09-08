@@ -14,7 +14,7 @@ from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, getlastrestart, asyncgetlastwipe, homeablelist, asyncwipeit
 from modules.lottery import asyncgetlastlotteryinfo
-from modules.players import newplayer
+from modules.players import asyncnewplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec,
                                  asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
@@ -411,9 +411,9 @@ async def processtcdata(inst, tcdata):
     playername = tcdata['PlayerName'].lower()
     player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
     if not player:
-        welcom = threading.Thread(name='welcoming-%s' % steamid, target=newplayer, args=(steamid, playername, inst))
-        welcom.start()
-    else:
+        if player['steamid'] not in globvars.welcomes:
+            asyncio.create_task(asyncnewplayer(steamid, playername, inst))
+    elif player['lastseen'] > Secs['1min']:
         playtime = int(float(tcdata['TotalPlayed'].replace(',', '')))
         rewardpoints = int(tcdata['Points'].replace(',', ''))
         if playername.lower() != player['playername'].lower():
