@@ -75,23 +75,32 @@ async def processstatusline(inst, statuslines):
             if (status_title == 'Server running'):
                 if stripansi(line.split(':')[1]).strip() == 'Yes':
                     globvars.isrunning.add(inst)
+                    isrunning = 1
                 elif stripansi(line.split(':')[1]).strip() == 'No':
                     globvars.isrunning.discard(inst)
                     globvars.islistening.discard(inst)
                     globvars.isonline.discard(inst)
+                    isrunning = 0
+                    islistening = 0
+                    isonline = 0
             if (status_title == 'Server PID'):
                 serverpid = stripansi(line.split(':')[1]).strip()
             if (status_title == 'Server listening'):
                 if (stripansi(line.split(':')[1]).strip() == 'Yes'):
                     globvars.islistening.add(inst)
+                    islistening = 1
                 elif (stripansi(line.split(':')[1]).strip() == 'No'):
                     globvars.islistening.discard(inst)
                     globvars.isonline.discard(inst)
+                    islistening = 0
+                    isonline = 0
             if (status_title == 'Server online'):
                 if (stripansi(line.split(':')[1]).strip() == 'Yes'):
                     globvars.isonline.add(inst)
+                    isonline = 1
                 elif (stripansi(line.split(':')[1]).strip() == 'No'):
                     globvars.isonline.discard(inst)
+                    isonline = 0
             if (status_title == 'Players'):
                 players = int(stripansi(line.split(':')[1]).strip().split('/')[0].strip())
             if (status_title == 'Active Players'):
