@@ -1,19 +1,17 @@
 import asyncio
-import os
 import random
 from datetime import datetime, timedelta
 from time import time
 
-from loguru import logger as log
-
 import globvars
+from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.configreader import hstname
-from modules.dbhelper import cleanstring, dbquery, dbupdate
+from modules.dbhelper import cleanstring
 from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, asyncwipeit, homeablelist
 from modules.lottery import asyncgetlastlotteryinfo
-from modules.players import asyncisplayeronline, asyncnewplayer
+from modules.players import asyncnewplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
                                  asyncserverexec, asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
@@ -48,31 +46,6 @@ async def asyncwritechatlog(inst, whos, msg, tstamp):
     # with aiofiles.open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
     #   await f.write(clog)
     # await f.close()
-
-
-@log.catch
-def writechatlog(inst, whos, msg, tstamp):
-    isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos, ), fetch='one')
-    if isindb:
-        clog = f"""{tstamp} [{whos.upper()}]{msg}\n"""
-        if not os.path.exists(f'/home/ark/shared/logs/{inst}'):
-            log.error(f'Log directory /home/ark/shared/logs/{inst} does not exist! creating')
-            os.mkdir(f'/home/ark/shared/logs/{inst}', 0o777)
-            os.chown(f'/home/ark/shared/logs/{inst}', 1001, 1005)
-        with open(f"/home/ark/shared/logs/{inst}/chat.log", "at") as f:
-            f.write(clog)
-        f.close()
-
-
-def writechat(inst, whos, msg, tstamp):
-    isindb = False
-    if whos != 'ALERT':
-        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
-        if isindb:
-            dbupdate("""INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')""" % (inst, whos, msg.replace("'", ""), tstamp))
-
-    elif whos == "ALERT":
-        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
 async def asyncgetsteamid(whoasked):
@@ -804,20 +777,22 @@ async def asyncprocessline(minst, atinstances, line):
             await asyncchatlinedetected(inst, chatdict)
 
 
-@log.catch
 async def processcmdchunk(inst, atinstances, chunk):
         for line in iter(chunk.decode("utf-8").splitlines()):
             await asyncprocessline(inst, atinstances, line)
         return True
 
 
-@log.catch
+async def cmdrunner(inst, atinstances):
+    cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
+    asyncio.create_task(processcmdchunk(inst, atinstances, cmdpipe['stdout']))
+    globvars.taskworkers.remove(f'{inst}-cmdcheck')
+
+
 async def asynccmdcheck(instances, atinstances):
-    if 'cmdcheck' not in globvars.taskworkers:
-        globvars.taskworkers.append('cmdcheck')
         for inst in instances:
-            log.trace(f'running command check for {inst}')
-            cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
-            asyncio.create_task(processcmdchunk(inst, atinstances, cmdpipe['stdout']))
-        globvars.taskworkers.remove('cmdcheck')
+            if f'{inst}-cmdcheck' not in globvars.taskworkers:
+                globvars.taskworkers.add(f'{inst}-cmdcheck')
+                asyncio.create_task(cmdrunner(inst, atinstances))
+                log.trace(f'running command check for {inst}')
         return True

@@ -1,10 +1,10 @@
 import asyncio
 from datetime import datetime
 from pathlib import Path
+
 import asyncpg
 from loguru import logger as log
-
-from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user, hstname
+from modules.configreader import hstname, psql_db, psql_host, psql_port, psql_pw, psql_user
 
 
 class asyncDB:

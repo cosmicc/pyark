@@ -1,5 +1,4 @@
 from loguru import logger as log
-
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile, debugfile,
                                   gamelogfile, hstname, jsondebugfile, jsonlogfile, loglevel, pointsfile)
 

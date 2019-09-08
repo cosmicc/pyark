@@ -9,10 +9,8 @@ from datetime import time as dt
 from pathlib import Path
 from time import sleep
 
-from loguru import logger as log
-from timebetween import is_time_between
-
 import globvars
+from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.clusterevents import getcurrenteventext, iseventrebootday, iseventtime
 from modules.configreader import (arkroot, hstname, instance, instances, instr,
@@ -25,6 +23,7 @@ from modules.players import getliveplayersonline, getplayersonline
 from modules.pushover import pushover
 from modules.servertools import serverexec, serverneedsrestart
 from modules.timehelper import Now, Secs, wcstamp
+from timebetween import is_time_between
 
 confupdtimer = 0
 dwtimer = 0

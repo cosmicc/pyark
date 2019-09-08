@@ -3,16 +3,19 @@ from time import time
 
 from modules.configreader import arkroot, instances, sharedpath
 
-taskworkers = []  # list of working tasks
+taskworkers = set([])  # list of working tasks
 votertable = []  # populated voter table for wild wipe votes
 votestarttime = time()
 isvoting = False  # is a vote taking place
 lastvoter = 0
-welcomes = []  # list of steamid new player welcomes
-greetings = []  # list of steamid returning player greets
+welcomes = set([])  # list of steamid of running new player welcomes
+greetings = set([])  # list of steamid or running returning player greets
 
 delay = {}  # Delay times for each task
 timer = {}  # timers for each task
+
+isrunning = set([])  # Instances that ar running on this server
+isonline = set([])  # Instances that are online on this server
 
 arkmanager_paths = []
 gameini_customconfig_files = {}

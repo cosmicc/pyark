@@ -1,5 +1,4 @@
 from loguru import logger as log
-
 from modules.dbhelper import dbquery, dbupdate
 from modules.timehelper import Now
 

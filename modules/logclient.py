@@ -5,7 +5,6 @@ from time import sleep
 
 from ansi2html import Ansi2HTMLConverter
 from loguru import logger as log
-
 from modules.instances import instancelist
 
 

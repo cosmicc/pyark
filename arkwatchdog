@@ -5,12 +5,11 @@ from pathlib import Path
 from sys import exit
 from time import sleep
 
+import modules.logging
 import psutil
 from loguru import logger as log
-
-import modules.logging
 from modules.arkupdater import asyncinstancerestart
-from modules.asyncdb import asyncDB
+from modules.asyncdb import DB as db
 from modules.configreader import hstname, instances, sharedpath
 from modules.instances import getinststatus, isinstanceenabled
 from modules.players import asyncgetliveplayersonline

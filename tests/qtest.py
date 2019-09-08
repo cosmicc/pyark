@@ -1,6 +1,5 @@
-from sqlalchemy.orm import mapper, sessionmaker
-
 from active_alchemy import ActiveAlchemy, MetaData, Table, create_engine
+from sqlalchemy.orm import mapper, sessionmaker
 
 
 class Bookmarks(object):

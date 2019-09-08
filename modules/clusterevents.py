@@ -5,7 +5,6 @@ from sys import exit
 from time import sleep
 
 from loguru import logger as log
-
 from modules.asyncdb import DB as db
 from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate

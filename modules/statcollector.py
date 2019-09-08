@@ -3,11 +3,10 @@ from datetime import time as dt
 from time import sleep, time
 
 from loguru import logger as log
-from timebetween import is_time_between
-
 from modules.dbhelper import dbquery, dbupdate, statsupdate
 from modules.players import getactiveplayers, gethitnruns, getnewplayers, getplayersonline
 from modules.timehelper import Now, Secs
+from timebetween import is_time_between
 
 
 def stopsleep(sleeptime, stop_event):

@@ -10,9 +10,8 @@ from datetime import datetime
 from queue import Queue
 from time import sleep
 
-from loguru import logger as log
-
 import modules.tail
+from loguru import logger as log
 from modules.processlock import PLock
 
 HEADER = 5

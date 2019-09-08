@@ -1,9 +1,8 @@
 import asyncio
 from time import sleep
 
-from loguru import logger as log
-
 import globvars
+from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.servertools import asyncserverchat, asyncserverchatto, serverexec
@@ -70,6 +69,7 @@ async def asyncnewplayer(steamid, playername, inst):
             await asyncserverchat(inst, message)
             log.debug(f'welcome message complete for new player {steamid} on {inst}')
             await asyncwritechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
+            globvars.welcomes.remove(steamid)
     else:
         log.debug(f'welcome message already running for [{playername}]')
 

@@ -11,10 +11,6 @@ from flask_security import (RegisterForm, SQLAlchemyUserDatastore, current_user,
 from flask_security.utils import hash_password
 from flask_wtf import FlaskForm
 from loguru import logger as log
-from pycountry import countries
-from wtforms import IntegerField, StringField
-from wtforms.validators import InputRequired, Length
-
 from modules.chatclient import ChatClient
 from modules.clusterevents import getcurrenteventtitle, getcurrenteventtitleabv, iseventtime
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
@@ -30,6 +26,9 @@ from modules.players import (banunbanplayer, getactiveplayers, getbannedplayers,
                              getsteamnameplayers, isplayerbanned, isplayerold, isplayeronline, kickplayer)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, joinedTime, playedTime
 from modules.tribes import getplayertribes, gettribe, gettribes
+from pycountry import countries
+from wtforms import IntegerField, StringField
+from wtforms.validators import InputRequired, Length
 
 from .. import socketio
 from ..database import db

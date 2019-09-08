@@ -7,11 +7,10 @@ import threading
 from os import _exit
 from time import sleep
 
+import modules.tail
 from ansi2html import Ansi2HTMLConverter
 from dateutil.parser import parse as dtparse
 from loguru import logger as log
-
-import modules.tail
 from modules.timehelper import estshift
 
 

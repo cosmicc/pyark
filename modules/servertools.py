@@ -5,9 +5,8 @@ from re import sub
 from time import time
 
 from loguru import logger as log
-from psutil import Process
-
 from modules.asyncdb import DB as db
+from psutil import Process
 
 
 def asynctimeit(func):

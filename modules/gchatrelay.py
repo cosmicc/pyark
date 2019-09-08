@@ -1,8 +1,7 @@
 from time import sleep
 
-from loguru import logger as log
-
 import globvars
+from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asynctimeit, serverexec
 from modules.timehelper import Now
@@ -55,7 +54,7 @@ async def asyncwritechatlog(inst, whos, msg, tstamp):
 @log.catch
 async def asyncgchatrelay(instances):
         if 'gchatrelay' not in globvars.taskworkers:
-            globvars.taskworkers.append('gchatrelay')
+            globvars.taskworkers.add('gchatrelay')
             chatbuffer = await db.fetchall(f"SELECT * from globalbuffer")
             if chatbuffer:
                 for chatline in chatbuffer:

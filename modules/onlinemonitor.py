@@ -1,16 +1,13 @@
 import asyncio
 
-from loguru import logger as log
-
 import globvars
+from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
-from modules.dbhelper import cleanstring, dbquery, dbupdate
+from modules.dbhelper import cleanstring
 from modules.players import asyncnewplayer
 from modules.servertools import asyncserverchatto, asyncserverexec, asyncserverrconcmd, asyncserverscriptcmd, serverexec
 from modules.timehelper import Now, elapsedTime, playedTime
-
-welcomthreads = []
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -27,26 +24,6 @@ async def asyncresetplayerbit(steamid):
 
 
 @log.catch
-def writechat(inst, whos, msg, tstamp):
-    isindb = False
-    if whos != 'ALERT':
-        isindb = dbquery("SELECT * from players WHERE playername = '%s'" % (whos,), fetch='one')
-    elif whos == "ALERT" or isindb:
-        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-                 (inst, whos, msg, tstamp))
-
-
-@log.catch
-def iswelcoming(steamid):
-    for each in welcomthreads:
-        if each['steamid'] == steamid:
-            if each['sthread'].is_alive():
-                return True
-            else:
-                return False
-
-
-@log.catch
 async def asyncserverisinrestart(steamid, inst, player):
     rbt = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     if rbt[3] == "True":
@@ -56,10 +33,10 @@ async def asyncserverisinrestart(steamid, inst, player):
 
 
 @log.catch
-def isinlottery(steamid):
-    isinlotto = dbquery("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'", fetch='one')
+async def asyncisinlottery(steamid):
+    isinlotto = await db.fetchone("SELECT * FROM lotteryinfo WHERE winner = 'Incomplete'")
     if isinlotto:
-        isinlotto2 = dbquery("SELECT * FROM lotteryplayers WHERE steamid = '%s'" % (steamid,), fetch='one')
+        isinlotto2 = await db.fetchone(f"SELECT * FROM lotteryplayers WHERE steamid = '{steamid}'")
         if isinlotto2:
             return True
         else:
@@ -162,7 +139,7 @@ async def asyncplayergreet(steamid, steamname, inst):
                     await asyncio.sleep(3)
                     mtxt = f'Your player is not linked with a discord account yet. type !linkme in global chat'
                     await asyncserverchatto(inst, steamid, mtxt)
-                if not isinlottery(steamid):
+                if not await asyncisinlottery(steamid):
                     await asyncio.sleep(3)
                     mtxt = f'A lottery you have not entered yet is underway. Type !lotto for more information'
                     await asyncserverchatto(inst, steamid, mtxt)
@@ -191,11 +168,11 @@ async def asyncplayergreet(steamid, steamname, inst):
 
 async def asynckickcheck(instances):
     if 'kickcheck' not in globvars.taskworkers:
-        globvars.taskworkers.append('kickcheck')
+        globvars.taskworkers.add('kickcheck')
         for inst in instances:
             kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
             if kicked:
-                serverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'], nice=10, null=True)
+                await asyncserverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'])
                 log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
                 await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
         globvars.taskworkers.remove('kickcheck')
@@ -204,15 +181,18 @@ async def asynckickcheck(instances):
 
 @log.catch
 async def asynconlinedblchecker(instances):
-    for inst in instances:
-        log.trace(f'Running online doublechecker for {inst}')
-        players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = '{inst}'")
-        for player in players:
-            log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
-            await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
-            if player['homeserver'] != inst:
-                command = f'tcsar setarctotal {player["steamid"]} 0'
-                await asyncserverscriptcmd(inst, command)
+    if 'dblchecker' not in globvars.taskworkers:
+        globvars.taskworkers.add('dblchecker')
+        for inst in instances:
+            log.trace(f'Running online doublechecker for {inst}')
+            players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = '{inst}'")
+            for player in players:
+                log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
+                await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
+                if player['homeserver'] != inst:
+                    command = f'tcsar setarctotal {player["steamid"]} 0'
+                    await asyncserverscriptcmd(inst, command)
+        globvars.taskworkers.remove('dblchecker')
 
 
 async def asyncprocessline(inst, line):
@@ -241,12 +221,16 @@ async def processplayerchunk(inst, chunk):
     return True
 
 
+async def runcommand(inst):
+    cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
+    asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
+    globvars.taskworkers.remove(f'{inst}-onlinecheck')
+
+
 async def asynconlinecheck(instances):
-    if 'onlinecheck' not in globvars.taskworkers:
-        globvars.taskworkers.append('onlinecheck')
         for inst in instances:
-            log.trace(f'running onlinecheck for {inst}')
-            cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
-            asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
-        globvars.taskworkers.remove('onlinecheck')
+            if f'{inst}-onlinecheck' not in globvars.taskworkers:
+                globvars.taskworkers.add(f'{inst}-onlinecheck')
+                asyncio.create_task(runcommand(inst))
+                log.trace(f'running onlinecheck for {inst}')
         return True
