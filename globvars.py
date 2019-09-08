@@ -15,6 +15,7 @@ delay = {}  # Delay times for each task
 timer = {}  # timers for each task
 
 isrunning = set([])  # Instances that ar running on this server
+islistening = set([])
 isonline = set([])  # Instances that are online on this server
 
 arkmanager_paths = []
