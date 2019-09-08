@@ -172,8 +172,8 @@ async def asynckickcheck(instances):
         for inst in instances:
             kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
             if kicked:
-                await asyncserverexec(['arkmanager', 'rconcmd', f'kickplayer {kicked[1]}', f'@{inst}'])
-                log.log('KICK', f'Kicking user [{kicked[1].title()}] from server [{inst.title()}] on kicklist')
+                await asyncserverrconcmd(inst, f'kickplayer {kicked[1]}')
+                log.log('KICK', f'Kicking user [{kicked[1]}] from server [{inst.title()}] on kicklist')
                 await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
         globvars.taskworkers.remove('kickcheck')
         return True
