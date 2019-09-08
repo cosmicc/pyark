@@ -406,7 +406,7 @@ async def processtcdata(inst, tcdata):
             log.trace(f'player {playername} with steamid {steamid} was found on HOME server {inst}. updating info.')
             await db.update(f"UPDATE players SET playedtime = '{playtime}', rewardpoints = '{rewardpoints}' WHERE steamid = '{steamid}'")
         else:
-            if Now() - int(player['lastseen']) < 200:
+            if Now() - int(player['lastseen']) < 200 and player['server'] == inst:
                 log.debug(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info')
                 transferdata = await db.fetchone(f"SELECT * from transferpoints WHERE steamid = '{steamid}' and server = '{inst}'")
                 if transferdata:
