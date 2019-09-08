@@ -20,14 +20,15 @@ import globvars
 from fsmonitor import FSMonitorThread
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventrebootday, getcurrenteventext, iseventtime
-from modules.configreader import arkroot, hstname, instr, maint_hour, sharedpath, is_arkupdater
+from modules.configreader import arkroot, hstname, instr, is_arkupdater, maint_hour, sharedpath
 from modules.discordbot import asyncwritediscord
 from modules.instances import (asyncgetlastrestart, asyncgetlastwipe,
                                asyncisinstanceenabled, asyncisinstanceup, asyncwipeit)
-from modules.players import asyncgetplayersonline, asyncgetliveplayersonline
+from modules.players import asyncgetliveplayersonline, asyncgetplayersonline
 from modules.pushover import pushover
-from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec, asyncserverrconcmd,
-                                 asyncservernotify, asynctimeit, serverexec, serverneedsrestart, asyncserverscriptcmd)
+from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
+                                 asyncserverexec, asyncservernotify, asyncserverrconcmd,
+                                 asyncserverscriptcmd, asynctimeit, serverexec, serverneedsrestart)
 from modules.timehelper import Now, Secs, wcstamp
 
 confupdtimer = 0

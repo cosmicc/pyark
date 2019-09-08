@@ -7,15 +7,15 @@ from time import time
 from loguru import logger as log
 
 import globvars
-from modules.configreader import hstname
 from modules.asyncdb import DB as db
+from modules.configreader import hstname
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.gtranslate import trans_to_eng
-from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, homeablelist, asyncwipeit
+from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, asyncwipeit, homeablelist
 from modules.lottery import asyncgetlastlotteryinfo
-from modules.players import asyncnewplayer, asyncisplayeronline
-from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverexec,
-                                 asyncserverscriptcmd)
+from modules.players import asyncisplayeronline, asyncnewplayer
+from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
+                                 asyncserverexec, asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 
@@ -508,7 +508,7 @@ async def playerjoin(line, inst):
             if xferpointsdata:
                 log.debug(f'xferpointsdata: {xferpointsdata}')
                 command = f'tcsar setarctotal {player["steamid"]} {xferpointsdata["points"]}'
-            await asyncserverscriptcmd(inst, command)
+                await asyncserverscriptcmd(inst, command)
         steamid = player['steamid']
         await db.update(f"""UPDATE players SET online = True, refreshsteam = True, lastlogin = '{Now()}', lastseen = '{Now()}', refreshauctions = True, server = '{inst}', connects = {player["connects"] + 1} WHERE steamid = '{steamid}'""")
         if Now() - player['lastseen'] > 250:

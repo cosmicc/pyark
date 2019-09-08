@@ -7,8 +7,7 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring, dbquery, dbupdate
 from modules.players import asyncnewplayer
-from modules.servertools import (asyncserverchatto, asyncserverexec,
-                                 asyncserverrconcmd, asyncserverscriptcmd, serverexec)
+from modules.servertools import asyncserverchatto, asyncserverexec, asyncserverrconcmd, asyncserverscriptcmd, serverexec
 from modules.timehelper import Now, elapsedTime, playedTime
 
 welcomthreads = []

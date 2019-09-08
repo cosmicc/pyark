@@ -6,7 +6,6 @@ import signal
 import sys
 import threading
 import warnings
-
 from os import _exit, nice, stat
 from time import sleep, time
 
@@ -18,13 +17,13 @@ from loguru import logger as log
 import globvars
 import modules.logging
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
-from modules.arkupdater import asynccheckrestart, asynccheckmaint, asynccheckupdates, asynccheckbackup, asynccheckwipe
+from modules.arkupdater import asynccheckbackup, asynccheckmaint, asynccheckrestart, asynccheckupdates, asynccheckwipe
 from modules.asyncdb import DB as db
 from modules.clusterevents import eventwatcher_thread
 from modules.cmdlistener import asynccmdcheck
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
-                                  debugfile, gamelogfile, gamelograwfile, hstname, instances, is_arkupdater,
-                                  instr, jsondebugfile, jsonlogfile, loglevel, pointsfile)
+                                  debugfile, gamelogfile, gamelograwfile, hstname, instances, instr,
+                                  is_arkupdater, jsondebugfile, jsonlogfile, loglevel, pointsfile)
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
 from modules.gchatrelay import asyncgchatrelay
