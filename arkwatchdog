@@ -166,13 +166,12 @@ async def asyncwatchdog():
             log.log('WATCH', 'server just booted, starting instances for the first time')
             while not issharedmounted():
                 log.log('WATCH', 'Shared drive is not mounted, waiting for mount to complete...')
-                sleep(60)
-            if issharedmounted():
-                for eat in instance:
-                    serverexec(['arkmanager', 'start', f'@{eat["name"]}'], nice=-1, null=True)
-                    sleep(120)
-                log.debug('sleeping 15 min while instances start')
-                log.sleep(Secs['10min'])
+                await asyncio.sleep(60)
+            if await issharedmounted():
+                for inst in instances:
+                    await asyncserverexec(['arkmanager', 'start', f'@{eat["name"]}'], nice=-1)
+                    await asyncio.sleep(120)
+
     log.debug('starting watchdog loop')
     serverstatcount = 0
     while True:
@@ -187,11 +186,11 @@ async def asyncwatchdog():
                     cpucores, cpufreq, cpuload1, cpuload5, cpuload15 = getcpustats()
                     uptime = getserveruptime()
                 ofiles = getopenfiles()
-            for eachinst in instance:
-                if isinstanceenabled(eachinst['name']):
+            for inst in instances:
+                if await asyncisinstanceenabled(inst):
                     isitrunning, isitlistening, isitonline = getinststatus(eachinst['name'])
                     if isitrunning:
-                        log.trace(f'{eachinst["name"]} passed instance running check')
+                        log.trace(f'{inst} passed instance running check')
                         setarknice(eachinst["name"])
                         try:
                             log.trace(f'updating process stats for {eachinst["name"]}')
