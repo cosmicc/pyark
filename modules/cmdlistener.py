@@ -413,7 +413,7 @@ async def processtcdata(inst, tcdata):
     if not player:
         if player['steamid'] not in globvars.welcomes:
             asyncio.create_task(asyncnewplayer(steamid, playername, inst))
-    elif player['lastseen'] > Secs['1min']:
+    elif int(player['lastseen']) > Secs['1min']:
         playtime = int(float(tcdata['TotalPlayed'].replace(',', '')))
         rewardpoints = int(tcdata['Points'].replace(',', ''))
         if playername.lower() != player['playername'].lower():
