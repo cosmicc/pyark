@@ -122,6 +122,7 @@ async def runstatus(inst):
 async def asyncgetinststatus(instances):
     for inst in instances:
         if f'{inst}-status' not in globvars.taskworkers:
+            globvars.taskworkers.add(f'{inst}-status')
             asyncio.create_task(runstatus(inst))
         return True
 
