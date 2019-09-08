@@ -226,7 +226,7 @@ def installconfigs(inst):
 async def asyncrestartinstnow(inst, startonly=False):
     checkdirs(inst)
     if not startonly:
-        await asyncwipeit(inst, extra=True)
+        await asyncwipeit(inst)
         await asyncio.sleep(5)
         await asyncserverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'])
         log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
