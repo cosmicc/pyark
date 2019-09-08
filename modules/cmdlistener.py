@@ -269,17 +269,6 @@ def votingpassed():
         return False
 
 
-def enoughvotes():
-    votecount = 0
-    for each in globvars.votertable:
-        if each[2] == 1 or each[2] == 2:
-            votecount += 1
-    if votecount >= len(globvars.votertable) / 2:
-        return True
-    else:
-        return False
-
-
 def howmanyvotes():
     votecount = 0
     for each in globvars.votertable:
@@ -323,19 +312,13 @@ async def asyncvoter(inst, whoasked):
     warned = False
     while globvars.isvoting:
         await asyncio.sleep(5)
-        if votingpassed():
+        if votingpassed() and globvars.isvoting:
             globvars.isvoting = False
             asyncio.create_task(asyncwipeprep(inst))
         elif asyncloop.time() - globvars.votestarttime > Secs['2min']:
-            if enoughvotes():
+            if globvars.isvoting:
                 globvars.isvoting = False
                 asyncio.create_task(asyncwipeprep(inst))
-            else:
-                globvars.isvoting = False
-                message = f'Not enough votes ({howmanyvotes()} of {len(globvars.votertable)}). voting has ended.'
-                await asyncserverchat(inst, message)
-                log.log('VOTE', f'Voting has ended on [{inst.title()}] Not enough votes ({howmanyvotes()}/{len(globvars.votertable)})')
-                await asyncwritechat(inst, 'ALERT', f'### Wild dino wipe vote failed with not enough votes ({howmanyvotes()} of i{len(globvars.votertable)})', wcstamp())
         elif asyncloop.time() - globvars.votestarttime > 60 and not warned:
             warned = True
             log.log('VOTE', f'Sending voting waiting message to vote on [{inst.title()}]')
@@ -343,7 +326,7 @@ async def asyncvoter(inst, whoasked):
             await asyncserverbcast(inst, bcast)
     globvars.lastvoter = time()
     await asyncresetlastvote(inst)
-    log.debug(f'voting thread has ended on {inst}')
+    log.debug(f'voting task has ended on {inst}')
     return True
 
 
