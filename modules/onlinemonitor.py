@@ -120,9 +120,10 @@ async def asyncplayergreet(steamid, steamname, inst):
                     xferpoints = xferpoints + int(each['points'])
                 xferpoints = xferpoints + int(player['transferpoints'])
                 await db.update(f"""UPDATE players SET transferpoints = 0 WHERE steamid = '{player["steamid"]}'""")
-                await db.update(f"""DELETE FROM transferpoints WHERE steamid = '{player["steamid"]}'""")
-                log.log('POINTS', f'Transferred {xferpoints} non-home server points for [{player[1].title()}] on [{inst.title()}]')
-                await asyncserverscriptcmd(inst, f'tcsar addarctotal {steamid} {xferpoints}')
+                if xferpoints != 0:
+                    await db.update(f"""DELETE FROM transferpoints WHERE steamid = '{player["steamid"]}'""")
+                    log.log('POINTS', f'Transferred {xferpoints} non-home server points for [{player[1].title()}] on [{inst.title()}]')
+                    await asyncserverscriptcmd(inst, f'tcsar addarctotal {steamid} {xferpoints}')
             if player['homemovepoints'] != 0 and player['homeserver'] == inst:
                 homemovepoints = int(player['homemovepoints'])
                 log.log('POINTS', f'Transferred {homemovepoints} points for [{player[1].title()}] on [{inst.title()}] from a home server move')
