@@ -278,7 +278,8 @@ async def asyncrestartloop(inst, startonly=False):
         else:
             log.log('UPDATE', f'Resuming {timeleft} min retart countdown for [{inst.title()}] for a [{reason}]')
         oplayer = await asyncgetliveplayersonline(inst)
-        while await asyncstillneedsrestart(inst) and await len(await asyncgetplayersonline(inst)) != 0 and timeleft != 0 and oplayer['activeplayers'] != 0:
+        pplayers = await asyncgetplayersonline(inst)
+        while await asyncstillneedsrestart(inst) and await len(pplayers) != 0 and timeleft != 0 and oplayer['activeplayers'] != 0:
             if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
                 log.log('UPDATE', f'{timeleft} min broadcast message sent to [{inst.title()}]')
                 bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">{reason}</>\n\n<RichColor Color="1,1,0,1">                   The server will be restarting in</><RichColor Color="1,0,0,1">{timeleft}</><RichColor Color="1,1,0,1"> minutes</>"""
