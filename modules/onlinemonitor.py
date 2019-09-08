@@ -118,8 +118,8 @@ async def asyncplayergreet(steamid, steamname, inst):
                 xfertable = await db.fetchall(f"""SELECT * FROM transferpoints WHERE steamid = '{player["steamid"]}'""")
                 xferpoints = 0
                 for each in xfertable:
-                    xferpoints = xferpoints + each['points']
-                xferpoints = xferpoints + player['transferpoints']
+                    xferpoints = xferpoints + int(each['points'])
+                xferpoints = xferpoints + int(player['transferpoints'])
                 await db.update(f"""UPDATE players SET transferpoints = 0 WHERE steamid = '{player["steamid"]}'""")
                 await db.update(f"""DELETE FROM transferpoints WHERE steamid = '{player["steamid"]}'""")
                 log.log('POINTS', f'Transferred {xferpoints} non-home server points for [{player[1].title()}] on [{inst.title()}]')
