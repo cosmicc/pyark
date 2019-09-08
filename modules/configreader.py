@@ -73,7 +73,7 @@ testing_seckey = config.get('webserver', 'debug_testkey')
 
 numinstances = int(config.get('general', 'instances'))
 instance = [dict() for x in range(numinstances)]
-instances = []
+localinstances = []
 instr = ''
 
 if numinstances == 0:
@@ -81,9 +81,11 @@ if numinstances == 0:
 else:
     for each in range(numinstances):
         a = config.get('instance%s' % (each), 'name')
-        instances.append(a)
+        localinstances.append(a)
         instance[each] = {'name': a, }
         if instr == '':
             instr = '%s' % (a)
         else:
             instr = instr + ', %s' % (a)
+
+instances = tuple(localinstances)
