@@ -109,7 +109,7 @@ async def asyncmain():
     global main_stop_event
     global file_event_notifier
     main_stop_event = False
-    globvars.delay = {'statuscheck': 15, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
+    globvars.delay = {'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     serverpre = ['@all']
