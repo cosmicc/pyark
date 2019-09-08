@@ -110,7 +110,7 @@ async def asyncgetlastmaint(svr):
 
 
 async def asyncsetlastmaint(svr):
-    await db.update(f"UPDATE lastmaintenance SET lastmaint = '{Now(fmt='dtd')}' WHERE name = 'svr.upper()'")
+    await db.update(f"UPDATE lastmaintenance SET lastmaint = '{Now(fmt='dtd')}' WHERE name = '{svr.upper()}'")
 
 
 async def asyncgetpendingcfgver(inst):

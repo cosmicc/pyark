@@ -4,25 +4,25 @@ from pathlib import Path
 import asyncpg
 from loguru import logger as log
 
-from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user, hstname
 
 
 class asyncDB:
-    def __init__(self, min=3, max=10, timeout=300):
+    def __init__(self):
         log.trace(f'Starting async db connection engine')
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
         self.databases = ('pyark', 'py', 'stats', 'st', 'gamelog', 'gl')
         self.dbpyark = ('pyark', 'py')
         self.dbstats = ('stats', 'st')
         self.dbgamelog = ('gamelog', 'gl')
-        self.min = min
-        self.max = max
-        self.timeout = timeout
         self.cpool = None
         self.connecting = False
 
-    async def connect(self, process=__file__):
+    async def connect(self, process=__file__, min=3, max=10, timeout=300):
         self.process = process
+        self.min = min
+        self.max = max
+        self.timeout = timeout
         self.connecting = True
         try:
             self.cpool = await asyncpg.create_pool(min_size=self.min, max_size=self.max, max_inactive_connection_lifetime=float(self.timeout), database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
@@ -31,7 +31,7 @@ class asyncDB:
             await asyncio.sleep(5)
             await self.connect()
         else:
-            log.debug(f'New database connection pool initilized for {self.process} [min={self.min}] [max={self.max}] [timeout={self.timeout}]')
+            log.debug(f'DB pool initilized for [{self.process.upper()}] on [{hstname}] (min:{self.min}, max:{self.max}, timeout:{self.timeout})')
             self.connecting = False
         # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
