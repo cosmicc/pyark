@@ -119,6 +119,8 @@ async def asyncplayergreet(steamid, steamname, inst):
                 xferpoints = 0
                 for each in xfertable:
                     xferpoints = xferpoints + each['points']
+                xferpoints = xferpoints + player['transferpoints']
+                await db.update(f"""UPDATE players SET transferpoints = 0 WHERE steamid = '{player["steamid"]}'""")
                 await db.update(f"""DELETE FROM transferpoints WHERE steamid = '{player["steamid"]}'""")
                 log.log('POINTS', f'Transferred {xferpoints} non-home server points for [{player[1].title()}] on [{inst.title()}]')
                 await asyncserverscriptcmd(inst, f'tcsar addarctotal {steamid} {xferpoints}')
@@ -203,8 +205,9 @@ async def asynckickcheck(instances):
 @log.catch
 async def asynconlinedblchecker(instances):
     for inst in instances:
-        log.trace(f'Running online doublechecker for {inst}')
+        log.debug(f'Running online doublechecker for {inst}')
         players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = 'inst'")
+        log.debug(players)
         for player in players:
             log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
             await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
