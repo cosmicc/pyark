@@ -267,7 +267,6 @@ async def asyncwipeprep(inst):
     await asyncio.sleep(5)
     asyncio.create_task(asyncwipeit(inst))
     await asyncresetlastwipe(inst)
-    log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
     return True
 
 

@@ -201,8 +201,8 @@ async def asyncmain():
                 # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'updatecheck': asyncloop.time()})
 
-            if asyncloop.time() - tasktimer > 30:
-                if len(asyncio.Task.all_tasks()) > 20:
+            if asyncloop.time() - tasktimer > 60:
+                if len(asyncio.Task.all_tasks()) > 30:
                     log.error(f'High number of async tasks running on {hstname} ({len(asyncio.Task.all_tasks())})')
                     tasktimer = asyncloop.time()
             await asyncio.sleep(.1)
