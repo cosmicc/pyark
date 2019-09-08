@@ -128,7 +128,7 @@ async def asyncgetinststatus(instances):
 
 def getinststatus(inst):
     rawrun = serverexec(['arkmanager', 'status', f'@{inst}'], nice=15)
-    rawrun2 = rawrun.stdout.decode('utf-8').split('\n')
+    rawrun2 = rawrun['stdout'].decode('utf-8').split('\n')
     serverrunning = 0
     serveronline = 0
     players = None
