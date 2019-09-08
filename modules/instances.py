@@ -30,20 +30,20 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
     if mating:
         log.debug(f'Shutting down dino mating on {inst}...')
         await asyncserverscriptcmd(inst, 'MatingOff_DS')
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
         log.debug(f'Clearing all unclaimed dinos on [{inst.title()}]...')
         await asyncserverscriptcmd(inst, 'DestroyUnclaimed_DS')
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
     if eggs:
         log.debug(f'Clearing all wild wyvern eggs on [{inst.title()}]...')
         await asyncserverrconcmd(inst, 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsWyvern_C')
-        await asyncio.sleep(2)
+        await asyncio.sleep(10)
         log.debug(f'Clearing all wild Deinonychus eggs on [{inst.title()}]...')
         await asyncserverrconcmd(inst, 'destroyall DroppedItemGeneric_FertilizedEgg_NoPhysicsDeinonychus_C')
-        await asyncio.sleep(2)
+        await asyncio.sleep(10)
         log.debug(f'Clearing all wild drake eggs on [{inst.title()}]...')
         await asyncserverrconcmd(inst, 'destroyall DroppedItemGeneric_FertilizedEgg_RockDrake_NoPhysics_C')
-        await asyncio.sleep(2)
+        await asyncio.sleep(10)
     if bees:
         log.debug(f'Clearing all beehives on [{inst.title()}]...')
         await asyncserverrconcmd(inst, 'destroyall BeeHive_C')
@@ -51,6 +51,7 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
     if dams:
         log.debug(f'Clearing all beaver dams on [{inst.title()}]...')
         await asyncserverrconcmd(inst, 'destroyall BeaverDam_C')
+        await asyncio.sleep(10)
     if dinos:
         log.debug(f'Clearing all wild dinos on [{inst.title()}]...')
         await db.update(f"UPDATE instances SET lastdinowipe = '{int(Now())}' WHERE name = '{inst}'")
