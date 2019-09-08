@@ -396,7 +396,7 @@ async def processtcdata(inst, tcdata):
     if not player:
         if player['steamid'] not in globvars.welcomes:
             asyncio.create_task(asyncnewplayer(steamid, playername, inst))
-    elif int(player['lastseen']) > Secs['1min']:
+    else:
         playtime = int(float(tcdata['TotalPlayed'].replace(',', '')))
         rewardpoints = int(tcdata['Points'].replace(',', ''))
         if playername.lower() != player['playername'].lower():
@@ -406,12 +406,13 @@ async def processtcdata(inst, tcdata):
             log.trace(f'player {playername} with steamid {steamid} was found on HOME server {inst}. updating info.')
             await db.update(f"UPDATE players SET playedtime = '{playtime}', rewardpoints = '{rewardpoints}' WHERE steamid = '{steamid}'")
         else:
-            log.debug(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info')
-            transferdata = await db.fetchone(f"SELECT * from transferpoints WHERE steamid = '{steamid}' and server = '{inst}'")
-            if transferdata:
-                await db.update(f"UPDATE transferpoints SET points = '{rewardpoints}' WHERE steamid = '{steamid}' and server = '{inst}'")
-            else:
-                await db.update(f"INSERT INTO transferpoints (steamid, server, points) VALUES ('{steamid}', '{inst}', {rewardpoints})")
+            if Now() - int(player['lastseen']) < 200:
+                log.debug(f'player {playername} with steamid {steamid} was found on NON-HOME server {inst}. updating info')
+                transferdata = await db.fetchone(f"SELECT * from transferpoints WHERE steamid = '{steamid}' and server = '{inst}'")
+                if transferdata:
+                    await db.update(f"UPDATE transferpoints SET points = '{rewardpoints}' WHERE steamid = '{steamid}' and server = '{inst}'")
+                else:
+                    await db.update(f"INSERT INTO transferpoints (steamid, server, points) VALUES ('{steamid}', '{inst}', {rewardpoints})")
 
 
 async def asynchomeserver(inst, whoasked, ext):
