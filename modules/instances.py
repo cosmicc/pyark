@@ -81,8 +81,6 @@ async def processstatusline(inst, statuslines):
                     globvars.islistening.discard(inst)
                     globvars.isonline.discard(inst)
                     isrunning = 0
-                    islistening = 0
-                    isonline = 0
             if (status_title == 'Server PID'):
                 serverpid = stripansi(line.split(':')[1]).strip()
             if (status_title == 'Server listening'):
@@ -93,7 +91,6 @@ async def processstatusline(inst, statuslines):
                     globvars.islistening.discard(inst)
                     globvars.isonline.discard(inst)
                     islistening = 0
-                    isonline = 0
             if (status_title == 'Server online'):
                 if (stripansi(line.split(':')[1]).strip() == 'Yes'):
                     globvars.isonline.add(inst)
@@ -113,6 +110,9 @@ async def processstatusline(inst, statuslines):
                 arkserverslink = stripansi(line.split('  ')[1]).strip()
             if (status_title == 'Steam connect link'):
                 steamlink = stripansi(line.split('  ')[1]).strip()
+        if int(activeplayers) > 0:
+            isrunning = 1
+            isonline = 1
         log.trace(f'pid: {serverpid}, online: {isonline}, listening: {islistening}, running: {isrunning}, {inst}')
         await db.update(f"UPDATE instances SET serverpid = '{int(serverpid)}', isonline = '{int(isonline)}', islistening = '{int(islistening)}', isrunning = '{int(isrunning)}', arkbuild = '{int(serverbuild)}', arkversion = '{serverversion}' WHERE name = '{inst}'")
         if players is not None and activeplayers is not None and steamlink is not None and arkserverslink is not None:
