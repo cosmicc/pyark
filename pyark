@@ -58,7 +58,7 @@ parser.add_argument('-t', '--trace', action='store_true', help='super verbose ou
 
 args = parser.parse_args()
 
-SIGNALS = (None, 'SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGKILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGKILL', None, None, None, None, 'SIGTERM', None, None, None, 'SIGSTOP')
+signals = (signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM)
 
 
 def async_exception_handler(loop, context):
@@ -72,18 +72,26 @@ def async_exception_handler(loop, context):
     #    pass
 
 
-async def signal_handler(signal, loop):
+def signal_handler(signal, frame):
+    global main_stop_event
+    log.log('EXIT', f'Termination signal [{signal}] recieved. Exiting.')
+    main_stop_event = True
+    stop_event.set()
+
+
+async def async_signal_handler(signal, loop):
     global main_stop_event
     try:
-        log.log('EXIT', f'Termination signal [{SIGNALS[signal]}] recieved. Exiting.')
+        log.log('EXIT', f'Termination signal [{signal}] recieved. Exiting.')
     except:
         log.exception(' ')
     main_stop_event = True
     stop_event.set()
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    log.debug('waiting for async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
+    log.debug('async tasks have finished')
     loop.stop()
-
 
 
 signal.signal(signal.SIGTERM, signal_handler)  # Graceful Shutdown
@@ -129,9 +137,11 @@ def checkthreads():
 async def asyncmain():
     global main_stop_event
     global file_event_notifier
+    main_stop_event = False
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
-    main_stop_event = False
+    for s in signals:
+        asynloop.add_signal_handler(s, lambda s=s: asyncio.create_task(async_signal_handler(s, asyncloop)))
     globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
