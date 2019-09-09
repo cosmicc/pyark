@@ -312,8 +312,8 @@ async def asyncrestartloop(inst, startonly=False):
 async def asynccheckmaint(instances):
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
-    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{hstname}-maintenance' not in globvars.taskworkers:
-        globvars.taskworkers.append(f'{hstname}-maintenance')
+    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{hstname}-maintenance' not in globvars.taskworkers and inst in globvars.islistening:
+        globvars.taskworkers.add(f'{hstname}-maintenance')
         await asyncsetlastmaint(hstname)
         log.log('MAINT', f'Daily maintenance window has opened for server [{hstname.upper()}]...')
         for inst in instances:
@@ -372,7 +372,7 @@ async def asyncinstancerestart(inst, reason, startonly=False):
     log.debug(f'instance restart verification starting for {inst}')
     if f'{inst}-restarting' not in globvars.taskworkers:
         await db.update(f"UPDATE instances SET restartreason = '{reason}' WHERE name = '{inst}'")
-        globvars.taskworkers.append(f'{inst}-restarting')
+        globvars.taskworkers.add(f'{inst}-restarting')
         asyncio.create_task(restartloop(inst, startonly))
     else:
         log.debug(f'skipping start/restart for {inst} because restart already running')
@@ -439,7 +439,7 @@ async def asynccheckifalreadyrestarting(inst):
     if instdata['needsrestart'] == "True":
         if f'{inst}-restarting' not in globvars.taskworkers:
             log.debug(f'restart flag set for instance {inst}, starting restart loop')
-            globvars.taskworkers.append(f'{inst}-restarting')
+            globvars.taskworkers.add(f'{inst}-restarting')
             asyncio.create_task(asyncrestartloop(inst))
         else:
             log.trace(f'instance {inst} trying to restart but already restarting')

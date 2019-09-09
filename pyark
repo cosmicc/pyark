@@ -59,17 +59,27 @@ parser.add_argument('-t', '--trace', action='store_true', help='super verbose ou
 args = parser.parse_args()
 
 
-def sig_handler(signal, frame):
+def async_exception_handler(loop, context):
+    # first, handle with default handler
+    loop.default_exception_handler(context)
+
+    exception = context.get('exception')
+    log.critical(exception)
+    if isinstance(exception, ZeroDivisionError):
+        pass
+
+
+def signal_handler(signal, frame):
     global main_stop_event
     log.log('EXIT', f'Termination signal {signal} recieved. Exiting.')
     main_stop_event = True
     stop_event.set()
 
 
-signal.signal(signal.SIGTERM, sig_handler)
-signal.signal(signal.SIGHUP, sig_handler)
-signal.signal(signal.SIGINT, sig_handler)
-signal.signal(signal.SIGQUIT, sig_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGHUP, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGQUIT, signal_handler)
 
 processlock = PLock()
 processlock.lock()
@@ -109,6 +119,8 @@ def checkthreads():
 async def asyncmain():
     global main_stop_event
     global file_event_notifier
+    asyncloop = asyncio.get_running_loop()
+    asyncloop.set_exception_handler(async_exception_handler)
     main_stop_event = False
     globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
