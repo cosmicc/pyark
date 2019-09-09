@@ -62,10 +62,11 @@ args = parser.parse_args()
 def async_exception_handler(loop, context):
     # first, handle with default handler
     loop.default_exception_handler(context)
-
     exception = context.get('exception')
-    raise exception
-    log.exception('Co-Routine Exception')
+    try:
+        raise exception
+    except:
+        log.exception(context.get('message'))
     if isinstance(exception, ZeroDivisionError):
         pass
 
