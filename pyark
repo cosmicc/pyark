@@ -95,6 +95,7 @@ async def async_signal_handler(signal, loop):
     await asyncio.gather(*tasks, return_exceptions=True)
     print('async tasks have finished')
     log.debug('async tasks have finished')
+    await db.close()
     loop.stop()
 
 
@@ -259,10 +260,7 @@ async def asyncmain():
     #    asyncio.create_task(asynccheckdbconnections())
     #    asyncio.create_task(asyncauctionapi(session))
 
-        await asyncio.sleep(.1)
     # ending loop
-    while len(asyncio.Task.all_tasks()) > 1:
-            await asyncio.sleep(.1)
 
     #log.debug(f'still running tasks: {asyncio.Task.all_tasks()}')
     #if len(asyncio.Task.all_tasks()) > 1:
@@ -271,7 +269,6 @@ async def asyncmain():
     #        await asyncio.sleep(.1)
     #else:
     #    log.debug(f'No async pending tasks to finish.')
-    await db.close()
     return True
 
 
