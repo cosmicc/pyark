@@ -156,28 +156,24 @@ async def asyncmain():
                 asyncio.create_task(asyncgetinststatus(instances))
                 if asynclooptime - globvars.timer['statuscheck'] > globvars.delay['statuscheck'] + 2:
                     log.error(f'statuscheck was delayed {asynclooptime - globvars.timer["statuscheck"] - globvars.delay["statuscheck"]}')
-                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'statuscheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['kickcheck'] > globvars.delay['kickcheck']:
                 asyncio.create_task(asynckickcheck(instances))
                 if asynclooptime - globvars.timer['kickcheck'] > globvars.delay['kickcheck'] + 2:
                     log.error(f'kickcheck was delayed {asynclooptime - globvars.timer["kickcheck"] - globvars.delay["kickcheck"]}')
-                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'kickcheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck']:
                 asyncio.create_task(asynccmdcheck(instances, atinstances))
                 if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] + 2:
                     log.error(f'cmdcheck was delayed {asynclooptime - globvars.timer["cmdcheck"] - globvars.delay["cmdcheck"]}')
-                # print(f'cmdcheck wait time: {asyncloop.time() - globvars.timer["cmdcheck"]}')
                 globvars.timer.update({'cmdcheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck']:
                 asyncio.create_task(asynconlinecheck(instances))
                 if asynclooptime - globvars.timer['onlinecheck'] > globvars.delay['onlinecheck'] + 2:
                     log.error(f'onlinecheck was delayed {asynclooptime - globvars.timer["onlinecheck"] - globvars.delay["onlinecheck"]}')
-                # print(f'onlinehceck wait time: {asyncloop.time() - globvars.timer["onlinecheck"]}')
                 asyncio.create_task(asynconlinedblchecker(instances))
                 globvars.timer.update({'onlinecheck': asyncloop.time()})
 
@@ -185,38 +181,30 @@ async def asyncmain():
                 asyncio.create_task(asyncgchatrelay(instances))
                 if asynclooptime - globvars.timer['gchatrelay'] > globvars.delay['gchatrelay'] + 2:
                     log.error(f'gchatrelay was delayed {asynclooptime - globvars.timer["gchatrelay"] - globvars.delay["gchatrelay"]}')
-                # print(f'gchatrelay wait time: {asyncloop.time() - globvars.timer["gchatrelay"]}')
                 globvars.timer.update({'gchatrelay': asyncloop.time()})
 
             if asynclooptime - globvars.timer['wipecheck'] > globvars.delay['wipecheck']:
                 asyncio.create_task(asynccheckwipe(instances))
                 if asynclooptime - globvars.timer['wipecheck'] > globvars.delay['wipecheck'] + 2:
                     log.error(f'wipecheck was delayed {asynclooptime - globvars.timer["wipecheck"] - globvars.delay["wipecheck"]}')
-
-                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'wipecheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['restartcheck'] > globvars.delay['restartcheck']:
                 asyncio.create_task(asynccheckrestart(instances))
-                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'restartcheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['backupcheck'] > globvars.delay['backupcheck']:
                 asyncio.create_task(asynccheckbackup(instances))
-                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'backupcheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['maintcheck'] > globvars.delay['maintcheck']:
                 asyncio.create_task(asynccheckmaint(instances))
-                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'maintcheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['updatecheck'] > globvars.delay['updatecheck'] and is_arkupdater:
                 asyncio.create_task(asynccheckupdates(instances))
                 if asynclooptime - globvars.timer['updatecheck'] > globvars.delay['updatecheck'] + 2:
                     log.error(f'updatecheck was delayed {asynclooptime - globvars.timer["updatecheck"] - globvars.delay["updatecheck"]}')
-
-                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'updatecheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['serverstats'] > globvars.delay['serverstats']:
@@ -224,7 +212,6 @@ async def asyncmain():
                 asyncio.create_task(processinststats(instances))
                 if asynclooptime - globvars.timer['serverstats'] > globvars.delay['serverstats'] + 2:
                     log.error(f'serverstats was delayed {asynclooptime - globvars.timer["serverstats"] - globvars.delay["serverstats"]}')
-                # print(f'kickcheck wait time: {asyncloop.time() - globvars.timer["kickcheck"]}')
                 globvars.timer.update({'serverstats': asyncloop.time()})
 
             if asyncloop.time() - tasktimer > 60:
@@ -235,7 +222,6 @@ async def asyncmain():
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
-    print('async tasks have finished')
     log.debug('All async tasks have finished')
     await db.close()
 
