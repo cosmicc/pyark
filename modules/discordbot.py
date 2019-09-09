@@ -531,8 +531,12 @@ def pyarkbot():
         ptime = playedTime(int(kuser[4]))
         ptr = elapsedTime(Now(), int(kuser[2]))
         lpts = totallotterydeposits(kuser[0])
+        xferpoints = kuser[5] + kuser[16] + lpts
+        xfertable = await db.fetchall(f"""SELECT * FROM transferpoints WHERE steamid = '{kuser[0]}'""")
+        for each in xfertable:
+            xferpoints = xferpoints + int(each['points'])
         msg = f'Last played **{ptr} ago** on server ***{kuser[3].capitalize()}***\n'
-        msg = msg + f'Your current reward points: **{kuser[5] + kuser[16] + lpts}**\n'
+        msg = msg + f'Your current reward points: **{xferpoints}** (on your home server)\n'
         msg = msg + f'Your home server is: **{kuser[15].capitalize()}**\nYour total play time is: **{ptime}**\n'
         msg = msg + f'You have **{kuser[10]}** current auctions: **{kuser[11]}** Items & **{kuser[12]}** Dinos\n'
         tpwins, twpoints = getlottowinnings(kuser[1])
