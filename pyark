@@ -311,11 +311,12 @@ def main():
         asyncio.run(asyncmain(), debug=True)  # Async branch to main loop
     else:
         asyncio.run(asyncmain())
-    log.debug(f'Waiting for {len(threads)} threads and tasks to exit...')
-    for thread in threads:
-        thread.join
+    if len(threads) > 0:
+        log.debug(f'Waiting for {len(threads)} threads and tasks to exit...')
+        for thread in threads:
+            thread.join
     processlock.unlock()
-    log.debug('Pyark Exited.')
+    log.debug('Pyark Finished.')
     exit(0)
 
     '''

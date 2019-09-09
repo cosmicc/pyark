@@ -32,14 +32,14 @@ class asyncDB:
             await asyncio.sleep(5)
             await self.connect()
         else:
-            log.debug(f'DB pool initilized for [{self.process.upper()}] on [{hstname}] (min:{self.min}, max:{self.max}, timeout:{self.timeout})')
+            log.debug(f'Database connection pool initilized for [{self.process}] (min:{self.min}, max:{self.max}, timeout:{self.timeout})')
             self.connecting = False
         # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
     async def close(self):
         if self.cpool is not None:
             await self.cpool.close()
-        log.debug('Database connections closed')
+        log.debug('Database connection pool closed for [{self.process}]')
 
     @log.catch
     async def _aquire(self):
