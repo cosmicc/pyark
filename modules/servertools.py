@@ -6,7 +6,7 @@ import globvars
 from modules.timehelper import elapsedTime, Now
 from loguru import logger as log
 import psutil
-from fuctools import partial
+from functools import partial
 from modules.asyncdb import DB as db
 
 
