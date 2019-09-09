@@ -87,16 +87,6 @@ async def async_signal_handler(signal, loop):
         log.exception(' ')
     main_stop_event = True
     stop_event.set()
-    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    for task in tasks:
-        print(task)
-    print('waiting for async tasks to finish')
-    log.debug('waiting for async tasks to finish')
-    await asyncio.gather(*tasks, return_exceptions=True)
-    print('async tasks have finished')
-    log.debug('async tasks have finished')
-    await db.close()
-
 
 signal.signal(signal.SIGTERM, signal_handler)  # Graceful Shutdown
 signal.signal(signal.SIGHUP, signal_handler)  # Reload/Restart
@@ -251,6 +241,15 @@ async def asyncmain():
                     log.error(f'High number of async tasks running on {hstname} ({len(asyncio.Task.all_tasks())})')
                     tasktimer = asyncloop.time()
             await asyncio.sleep(.05)
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    for task in tasks:
+        print(task)
+    print('waiting for async tasks to finish')
+    await asyncio.gather(*tasks, return_exceptions=True)
+    print('async tasks have finished')
+    log.debug('async tasks have finished')
+    await db.close()
+
 
     #async with aiohttp.ClientSession() as session:
     #    asyncio.create_task(asyncdblcheckonline())
@@ -268,7 +267,6 @@ async def asyncmain():
     #        await asyncio.sleep(.1)
     #else:
     #    log.debug(f'No async pending tasks to finish.')
-    return True
 
 
 @log.catch
