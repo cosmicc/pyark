@@ -72,7 +72,7 @@ def async_exception_handler(loop, context):
     #    pass
 
 
-def signal_handler(signal, frame):
+async def signal_handler(signal, loop):
     global main_stop_event
     try:
         log.log('EXIT', f'Termination signal [{SIGNALS[signal]}] recieved. Exiting.')
@@ -80,6 +80,9 @@ def signal_handler(signal, frame):
         log.exception(' ')
     main_stop_event = True
     stop_event.set()
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    await asyncio.gather(*tasks, return_exceptions=True)
+    loop.stop()
 
 
 
