@@ -82,19 +82,19 @@ async def asyncprocessstatusline(inst, line):
 
         elif (status_title == 'Server PID'):
             serverpid = stripansi(line.split(':')[1]).strip()
-            globvars.instpids[inst] = serverpid
+            globvars.instpids[inst] = int(serverpid)
 
         elif (status_title == 'Players'):
             players = int(stripansi(line.split(':')[1]).strip().split('/')[0].strip())
-            globvars.instplayers[inst]['connecting'] = players
+            globvars.instplayers[inst]['connecting'] = int(players)
 
         elif (status_title == 'Active Players'):
             activeplayers = int(stripansi(line.split(':')[1]).strip())
-            globvars.instplayers[inst]['active'] = activeplayers
+            globvars.instplayers[inst]['active'] = int(activeplayers)
 
         elif (status_title == 'Server build ID'):
             serverbuild = stripansi(line.split(':')[1]).strip()
-            globvars.instarkbuild[inst] = serverbuild
+            globvars.instarkbuild[inst] = int(serverbuild)
 
         elif (status_title == 'Server version'):
             serverversion = stripansi(line.split(':')[1]).strip()
@@ -109,7 +109,7 @@ async def asyncprocessstatusline(inst, line):
             globvars.instlinks[inst]['steam'] = steamlink
 
 
-async def asyncstatusfinish(inst):
+async def asyncfinishstatus(inst):
     if globvars.status_counts[inst]['running'] >= 3:
         isrunning = 0
         globvars.isrunning.discard(inst)
@@ -128,8 +128,8 @@ async def asyncstatusfinish(inst):
     else:
         globvars.isonline.add(inst)
         isonline = 1
-    if activeplayers is not None:
-        if int(activeplayers) > 0:
+    if globvars.instplayers[inst]['active'] is not None:
+        if int(globvars.instplayers[inst]['active']) > 0:
             globvars.isrunning.add(inst)
             globvars.islistening.add(inst)
             globvars.isonline.add(inst)
@@ -138,8 +138,8 @@ async def asyncstatusfinish(inst):
             isonline = 1
         log.trace(f'pid: {globvars.instpids[inst]}, online: {isonline}, listening: {islistening}, running: {isrunning}, {inst}')
         await db.update(f"UPDATE instances SET serverpid = '{globvars.instpids[inst]}', isup = '{isonline}', islistening = '{islistening}', isrunning = '{isrunning}', arkbuild = '{globvars.instarkbuild[inst]}', arkversion = '{globvars.instarkversion[inst]}' WHERE name = '{inst}'")
-        if players is not None and activeplayers is not None and steamlink is not None and arkserverslink is not None:
-            await db.update(f"UPDATE instances SET steamlink = '{steamlink}', arkserverslink = '{arkserverslink}', connectingplayers = '{int(players)}', activeplayers = '{int(activeplayers)}' WHERE name = '{inst}'")
+        if globvars.instplayers[inst]['connecting'] is not None and globvars.instplayers[inst]['active'] is not None and globvars.instlinks[inst]['steam'] is not None and globvars.instlinks[inst]['arkservers'] is not None:
+            await db.update(f"""UPDATE instances SET steamlink = '{globvars.instlinks[inst]["steam"]}', arkserverslink = '{globvars.instlinks[inst]["arkservers"]}', connectingplayers = '{globvars.instplayers[inst]['connecting']}', activeplayers = '{globvars.instplayers[inst]['active']}' WHERE name = '{inst}'""")
         return True
 
 
