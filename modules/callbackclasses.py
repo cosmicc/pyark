@@ -17,7 +17,7 @@ class DFProtocol(asyncio.SubprocessProtocol):
 
     def pipe_data_received(self, fd, data):
         log.success('read {} bytes from {}'.format(len(data),
-                                             self.FD_NAMES[fd]))
+                    self.FD_NAMES[fd]))
         if fd == 1:
             self.buffer.extend(data)
 
@@ -25,7 +25,7 @@ class DFProtocol(asyncio.SubprocessProtocol):
         log.info('process exited')
         return_code = self.transport.get_returncode()
         log.info('return code {}'.format(return_code))
-        if not return_code:
+        if return_code:
             cmd_output = bytes(self.buffer).decode()
             results = self._parse_results(cmd_output)
         else:
