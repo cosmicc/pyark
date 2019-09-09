@@ -14,7 +14,7 @@ from modules.asyncdb import DB as db
 from modules.configreader import hstname, instances, sharedpath
 from modules.players import asyncgetliveplayersonline
 from modules.pushover import pushover
-from modules.servertools import asyncserverexec, setarknice
+from modules.servertools import asyncserverexec, setarknice, asynctimeit
 from modules.timehelper import Now, Secs, elapsedTime
 
 __author__ = "Ian Perry"
@@ -92,6 +92,7 @@ async def getservermem():
     return (memfree, memavailable, swapused)
 
 
+@asynctimeit
 async def processinststats(inst):
     log.trace(f'Running process instances stats for {inst}')
     instpid = getinstpid(inst)
@@ -104,6 +105,7 @@ async def processinststats(inst):
     await db.update(f"UPDATE instances SET actmem = '{instrss}', totmem = '{instvsz}', serverpid = '{instpid}', arkcpu = '{arkcpu}' WHERE name = '{inst}'")
 
 
+@asynctimeit
 async def processserverstats():
     log.trace('Running process server stats')
     serveruptime = await getserveruptime()
