@@ -74,7 +74,10 @@ def async_exception_handler(loop, context):
 
 def signal_handler(signal, frame):
     global main_stop_event
-    log.log('EXIT', f'Termination signal {SIGNALS[signal]} recieved. Exiting.')
+    try:
+        log.log('EXIT', f'Termination signal {SIGNALS[signal]} recieved. Exiting.')
+    except:
+        log.exception(' ')
     main_stop_event = True
     stop_event.set()
 
