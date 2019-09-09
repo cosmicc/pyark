@@ -95,7 +95,7 @@ async def getservermem():
 @asynctimeit
 async def processinststats(inst):
     log.trace(f'Running process instances stats for {inst}')
-    instpid = getinstpid(inst)
+    instpid = int(getinstpid(inst))
     arkprocess = psutil.Process(instpid)
     arkcpu = arkprocess.cpu_percent(interval=2)
     rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, wait=True)
