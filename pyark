@@ -88,7 +88,8 @@ async def async_signal_handler(signal, loop):
     main_stop_event = True
     stop_event.set()
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    print(tasks)
+    for task in tasks:
+        print(task)
     print('waiting for async tasks to finish')
     log.debug('waiting for async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
