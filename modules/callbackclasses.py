@@ -17,7 +17,7 @@ class DFProtocol(asyncio.SubprocessProtocol):
     def pipe_data_received(self, fd, data):
         log.success(f'read {len(data)} bytes from {self.FD_NAMES[fd]}')
         if fd == 1:
-            self._parse_results(self, data)
+            self._parse_results(data)
 
     def process_exited(self):
         log.info('process exited')
