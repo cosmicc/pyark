@@ -3,7 +3,7 @@ import uvloop
 import signal
 import warnings
 import logging
-from modules.callbackclasses import DFProtocol
+from modules.callbackclasses import StatusProtocol
 from functools import partial
 
 from loguru import logger as log
@@ -39,26 +39,28 @@ signal.signal(signal.SIGINT, signal_handler)  # Hard Exit
 signal.signal(signal.SIGQUIT, signal_handler)  # Hard Exit
 
 
-async def runcmd(inst, *args):
+async def statusexecute(inst):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
-    factory = partial(DFProtocol, cmd_done, inst)
-    proc = asyncloop.subprocess_exec(factory, *args, f'@{inst}', stdin=None, stderr=None)
+    factory = partial(StatusProtocol, cmd_done, inst)
+    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'status', f'@{inst}', stdin=None, stderr=None)
     try:
-        log.info('launching process')
         transport, protocol = await proc
-        log.info('waiting for process to complete')
         await cmd_done
     finally:
         transport.close()
-    log.success(cmd_done.result())
+
+
+async def runstatus(instances):
+    for inst in instances:
+        asyncio.create_task(statusexecute(inst))
 
 
 async def asyncmain():
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
     # while not main_stop_event:
-    asyncio.create_task(runcmd('ragnarok', 'arkmanager', 'status'))
+    asyncio.create_task(runstatus(instances))
     while not main_stop_event:
         print('.')
         await asyncio.sleep(.1)

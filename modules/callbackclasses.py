@@ -3,7 +3,7 @@ from loguru import logger as log
 from modules.instances import asyncprocessstatusline, asyncfinishstatus
 
 
-class DFProtocol(asyncio.SubprocessProtocol):
+class StatusProtocol(asyncio.SubprocessProtocol):
 
     FD_NAMES = ['stdin', 'stdout', 'stderr']
 

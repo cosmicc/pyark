@@ -2,12 +2,13 @@ import asyncio
 from re import compile as rcompile
 
 from loguru import logger as log
-
+from functools import partial
 import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.servertools import asyncserverexec, asyncserverrconcmd, asyncserverscriptcmd, serverexec
+from modules.callbackclasses import StatusProtocol
 from modules.timehelper import Now
 
 
@@ -65,51 +66,52 @@ async def asyncprocessstatusline(inst, eline):
         status_title = stripansi(line.split(':')[0]).strip()
         if not status_title.startswith('Running command'):
             status_value = stripansi(line.split(':')[1]).strip()
-        if status_title == 'Server running':
-            if status_value == 'Yes':
-                globvars.status_counts[inst]['running'] = 0
-            elif status_value == 'No':
-                globvars.status_counts[inst]['running'] = globvars.status_counts[inst]['running'] + 1
+            log.debug(f'processing status line: {line}')
+            if status_title == 'Server running':
+                if status_value == 'Yes':
+                    globvars.status_counts[inst]['running'] = 0
+                elif status_value == 'No':
+                    globvars.status_counts[inst]['running'] = globvars.status_counts[inst]['running'] + 1
 
-        elif status_title == 'Server listening':
-            if status_value == 'Yes':
-                globvars.status_counts[inst]['listening'] = 0
-            elif status_value == 'No':
-                globvars.status_counts[inst]['listening'] = globvars.status_counts[inst]['listening'] + 1
+            elif status_title == 'Server listening':
+                if status_value == 'Yes':
+                    globvars.status_counts[inst]['listening'] = 0
+                elif status_value == 'No':
+                    globvars.status_counts[inst]['listening'] = globvars.status_counts[inst]['listening'] + 1
 
-        elif status_title == 'Server online':
-            if status_value == 'Yes':
-                globvars.status_counts[inst]['online'] = 0
-            elif status_value == 'No':
-                globvars.status_counts[inst]['online'] = globvars.status_counts[inst]['online'] + 1
+            elif status_title == 'Server online':
+                if status_value == 'Yes':
+                    globvars.status_counts[inst]['online'] = 0
+                elif status_value == 'No':
+                    globvars.status_counts[inst]['online'] = globvars.status_counts[inst]['online'] + 1
 
-        elif status_title == 'Server PID':
-            globvars.instpids[inst] = int(status_value)
+            elif status_title == 'Server PID':
+                globvars.instpids[inst] = int(status_value)
 
-        elif (status_title == 'Players'):
-            players = int(status_value.split('/')[0].strip())
-            globvars.instplayers[inst]['connecting'] = int(players)
+            elif (status_title == 'Players'):
+                players = int(status_value.split('/')[0].strip())
+                globvars.instplayers[inst]['connecting'] = int(players)
 
-        elif (status_title == 'Active Players'):
-            globvars.instplayers[inst]['active'] = int(status_value)
+            elif (status_title == 'Active Players'):
+                globvars.instplayers[inst]['active'] = int(status_value)
 
-        elif (status_title == 'Server build ID'):
-            globvars.instarkbuild[inst] = int(status_value)
+            elif (status_title == 'Server build ID'):
+                globvars.instarkbuild[inst] = int(status_value)
 
-        elif (status_title == 'Server version'):
-            globvars.instarkversion[inst] = status_value
+            elif (status_title == 'Server version'):
+                globvars.instarkversion[inst] = status_value
 
-        elif (status_title == 'ARKServers link'):
-            arkserverslink = stripansi(line.split('  ')[1]).strip()
-            globvars.instlinks[inst]['arkservers'] = arkserverslink
+            elif (status_title == 'ARKServers link'):
+                arkserverslink = stripansi(line.split('  ')[1]).strip()
+                globvars.instlinks[inst]['arkservers'] = arkserverslink
 
-        elif (status_title == 'Steam connect link'):
-            steamlink = stripansi(line.split('  ')[1]).strip()
-            globvars.instlinks[inst]['steam'] = steamlink
+            elif (status_title == 'Steam connect link'):
+                steamlink = stripansi(line.split('  ')[1]).strip()
+                globvars.instlinks[inst]['steam'] = steamlink
 
 
 async def asyncfinishstatus(inst):
-    log.info('running statusline completion task')
+    log.debug('running statusline completion task')
     if globvars.status_counts[inst]['running'] >= 3:
         isrunning = 0
         globvars.isrunning.discard(inst)
@@ -143,7 +145,21 @@ async def asyncfinishstatus(inst):
         return True
 
 
+async def statusexecute(inst):
+    asyncloop = asyncio.get_running_loop()
+    cmd_done = asyncio.Future(loop=asyncloop)
+    factory = partial(StatusProtocol, cmd_done, inst)
+    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'status', f'@{inst}', stdin=None, stderr=None)
+    try:
+        transport, protocol = await proc
+        await cmd_done
+    finally:
+        transport.close()
 
+
+async def runstatus(instances):
+    for inst in instances:
+        asyncio.create_task(statusexecute(inst))
 
 
 async def processstatusline(inst, splitlines):
@@ -219,14 +235,6 @@ async def processstatusline(inst, splitlines):
             if players is not None and activeplayers is not None and steamlink is not None and arkserverslink is not None:
                 await db.update(f"UPDATE instances SET steamlink = '{steamlink}', arkserverslink = '{arkserverslink}', connectingplayers = '{int(players)}', activeplayers = '{int(activeplayers)}' WHERE name = '{inst}'")
             return True
-
-
-async def runstatus(inst):
-        result = await asyncserverexec(['arkmanager', 'status', f'@{inst}'], wait=True)
-        statuslines = result['stdout'].decode('utf-8').split('\n')
-        await processstatusline(inst, statuslines)
-        globvars.taskworkers.remove(f'{inst}-status')
-        return True
 
 
 async def asyncgetinststatus(instances):
