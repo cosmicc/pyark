@@ -5,7 +5,7 @@ import uvloop
 from pathlib import Path
 from sys import exit
 from time import sleep
-
+from functools import partial
 import psutil
 from loguru import logger as log
 
@@ -94,10 +94,12 @@ async def getservermem():
 
 @asynctimeit
 async def processinststats(inst):
-    log.trace(f'Running process instances stats for {inst}')
+    log.debug(f'Running process instances stats for {inst}')
     instpid = int(getinstpid(inst))
     arkprocess = psutil.Process(instpid)
-    arkcpu = arkprocess.cpu_percent(interval=2)
+    loop = asyncio.get_running_loop()
+    arkcpu = await loop.run_in_executor(None, partial(arkprocess.cpu_percent, interval=5))
+
     rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, wait=True)
     instrss, instvsz = rawsts['stdout'].decode('utf-8').split('\n')[1].split(' ')
     instrss = int(instrss) / 1000000 // 0.01 / 100
