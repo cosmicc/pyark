@@ -59,7 +59,9 @@ async def asyncmain():
     asyncloop.set_exception_handler(async_exception_handler)
     # while not main_stop_event:
     asyncio.create_task(runcmd('arkmanager', 'status', '@ragnarok'))
-    #await asyncio.sleep(2)
+    while not main_stop_event:
+        print('.')
+        await asyncio.sleep(.1)
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
