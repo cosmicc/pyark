@@ -120,13 +120,14 @@ async def processstatusline(inst, statuslines):
         else:
             globvars.isonline.add(inst)
             isonline = 1
-        if int(activeplayers) > 0:
-            globvars.isrunning.add(inst)
-            globvars.islistening.add(inst)
-            globvars.isonline.add(inst)
-            isrunning = 1
-            islistening = 1
-            isonline = 1
+        if activeplayers is not None:
+            if int(activeplayers) > 0:
+                globvars.isrunning.add(inst)
+                globvars.islistening.add(inst)
+                globvars.isonline.add(inst)
+                isrunning = 1
+                islistening = 1
+                isonline = 1
         log.trace(f'pid: {serverpid}, online: {isonline}, listening: {islistening}, running: {isrunning}, {inst}')
         await db.update(f"UPDATE instances SET serverpid = '{int(serverpid)}', isup = '{int(isonline)}', islistening = '{int(islistening)}', isrunning = '{int(isrunning)}', arkbuild = '{int(serverbuild)}', arkversion = '{serverversion}' WHERE name = '{inst}'")
         if players is not None and activeplayers is not None and steamlink is not None and arkserverslink is not None:
