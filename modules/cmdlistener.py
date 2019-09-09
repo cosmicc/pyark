@@ -791,7 +791,7 @@ async def cmdrunner(inst, atinstances):
 
 async def asynccmdcheck(instances, atinstances):
         for inst in instances:
-            if f'{inst}-cmdcheck' not in globvars.taskworkers:
+            if f'{inst}-cmdcheck' not in globvars.taskworkers and inst in globvars.islistening:
                 globvars.taskworkers.add(f'{inst}-cmdcheck')
                 asyncio.create_task(cmdrunner(inst, atinstances))
                 log.trace(f'running command check for {inst}')

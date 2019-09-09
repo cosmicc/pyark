@@ -1,12 +1,13 @@
 #!/usr/bin/env python3.7
 import argparse
 import asyncio
-import uvloop
+from functools import partial
 from pathlib import Path
 from sys import exit
 from time import sleep
-from functools import partial
+
 import psutil
+import uvloop
 from loguru import logger as log
 
 import modules.logging
@@ -14,7 +15,7 @@ from modules.asyncdb import DB as db
 from modules.configreader import hstname, instances, sharedpath
 from modules.players import asyncgetliveplayersonline
 from modules.pushover import pushover
-from modules.servertools import asyncserverexec, setarknice, asynctimeit
+from modules.servertools import asyncserverexec, asynctimeit, setarknice
 from modules.timehelper import Now, Secs, elapsedTime
 
 __author__ = "Ian Perry"

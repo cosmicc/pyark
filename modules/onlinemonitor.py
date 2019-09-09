@@ -171,11 +171,12 @@ async def asynckickcheck(instances):
     if 'kickcheck' not in globvars.taskworkers:
         globvars.taskworkers.add('kickcheck')
         for inst in instances:
-            kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
-            if kicked:
-                await asyncserverrconcmd(inst, f'kickplayer {kicked[1]}')
-                log.log('KICK', f'Kicking user [{kicked[1]}] from server [{inst.title()}] on kicklist')
-                await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
+            if inst in globvars.isonline:
+                kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
+                if kicked:
+                    await asyncserverrconcmd(inst, f'kickplayer {kicked[1]}')
+                    log.log('KICK', f'Kicking user [{kicked[1]}] from server [{inst.title()}] on kicklist')
+                    await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
         globvars.taskworkers.remove('kickcheck')
         return True
 
@@ -185,14 +186,15 @@ async def asynconlinedblchecker(instances):
     if 'dblchecker' not in globvars.taskworkers:
         globvars.taskworkers.add('dblchecker')
         for inst in instances:
-            log.trace(f'Running online doublechecker for {inst}')
-            players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = '{inst}'")
-            for player in players:
-                log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
-                await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
-                if player['homeserver'] != inst:
-                    command = f'tcsar setarctotal {player["steamid"]} 0'
-                    await asyncserverscriptcmd(inst, command)
+            if inst in globvars.islistening:
+                log.trace(f'Running online doublechecker for {inst}')
+                players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = '{inst}'")
+                for player in players:
+                    log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
+                    await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
+                    if player['homeserver'] != inst:
+                        command = f'tcsar setarctotal {player["steamid"]} 0'
+                        await asyncserverscriptcmd(inst, command)
         globvars.taskworkers.remove('dblchecker')
 
 
@@ -230,7 +232,7 @@ async def runcommand(inst):
 
 async def asynconlinecheck(instances):
         for inst in instances:
-            if f'{inst}-onlinecheck' not in globvars.taskworkers:
+            if f'{inst}-onlinecheck' not in globvars.taskworkers and inst in globvars.islistening:
                 globvars.taskworkers.add(f'{inst}-onlinecheck')
                 asyncio.create_task(runcommand(inst))
                 log.trace(f'running onlinecheck for {inst}')

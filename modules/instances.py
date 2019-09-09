@@ -104,17 +104,26 @@ async def processstatusline(inst, statuslines):
                 steamlink = stripansi(line.split('  ')[1]).strip()
         if globvars.status_counts[inst]['running'] >= 3:
             isrunning = 0
+            globvars.isrunning.discard(inst)
         else:
             isrunning = 1
+            globvars.isrunning.add(inst)
         if globvars.status_counts[inst]['listening'] >= 3:
+            globvars.islistening.discard(inst)
             islistening = 0
         else:
             islistening = 1
+            globvars.islistening.add(inst)
         if globvars.status_counts[inst]['online'] >= 3:
+            globvars.isonline.discard(inst)
             isonline = 0
         else:
+            globvars.isonline.add(inst)
             isonline = 1
         if int(activeplayers) > 0:
+            globvars.isrunning.add(inst)
+            globvars.islistening.add(inst)
+            globvars.isonline.add(inst)
             isrunning = 1
             islistening = 1
             isonline = 1

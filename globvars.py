@@ -30,12 +30,12 @@ gameini_customconfig_files = {}
 gusini_customconfig_files = {}
 gameini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
 gusini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
-gameini_baseconfig_file = Path(f'{sharedpath}/config/Game-base.ini')
-gusini_baseconfig_file = Path(f'{sharedpath}/config/GameUserSettings-base.ini')
-gusini_tempconfig_file = Path(f'{sharedpath}/config/GameUserSettings.tmp')
+gameini_baseconfig_file = Path(f'{str(sharedpath)}/config/Game-base.ini')
+gusini_baseconfig_file = Path(f'{str(sharedpath)}/config/GameUserSettings-base.ini')
+gusini_tempconfig_file = Path(f'{str(sharedpath)}/config/GameUserSettings.tmp')
 for inst in instances:
-    arkmanager_paths.append(Path(f'/home/ark/shared/logs/arkmanager/{inst}'))
-    gusini_customconfig_files.update({inst: Path(f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini')})
-    gameini_customconfig_files.update({inst: Path(f'{sharedpath}/config/Game-{inst.lower()}.ini')})
+    arkmanager_paths.append(Path(f'{str(sharedpath)}/logs/arkmanager/{inst}'))
+    gusini_customconfig_files.update({inst: Path(f'{str(sharedpath)}/config/GameUserSettings-{inst.lower()}.ini')})
+    gameini_customconfig_files.update({inst: Path(f'{str(sharedpath)}/config/Game-{inst.lower()}.ini')})
     status_counts.update({inst: {'running': 0, 'listening': 0, 'online': 0}})
     instpidfiles.update({inst: Path(f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid')})

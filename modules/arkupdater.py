@@ -8,6 +8,7 @@ import sys
 import threading
 from datetime import datetime
 from datetime import time as dt
+from functools import partial
 from os import chown
 from pathlib import Path
 from time import sleep
@@ -63,9 +64,9 @@ async def configupdatedetected(cinst):
             await asyncinstancerestart(inst, maintrest)
 
 
-def pushoverthread(title, message):
-    pushoverthread = threading.Thread(name='pushover', target=pushover, args=(title, message), daemon=True)
-    pushoverthread.start()
+async def pushoversend(title, message):
+    asyncloop = asyncio.get_running_loop()
+    await asyncloop.run_in_executor(None, partial(pushover, title, message))
 
 
 @log.catch
@@ -268,7 +269,7 @@ async def asyncrestartloop(inst, startonly=False):
         await asyncwritechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
         message = f'server {inst.capitalize()} is restarting now for a {reason}'
         await asyncserverexec(['arkmanager', f'notify "{message}"', f'@{inst}'])
-        pushoverthread('Instance Restart', message)
+        pushoversend('Instance Restart', message)
         await asyncrestartinstnow(inst)
     if reason != 'configuration update':
         await asyncsetrestartbit(inst)
@@ -295,7 +296,7 @@ async def asyncrestartloop(inst, startonly=False):
             await asyncserverbcast(inst, bcast)
             await asyncwritechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
             await asyncservernotify(inst, message)
-            pushoverthread('Instance Restart', message)
+            pushoversend('Instance Restart', message)
             await asyncio.sleep(10)
             asyncio.create_task(asyncrestartinstnow(inst))
         else:
@@ -466,7 +467,7 @@ async def asynccheckupdates(instances):
                 msg = f'Ark Game Updare Released\nhttps://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes'
                 log.log('UPDATE', f'ARK update download complete. Update is staged. Notifying servers')
                 await db.update(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
-                pushoverthread('Ark Update', msg)
+                pushoversend('Ark Update', msg)
         except:
             log.exception(f'error in determining ark version')
 
@@ -491,7 +492,7 @@ async def asynccheckupdates(instances):
                 aname = f'{modname} Mod Update'
                 await asyncwritediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
                 msg = f'{modname} Mod Update\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
-                pushoverthread('Mod Update', msg)
+                pushoversend('Mod Update', msg)
                 await asyncinstancerestart(inst, aname)
         else:
             log.trace(f'no updated mods were found for instance {inst}')

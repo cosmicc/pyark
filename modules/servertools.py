@@ -1,13 +1,15 @@
 import asyncio
 import subprocess
+from functools import partial
 from os.path import isfile
 from re import sub
-import globvars
-from modules.timehelper import elapsedTime, Now
-from loguru import logger as log
+
 import psutil
-from functools import partial
+from loguru import logger as log
+
+import globvars
 from modules.asyncdb import DB as db
+from modules.timehelper import Now, elapsedTime
 
 
 def asynctimeit(func):
