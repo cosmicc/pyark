@@ -124,15 +124,20 @@ async def runstatus(inst):
         result = await asyncserverexec(['arkmanager', 'status', f'@{inst}'], wait=True)
         statuslines = result['stdout'].decode('utf-8').split('\n')
         await processstatusline(inst, statuslines)
+        log.debug(f'{inst}-status finished')
         globvars.taskworkers.remove(f'{inst}-status')
         return True
 
 
 async def asyncgetinststatus(instances):
     for inst in instances:
+        log.debug(f'status precheck for {inst}')
         if f'{inst}-status' not in globvars.taskworkers:
+            log.debug(f'running {inst}-status')
             globvars.taskworkers.add(f'{inst}-status')
             asyncio.create_task(runstatus(inst))
+        else:
+            log.debug(f'{inst}-status is already running')
         return True
 
 
