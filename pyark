@@ -96,7 +96,6 @@ async def async_signal_handler(signal, loop):
     print('async tasks have finished')
     log.debug('async tasks have finished')
     await db.close()
-    loop.stop()
 
 
 signal.signal(signal.SIGTERM, signal_handler)  # Graceful Shutdown
