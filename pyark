@@ -64,7 +64,8 @@ def async_exception_handler(loop, context):
     loop.default_exception_handler(context)
 
     exception = context.get('exception')
-    log.critical(exception)
+    raise exception
+    log.exception('Co-Routine Exception')
     if isinstance(exception, ZeroDivisionError):
         pass
 
