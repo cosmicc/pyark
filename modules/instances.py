@@ -63,7 +63,8 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
 async def asyncprocessstatusline(inst, eline):
         line = eline.decode()
         status_title = stripansi(line.split(':')[0]).strip()
-        status_value = stripansi(line.split(':')[1]).strip()
+        if not status_title.startswith('"Running'):
+            status_value = stripansi(line.split(':')[1]).strip()
         if status_title == 'Server running':
             if status_value == 'Yes':
                 globvars.status_counts[inst]['running'] = 0
