@@ -70,18 +70,10 @@ def arkprocesscpu(inst):
     return arkprocess.cpu_percent(interval=2)
 
 
-@log.catch
-async def asyncgetlaststart(inst):
-    laststart = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    return laststart['lastrestart']
-
-
-@log.catch
 def getserveruptime():
     return elapsedTime(Now(), psutil.boot_time())
 
 
-@log.catch
 def getcpustats():
     rawcpuload = psutil.getloadavg()
     numcores = psutil.cpu_count()
@@ -92,7 +84,6 @@ def getcpustats():
     return numcores, float_trunc_1dec(cpufreq), float_trunc_1dec(load1), float_trunc_1dec(load5), float_trunc_1dec(load15)
 
 
-@log.catch
 async def asyncgetservermem():
     process = await asyncserverexec(['free', '-m'], nice=19)
     lines = process.stdout.decode().split('\n')
@@ -105,16 +96,6 @@ async def asyncgetservermem():
 
 
 @log.catch
-async def asyncdidserverjustboot():
-    rawuptime = await asyncserverexec(['tail', '/proc/uptime'], nice=19)
-    rawup = rawuptime.stdout.decode('utf-8').split(' ')
-    if float(rawup[0]) < Secs['3min']:
-        return True
-    else:
-        return False
-
-
-@log.catch
 async def asyncgetinstmem(inst):
     instpid = getinstpid(inst)
     rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19)
@@ -124,39 +105,6 @@ async def asyncgetinstmem(inst):
     return instrss, instvsz
 
 
-@log.catch
-async def asynccheckpyark():
-    try:
-        for line in open('/tmp/pyark.pid', 'r'):
-            pyarkpid = int(line)
-        pyarkstatus = 'N/A'
-        if psutil.pid_exists(pyarkpid):
-            pyarkproc = psutil.Process(pid=pyarkpid)
-            if pyarkproc.name() == 'python3.7':
-                pyarkstatus = pyarkproc.status()
-                log.trace(f'Pyark process [{pyarkpid}] is running with status [{pyarkstatus}]')
-            else:
-                log.critical(f'Pyark PID [{pyarkpid}] is NOT the pyark process [{pyarkproc.name()}]')
-        else:
-            log.error(f'Pyark process [{pyarkpid}] is not running. Restarting.')
-            os.system('systemctl restart pyark')
-    except FileNotFoundError:
-        log.error(f'Pyark process [{pyarkpid}] is not running. Restarting.')
-        os.system('systemctl restart pyark')
-    except:
-        log.exception('checkpyark error')
-
-
-@log.catch
-async def asyncstartserver(inst):
-    if issharedmounted():
-        log.log('WATCH', f'Watchdog has initiated a start for [{inst.title()}]')
-        await asyncinstancerestart(inst, 'auto start', startonly=True)
-    else:
-        log.warning(f'Server {hstname} is waiting for drives to mount')
-
-
-@log.catch
 async def asyncwatchdog():
     isrunning = {}
     isonline = {}
