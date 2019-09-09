@@ -153,7 +153,7 @@ async def getservermem():
 
 
 async def _procstats(inst):
-    log.debug(f'Running process instances stats for {inst}')
+    log.trace(f'Running process instances stats for {inst}')
     instpid = int(getinstpid(inst))
     arkprocess = psutil.Process(instpid)
     loop = asyncio.get_running_loop()
@@ -166,14 +166,12 @@ async def _procstats(inst):
     return True
 
 
-@asynctimeit
 async def processinststats(instances):
     for inst in instances:
         asyncio.create_task(_procstats(inst))
     return True
 
 
-@asynctimeit
 async def processserverstats(instances):
     log.trace('Running process server stats')
     serveruptime = await getserveruptime()
