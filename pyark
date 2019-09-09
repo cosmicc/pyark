@@ -58,6 +58,8 @@ parser.add_argument('-t', '--trace', action='store_true', help='super verbose ou
 
 args = parser.parse_args()
 
+SIGNALS = (None, 'SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGKILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGKILL', None, None, None, None, 'SIGTERM', None, None, None, 'SIGSTOP')
+
 
 def async_exception_handler(loop, context):
     exception = context.get('exception')
@@ -72,7 +74,7 @@ def async_exception_handler(loop, context):
 
 def signal_handler(signal, frame):
     global main_stop_event
-    log.log('EXIT', f'Termination signal {str(signal)} recieved. Exiting.')
+    log.log('EXIT', f'Termination signal {SIGNALS[signal]} recieved. Exiting.')
     main_stop_event = True
     stop_event.set()
 
