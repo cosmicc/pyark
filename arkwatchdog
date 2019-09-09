@@ -64,7 +64,7 @@ def getinstpid(inst):
 async def getopenfiles():
     result = await asyncserverexec(['sysctl', 'fs.file-nr'], nice=19, wait=True)
     newresult = result['stdout'].decode('utf-8').strip().split(' ')[2].split('\t')
-    return tuple(newresult[0], newresult[2])
+    return (newresult[0], newresult[2])
 
 
 async def getserveruptime():
@@ -78,7 +78,7 @@ async def getcpuload():
     load1 = (rawcpuload[0] / numcores) * 100
     load5 = (rawcpuload[1] / numcores) * 100
     load15 = (rawcpuload[2] / numcores) * 100
-    return tuple(numcores, float_trunc_1dec(cpufreq), float_trunc_1dec(load1), float_trunc_1dec(load5), float_trunc_1dec(load15))
+    return (numcores, float_trunc_1dec(cpufreq), float_trunc_1dec(load1), float_trunc_1dec(load5), float_trunc_1dec(load15))
 
 
 async def getservermem():
@@ -89,7 +89,7 @@ async def getservermem():
     memfree = memvalues[3]
     memavailable = memvalues[6]
     swapused = swapvalues[2]
-    return tuple(memfree, memavailable, swapused)
+    return (memfree, memavailable, swapused)
 
 
 async def processinststats(inst):
