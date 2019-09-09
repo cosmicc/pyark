@@ -169,8 +169,6 @@ async def asyncplayergreet(steamid, steamname, inst):
 
 async def asynckickcheck(instances):
     if 'kickcheck' not in globvars.taskworkers:
-        await asyncio.sleep(10)
-        raise RuntimeError
         globvars.taskworkers.add('kickcheck')
         for inst in instances:
             if inst in globvars.isonline:

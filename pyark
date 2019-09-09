@@ -95,7 +95,6 @@ async def async_signal_handler(signal, loop):
     await asyncio.gather(*tasks, return_exceptions=True)
     print('async tasks have finished')
     log.debug('async tasks have finished')
-    await asyncio.sleep(1)
     await db.close()
 
 
