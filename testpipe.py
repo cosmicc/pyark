@@ -48,7 +48,7 @@ async def runcmd(*args):
         log.info('launching process')
         transport, protocol = await proc
         log.info('waiting for process to complete')
-        print(await cmd_done)
+        await cmd_done
     finally:
         transport.close()
     log.success(cmd_done.result())
