@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.7
 import argparse
 import asyncio
+import uvloop
 from pathlib import Path
 from sys import exit
 from time import sleep
@@ -13,7 +14,7 @@ from modules.asyncdb import DB as db
 from modules.configreader import hstname, instances, sharedpath
 from modules.players import asyncgetliveplayersonline
 from modules.pushover import pushover
-from modules.servertools import asyncserverexec, getinstpid, setarknice
+from modules.servertools import asyncserverexec, setarknice
 from modules.timehelper import Now, Secs, elapsedTime
 
 __author__ = "Ian Perry"
@@ -35,7 +36,12 @@ parser.add_argument('-d', '--debug', action='store_true', help='verbose output (
 parser.add_argument('-t', '--trace', action='store_true', help='super verbose output (trace)')
 args = parser.parse_args()
 
+stop_event = True
+
 sharepath = Path(sharedpath)
+instpidfiles = {}
+for inst in instances:
+    instpidfiles.update({inst: Path(f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid')})
 
 
 def issharedmounted():
@@ -51,32 +57,31 @@ def float_trunc_1dec(num):
         return tnum
 
 
-async def asyncgetopenfiles():
+def getinstpid(inst):
+    return instpidfiles[inst].read_text()
+
+
+async def getopenfiles():
     result = await asyncserverexec(['sysctl', 'fs.file-nr'], nice=19)
     newresult = result['stdout'].decode('utf-8').strip().split(' ')[2].split('\t')
-    return {'openfiles': newresult[0], 'openfilelimit': newresult[2]}
+    return tuple(newresult[0], newresult[2])
 
 
-def arkprocesscpu(inst):
-    arkprocess = psutil.Process(getinstpid(inst))
-    return arkprocess.cpu_percent(interval=2)
-
-
-def getserveruptime():
+async def getserveruptime():
     return elapsedTime(Now(), psutil.boot_time())
 
 
-def getcpustats():
+async def getcpuload():
     rawcpuload = psutil.getloadavg()
     numcores = psutil.cpu_count()
     cpufreq = psutil.cpu_freq()[0] / 1000
     load1 = (rawcpuload[0] / numcores) * 100
     load5 = (rawcpuload[1] / numcores) * 100
     load15 = (rawcpuload[2] / numcores) * 100
-    return numcores, float_trunc_1dec(cpufreq), float_trunc_1dec(load1), float_trunc_1dec(load5), float_trunc_1dec(load15)
+    return tuple(numcores, float_trunc_1dec(cpufreq), float_trunc_1dec(load1), float_trunc_1dec(load5), float_trunc_1dec(load15))
 
 
-async def asyncgetservermem():
+async def getservermem():
     process = await asyncserverexec(['free', '-m'], nice=19)
     lines = process.stdout.decode().split('\n')
     memvalues = lines[1].strip().split()
@@ -84,16 +89,47 @@ async def asyncgetservermem():
     memfree = memvalues[3]
     memavailable = memvalues[6]
     swapused = swapvalues[2]
-    return memfree, memavailable, swapused
+    return tuple(memfree, memavailable, swapused)
 
 
-async def asyncgetinstmem(inst):
+async def processinststats(inst):
+    log.trace(f'Running process instances stats for {inst}')
     instpid = getinstpid(inst)
+    arkprocess = psutil.Process(instpid)
+    arkcpu = arkprocess.cpu_percent(interval=2)
     rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19)
     instrss, instvsz = rawsts.stdout.decode('utf-8').split('\n')[1].split(' ')
     instrss = int(instrss) / 1000000 // 0.01 / 100
     instvsz = int(instvsz) / 1000000 // 0.01 / 100
-    return instrss, instvsz
+    await db.update(f"UPDATE instances SET actmem = '{instrss}', totmem = '{instvsz}', serverpid = '{instpid}', arkcpu = '{arkcpu}' WHERE name = '{inst}'")
+
+
+async def processserverstats():
+    log.trace('Running process server stats')
+    serveruptime = await getserveruptime()
+    servermem = await getservermem()
+    serverload = await getcpuload()
+    openfiles = await getopenfiles()
+    for inst in instances:
+        await db.update(f"UPDATE instances SET openfiles = '{openfiles}', cpucores = '{serverload[0]}', cpufreq = '{serverload[1]}', cpuload1 = '{serverload[2]}', cpuload5 = '{serverload[3]}', cpuload15 = '{serverload[4]}', svrmemfree = '{servermem[0]}', svrmemavail = '{servermem[1]}', svrswapused = '{servermem[2]}', serveruptime = '{serveruptime}' WHERE name = '{inst}'")
+
+
+async def asyncmain():
+    log.debug('Starting server/ark stat processor loop')
+    while not stop_event.is_set():
+        asyncio.create_task(processserverstats())
+        asyncio.sleep(5)
+        asyncio.create_task(processserverstats())
+        asyncio.sleep(55)
+
+
+def main():
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    if args.trace:
+#        warnings.simplefilter('always', ResourceWarning)
+        asyncio.run(asyncmain(), debug=True)  # Async branch to main loop
+    else:
+        asyncio.run(asyncmain())
 
 
 async def asyncwatchdog():
