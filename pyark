@@ -133,7 +133,7 @@ async def asyncmain():
     global file_event_notifier
     main_stop_event = False
     asyncloop = asyncio.get_running_loop()
-    asyncloop.set_exception_handler(async_exception_handler)
+    #asyncloop.set_exception_handler(async_exception_handler)
     for s in signals:
         asyncloop.add_signal_handler(s, lambda s=s: asyncio.create_task(async_signal_handler(s, asyncloop)))
     globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
