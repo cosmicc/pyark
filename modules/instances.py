@@ -138,7 +138,7 @@ async def asyncgetinststatus(instances):
             asyncio.create_task(runstatus(inst))
         else:
             log.debug(f'{inst}-status is already running')
-        return True
+    return True
 
 
 def getinststatus(inst):
