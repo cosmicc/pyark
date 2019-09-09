@@ -3,6 +3,14 @@ from time import time
 
 from modules.configreader import arkroot, instances, sharedpath
 
+instpids = {}  # Instance pids
+instpidfiles = {}  # Instance pid files from arkmanager
+
+instplayers = {}  # Dict of online players (active, connecting)
+instarkbuild = {}  # instance ark uild numbers
+instarkversion = {}  # instance ark version numbers
+instlinks = {}  # steam and arkserver links
+
 taskworkers = set([])  # list of working tasks
 votertable = []  # populated voter table for wild wipe votes
 votestarttime = time()
@@ -23,8 +31,6 @@ status_counts = {}  # Counts for running checks (to avoid false positives)
 sharedpath = Path(sharedpath)
 arkrootpath = Path(arkroot)
 
-instpidfiles = {}
-
 arkmanager_paths = []
 gameini_customconfig_files = {}
 gusini_customconfig_files = {}
@@ -39,3 +45,8 @@ for inst in instances:
     gameini_customconfig_files.update({inst: Path(f'{str(sharedpath)}/config/Game-{inst.lower()}.ini')})
     status_counts.update({inst: {'running': 0, 'listening': 0, 'online': 0}})
     instpidfiles.update({inst: Path(f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid')})
+    instpids.update({inst: None})
+    instplayers.update({inst: {'active': None, 'connecting': None}})
+    instarkbuild.update({inst: None})
+    instarkversion.update({inst: None})
+    instlinks.update({inst: {'steam': None, 'arkservers': None}})

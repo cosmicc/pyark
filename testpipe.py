@@ -39,11 +39,11 @@ signal.signal(signal.SIGINT, signal_handler)  # Hard Exit
 signal.signal(signal.SIGQUIT, signal_handler)  # Hard Exit
 
 
-async def runcmd(*args):
+async def runcmd(inst, *args):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
-    factory = partial(DFProtocol, cmd_done)
-    proc = asyncloop.subprocess_exec(factory, *args, stdin=None, stderr=None)
+    factory = partial(DFProtocol, cmd_done, inst)
+    proc = asyncloop.subprocess_exec(factory, *args, f'@{inst}', stdin=None, stderr=None)
     try:
         log.info('launching process')
         transport, protocol = await proc
@@ -58,7 +58,7 @@ async def asyncmain():
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
     # while not main_stop_event:
-    asyncio.create_task(runcmd('arkmanager', 'status', '@ragnarok'))
+    asyncio.create_task(runcmd('ragnarok', 'arkmanager', 'status'))
     while not main_stop_event:
         print('.')
         await asyncio.sleep(.1)
