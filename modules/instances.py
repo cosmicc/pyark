@@ -1,12 +1,13 @@
 import asyncio
 from re import compile as rcompile
-from sys import exit
-import globvars
+
 from loguru import logger as log
+
+import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
-from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, serverexec, asyncserverexec
+from modules.servertools import asyncserverexec, asyncserverrconcmd, asyncserverscriptcmd, serverexec
 from modules.timehelper import Now
 
 
@@ -74,30 +75,21 @@ async def processstatusline(inst, statuslines):
             status_title = stripansi(line.split(':')[0]).strip()
             if (status_title == 'Server running'):
                 if stripansi(line.split(':')[1]).strip() == 'Yes':
-                    globvars.isrunning.add(inst)
-                    isrunning = 1
+                    globvars.status_counts[inst]['running'] = 0
                 elif stripansi(line.split(':')[1]).strip() == 'No':
-                    globvars.isrunning.discard(inst)
-                    globvars.islistening.discard(inst)
-                    globvars.isonline.discard(inst)
-                    isrunning = 0
-            if (status_title == 'Server PID'):
-                serverpid = stripansi(line.split(':')[1]).strip()
+                    globvars.status_counts[inst]['running'] = globvars.status_counts[inst]['running'] + 1
             if (status_title == 'Server listening'):
                 if (stripansi(line.split(':')[1]).strip() == 'Yes'):
-                    globvars.islistening.add(inst)
-                    islistening = 1
+                    globvars.status_counts[inst]['listening'] = 0
                 elif (stripansi(line.split(':')[1]).strip() == 'No'):
-                    globvars.islistening.discard(inst)
-                    globvars.isonline.discard(inst)
-                    islistening = 0
+                    globvars.status_counts[inst]['listening'] = globvars.status_counts[inst]['listening'] + 1
             if (status_title == 'Server online'):
                 if (stripansi(line.split(':')[1]).strip() == 'Yes'):
-                    globvars.isonline.add(inst)
-                    isonline = 1
+                    globvars.status_counts[inst]['online'] = 0
                 elif (stripansi(line.split(':')[1]).strip() == 'No'):
-                    globvars.isonline.discard(inst)
-                    isonline = 0
+                    globvars.status_counts[inst]['online'] = globvars.status_counts[inst]['online'] + 1
+            if (status_title == 'Server PID'):
+                serverpid = stripansi(line.split(':')[1]).strip()
             if (status_title == 'Players'):
                 players = int(stripansi(line.split(':')[1]).strip().split('/')[0].strip())
             if (status_title == 'Active Players'):
@@ -110,8 +102,21 @@ async def processstatusline(inst, statuslines):
                 arkserverslink = stripansi(line.split('  ')[1]).strip()
             if (status_title == 'Steam connect link'):
                 steamlink = stripansi(line.split('  ')[1]).strip()
+        if globvars.status_counts[inst]['running'] >= 3:
+            isrunning = 0
+        else:
+            isrunning = 1
+        if globvars.status_counts[inst]['listening'] >= 3:
+            islistening = 0
+        else:
+            islistening = 1
+        if globvars.status_counts[inst]['online'] >= 3:
+            isonline = 0
+        else:
+            isonline = 1
         if int(activeplayers) > 0:
             isrunning = 1
+            islistening = 1
             isonline = 1
         log.trace(f'pid: {serverpid}, online: {isonline}, listening: {islistening}, running: {isrunning}, {inst}')
         await db.update(f"UPDATE instances SET serverpid = '{int(serverpid)}', isup = '{int(isonline)}', islistening = '{int(islistening)}', isrunning = '{int(isrunning)}', arkbuild = '{int(serverbuild)}', arkversion = '{serverversion}' WHERE name = '{inst}'")
@@ -367,8 +372,3 @@ def getlog(inst, whichlog, lines=20):
                 cloglist.append(alist)
             cline += 1
     return cloglist
-
-
-
-if __name__ == '__main__':
-    exit()

@@ -1,7 +1,8 @@
 import asyncio
 
-import globvars
 from loguru import logger as log
+
+import globvars
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring

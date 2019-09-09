@@ -14,9 +14,11 @@ greetings = set([])  # list of steamid or running returning player greets
 delay = {}  # Delay times for each task
 timer = {}  # timers for each task
 
-isrunning = set([])  # Instances that ar running on this server
-islistening = set([])
+isrunning = set([])  # Instances that are running on this server
+islistening = set([])  # Instances that are listening on this server
 isonline = set([])  # Instances that are online on this server
+
+status_counts = {}  # Counts for running checks (to avoid false positives)
 
 arkmanager_paths = []
 gameini_customconfig_files = {}
@@ -30,3 +32,4 @@ for inst in instances:
     arkmanager_paths.append(Path(f'/home/ark/shared/logs/arkmanager/{inst}'))
     gusini_customconfig_files.update({inst: Path(f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini')})
     gameini_customconfig_files.update({inst: Path(f'{sharedpath}/config/Game-{inst.lower()}.ini')})
+    status_counts.update({inst: {'running': 0, 'listening': 0, 'online': 0}})

@@ -3,8 +3,9 @@ import random
 from datetime import datetime, timedelta
 from time import time
 
-import globvars
 from loguru import logger as log
+
+import globvars
 from modules.asyncdb import DB as db
 from modules.configreader import hstname
 from modules.dbhelper import cleanstring

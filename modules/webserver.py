@@ -1,6 +1,7 @@
 #!/usr/bin/python3.6
 
 from loguru import logger as log
+
 from modules.configreader import hstname, webserver_ip, webserver_port
 from web import socketio
 

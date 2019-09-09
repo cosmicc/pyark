@@ -5,13 +5,12 @@ from pathlib import Path
 from sys import exit
 from time import sleep
 
-import modules.logging
 import psutil
 from loguru import logger as log
-from modules.arkupdater import asyncinstancerestart
+
+import modules.logging
 from modules.asyncdb import DB as db
 from modules.configreader import hstname, instances, sharedpath
-from modules.instances import getinststatus, isinstanceenabled
 from modules.players import asyncgetliveplayersonline
 from modules.pushover import pushover
 from modules.servertools import asyncserverexec, getinstpid, setarknice
@@ -38,13 +37,6 @@ args = parser.parse_args()
 
 sharepath = Path(sharedpath)
 
-isrunning = {}
-isonline = {}
-
-for inst in instances:
-    isrunning.update({inst: {'isit': 0, 'count': 0}})
-    isonline.update({inst: {'isit': 0, 'count': 0}})
-
 
 def issharedmounted():
     return sharepath.is_mount()
@@ -61,7 +53,7 @@ def float_trunc_1dec(num):
 
 async def asyncgetopenfiles():
     result = await asyncserverexec(['sysctl', 'fs.file-nr'], nice=19)
-    newresult = result.stdout.decode('utf-8').strip().split(' ')[2].split('\t')
+    newresult = result['stdout'].decode('utf-8').strip().split(' ')[2].split('\t')
     return {'openfiles': newresult[0], 'openfilelimit': newresult[2]}
 
 
@@ -95,7 +87,6 @@ async def asyncgetservermem():
     return memfree, memavailable, swapused
 
 
-@log.catch
 async def asyncgetinstmem(inst):
     instpid = getinstpid(inst)
     rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19)

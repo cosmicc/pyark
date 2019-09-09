@@ -2,6 +2,7 @@ from sys import exit
 from time import sleep
 
 from loguru import logger as log
+
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import isplayeradmin

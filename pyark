@@ -10,11 +10,12 @@ from os import _exit, nice, stat
 from time import sleep, time
 
 import aiohttp
-import globvars
-import modules.logging
 import uvloop
 from git import Repo
 from loguru import logger as log
+
+import globvars
+import modules.logging
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
 from modules.arkupdater import asynccheckbackup, asynccheckmaint, asynccheckrestart, asynccheckupdates, asynccheckwipe
 from modules.asyncdb import DB as db
@@ -26,7 +27,7 @@ from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlog
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
 from modules.gchatrelay import asyncgchatrelay
-from modules.instances import instancelist, asyncgetinststatus
+from modules.instances import asyncgetinststatus, instancelist
 from modules.lottery import lotterywatcher_thread
 from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck, asynconlinedblchecker

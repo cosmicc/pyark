@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from loguru import logger as log
+
 from modules.configreader import hstname
 
 rundir = Path('/run')
