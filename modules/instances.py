@@ -130,14 +130,10 @@ async def runstatus(inst):
 
 
 async def asyncgetinststatus(instances):
-    log.debug(f'status precheck for {instances}')
     for inst in instances:
         if f'{inst}-status' not in globvars.taskworkers:
-            log.debug(f'running {inst}-status')
             globvars.taskworkers.add(f'{inst}-status')
             asyncio.create_task(runstatus(inst))
-        else:
-            log.debug(f'{inst}-status is already running')
     return True
 
 
