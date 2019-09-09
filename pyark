@@ -61,16 +61,16 @@ args = parser.parse_args()
 
 def async_exception_handler(loop, context):
     # first, handle with default handler
-    loop.default_exception_handler(context)
+    #loop.default_exception_handler(context)
     exception = context.get('exception')
-    future = context.get('future')
+    #future = context.get('future')
     message = context.get('message')
     # handle = context.get('handle')
     try:
         raise exception
     except:
         log.exception(message)
-    future.cancel()
+    #future.cancel()
     # handle.cancel()
     # if isinstance(exception, ZeroDivisionError):
     #    pass
@@ -83,10 +83,10 @@ def signal_handler(signal, frame):
     stop_event.set()
 
 
-signal.signal(signal.SIGTERM, signal_handler)
-signal.signal(signal.SIGHUP, signal_handler)
-signal.signal(signal.SIGINT, signal_handler)
-signal.signal(signal.SIGQUIT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)  # Graceful Shutdown
+signal.signal(signal.SIGHUP, signal_handler)  # Reload/Restart
+signal.signal(signal.SIGINT, signal_handler)  # Hard Exit
+signal.signal(signal.SIGQUIT, signal_handler)  # Hard Exit
 
 processlock = PLock()
 processlock.lock()
