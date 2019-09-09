@@ -60,45 +60,43 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
         log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
-async def asyncprocessstatusline(inst, line):
+async def asyncprocessstatusline(inst, eline):
+        line = eline.decode()
         status_title = stripansi(line.split(':')[0]).strip()
-        if (status_title == 'Server running'):
-            if stripansi(line.split(':')[1]).strip() == 'Yes':
+        status_value = stripansi(line.split(':')[1]).strip()
+        if status_title == 'Server running':
+            if status_value == 'Yes':
                 globvars.status_counts[inst]['running'] = 0
-            elif stripansi(line.split(':')[1]).strip() == 'No':
+            elif status_value == 'No':
                 globvars.status_counts[inst]['running'] = globvars.status_counts[inst]['running'] + 1
 
-        elif (status_title == 'Server listening'):
-            if (stripansi(line.split(':')[1]).strip() == 'Yes'):
+        elif status_title == 'Server listening':
+            if status_value == 'Yes':
                 globvars.status_counts[inst]['listening'] = 0
-            elif (stripansi(line.split(':')[1]).strip() == 'No'):
+            elif status_value == 'No':
                 globvars.status_counts[inst]['listening'] = globvars.status_counts[inst]['listening'] + 1
 
-        elif (status_title == 'Server online'):
-            if (stripansi(line.split(':')[1]).strip() == 'Yes'):
+        elif status_title == 'Server online':
+            if status_value == 'Yes':
                 globvars.status_counts[inst]['online'] = 0
-            elif (stripansi(line.split(':')[1]).strip() == 'No'):
+            elif status_value == 'No':
                 globvars.status_counts[inst]['online'] = globvars.status_counts[inst]['online'] + 1
 
-        elif (status_title == 'Server PID'):
-            serverpid = stripansi(line.split(':')[1]).strip()
-            globvars.instpids[inst] = int(serverpid)
+        elif status_title == 'Server PID':
+            globvars.instpids[inst] = int(status_value)
 
         elif (status_title == 'Players'):
-            players = int(stripansi(line.split(':')[1]).strip().split('/')[0].strip())
+            players = int(status_value.split('/')[0].strip())
             globvars.instplayers[inst]['connecting'] = int(players)
 
         elif (status_title == 'Active Players'):
-            activeplayers = int(stripansi(line.split(':')[1]).strip())
-            globvars.instplayers[inst]['active'] = int(activeplayers)
+            globvars.instplayers[inst]['active'] = int(status_value)
 
         elif (status_title == 'Server build ID'):
-            serverbuild = stripansi(line.split(':')[1]).strip()
-            globvars.instarkbuild[inst] = int(serverbuild)
+            globvars.instarkbuild[inst] = int(status_value)
 
         elif (status_title == 'Server version'):
-            serverversion = stripansi(line.split(':')[1]).strip()
-            globvars.instarkversion[inst] = serverversion
+            globvars.instarkversion[inst] = status_value
 
         elif (status_title == 'ARKServers link'):
             arkserverslink = stripansi(line.split('  ')[1]).strip()
