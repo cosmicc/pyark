@@ -39,7 +39,7 @@ class asyncDB:
     async def close(self):
         if self.cpool is not None:
             await self.cpool.close()
-        log.debug('Database connection pool closed for [{self.process}]')
+        log.debug(f'Database connection pool closed for [{self.process}]')
 
     @log.catch
     async def _aquire(self):
