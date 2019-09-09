@@ -109,6 +109,7 @@ async def asyncprocessstatusline(inst, eline):
 
 
 async def asyncfinishstatus(inst):
+    log.info('running statusline completion task')
     if globvars.status_counts[inst]['running'] >= 3:
         isrunning = 0
         globvars.isrunning.discard(inst)
