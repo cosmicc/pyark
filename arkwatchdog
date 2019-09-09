@@ -99,7 +99,6 @@ async def processinststats(inst):
     arkprocess = psutil.Process(instpid)
     loop = asyncio.get_running_loop()
     arkcpu = await loop.run_in_executor(None, partial(arkprocess.cpu_percent, interval=5))
-
     rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, wait=True)
     instrss, instvsz = rawsts['stdout'].decode('utf-8').split('\n')[1].split(' ')
     instrss = int(instrss) / 1000000 // 0.01 / 100

@@ -20,6 +20,11 @@ isonline = set([])  # Instances that are online on this server
 
 status_counts = {}  # Counts for running checks (to avoid false positives)
 
+sharedpath = Path(sharedpath)
+arkrootpath = Path(arkroot)
+
+instpidfiles = {}
+
 arkmanager_paths = []
 gameini_customconfig_files = {}
 gusini_customconfig_files = {}
@@ -33,3 +38,4 @@ for inst in instances:
     gusini_customconfig_files.update({inst: Path(f'{sharedpath}/config/GameUserSettings-{inst.lower()}.ini')})
     gameini_customconfig_files.update({inst: Path(f'{sharedpath}/config/Game-{inst.lower()}.ini')})
     status_counts.update({inst: {'running': 0, 'listening': 0, 'online': 0}})
+    instpidfiles.update({inst: Path(f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid')})
