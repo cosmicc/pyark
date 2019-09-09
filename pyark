@@ -130,7 +130,7 @@ async def asyncmain():
             while not main_stop_event:
                 await asyncio.sleep(1)
     else:
-        globvars.timer = {'serverstats': starttime, 'statuscheck': starttime, 'restartcheck': starttime, 'backupcheck': starttime, 'wipecheck': starttime, 'updatecheck': starttime, 'maintcheck': starttime, 'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
+        globvars.timer = {'serverstats': starttime, 'statuscheck': starttime - 30, 'restartcheck': starttime, 'backupcheck': starttime, 'wipecheck': starttime, 'updatecheck': starttime, 'maintcheck': starttime, 'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
         log.debug(f'Found {len(instances)} ARK server instances: {(instances)}')
 
         while not main_stop_event:
