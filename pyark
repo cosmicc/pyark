@@ -63,12 +63,17 @@ def async_exception_handler(loop, context):
     # first, handle with default handler
     loop.default_exception_handler(context)
     exception = context.get('exception')
+    future = context.get('future')
+    message = context.get('message')
+    handle = context.get('handle')
     try:
         raise exception
     except:
-        log.exception(context.get('message'))
-    if isinstance(exception, ZeroDivisionError):
-        pass
+        log.exception(message)
+    future.cancel()
+    handle.cancel()
+    # if isinstance(exception, ZeroDivisionError):
+    #    pass
 
 
 def signal_handler(signal, frame):
