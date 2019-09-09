@@ -62,7 +62,7 @@ def getinstpid(inst):
 
 
 async def getopenfiles():
-    result = await asyncserverexec(['sysctl', 'fs.file-nr'], nice=19)
+    result = await asyncserverexec(['sysctl', 'fs.file-nr'], nice=19, wait=True)
     newresult = result['stdout'].decode('utf-8').strip().split(' ')[2].split('\t')
     return tuple(newresult[0], newresult[2])
 
@@ -82,8 +82,8 @@ async def getcpuload():
 
 
 async def getservermem():
-    process = await asyncserverexec(['free', '-m'], nice=19)
-    lines = process.stdout.decode().split('\n')
+    process = await asyncserverexec(['free', '-m'], nice=19, wait=True)
+    lines = process['stdout'].decode().split('\n')
     memvalues = lines[1].strip().split()
     swapvalues = lines[2].strip().split()
     memfree = memvalues[3]
@@ -97,8 +97,8 @@ async def processinststats(inst):
     instpid = getinstpid(inst)
     arkprocess = psutil.Process(instpid)
     arkcpu = arkprocess.cpu_percent(interval=2)
-    rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19)
-    instrss, instvsz = rawsts.stdout.decode('utf-8').split('\n')[1].split(' ')
+    rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, wait=True)
+    instrss, instvsz = rawsts['stdout'].decode('utf-8').split('\n')[1].split(' ')
     instrss = int(instrss) / 1000000 // 0.01 / 100
     instvsz = int(instvsz) / 1000000 // 0.01 / 100
     await db.update(f"UPDATE instances SET actmem = '{instrss}', totmem = '{instvsz}', serverpid = '{instpid}', arkcpu = '{arkcpu}' WHERE name = '{inst}'")
