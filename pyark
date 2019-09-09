@@ -242,12 +242,10 @@ async def asyncmain():
                     tasktimer = asyncloop.time()
             await asyncio.sleep(.05)
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    for task in tasks:
-        print(task)
-    print('waiting for async tasks to finish')
+    log.debug(f'Waiting for {len(tasks)} async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
     print('async tasks have finished')
-    log.debug('async tasks have finished')
+    log.debug('All async tasks have finished')
     await db.close()
 
 
