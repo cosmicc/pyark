@@ -118,9 +118,9 @@ async def asyncmain():
     log.debug('Starting server/ark stat processor loop')
     while stop_event:
         asyncio.create_task(processserverstats())
-        asyncio.sleep(5)
+        await asyncio.sleep(5)
         asyncio.create_task(processserverstats())
-        asyncio.sleep(55)
+        await asyncio.sleep(55)
 
 
 def main():
