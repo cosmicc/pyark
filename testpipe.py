@@ -60,10 +60,10 @@ async def asyncmain():
     # while not main_stop_event:
     asyncio.create_task(runcmd('arkmanager', 'status', '@ragnarok'))
     #await asyncio.sleep(2)
-    # tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    # log.debug(f'Waiting for {len(tasks)} async tasks to finish')
-    # await asyncio.gather(*tasks, return_exceptions=True)
-    # log.debug('All async tasks have finished')
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    log.debug(f'Waiting for {len(tasks)} async tasks to finish')
+    await asyncio.gather(*tasks, return_exceptions=True)
+    log.debug('All async tasks have finished')
 
 
 def main():
