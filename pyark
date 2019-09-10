@@ -129,7 +129,7 @@ async def asyncmain():
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     serverpre = ['@all']
-    for each in instance:
+    for each in instances:
         serverpre.append(f'@{each}')
     atinstances = tuple(serverpre)
     await db.connect(process=__name__)
