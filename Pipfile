@@ -36,6 +36,7 @@ quart-openapi = "*"
 hypercorn = "*"
 fastapi = "*"
 fsmonitor = "*"
+aredis = "*"
 
 [requires]
 python_version = "3.7"
