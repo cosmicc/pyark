@@ -39,7 +39,6 @@ class CommandProtocol(asyncio.SubprocessProtocol):
         log.trace('process exited')
         return_code = self.transport.get_returncode()
         log.trace('return code {}'.format(return_code))
-        self.done.set_result((return_code))
 
     def _parse_results(self, line):
         log.trace('parsing results')
