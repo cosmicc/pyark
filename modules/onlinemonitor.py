@@ -233,6 +233,7 @@ async def asynconlinedblchecker(instances):
         globvars.taskworkers.remove('dblchecker')
 
 
+@log.catch
 async def asyncprocessonline(inst, eline):
     line = eline.decode()
     if line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
