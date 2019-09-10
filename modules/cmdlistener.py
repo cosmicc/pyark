@@ -29,22 +29,17 @@ class CommandProtocol(asyncio.SubprocessProtocol):
         super().__init__()
 
     def connection_made(self, transport):
-        log.debug('process started {}'.format(transport.get_pid()))
         self.transport = transport
 
     def pipe_data_received(self, fd, data):
-        log.debug(f'read {len(data)} bytes from {self.FD_NAMES[fd]}')
         if fd == 1:
             self._parse_results(data)
 
     def process_exited(self):
-        log.debug('process exited')
         return_code = self.transport.get_returncode()
-        log.trace('return code {}'.format(return_code))
         self.done.set_result((return_code))
 
     def _parse_results(self, line):
-        log.debug('parsing results')
         if not line:
             return []
         asyncio.create_task(asyncprocesscmdline(self.inst, line))
