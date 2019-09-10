@@ -16,8 +16,9 @@ class OnlineProtocol(asyncio.SubprocessProtocol):
 
     FD_NAMES = ['stdin', 'stdout', 'stderr']
 
-    def __init__(self, inst):
+    def __init__(self, cmd_done, inst):
         self.inst = inst
+        self.done = cmd_done
         super().__init__()
 
     def connection_made(self, transport):
@@ -33,6 +34,9 @@ class OnlineProtocol(asyncio.SubprocessProtocol):
         log.trace('process exited')
         return_code = self.transport.get_returncode()
         log.trace('return code {}'.format(return_code))
+        self.done.set_result((return_code))
+
+
 
     def _parse_results(self, line):
         log.trace('parsing results')
@@ -246,10 +250,12 @@ async def asyncprocessline(inst, eline):
 
 async def onlineexecute(inst):
     asyncloop = asyncio.get_running_loop()
-    factory = partial(OnlineProtocol, inst)
+    cmd_done = asyncio.Future(loop=asyncloop)
+    factory = partial(OnlineProtocol, cmd_done, inst)
     proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'rconcmd', 'listplayers', f'@{inst}', stdin=None, stderr=None)
     try:
         transport, protocol = await proc
+        await cmd_done
     finally:
         transport.close()
 
