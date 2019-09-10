@@ -203,9 +203,7 @@ async def asynconlinedblchecker(instances):
 
 @log.catch
 async def asyncprocessonline(inst, eline):
-    line = filterline(eline.decode())
-    log.debug(f'# {line}')
-    await asyncio.sleep(3)
+    line = eline.decode().strip('\n "\n').replace('"', '').strip()
     if line.startswith(('Running command', 'Error:')):
         pass
     elif line == 'No Players Connected':
