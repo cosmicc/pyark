@@ -566,222 +566,224 @@ async def asyncchatlinedetected(inst, chatdict):
 
 @log.catch
 async def asyncprocesscmdline(minst, eline):
-    line = eline.decode().replace('\n', '').replace('"', '').strip()
-    log.debug(f'# {line}')
-    inst = minst
-    if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
-        pass
-    elif line.find('[TCsAR]') != -1:
-        dfg = line.split('||')
-        dfh = dfg[1].split('|')
-        tcdata = {}
-        for each in dfh:
-            ee = each.strip().split(': ')
-            if len(ee) > 1:
-                tcdata.update({ee[0]: ee[1]})
-        if 'SteamID' in tcdata:
-            await processtcdata(minst, tcdata)
-    elif line.find('left this ARK!') != -1:
-        await playerleave(line, minst)
-    elif line.find('joined this ARK!') != -1:
-        await playerjoin(line, minst)
-    elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|ADMIN|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'ADMIN', line.replace('"', '').strip()], db='gl')
-    elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|DEMO|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'DEMO', line.replace('"', '').strip()], db='gl')
-    elif line.find('released:') != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|RELEASE|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'RELEASE', line.replace('"', '').strip()], db='gl')
-    elif line.find('trapped:') != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|TRAP|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'TRAP', line.replace('"', '').strip()], db='gl')
-    elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|DEATH|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'DEATH', line.replace('"', '').strip()], db='gl')
-    elif line.find('Tamed a') != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|TAME|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'TAME', line.replace('"', '').strip()], db='gl')
-    elif line.find(" claimed '") != -1 or line.find(" unclaimed '") != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|CLAIM|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'CLAIM', line.replace('"', '').strip()], db='gl')
-    elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 or line.find(' Tribe to ') != -1 or line.find(' was removed from the Tribe!') != -1 or line.find(' set to Rank Group ') != -1 or line.find(' requested an Alliance with ') != -1 or line.find(' was added to the Tribe!') != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|TRIBE|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'TRIBE', line.replace('"', '').strip()], db='gl')
-    elif line.find('starved to death!') != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|DECAY|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
-    elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
-        # log.log('GLRAW', f"""|{inst.upper()}|DECAY|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
-    elif line.startswith('Error:'):
-        # log.log('GLRAW', f"""|{inst.upper()}|UNKNOWN|{line.replace('"', '')}""".strip())
-        await db.update([inst, 'UNKNOWN', line.replace('"', '').strip()], db='gl')
-    else:
-        chatdict = deconstructchatline(line)
-        whoasked = chatdict['name']
-        log.trace(f'chatline who: {whoasked}')
-        incmd = chatdict['line']
-        if incmd.startswith('!test'):
-            log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
-            message = 'hi'
-            bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
-            await asyncserverbcast(minst, bcast)
+    dline = eline.decode().replace('"', '').strip()
+    lines = dline.split('\n')
+    for line in lines:
+        log.debug(f'# {line}')
+        inst = minst
+        if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
+            pass
+        elif line.find('[TCsAR]') != -1:
+            dfg = line.split('||')
+            dfh = dfg[1].split('|')
+            tcdata = {}
+            for each in dfh:
+                ee = each.strip().split(': ')
+                if len(ee) > 1:
+                    tcdata.update({ee[0]: ee[1]})
+            if 'SteamID' in tcdata:
+                await processtcdata(minst, tcdata)
+        elif line.find('left this ARK!') != -1:
+            await playerleave(line, minst)
+        elif line.find('joined this ARK!') != -1:
+            await playerjoin(line, minst)
+        elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|ADMIN|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'ADMIN', line.replace('"', '').strip()], db='gl')
+        elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|DEMO|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'DEMO', line.replace('"', '').strip()], db='gl')
+        elif line.find('released:') != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|RELEASE|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'RELEASE', line.replace('"', '').strip()], db='gl')
+        elif line.find('trapped:') != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|TRAP|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'TRAP', line.replace('"', '').strip()], db='gl')
+        elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|DEATH|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'DEATH', line.replace('"', '').strip()], db='gl')
+        elif line.find('Tamed a') != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|TAME|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'TAME', line.replace('"', '').strip()], db='gl')
+        elif line.find(" claimed '") != -1 or line.find(" unclaimed '") != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|CLAIM|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'CLAIM', line.replace('"', '').strip()], db='gl')
+        elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 or line.find(' Tribe to ') != -1 or line.find(' was removed from the Tribe!') != -1 or line.find(' set to Rank Group ') != -1 or line.find(' requested an Alliance with ') != -1 or line.find(' was added to the Tribe!') != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|TRIBE|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'TRIBE', line.replace('"', '').strip()], db='gl')
+        elif line.find('starved to death!') != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|DECAY|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
+        elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
+            # log.log('GLRAW', f"""|{inst.upper()}|DECAY|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'DECAY', line.replace('"', '').strip()], db='gl')
+        elif line.startswith('Error:'):
+            # log.log('GLRAW', f"""|{inst.upper()}|UNKNOWN|{line.replace('"', '')}""".strip())
+            await db.update([inst, 'UNKNOWN', line.replace('"', '').strip()], db='gl')
+        else:
+            chatdict = deconstructchatline(line)
+            whoasked = chatdict['name']
+            log.trace(f'chatline who: {whoasked}')
+            incmd = chatdict['line']
+            if incmd.startswith('!test'):
+                log.log('CMD', f'Responding to a [!test] request from [{whoasked.title()}] on [{minst.title()}]')
+                message = 'hi'
+                bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\r<RichColor Color="1,0.65,0,1">                     A Wild dino wipe vote has finished</>\n\n<RichColor Color="1,1,0,1">                            NO votes have won!</>\n  <RichColor Color="1,0,0,1">                      Wild dinos will NOT be wiped</>\n\n           You must wait 10 minutes before you can start another vote"""
+                await asyncserverbcast(minst, bcast)
 
-        elif incmd.startswith('!help'):
-            message = f'Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe,'
-            await asyncserverchat(inst, message)
-            message = f'!lastrestart, !vote, !tip, !lottery, !lastseen <playername>, !playtime <playername>'
-            await asyncserverchat(inst, message)
-            log.log('CMD', f'Responded to a [!help] request from [{whoasked.title()}] on [{minst.title()}]')
-        elif incmd.startswith(('/kit', '!kit')):
-            log.log('CMD', f'Responding to a kit request from [{whoasked.title()}] on [{minst.title()}]')
-            message = f'To view kits you must make a level 1 rewards vault and hang it on a wall or foundation. Free starter items and over 80 kits available. !help for more commands'
-            await asyncserverchat(inst, message)
+            elif incmd.startswith('!help'):
+                message = f'Commands: @all, !who, !lasthour, !lastday,  !timeleft, !myinfo, !myhome, !lastwipe,'
+                await asyncserverchat(inst, message)
+                message = f'!lastrestart, !vote, !tip, !lottery, !lastseen <playername>, !playtime <playername>'
+                await asyncserverchat(inst, message)
+                log.log('CMD', f'Responded to a [!help] request from [{whoasked.title()}] on [{minst.title()}]')
+            elif incmd.startswith(('/kit', '!kit')):
+                log.log('CMD', f'Responding to a kit request from [{whoasked.title()}] on [{minst.title()}]')
+                message = f'To view kits you must make a level 1 rewards vault and hang it on a wall or foundation. Free starter items and over 80 kits available. !help for more commands'
+                await asyncserverchat(inst, message)
 
-        elif incmd.startswith('/'):
-            message = f'Commands in this cluster start with a ! (Exclimation Mark)  Type !help for a list of commands'
-            await asyncserverchat(inst, message)
+            elif incmd.startswith('/'):
+                message = f'Commands in this cluster start with a ! (Exclimation Mark)  Type !help for a list of commands'
+                await asyncserverchat(inst, message)
 
-        elif incmd.startswith(('!lastdinowipe', '!lastwipe')):
-            lastwipe = elapsedTime(Now(), await asyncgetlastwipe(minst))
-            message = f'Last wild dino wipe was {lastwipe} ago'
-            await asyncserverchat(inst, message)
-            log.log('CMD', f'Responding to a [!lastwipe] request from [{whoasked.title()}] on [{minst.title()}]')
+            elif incmd.startswith(('!lastdinowipe', '!lastwipe')):
+                lastwipe = elapsedTime(Now(), await asyncgetlastwipe(minst))
+                message = f'Last wild dino wipe was {lastwipe} ago'
+                await asyncserverchat(inst, message)
+                log.log('CMD', f'Responding to a [!lastwipe] request from [{whoasked.title()}] on [{minst.title()}]')
 
-        elif incmd.startswith('!lastrestart'):
-            lastrestart = elapsedTime(Now(), await asyncgetlastrestart(minst))
-            message = f'Last server restart was {lastrestart} ago'
-            await asyncserverchat(inst, message)
-            log.log('CMD', f'Responding to a [!lastrestart] request from [{whoasked.title()}] on [{minst.title()}]')
+            elif incmd.startswith('!lastrestart'):
+                lastrestart = elapsedTime(Now(), await asyncgetlastrestart(minst))
+                message = f'Last server restart was {lastrestart} ago'
+                await asyncserverchat(inst, message)
+                log.log('CMD', f'Responding to a [!lastrestart] request from [{whoasked.title()}] on [{minst.title()}]')
 
-        elif incmd.startswith('!lastseen'):
-            rawseenname = line.split(':')
-            orgname = rawseenname[1].strip()
-            lsnname = rawseenname[2].split('!lastseen')
-            if len(lsnname) > 1:
+            elif incmd.startswith('!lastseen'):
+                rawseenname = line.split(':')
+                orgname = rawseenname[1].strip()
+                lsnname = rawseenname[2].split('!lastseen')
+                if len(lsnname) > 1:
+                    seenname = lsnname[1].strip().lower()
+                    message = await asyncgetlastseen(seenname)
+                    log.log('CMD', f'Responding to a [!lastseen] request for [{seenname.title()}] from [{orgname.title()}] on [{minst.title()}]')
+                else:
+                    message = f'You must specify a player name to search'
+                    log.log('CMD', f'Responding to a invalid [!lastseen] request from [{orgname.title()}] on [{minst.title()}]')
+                await asyncserverchat(minst, message)
+
+            elif incmd.startswith('!playedtime'):
+                rawseenname = line.split(':')
+                orgname = rawseenname[1].strip()
+                lsnname = rawseenname[2].split('!playedtime')
                 seenname = lsnname[1].strip().lower()
-                message = await asyncgetlastseen(seenname)
-                log.log('CMD', f'Responding to a [!lastseen] request for [{seenname.title()}] from [{orgname.title()}] on [{minst.title()}]')
-            else:
-                message = f'You must specify a player name to search'
-                log.log('CMD', f'Responding to a invalid [!lastseen] request from [{orgname.title()}] on [{minst.title()}]')
-            await asyncserverchat(minst, message)
+                if lsnname:
+                    message = await asyncgettimeplayed(seenname)
+                else:
+                    message = await asyncgettimeplayed(whoasked)
+                await asyncserverchat(inst, message)
+                log.log('CMD', f'Responding to a [!playedtime] request for [{whoasked.title()}] on [{minst.title()}]')
 
-        elif incmd.startswith('!playedtime'):
-            rawseenname = line.split(':')
-            orgname = rawseenname[1].strip()
-            lsnname = rawseenname[2].split('!playedtime')
-            seenname = lsnname[1].strip().lower()
-            if lsnname:
-                message = await asyncgettimeplayed(seenname)
-            else:
-                message = await asyncgettimeplayed(whoasked)
-            await asyncserverchat(inst, message)
-            log.log('CMD', f'Responding to a [!playedtime] request for [{whoasked.title()}] on [{minst.title()}]')
-
-        elif incmd.startswith(('!recent', '!whorecent', '!lasthour')):
-            rawline = line.split(':')
-            lastlline = rawline[2].strip().split(' ')
-            if len(lastlline) == 2:
-                ninst = lastlline[1]
-            else:
-                ninst = minst
-            log.log('CMD', f'Responding to a [!recent] request for [{whoasked.title()}] on [{minst.title()}]')
-            await whoisonlinewrapper(ninst, minst, whoasked, 2)
-
-        elif incmd.startswith(('!today', '!lastday')):
-            rawline = line.split(':')
-            lastlline = rawline[2].strip().split(' ')
-            if len(lastlline) == 2:
-                ninst = lastlline[1]
-            else:
-                ninst = minst
-            log.log('CMD', f'Responding to a [!today] request for [{whoasked.title()}] on [{minst.title()}]')
-            await whoisonlinewrapper(ninst, minst, whoasked, 3)
-
-        elif incmd.startswith(('!tip', '!justthetip')):
-            log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
-            tip = await asyncgettip(db)
-            message = tip
-            await asyncserverchat(inst, message)
-
-        elif incmd.startswith(('!mypoints', '!myinfo')):
-            log.log('CMD', f'Responding to a [!myinfo] request from [{whoasked.title()}] on [{minst.title()}]')
-            await asyncrespmyinfo(minst, whoasked)
-
-        elif incmd.startswith(('!players', '!whoson', '!who')):
-            rawline = line.split(':')
-            lastlline = rawline[2].strip().split(' ')
-            if len(lastlline) == 2:
-                ninst = lastlline[1]
-            else:
-                ninst = minst
-            log.log('CMD', f'Responding to a [!who] request for [{whoasked.title()}] on [{minst.title()}]')
-            await whoisonlinewrapper(ninst, minst, whoasked, 1)
-
-        elif incmd.startswith(('!myhome', '!transfer', '!home', '!sethome')):
-            rawline = line.split(':')
-            lastlline = rawline[2].strip().split(' ')
-            if len(lastlline) == 2:
-                ninst = lastlline[1]
-            else:
-                ninst = ''
-            log.log('CMD', f'Responding to a [!myhome] request for [{whoasked.title()}] on [{minst.title()}]')
-            message = "The Home command is disabled for repairs"
-            await asyncserverchat(inst, message)
-
-            #await asynchomeserver(minst, whoasked, ninst)
-
-        elif incmd.startswith(('!vote', '!startvote', '!wipe')):
-            log.debug(f'Responding to a [!vote] request from [{whoasked.title()}] on [{minst.title()}]')
-            await asyncstartvoter(minst, whoasked)
-
-        elif incmd.startswith(('!agree', '!yes')):
-            log.debug(f'responding to YES vote on {minst} from {whoasked}')
-            await asynccastedvote(minst, whoasked, True)
-
-        elif incmd.startswith(('!disagree', '!no')):
-            log.log('VOTE', f'Responding to NO vote on [{minst.title()}] from [{whoasked.title()}]')
-            await asynccastedvote(minst, whoasked, False)
-
-        elif incmd.startswith(('!timeleft', '!restart')):
-            log.log('CMD', f'Responding to a [!timeleft] request from [{whoasked.title()}] on [{minst.title()}]')
-            await asyncresptimeleft(minst, whoasked)
-
-        elif incmd.startswith(('!linkme', '!link')):
-            log.log('CMD', f'Responding to a [!linkme] request from [{whoasked.title()}] on [{minst.title()}]')
-            await asynclinker(minst, whoasked)
-
-        elif incmd.startswith(('!lottery', '!lotto')):
-            rawline = line.split(':')
-            if len(rawline) > 2:
+            elif incmd.startswith(('!recent', '!whorecent', '!lasthour')):
+                rawline = line.split(':')
                 lastlline = rawline[2].strip().split(' ')
                 if len(lastlline) == 2:
-                    lchoice = lastlline[1]
+                    ninst = lastlline[1]
                 else:
-                    lchoice = False
-                await asynclottery(whoasked, lchoice, minst)
+                    ninst = minst
+                log.log('CMD', f'Responding to a [!recent] request for [{whoasked.title()}] on [{minst.title()}]')
+                await whoisonlinewrapper(ninst, minst, whoasked, 2)
 
-        elif incmd.startswith(('!lastlotto', '!winner')):
-            log.log('CMD', f'Responding to a [!lastlotto] request from [{whoasked.title()}] on [{minst.title()}]')
-            await asynclastlotto(minst, whoasked)
+            elif incmd.startswith(('!today', '!lastday')):
+                rawline = line.split(':')
+                lastlline = rawline[2].strip().split(' ')
+                if len(lastlline) == 2:
+                    ninst = lastlline[1]
+                else:
+                    ninst = minst
+                log.log('CMD', f'Responding to a [!today] request for [{whoasked.title()}] on [{minst.title()}]')
+                await whoisonlinewrapper(ninst, minst, whoasked, 3)
 
-        elif incmd.startswith('!'):
-            steamid = await asyncgetsteamid(whoasked)
-            log.warning(f'Invalid command request from [{whoasked.title()}] on [{minst.title()}]')
-            message = "Invalid command. Try !help"
-            await asyncserverchatto(inst, steamid, message)
+            elif incmd.startswith(('!tip', '!justthetip')):
+                log.log('CMD', f'Responding to a [!tip] request from [{whoasked.title()}] on [{minst.title()}]')
+                tip = await asyncgettip(db)
+                message = tip
+                await asyncserverchat(inst, message)
 
-        elif incmd.startswith(globvars.atinstances):
-            newchatline = chatdict['line'].split(" ", 1)[1]
-            tstamp = chatdict['time'].strftime('%m-%d %I:%M%p')
-            await asyncwriteglobal(minst, chatdict['name'], newchatline)
-            await asyncwritechat('generalchat', chatdict['name'], newchatline, tstamp)
+            elif incmd.startswith(('!mypoints', '!myinfo')):
+                log.log('CMD', f'Responding to a [!myinfo] request from [{whoasked.title()}] on [{minst.title()}]')
+                await asyncrespmyinfo(minst, whoasked)
 
-        else:
-            await asyncchatlinedetected(inst, chatdict)
+            elif incmd.startswith(('!players', '!whoson', '!who')):
+                rawline = line.split(':')
+                lastlline = rawline[2].strip().split(' ')
+                if len(lastlline) == 2:
+                    ninst = lastlline[1]
+                else:
+                    ninst = minst
+                log.log('CMD', f'Responding to a [!who] request for [{whoasked.title()}] on [{minst.title()}]')
+                await whoisonlinewrapper(ninst, minst, whoasked, 1)
+
+            elif incmd.startswith(('!myhome', '!transfer', '!home', '!sethome')):
+                rawline = line.split(':')
+                lastlline = rawline[2].strip().split(' ')
+                if len(lastlline) == 2:
+                    ninst = lastlline[1]
+                else:
+                    ninst = ''
+                log.log('CMD', f'Responding to a [!myhome] request for [{whoasked.title()}] on [{minst.title()}]')
+                message = "The Home command is disabled for repairs"
+                await asyncserverchat(inst, message)
+
+                #await asynchomeserver(minst, whoasked, ninst)
+
+            elif incmd.startswith(('!vote', '!startvote', '!wipe')):
+                log.debug(f'Responding to a [!vote] request from [{whoasked.title()}] on [{minst.title()}]')
+                await asyncstartvoter(minst, whoasked)
+
+            elif incmd.startswith(('!agree', '!yes')):
+                log.debug(f'responding to YES vote on {minst} from {whoasked}')
+                await asynccastedvote(minst, whoasked, True)
+
+            elif incmd.startswith(('!disagree', '!no')):
+                log.log('VOTE', f'Responding to NO vote on [{minst.title()}] from [{whoasked.title()}]')
+                await asynccastedvote(minst, whoasked, False)
+
+            elif incmd.startswith(('!timeleft', '!restart')):
+                log.log('CMD', f'Responding to a [!timeleft] request from [{whoasked.title()}] on [{minst.title()}]')
+                await asyncresptimeleft(minst, whoasked)
+
+            elif incmd.startswith(('!linkme', '!link')):
+                log.log('CMD', f'Responding to a [!linkme] request from [{whoasked.title()}] on [{minst.title()}]')
+                await asynclinker(minst, whoasked)
+
+            elif incmd.startswith(('!lottery', '!lotto')):
+                rawline = line.split(':')
+                if len(rawline) > 2:
+                    lastlline = rawline[2].strip().split(' ')
+                    if len(lastlline) == 2:
+                        lchoice = lastlline[1]
+                    else:
+                        lchoice = False
+                    await asynclottery(whoasked, lchoice, minst)
+
+            elif incmd.startswith(('!lastlotto', '!winner')):
+                log.log('CMD', f'Responding to a [!lastlotto] request from [{whoasked.title()}] on [{minst.title()}]')
+                await asynclastlotto(minst, whoasked)
+
+            elif incmd.startswith('!'):
+                steamid = await asyncgetsteamid(whoasked)
+                log.warning(f'Invalid command request from [{whoasked.title()}] on [{minst.title()}]')
+                message = "Invalid command. Try !help"
+                await asyncserverchatto(inst, steamid, message)
+
+            elif incmd.startswith(globvars.atinstances):
+                newchatline = chatdict['line'].split(" ", 1)[1]
+                tstamp = chatdict['time'].strftime('%m-%d %I:%M%p')
+                await asyncwriteglobal(minst, chatdict['name'], newchatline)
+                await asyncwritechat('generalchat', chatdict['name'], newchatline, tstamp)
+
+            else:
+                await asyncchatlinedetected(inst, chatdict)
 
 
 async def cmdsexecute(inst):
