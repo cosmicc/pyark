@@ -17,32 +17,7 @@ from modules.players import asyncnewplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
                                  asyncserverexec, asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
-
-
-class CommandProtocol(asyncio.SubprocessProtocol):
-
-    FD_NAMES = ['stdin', 'stdout', 'stderr']
-
-    def __init__(self, cmd_done, inst):
-        self.inst = inst
-        self.done = cmd_done
-        super().__init__()
-
-    def connection_made(self, transport):
-        self.transport = transport
-
-    def pipe_data_received(self, fd, data):
-        if fd == 1:
-            self._parse_results(data)
-
-    def process_exited(self):
-        return_code = self.transport.get_returncode()
-        self.done.set_result((return_code))
-
-    def _parse_results(self, line):
-        if not line:
-            return []
-        asyncio.create_task(asyncprocesscmdline(self.inst, line))
+from modules.subprotocol import SubProtocol
 
 
 async def asyncwriteglobal(inst, whos, msg):
@@ -811,7 +786,7 @@ async def asyncprocesscmdline(minst, eline):
 async def cmdsexecute(inst):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
-    factory = partial(CommandProtocol, cmd_done, inst)
+    factory = partial(SubProtocol, cmd_done, inst, parsetask=asyncprocesscmdline)
     proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'rconcmd', 'getgamelog', f'@{inst}', stdin=None, stderr=None)
     try:
         transport, protocol = await proc
