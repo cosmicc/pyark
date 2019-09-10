@@ -6,6 +6,7 @@ from modules.configreader import arkroot, instances, sharedpath
 instpids = {}  # Instance pids
 instpidfiles = {}  # Instance pid files from arkmanager
 
+instservernames = {}  # Host names of the server as they appear online
 instplayers = {}  # Dict of online players (active, connecting)
 instarkbuild = {}  # instance ark uild numbers
 instarkversion = {}  # instance ark version numbers
@@ -52,5 +53,6 @@ for inst in instances:
     instarkversion.update({inst: None})
     instlinks.update({inst: {'steam': None, 'arkservers': None}})
     serverpre.append(f'@{inst}')
+    instservernames.update({inst: None})
 
 atinstances = tuple(serverpre)

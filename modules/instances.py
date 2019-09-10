@@ -92,16 +92,15 @@ async def asyncfinishstatus(inst):
         log.trace(f'pid: {globvars.instpids[inst]}, online: {isonline}, listening: {islistening}, running: {isrunning}, {inst}')
         await db.update(f"UPDATE instances SET serverpid = '{globvars.instpids[inst]}', isup = '{isonline}', islistening = '{islistening}', isrunning = '{isrunning}', arkbuild = '{globvars.instarkbuild[inst]}', arkversion = '{globvars.instarkversion[inst]}' WHERE name = '{inst}'")
         if globvars.instplayers[inst]['connecting'] is not None and globvars.instplayers[inst]['active'] is not None and globvars.instlinks[inst]['steam'] is not None and globvars.instlinks[inst]['arkservers'] is not None:
-            await db.update(f"""UPDATE instances SET steamlink = '{globvars.instlinks[inst]["steam"]}', arkserverslink = '{globvars.instlinks[inst]["arkservers"]}', connectingplayers = '{globvars.instplayers[inst]['connecting']}', activeplayers = '{globvars.instplayers[inst]['active']}' WHERE name = '{inst}'""")
+            await db.update(f"""UPDATE instances SET hostname = '{globvars.instservername[inst]}', steamlink = '{globvars.instlinks[inst]["steam"]}', arkserverslink = '{globvars.instlinks[inst]["arkservers"]}', connectingplayers = '{globvars.instplayers[inst]['connecting']}', activeplayers = '{globvars.instplayers[inst]['active']}' WHERE name = '{inst}'""")
         return True
 
 
 async def asyncprocessstatusline(inst, eline):
-        line = eline.decode()
-        print(stripansi(line.replace('\n', '').replace('\r', '')).strip())
-        status_title = stripansi(line.split(':')[0]).strip()
+        line = stripansi(eline.decode().replace('\n', '').replace('\r', '')).strip()
+        status_title = line.split(':', 1)[0]
         if not status_title.startswith('Running command'):
-            status_value = stripansi(line.split(':')[1]).strip()
+            status_value = line.split(':', 1)[1].strip()
             if status_title == 'Server running':
                 if status_value == 'Yes':
                     globvars.status_counts[inst]['running'] = 0
@@ -123,12 +122,13 @@ async def asyncprocessstatusline(inst, eline):
             elif status_title == 'Server PID':
                 globvars.instpids[inst] = int(status_value)
 
-            elif (status_title == 'Players'):
-                players = int(status_value.split('/')[0].strip())
-                globvars.instplayers[inst]['connecting'] = int(players)
-
-            elif (status_title == 'Active Players'):
-                globvars.instplayers[inst]['active'] = int(status_value)
+            elif (status_title == 'Server Name'):
+                servername = status_value.split('Players', 1)[0]
+                connecting = int(status_value.split(' / ')[0].split('Players:')[1])
+                active = int(status_value.split('Active Players:')[1])
+                globvars.instservernames[inst] = servername
+                globvars.instplayers[inst]['connecting'] = connecting
+                globvars.instplayers[inst]['active'] = active
 
             elif (status_title == 'Server build ID'):
                 globvars.instarkbuild[inst] = int(status_value)
