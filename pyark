@@ -25,7 +25,7 @@ from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlog
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import gamelogger_thread
 from modules.gchatrelay import asyncgchatrelay
-from modules.instancestatus import runstatus
+from modules.instances import runstatus
 from modules.lottery import lotterywatcher_thread
 from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck, asynconlinedblchecker
