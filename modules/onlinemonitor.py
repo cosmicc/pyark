@@ -8,41 +8,9 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring
 from modules.players import asyncnewplayer
-from modules.servertools import asyncserverchatto, asyncserverexec, asyncserverrconcmd, asyncserverscriptcmd, serverexec
+from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd
 from modules.timehelper import Now, elapsedTime, playedTime
-
-
-class OnlineProtocol(asyncio.SubprocessProtocol):
-
-    FD_NAMES = ['stdin', 'stdout', 'stderr']
-
-    def __init__(self, cmd_done, inst):
-        self.inst = inst
-        self.done = cmd_done
-        super().__init__()
-
-    def connection_made(self, transport):
-        log.trace('process started {}'.format(transport.get_pid()))
-        self.transport = transport
-
-    def pipe_data_received(self, fd, data):
-        log.trace(f'read {len(data)} bytes from {self.FD_NAMES[fd]}')
-        if fd == 1:
-            self._parse_results(data)
-
-    def process_exited(self):
-        log.trace('process exited')
-        return_code = self.transport.get_returncode()
-        log.trace('return code {}'.format(return_code))
-        self.done.set_result((return_code))
-
-
-
-    def _parse_results(self, line):
-        log.trace('parsing results')
-        if not line:
-            return []
-        asyncio.create_task(asyncprocessonline(self.inst, line))
+from modules.subprotocol import SubProtocol
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -258,7 +226,7 @@ async def asyncprocessonline(inst, eline):
 async def onlineexecute(inst):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
-    factory = partial(OnlineProtocol, cmd_done, inst)
+    factory = partial(SubProtocol, cmd_done, inst, parsetask=asyncprocessonline)
     proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'rconcmd', 'listplayers', f'@{inst}', stdin=None, stderr=None)
     try:
         transport, protocol = await proc

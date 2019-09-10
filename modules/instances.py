@@ -6,7 +6,7 @@ from loguru import logger as log
 import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
-from modules.instancestatus import SubProtocol
+from modules.subprotocol import SubProtocol
 from modules.players import getplayer
 from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd
 from modules.timehelper import Now
