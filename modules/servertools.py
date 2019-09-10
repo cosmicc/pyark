@@ -2,7 +2,9 @@ import asyncio
 import subprocess
 from functools import partial
 from os.path import isfile
-from re import sub, compile as rcompile
+from re import compile as rcompile
+from re import sub
+
 import psutil
 from loguru import logger as log
 

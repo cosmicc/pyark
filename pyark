@@ -28,7 +28,7 @@ from modules.gchatrelay import asyncgchatrelay
 from modules.instances import statuscheck
 from modules.lottery import lotterywatcher_thread
 from modules.masterserver import GameLogger
-from modules.onlinemonitor import asynckickcheck, onlinecheck, asynconlinedblchecker
+from modules.onlinemonitor import asynckickcheck, asynconlinedblchecker, onlinecheck
 from modules.processlock import PLock
 from modules.servertools import processinststats, processserverstats, serverexec
 from modules.statcollector import statcollector_thread

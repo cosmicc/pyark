@@ -9,8 +9,8 @@ from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring
 from modules.players import asyncnewplayer
 from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd, filterline
-from modules.timehelper import Now, elapsedTime, playedTime
 from modules.subprotocol import SubProtocol
+from modules.timehelper import Now, elapsedTime, playedTime
 
 
 async def asyncstopsleep(sleeptime, stop_event):

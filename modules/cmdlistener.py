@@ -16,8 +16,8 @@ from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import asyncnewplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
                                  asyncserverexec, asyncserverscriptcmd)
-from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 from modules.subprotocol import SubProtocol
+from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 
 async def asyncwriteglobal(inst, whos, msg):
