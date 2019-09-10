@@ -43,7 +43,7 @@ signal.signal(signal.SIGQUIT, signal_handler)  # Hard Exit
 
 
 async def parse(inst, line):
-    print(repr(stripansi(line)))
+    print(repr(stripansi(line.decode())))
 
 
 async def finish(inst):
