@@ -1,8 +1,9 @@
 import asyncio
-import uvloop
+import logging
 import signal
 import warnings
-import logging
+
+import uvloop
 from loguru import logger as log
 
 main_stop_event = False

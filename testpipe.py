@@ -1,12 +1,13 @@
 import asyncio
-import uvloop
+import logging
 import signal
 import warnings
-import logging
-from modules.callbackclasses import StatusProtocol
 from functools import partial
 
+import uvloop
 from loguru import logger as log
+
+from modules.callbackclasses import StatusProtocol
 
 main_stop_event = False
 

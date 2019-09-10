@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 
 from loguru import logger as log
 
@@ -9,6 +10,35 @@ from modules.dbhelper import cleanstring
 from modules.players import asyncnewplayer
 from modules.servertools import asyncserverchatto, asyncserverexec, asyncserverrconcmd, asyncserverscriptcmd, serverexec
 from modules.timehelper import Now, elapsedTime, playedTime
+
+
+class OnlineProtocol(asyncio.SubprocessProtocol):
+
+    FD_NAMES = ['stdin', 'stdout', 'stderr']
+
+    def __init__(self, inst):
+        self.inst = inst
+        super().__init__()
+
+    def connection_made(self, transport):
+        log.trace('process started {}'.format(transport.get_pid()))
+        self.transport = transport
+
+    def pipe_data_received(self, fd, data):
+        log.trace(f'read {len(data)} bytes from {self.FD_NAMES[fd]}')
+        if fd == 1:
+            self._parse_results(data)
+
+    def process_exited(self):
+        log.trace('process exited')
+        return_code = self.transport.get_returncode()
+        log.trace('return code {}'.format(return_code))
+
+    def _parse_results(self, line):
+        log.trace('parsing results')
+        if not line:
+            return []
+        asyncio.create_task(asyncprocesscmdline(self.inst, line))
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -198,42 +228,32 @@ async def asynconlinedblchecker(instances):
         globvars.taskworkers.remove('dblchecker')
 
 
-async def asyncprocessline(inst, line):
-    try:
-        if line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
-            pass
-        else:
-            rawline = line.split(',')
-            if len(rawline) > 1:
-                steamid = rawline[1].strip()
-                steamname = cleanstring(rawline[0].split('. ', 1)[1])
-                if steamid not in globvars.greetings and steamid not in globvars.welcomes:
-                    globvars.greetings.add(steamid)
-                    asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
-                else:
-                    log.debug(f'online player greeting aleady running for {steamname}')
+async def asyncprocessline(inst, eline):
+    line = eline.decode()
+    if not line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
+        rawline = line.split(',')
+        if len(rawline) > 1:
+            steamid = rawline[1].strip()
+            steamname = cleanstring(rawline[0].split('. ', 1)[1])
+            if steamid not in globvars.greetings and steamid not in globvars.welcomes:
+                globvars.greetings.add(steamid)
+                asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
             else:
-                log.error(f'problem with parsing online player - {rawline}')
-    except:
-        log.exception('Exception in online monitor process line')
+                log.debug(f'online player greeting aleady running for {steamname}')
+        else:
+            log.error(f'problem with parsing online player - {rawline}')
 
 
-async def processplayerchunk(inst, chunk):
-    for line in iter(chunk.decode("utf-8").splitlines()):
-        await asyncprocessline(inst, line)
-    return True
+async def onlinesexecute(inst):
+    asyncloop = asyncio.get_running_loop()
+    factory = partial(OnlineProtocol, inst)
+    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'rconcmd', 'listplayers', f'@{inst}', stdin=None, stderr=None)
+    try:
+        transport, protocol = await proc
+    finally:
+        transport.close()
 
 
-async def runcommand(inst):
-    cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'ListPlayers', f'@{inst}'], wait=True)
-    asyncio.create_task(processplayerchunk(inst, cmdpipe['stdout']))
-    globvars.taskworkers.remove(f'{inst}-onlinecheck')
-
-
-async def asynconlinecheck(instances):
-        for inst in instances:
-            if f'{inst}-onlinecheck' not in globvars.taskworkers and inst in globvars.islistening:
-                globvars.taskworkers.add(f'{inst}-onlinecheck')
-                asyncio.create_task(runcommand(inst))
-                log.trace(f'running onlinecheck for {inst}')
-        return True
+async def runcmds(instances):
+    for inst in instances:
+        asyncio.create_task(onlineexecute(inst))

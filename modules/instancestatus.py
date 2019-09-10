@@ -1,7 +1,9 @@
 import asyncio
-import globvars
-from loguru import logger as log
 from re import compile as rcompile
+
+from loguru import logger as log
+
+import globvars
 from modules.asyncdb import DB as db
 
 
@@ -123,5 +125,3 @@ async def asyncfinishstatus(inst):
         if globvars.instplayers[inst]['connecting'] is not None and globvars.instplayers[inst]['active'] is not None and globvars.instlinks[inst]['steam'] is not None and globvars.instlinks[inst]['arkservers'] is not None:
             await db.update(f"""UPDATE instances SET steamlink = '{globvars.instlinks[inst]["steam"]}', arkserverslink = '{globvars.instlinks[inst]["arkservers"]}', connectingplayers = '{globvars.instplayers[inst]['connecting']}', activeplayers = '{globvars.instplayers[inst]['active']}' WHERE name = '{inst}'""")
         return True
-
-

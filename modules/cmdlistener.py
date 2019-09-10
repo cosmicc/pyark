@@ -1,8 +1,9 @@
 import asyncio
 import random
 from datetime import datetime, timedelta
-from time import time
 from functools import partial
+from time import time
+
 from loguru import logger as log
 
 import globvars

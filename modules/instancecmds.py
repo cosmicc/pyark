@@ -1,7 +1,9 @@
 import asyncio
-import globvars
-from loguru import logger as log
 from re import compile as rcompile
+
+from loguru import logger as log
+
+import globvars
 from modules.asyncdb import DB as db
 
 
