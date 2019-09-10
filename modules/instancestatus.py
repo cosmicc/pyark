@@ -91,7 +91,7 @@ async def asyncprocessstatusline(inst, eline):
 
 
 async def asyncfinishstatus(inst):
-    log.debug('running statusline completion task')
+    log.trace('running statusline completion task')
     if globvars.status_counts[inst]['running'] >= 3:
         isrunning = 0
         globvars.isrunning.discard(inst)
