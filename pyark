@@ -3,11 +3,9 @@ import argparse
 import asyncio
 import logging
 import signal
-import sys
 import threading
 import warnings
-from os import _exit, nice, stat
-from time import sleep, time
+from os import nice
 
 import aiohttp
 import uvloop
@@ -25,9 +23,9 @@ from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlog
                                   debugfile, gamelogfile, gamelograwfile, hstname, instances, instr,
                                   is_arkupdater, jsondebugfile, jsonlogfile, loglevel, pointsfile)
 from modules.dbhelper import dbquery, dbupdate
-from modules.gamelogger import dblcheckonline_thread, gamelogger_thread
+from modules.gamelogger import gamelogger_thread
 from modules.gchatrelay import asyncgchatrelay
-from modules.instances import instancelist, runstatus
+from modules.instancestatus import runstatus
 from modules.lottery import lotterywatcher_thread
 from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinecheck, asynconlinedblchecker
@@ -131,7 +129,7 @@ async def asyncmain():
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     serverpre = ['@all']
-    for each in instancelist():
+    for each in instance:
         serverpre.append(f'@{each}')
     atinstances = tuple(serverpre)
     await db.connect(process=__name__)

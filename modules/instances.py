@@ -61,54 +61,6 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
         log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
-async def asyncprocessstatusline(inst, eline):
-        line = eline.decode()
-        status_title = stripansi(line.split(':')[0]).strip()
-        if not status_title.startswith('Running command'):
-            status_value = stripansi(line.split(':')[1]).strip()
-            log.debug(f'processing status line: {line}')
-            if status_title == 'Server running':
-                if status_value == 'Yes':
-                    globvars.status_counts[inst]['running'] = 0
-                elif status_value == 'No':
-                    globvars.status_counts[inst]['running'] = globvars.status_counts[inst]['running'] + 1
-
-            elif status_title == 'Server listening':
-                if status_value == 'Yes':
-                    globvars.status_counts[inst]['listening'] = 0
-                elif status_value == 'No':
-                    globvars.status_counts[inst]['listening'] = globvars.status_counts[inst]['listening'] + 1
-
-            elif status_title == 'Server online':
-                if status_value == 'Yes':
-                    globvars.status_counts[inst]['online'] = 0
-                elif status_value == 'No':
-                    globvars.status_counts[inst]['online'] = globvars.status_counts[inst]['online'] + 1
-
-            elif status_title == 'Server PID':
-                globvars.instpids[inst] = int(status_value)
-
-            elif (status_title == 'Players'):
-                players = int(status_value.split('/')[0].strip())
-                globvars.instplayers[inst]['connecting'] = int(players)
-
-            elif (status_title == 'Active Players'):
-                globvars.instplayers[inst]['active'] = int(status_value)
-
-            elif (status_title == 'Server build ID'):
-                globvars.instarkbuild[inst] = int(status_value)
-
-            elif (status_title == 'Server version'):
-                globvars.instarkversion[inst] = status_value
-
-            elif (status_title == 'ARKServers link'):
-                arkserverslink = stripansi(line.split('  ')[1]).strip()
-                globvars.instlinks[inst]['arkservers'] = arkserverslink
-
-            elif (status_title == 'Steam connect link'):
-                steamlink = stripansi(line.split('  ')[1]).strip()
-                globvars.instlinks[inst]['steam'] = steamlink
-
 
 async def asyncfinishstatus(inst):
     log.debug('running statusline completion task')
