@@ -42,7 +42,7 @@ class OnlineProtocol(asyncio.SubprocessProtocol):
         log.trace('parsing results')
         if not line:
             return []
-        asyncio.create_task(asyncprocesscmdline(self.inst, line))
+        asyncio.create_task(asyncprocessonline(self.inst, line))
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -232,7 +232,7 @@ async def asynconlinedblchecker(instances):
         globvars.taskworkers.remove('dblchecker')
 
 
-async def asyncprocessline(inst, eline):
+async def asyncprocessonline(inst, eline):
     line = eline.decode()
     if not line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
         rawline = line.split(',')
