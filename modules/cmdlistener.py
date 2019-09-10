@@ -28,21 +28,21 @@ class CommandProtocol(asyncio.SubprocessProtocol):
         super().__init__()
 
     def connection_made(self, transport):
-        log.trace('process started {}'.format(transport.get_pid()))
+        log.debug('process started {}'.format(transport.get_pid()))
         self.transport = transport
 
     def pipe_data_received(self, fd, data):
-        log.trace(f'read {len(data)} bytes from {self.FD_NAMES[fd]}')
+        log.debug(f'read {len(data)} bytes from {self.FD_NAMES[fd]}')
         if fd == 1:
             self._parse_results(data)
 
     def process_exited(self):
-        log.trace('process exited')
+        log.debug('process exited')
         return_code = self.transport.get_returncode()
         log.trace('return code {}'.format(return_code))
 
     def _parse_results(self, line):
-        log.trace('parsing results')
+        log.debug('parsing results')
         if not line:
             return []
         asyncio.create_task(asyncprocesscmdline(self.inst, line))
@@ -756,7 +756,10 @@ async def asyncprocesscmdline(minst, eline):
             else:
                 ninst = ''
             log.log('CMD', f'Responding to a [!myhome] request for [{whoasked.title()}] on [{minst.title()}]')
-            await asynchomeserver(minst, whoasked, ninst)
+            message = "The Home command is disabled for repairs"
+            await asyncserverchat(inst, message)
+
+            #await asynchomeserver(minst, whoasked, ninst)
 
         elif incmd.startswith(('!vote', '!startvote', '!wipe')):
             log.debug(f'Responding to a [!vote] request from [{whoasked.title()}] on [{minst.title()}]')
