@@ -1,8 +1,8 @@
 import asyncio
 import globvars
 from loguru import logger as log
-from modules.instances import asyncfinishstatus
 from re import compile as rcompile
+from modules.asyncdb import DB as db
 
 
 class StatusProtocol(asyncio.SubprocessProtocol):
@@ -89,3 +89,40 @@ async def asyncprocessstatusline(inst, eline):
             elif (status_title == 'Steam connect link'):
                 steamlink = stripansi(line.split('  ')[1]).strip()
                 globvars.instlinks[inst]['steam'] = steamlink
+
+
+async def asyncfinishstatus(inst):
+    log.debug('running statusline completion task')
+    if globvars.status_counts[inst]['running'] >= 3:
+        isrunning = 0
+        globvars.isrunning.discard(inst)
+    else:
+        isrunning = 1
+        globvars.isrunning.add(inst)
+    if globvars.status_counts[inst]['listening'] >= 3:
+        globvars.islistening.discard(inst)
+        islistening = 0
+    else:
+        islistening = 1
+        globvars.islistening.add(inst)
+    if globvars.status_counts[inst]['online'] >= 3:
+        globvars.isonline.discard(inst)
+        isonline = 0
+    else:
+        globvars.isonline.add(inst)
+        isonline = 1
+    if globvars.instplayers[inst]['active'] is not None:
+        if int(globvars.instplayers[inst]['active']) > 0:
+            globvars.isrunning.add(inst)
+            globvars.islistening.add(inst)
+            globvars.isonline.add(inst)
+            isrunning = 1
+            islistening = 1
+            isonline = 1
+        log.trace(f'pid: {globvars.instpids[inst]}, online: {isonline}, listening: {islistening}, running: {isrunning}, {inst}')
+        await db.update(f"UPDATE instances SET serverpid = '{globvars.instpids[inst]}', isup = '{isonline}', islistening = '{islistening}', isrunning = '{isrunning}', arkbuild = '{globvars.instarkbuild[inst]}', arkversion = '{globvars.instarkversion[inst]}' WHERE name = '{inst}'")
+        if globvars.instplayers[inst]['connecting'] is not None and globvars.instplayers[inst]['active'] is not None and globvars.instlinks[inst]['steam'] is not None and globvars.instlinks[inst]['arkservers'] is not None:
+            await db.update(f"""UPDATE instances SET steamlink = '{globvars.instlinks[inst]["steam"]}', arkserverslink = '{globvars.instlinks[inst]["arkservers"]}', connectingplayers = '{globvars.instplayers[inst]['connecting']}', activeplayers = '{globvars.instplayers[inst]['active']}' WHERE name = '{inst}'""")
+        return True
+
+
