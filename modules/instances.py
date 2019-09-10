@@ -4,12 +4,11 @@ from re import compile as rcompile
 
 from loguru import logger as log
 
-import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
 from modules.instancestatus import StatusProtocol
 from modules.players import getplayer
-from modules.servertools import asyncserverexec, asyncserverrconcmd, asyncserverscriptcmd, serverexec
+from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd
 from modules.timehelper import Now
 
 
@@ -74,151 +73,9 @@ async def statusexecute(inst):
         transport.close()
 
 
-async def runstatus(instances):
+async def statuscheck(instances):
     for inst in instances:
         asyncio.create_task(statusexecute(inst))
-
-
-async def processstatusline(inst, splitlines):
-        players = None
-        serverbuild = None
-        activeplayers = None
-        steamlink = None
-        arkserverslink = None
-        serverversion = None
-        serverpid = 0
-        isrunning = 0
-        islistening = 0
-        isonline = 0
-        for line in splitlines:
-            status_title = stripansi(line.split(':')[0]).strip()
-            if (status_title == 'Server running'):
-                if stripansi(line.split(':')[1]).strip() == 'Yes':
-                    globvars.status_counts[inst]['running'] = 0
-                elif stripansi(line.split(':')[1]).strip() == 'No':
-                    globvars.status_counts[inst]['running'] = globvars.status_counts[inst]['running'] + 1
-            if (status_title == 'Server listening'):
-                if (stripansi(line.split(':')[1]).strip() == 'Yes'):
-                    globvars.status_counts[inst]['listening'] = 0
-                elif (stripansi(line.split(':')[1]).strip() == 'No'):
-                    globvars.status_counts[inst]['listening'] = globvars.status_counts[inst]['listening'] + 1
-            if (status_title == 'Server online'):
-                if (stripansi(line.split(':')[1]).strip() == 'Yes'):
-                    globvars.status_counts[inst]['online'] = 0
-                elif (stripansi(line.split(':')[1]).strip() == 'No'):
-                    globvars.status_counts[inst]['online'] = globvars.status_counts[inst]['online'] + 1
-            if (status_title == 'Server PID'):
-                serverpid = stripansi(line.split(':')[1]).strip()
-            if (status_title == 'Players'):
-                players = int(stripansi(line.split(':')[1]).strip().split('/')[0].strip())
-            if (status_title == 'Active Players'):
-                activeplayers = int(stripansi(line.split(':')[1]).strip())
-            if (status_title == 'Server build ID'):
-                serverbuild = stripansi(line.split(':')[1]).strip()
-            if (status_title == 'Server version'):
-                serverversion = stripansi(line.split(':')[1]).strip()
-            if (status_title == 'ARKServers link'):
-                arkserverslink = stripansi(line.split('  ')[1]).strip()
-            if (status_title == 'Steam connect link'):
-                steamlink = stripansi(line.split('  ')[1]).strip()
-        if globvars.status_counts[inst]['running'] >= 3:
-            isrunning = 0
-            globvars.isrunning.discard(inst)
-        else:
-            isrunning = 1
-            globvars.isrunning.add(inst)
-        if globvars.status_counts[inst]['listening'] >= 3:
-            globvars.islistening.discard(inst)
-            islistening = 0
-        else:
-            islistening = 1
-            globvars.islistening.add(inst)
-        if globvars.status_counts[inst]['online'] >= 3:
-            globvars.isonline.discard(inst)
-            isonline = 0
-        else:
-            globvars.isonline.add(inst)
-            isonline = 1
-        if activeplayers is not None:
-            if int(activeplayers) > 0:
-                globvars.isrunning.add(inst)
-                globvars.islistening.add(inst)
-                globvars.isonline.add(inst)
-                isrunning = 1
-                islistening = 1
-                isonline = 1
-            log.trace(f'pid: {serverpid}, online: {isonline}, listening: {islistening}, running: {isrunning}, {inst}')
-            await db.update(f"UPDATE instances SET serverpid = '{int(serverpid)}', isup = '{int(isonline)}', islistening = '{int(islistening)}', isrunning = '{int(isrunning)}', arkbuild = '{int(serverbuild)}', arkversion = '{serverversion}' WHERE name = '{inst}'")
-            if players is not None and activeplayers is not None and steamlink is not None and arkserverslink is not None:
-                await db.update(f"UPDATE instances SET steamlink = '{steamlink}', arkserverslink = '{arkserverslink}', connectingplayers = '{int(players)}', activeplayers = '{int(activeplayers)}' WHERE name = '{inst}'")
-            return True
-
-
-async def asyncgetinststatus(instances):
-    for inst in instances:
-        if f'{inst}-status' not in globvars.taskworkers:
-            globvars.taskworkers.add(f'{inst}-status')
-            asyncio.create_task(runstatus(inst))
-    return True
-
-
-def getinststatus(inst):
-    rawrun = serverexec(['arkmanager', 'status', f'@{inst}'], nice=15)
-    rawrun2 = rawrun['stdout'].decode('utf-8').split('\n')
-    serverrunning = 0
-    serveronline = 0
-    players = None
-    serverlistening = 0
-    serverbuild = None
-    activeplayers = None
-    steamlink = None
-    arkserverslink = None
-    serverversion = None
-    serverpid = 0
-    for ea in rawrun2:
-        sttitle = stripansi(ea.split(':')[0]).strip()
-        if (sttitle == 'Server running'):
-            if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
-                serverrunning = 1
-            elif (stripansi(ea.split(':')[1]).strip() == 'No'):
-                serverrunning = 0
-                serveronline = 0
-                serverlistening = 0
-        if (sttitle == 'Server PID'):
-            serverpid = stripansi(ea.split(':')[1]).strip()
-        if (sttitle == 'Server listening'):
-            if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
-                serverlistening = 1
-            elif (stripansi(ea.split(':')[1]).strip() == 'No'):
-                serveronline = 0
-        if (sttitle == 'Server online'):
-            if (stripansi(ea.split(':')[1]).strip() == 'Yes'):
-                serveronline = 1
-            elif (stripansi(ea.split(':')[1]).strip() == 'No'):
-                serveronline = 0
-        if (sttitle == 'Players'):
-            players = int(stripansi(ea.split(':')[1]).strip().split('/')[0].strip())
-        if (sttitle == 'Active Players'):
-            activeplayers = int(stripansi(ea.split(':')[1]).strip())
-        if (sttitle == 'Server build ID'):
-            serverbuild = stripansi(ea.split(':')[1]).strip()
-        if (sttitle == 'Server version'):
-            serverversion = stripansi(ea.split(':')[1]).strip()
-        if (sttitle == 'ARKServers link'):
-            arkserverslink = stripansi(ea.split('  ')[1]).strip()
-        if (sttitle == 'Steam connect link'):
-            steamlink = stripansi(ea.split('  ')[1]).strip()
-    try:
-        log.trace(f'pid: {serverpid}, online: {serveronline}, listening: {serverlistening}, running: {serverrunning}, {inst}')
-        dbupdate("UPDATE instances SET serverpid = '%s', isonline = '%s', islistening = '%s', isrunning = '%s' WHERE name = '%s'" % (int(serverpid), int(serveronline), int(serverlistening), int(serverrunning), inst))
-    except:
-        log.exception('Error writing up stats to database')
-    if players is not None and activeplayers is not None and serverbuild is not None and serverversion is not None and steamlink is not None and arkserverslink is not None:
-            try:
-                dbupdate("UPDATE instances SET arkbuild = '%s', arkversion = '%s', steamlink = '%s', arkserverslink = '%s', connectingplayers = '%s', activeplayers = '%s' WHERE name = '%s'" % (int(serverbuild), serverversion, steamlink, arkserverslink, int(players), int(activeplayers), inst))
-            except:
-                log.exception('Error writing extra stats to database')
-    return serverrunning, serverlistening, serveronline
 
 
 async def asyncisinstanceenabled(inst):

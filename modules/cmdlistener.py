@@ -818,6 +818,6 @@ async def cmdsexecute(inst):
         transport.close()
 
 
-async def runcmds(instances):
+async def cmdscheck(instances):
     for inst in instances:
         asyncio.create_task(cmdsexecute(inst))

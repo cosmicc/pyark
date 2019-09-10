@@ -244,7 +244,7 @@ async def asyncprocessline(inst, eline):
             log.error(f'problem with parsing online player - {rawline}')
 
 
-async def onlinesexecute(inst):
+async def onlineexecute(inst):
     asyncloop = asyncio.get_running_loop()
     factory = partial(OnlineProtocol, inst)
     proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'rconcmd', 'listplayers', f'@{inst}', stdin=None, stderr=None)
@@ -254,6 +254,6 @@ async def onlinesexecute(inst):
         transport.close()
 
 
-async def runcmds(instances):
+async def onlinecheck(instances):
     for inst in instances:
         asyncio.create_task(onlineexecute(inst))
