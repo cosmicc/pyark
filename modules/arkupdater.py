@@ -312,7 +312,7 @@ async def asyncrestartloop(inst, startonly=False):
 async def asynccheckmaint(instances):
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
-    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{hstname}-maintenance' not in globvars.taskworkers and inst in globvars.islistening:
+    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{hstname}-maintenance' not in globvars.taskworkers:
         globvars.taskworkers.add(f'{hstname}-maintenance')
         await asyncsetlastmaint(hstname)
         log.log('MAINT', f'Daily maintenance window has opened for server [{hstname.upper()}]...')
@@ -329,36 +329,37 @@ async def asynccheckmaint(instances):
         if serverneedsrestart():
             log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
         for inst in instances:
-            checkdirs(inst)
-            if serverneedsrestart():
-                await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
-            try:
-                log.log('MAINT', f'Performing a world data save on [{inst.title()}]...')
-                await asyncserverexec(['arkmanager', 'saveworld', f'@{inst}'])
-                await asyncio.sleep(30)
-                log.log('MAINT', f'Backing up server instance and archiving old players [{inst.title()}]...')
-                await asyncserverexec(['arkmanager', 'backup', f'@{inst}'])
-                # sleep(30)
-                # log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
-                # os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
-                await asyncio.sleep(30)
-                log.log('MAINT', f'Running all dino and map maintenance on server [{inst.title()}]...')
-                await asyncwipeit(inst, dinos=False, eggs=True, dams=True, mating=True, bees=False)
-                await asyncio.sleep(30)
-                lstsv = await asyncgetlastrestart(inst)
-                eventreboot = await asynciseventrebootday()
-                if eventreboot:
-                    maintrest = f"{eventreboot}"
-                    await asyncinstancerestart(inst, maintrest)
-                elif Now() - float(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst):
-                    maintrest = "maintenance restart"
-                    await asyncinstancerestart(inst, maintrest)
-                else:
-                    message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
-                    await asyncserverchat(inst, message)
-            except:
-                log.exception(f'Error during {hstname} instance daily maintenance')
-                globvars.taskworkers.remove(f'{hstname}-maintenance')
+            if inst in globvars.islistening:
+                checkdirs(inst)
+                if serverneedsrestart():
+                    await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
+                try:
+                    log.log('MAINT', f'Performing a world data save on [{inst.title()}]...')
+                    await asyncserverexec(['arkmanager', 'saveworld', f'@{inst}'])
+                    await asyncio.sleep(30)
+                    log.log('MAINT', f'Backing up server instance and archiving old players [{inst.title()}]...')
+                    await asyncserverexec(['arkmanager', 'backup', f'@{inst}'])
+                    # sleep(30)
+                    # log.debug(f'Archiving player and tribe data on [{inst.title()}]...')
+                    # os.system('find /home/ark/ARK/ShooterGame/Saved/%s-data/ -maxdepth 1 -mtime +90 ! -path "*/ServerPaintingsCache/*" -path /home/ark/ARK/ShooterGame/Saved/%s-data/archive -prune -exec mv "{}" /home/ark/ARK/ShooterGame/Saved/%s-data/archive \;' % (inst, inst, inst))
+                    await asyncio.sleep(30)
+                    log.log('MAINT', f'Running all dino and map maintenance on server [{inst.title()}]...')
+                    await asyncwipeit(inst, dinos=False, eggs=True, dams=True, mating=True, bees=False)
+                    await asyncio.sleep(30)
+                    lstsv = await asyncgetlastrestart(inst)
+                    eventreboot = await asynciseventrebootday()
+                    if eventreboot:
+                        maintrest = f"{eventreboot}"
+                        await asyncinstancerestart(inst, maintrest)
+                    elif Now() - float(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst):
+                        maintrest = "maintenance restart"
+                        await asyncinstancerestart(inst, maintrest)
+                    else:
+                        message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
+                        await asyncserverchat(inst, message)
+                except:
+                    log.exception(f'Error during {hstname} instance daily maintenance')
+                    globvars.taskworkers.remove(f'{hstname}-maintenance')
         await asynccheckwipe(instances)
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
         globvars.taskworkers.remove(f'{hstname}-maintenance')
