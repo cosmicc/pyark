@@ -186,9 +186,9 @@ async def asynckickcheck(instances):
 
 @log.catch
 async def asynconlinedblchecker(instances):
-    if 'dblchecker' not in globvars.taskworkers:
-        globvars.taskworkers.add('dblchecker')
-        for inst in instances:
+    globvars.taskworkers.add('dblchecker')
+    for inst in instances:
+        if globvars.instplayers[inst]['active'] is not None and globvars.instplayers[inst]['online']:
             if inst in globvars.islistening:
                 log.trace(f'Running online doublechecker for {inst}')
                 players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = '{inst}'")
