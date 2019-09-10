@@ -240,18 +240,20 @@ async def asyncprocessonline(inst, eline):
     if line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
         pass
     else:
-        rawline = line.split('\n').split(',')
-        print(f'### {rawline}')
-        if len(rawline) > 1:
-            steamid = rawline[1].strip()
-            steamname = cleanstring(rawline[0].split('. ', 1)[1])
-            if steamid not in globvars.greetings and steamid not in globvars.welcomes:
-                globvars.greetings.add(steamid)
-                asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
+        lines = line.split('\n')
+        for line in lines:
+            rawline = line.split(',')
+            print(f'### {rawline}')
+            if len(rawline) > 1:
+                steamid = rawline[1].strip()
+                steamname = cleanstring(rawline[0].split('. ', 1)[1])
+                if steamid not in globvars.greetings and steamid not in globvars.welcomes:
+                    globvars.greetings.add(steamid)
+                    asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
+                else:
+                    log.debug(f'online player greeting aleady running for {steamname}')
             else:
-                log.debug(f'online player greeting aleady running for {steamname}')
-        else:
-            log.error(f'problem with parsing online player - {rawline}')
+                log.error(f'problem with parsing online player - {rawline}')
 
 
 async def onlineexecute(inst):
