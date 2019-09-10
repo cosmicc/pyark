@@ -38,7 +38,7 @@ class SubProtocol(asyncio.SubprocessProtocol):
     def _parse_results(self, line):
         if not line:
             return []
-        asyncio.create_task(self.pasrsetask(self.inst, line))
+        asyncio.create_task(self.parsetask(self.inst, line))
 
 
 def stripansi(stripstr):
