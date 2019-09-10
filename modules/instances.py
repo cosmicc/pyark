@@ -129,7 +129,10 @@ async def asyncprocessstatusline(inst, eline):
                 globvars.instplayers[inst]['active'] = active
 
             elif (status_title == 'Server build ID'):
-                globvars.instarkbuild[inst] = int(status_value)
+                try:
+                    globvars.instarkbuild[inst] = int(status_value)
+                except ValueError:
+                    globvars.instarkbuild[inst] = None
 
             elif (status_title == 'ARKServers link'):
                 globvars.instlinks[inst]['arkservers'] = status_value

@@ -321,11 +321,11 @@ async def asynccheckmaint(instances):
             await asyncserverbcast(inst, bcast)
         log.log('MAINT', f'Running server os maintenance on [{hstname.upper()}]...')
         log.debug(f'OS update started for {hstname}')
-        await asyncserverexec(['apt', 'update'], wait=True)
+        await asyncserverexec(['apt', 'update'], _wait=True)
         log.debug(f'OS upgrade started for {hstname}')
-        await asyncserverexec(['apt', 'upgrade', '-y'], wait=True)
+        await asyncserverexec(['apt', 'upgrade', '-y'], _wait=True)
         log.debug(f'OS autoremove started for {hstname}')
-        await asyncserverexec(['apt', 'autoremove', '-y'], wait=True)
+        await asyncserverexec(['apt', 'autoremove', '-y'], _wait=True)
         if serverneedsrestart():
             log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
         for inst in instances:
@@ -474,7 +474,7 @@ async def asynccheckupdates(instances):
     for inst in instances:
         checkdirs(inst)
         if f'{inst}-restarting' not in globvars.taskworkers:
-            ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{inst}'], wait=True)
+            ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{inst}'], wait=True) ##############
             ismodupd = ismodupdd['stdout'].decode('utf-8')
             modchk = 0
             ismodupd = ismodupd.split('\n')
