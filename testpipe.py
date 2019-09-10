@@ -7,7 +7,7 @@ from functools import partial
 import uvloop
 from loguru import logger as log
 
-from configreader import instances
+from modules.configreader import instances
 from modules.subprotocol import SubProtocol
 
 main_stop_event = False
@@ -53,7 +53,7 @@ async def statusexecute(inst):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
     factory = partial(SubProtocol, cmd_done, inst, parsetask=parse, finishtask=finish)
-    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'checkupdates', f'@{inst}', stdin=None, stderr=None)
+    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'checkupdate', f'@{inst}', stdin=None, stderr=None)
     try:
         transport, protocol = await proc
         await cmd_done
