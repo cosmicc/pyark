@@ -240,8 +240,8 @@ async def asyncprocessonline(inst, eline):
     if line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
         pass
     else:
-        print(f'### {line}')
-        rawline = line.split(',')
+        rawline = line.split('\n').split(',')
+        print(f'### {rawline}')
         if len(rawline) > 1:
             steamid = rawline[1].strip()
             steamname = cleanstring(rawline[0].split('. ', 1)[1])
