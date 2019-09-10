@@ -131,12 +131,10 @@ async def asyncprocessstatusline(inst, eline):
                 globvars.instarkversion[inst] = status_value
 
             elif (status_title == 'ARKServers link'):
-                arkserverslink = stripansi(line.split('  ')[1]).strip()
-                globvars.instlinks[inst]['arkservers'] = arkserverslink
+                globvars.instlinks[inst]['arkservers'] = status_value
 
             elif (status_title == 'Steam connect link'):
-                steamlink = stripansi(line.split('  ')[1]).strip()
-                globvars.instlinks[inst]['steam'] = steamlink
+                globvars.instlinks[inst]['steam'] = status_value
 
 
 async def statusexecute(inst):
