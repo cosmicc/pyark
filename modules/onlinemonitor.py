@@ -82,7 +82,7 @@ async def asynccheckifbanned(steamid):
 @log.catch
 async def asyncplayergreet(steamid, steamname, inst):
     xferpoints = 0
-    log.debug(f'processing greeting for [{steamname}]')
+    log.trace(f'processing greeting for [{steamname}]')
     if await asynccheckifbanned(steamid):
         log.warning(f'BANNED player [{steamname}] [{steamid}] has tried to connect or is online on [{inst.title()}]. kicking and banning.')
         await asyncserverchatto(inst, steamid, 'You are not welcome here. Goodbye')
