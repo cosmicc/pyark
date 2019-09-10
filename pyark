@@ -159,7 +159,6 @@ async def asyncmain():
                 globvars.timer.update({'kickcheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck']:
-                log.debug(f'players: {globvars.instplayers}')
                 asyncio.create_task(cmdscheck(instances))
                 if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] + 2:
                     log.error(f'cmdcheck was delayed {asynclooptime - globvars.timer["cmdcheck"] - globvars.delay["cmdcheck"]}')
