@@ -237,6 +237,7 @@ async def asynconlinedblchecker(instances):
 async def asyncprocessonline(inst, eline):
     line = eline.decode().strip('\n "\n')
     print(f'# {eline}')
+    print(f'## {line}')
     if line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
         pass
     else:
