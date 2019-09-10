@@ -7,7 +7,8 @@ from functools import partial
 import uvloop
 from loguru import logger as log
 
-from modules.callbackclasses import StatusProtocol
+from configreader import instances
+from modules.subprotocol import SubProtocol
 
 main_stop_event = False
 
@@ -40,11 +41,19 @@ signal.signal(signal.SIGINT, signal_handler)  # Hard Exit
 signal.signal(signal.SIGQUIT, signal_handler)  # Hard Exit
 
 
+async def parse(inst, line):
+    print(repr(line))
+
+
+async def finish(inst):
+    pass
+
+
 async def statusexecute(inst):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
-    factory = partial(StatusProtocol, cmd_done, inst)
-    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'status', f'@{inst}', stdin=None, stderr=None)
+    factory = partial(SubProtocol, cmd_done, inst, parsetask=parse, finishtask=finish)
+    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'checkupdates', f'@{inst}', stdin=None, stderr=None)
     try:
         transport, protocol = await proc
         await cmd_done
