@@ -2,7 +2,7 @@ import asyncio
 import random
 from datetime import datetime, timedelta
 from time import time
-
+from functools import partial
 from loguru import logger as log
 
 import globvars
@@ -16,6 +16,37 @@ from modules.players import asyncnewplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
                                  asyncserverexec, asyncserverscriptcmd)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
+
+
+class CommandProtocol(asyncio.SubprocessProtocol):
+
+    FD_NAMES = ['stdin', 'stdout', 'stderr']
+
+    def __init__(self, done_future, inst):
+        self.done = done_future
+        self.inst = inst
+        super().__init__()
+
+    def connection_made(self, transport):
+        log.trace('process started {}'.format(transport.get_pid()))
+        self.transport = transport
+
+    def pipe_data_received(self, fd, data):
+        log.trace(f'read {len(data)} bytes from {self.FD_NAMES[fd]}')
+        if fd == 1:
+            self._parse_results(data)
+
+    def process_exited(self):
+        log.trace('process exited')
+        return_code = self.transport.get_returncode()
+        log.trace('return code {}'.format(return_code))
+        self.done.set_result((return_code))
+
+    def _parse_results(self, line):
+        log.trace('parsing results')
+        if not line:
+            return []
+        asyncio.create_task(asyncprocesscmdline(self.inst, line))
 
 
 async def asyncwriteglobal(inst, whos, msg):
@@ -563,7 +594,7 @@ async def asyncchatlinedetected(inst, chatdict):
 
 
 @log.catch
-async def asyncprocessline(minst, atinstances, line):
+async def asyncprocesscmdline(minst, atinstances, line):
     inst = minst
     if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
         pass
@@ -777,16 +808,21 @@ async def asyncprocessline(minst, atinstances, line):
             await asyncchatlinedetected(inst, chatdict)
 
 
-async def processcmdchunk(inst, atinstances, chunk):
-        for line in iter(chunk.decode("utf-8").splitlines()):
-            await asyncprocessline(inst, atinstances, line)
-        return True
+async def cmdsexecute(inst):
+    asyncloop = asyncio.get_running_loop()
+    cmd_done = asyncio.Future(loop=asyncloop)
+    factory = partial(CommandProtocol, cmd_done, inst)
+    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'getgamelog', f'@{inst}', stdin=None, stderr=None)
+    try:
+        transport, protocol = await proc
+        await cmd_done
+    finally:
+        transport.close()
 
 
-async def cmdrunner(inst, atinstances):
-    cmdpipe = await asyncserverexec(['arkmanager', 'rconcmd', 'getgamelog', f'@{inst}'], wait=True)
-    asyncio.create_task(processcmdchunk(inst, atinstances, cmdpipe['stdout']))
-    globvars.taskworkers.remove(f'{inst}-cmdcheck')
+async def runcmds(instances):
+    for inst in instances:
+        asyncio.create_task(cmdsexecute(inst))
 
 
 async def asynccmdcheck(instances, atinstances):
