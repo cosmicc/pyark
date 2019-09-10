@@ -18,7 +18,7 @@ from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_t
 from modules.arkupdater import asynccheckbackup, asynccheckmaint, asynccheckrestart, asynccheckupdates, asynccheckwipe
 from modules.asyncdb import DB as db
 from modules.clusterevents import eventwatcher_thread
-from modules.cmdlistener import cmdcheck
+from modules.cmdlistener import cmdscheck
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
                                   debugfile, gamelogfile, gamelograwfile, hstname, instances, instr,
                                   is_arkupdater, jsondebugfile, jsonlogfile, loglevel, pointsfile)
