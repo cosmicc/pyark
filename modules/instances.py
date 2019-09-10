@@ -98,7 +98,7 @@ async def asyncfinishstatus(inst):
 
 async def asyncprocessstatusline(inst, eline):
         line = eline.decode()
-        print(stripansi(line.replace('\n', '').replace('\r', '')))
+        print(stripansi(line.replace('\n', '').replace('\r', '')).strip())
         status_title = stripansi(line.split(':')[0]).strip()
         if not status_title.startswith('Running command'):
             status_value = stripansi(line.split(':')[1]).strip()
