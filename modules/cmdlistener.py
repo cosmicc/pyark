@@ -594,7 +594,8 @@ async def asyncchatlinedetected(inst, chatdict):
 
 
 @log.catch
-async def asyncprocesscmdline(minst, line):
+async def asyncprocesscmdline(minst, eline):
+    line = eline.decode()
     inst = minst
     if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
         pass
