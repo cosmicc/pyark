@@ -8,6 +8,7 @@ from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.servertools import asyncserverexec, asyncserverrconcmd, asyncserverscriptcmd, serverexec
+from modules.instancestatus import StatusProtocol
 from modules.timehelper import Now
 
 
@@ -60,6 +61,21 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
         log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
 
 
+async def statusexecute(inst):
+    asyncloop = asyncio.get_running_loop()
+    cmd_done = asyncio.Future(loop=asyncloop)
+    factory = partial(StatusProtocol, cmd_done, inst)
+    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'status', f'@{inst}', stdin=None, stderr=None)
+    try:
+        transport, protocol = await proc
+        await cmd_done
+    finally:
+        transport.close()
+
+
+async def runstatus(instances):
+    for inst in instances:
+        asyncio.create_task(statusexecute(inst))
 
 
 async def processstatusline(inst, splitlines):
