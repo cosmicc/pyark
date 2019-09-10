@@ -813,7 +813,7 @@ async def cmdsexecute(inst):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
     factory = partial(CommandProtocol, cmd_done, inst)
-    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'getgamelog', f'@{inst}', stdin=None, stderr=None)
+    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'rconcmd', 'getgamelog', f'@{inst}', stdin=None, stderr=None)
     try:
         transport, protocol = await proc
         await cmd_done
