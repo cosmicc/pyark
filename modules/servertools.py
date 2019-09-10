@@ -36,9 +36,8 @@ async def gettotaldbconnections():
 async def asyncserverrconcmd(inst, command, nice=5):
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "{command}" @{inst}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
-    log.debug(f'cmd: {cmdstring}')
     asyncio.create_task(proc)
-    return True
+    log.debug(f'cmd: {cmdstring}')
 
 
 @log.catch
@@ -47,7 +46,6 @@ async def asyncserverscriptcmd(inst, command, nice=5):
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
-    return True
 
 
 @log.catch
@@ -56,7 +54,6 @@ async def asyncserverchat(inst, message, nice=15):
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
-    return True
 
 
 @log.catch
@@ -65,7 +62,6 @@ async def asyncserverchatto(inst, steamid, message, nice=15):
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
-    return True
 
 
 @log.catch
@@ -74,7 +70,6 @@ async def asyncserverbcast(inst, bcast, nice=10):
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f"""cmd: {repr(cmdstring)}""")
-    return True
 
 
 @log.catch
@@ -83,21 +78,21 @@ async def asyncservernotify(inst, message, nice=10):
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f"""cmd: {repr(cmdstring)}""")
-    return True
 
 
 @log.catch
-async def asyncserverexec(cmdlist, nice=19, wait=False):
+async def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)
     if wait:
         proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
         stdout, stderr = await proc.communicate()
         return {'returncode': proc.returncode, 'stdout': stdout}
-    else:
+    elif _wait:
         proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
-        log.trace(f'cmd: [{cmdstring}]')
-        return True
+        await proc.communicate()
+    else:
+        await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
 
 
 def removerichtext(text):
