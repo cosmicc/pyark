@@ -47,7 +47,6 @@ async def asyncprocessstatusline(inst, eline):
         status_title = stripansi(line.split(':')[0]).strip()
         if not status_title.startswith('Running command'):
             status_value = stripansi(line.split(':')[1]).strip()
-            log.debug(f'processing status line: {line}')
             if status_title == 'Server running':
                 if status_value == 'Yes':
                     globvars.status_counts[inst]['running'] = 0
