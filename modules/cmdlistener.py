@@ -569,7 +569,6 @@ async def asyncprocesscmdline(minst, eline):
     dline = eline.decode().replace('"', '').strip()
     lines = dline.split('\n')
     for line in lines:
-        log.debug(f'# {line}')
         inst = minst
         if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
             pass
