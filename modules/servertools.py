@@ -13,9 +13,13 @@ from modules.asyncdb import DB as db
 from modules.timehelper import Now, elapsedTime
 
 
-def filterline(stripstr):
+def stripansi(stripstr):
     ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-    return(ansi_escape.sub('', stripstr).replace('\n', '').replace('\r', '').replace('"', '').strip())
+    return(ansi_escape.sub('', stripstr).strip())
+
+
+def filterline(stripstr):
+    return(stripansi(stripstr).replace('\n', '').replace('\r', '').replace('"', '').strip())
 
 
 def asynctimeit(func):

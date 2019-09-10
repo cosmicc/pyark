@@ -8,6 +8,7 @@ import uvloop
 from loguru import logger as log
 
 from modules.configreader import instances
+from modules.servertools import stripansi
 from modules.subprotocol import SubProtocol
 
 main_stop_event = False
@@ -42,7 +43,7 @@ signal.signal(signal.SIGQUIT, signal_handler)  # Hard Exit
 
 
 async def parse(inst, line):
-    print(repr(line))
+    print(repr(stripansi(line)))
 
 
 async def finish(inst):
