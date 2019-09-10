@@ -198,7 +198,7 @@ async def asynconlinedblchecker(instances):
                     if player['homeserver'] != inst:
                         command = f'tcsar setarctotal {player["steamid"]} 0'
                         await asyncserverscriptcmd(inst, command)
-        globvars.taskworkers.remove('dblchecker')
+        globvars.taskworkers.discard('dblchecker')
 
 
 @log.catch
