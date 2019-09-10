@@ -18,7 +18,7 @@ from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_t
 from modules.arkupdater import asynccheckbackup, asynccheckmaint, asynccheckrestart, asynccheckupdates, asynccheckwipe
 from modules.asyncdb import DB as db
 from modules.clusterevents import eventwatcher_thread
-from modules.cmdlistener import asynccmdcheck
+from modules.cmdlistener import runcmds
 from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
                                   debugfile, gamelogfile, gamelograwfile, hstname, instances, instr,
                                   is_arkupdater, jsondebugfile, jsonlogfile, loglevel, pointsfile)
@@ -123,15 +123,11 @@ async def asyncmain():
     main_stop_event = False
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
-    #for s in signals:
+    # for s in signals:
     #    asyncloop.add_signal_handler(s, lambda s=s: asyncio.create_task(async_signal_handler(s, asyncloop)))
     globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
-    serverpre = ['@all']
-    for each in instances:
-        serverpre.append(f'@{each}')
-    atinstances = tuple(serverpre)
     await db.connect(process=__name__)
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
@@ -163,7 +159,7 @@ async def asyncmain():
                 globvars.timer.update({'kickcheck': asyncloop.time()})
 
             if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck']:
-                asyncio.create_task(asynccmdcheck(instances, atinstances))
+                asyncio.create_task(runcmds(instances))
                 if asynclooptime - globvars.timer['cmdcheck'] > globvars.delay['cmdcheck'] + 2:
                     log.error(f'cmdcheck was delayed {asynclooptime - globvars.timer["cmdcheck"] - globvars.delay["cmdcheck"]}')
                 globvars.timer.update({'cmdcheck': asyncloop.time()})

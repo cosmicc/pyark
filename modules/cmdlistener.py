@@ -594,7 +594,7 @@ async def asyncchatlinedetected(inst, chatdict):
 
 
 @log.catch
-async def asyncprocesscmdline(minst, atinstances, line):
+async def asyncprocesscmdline(minst, line):
     inst = minst
     if len(line) < 3 or line.startswith('Running command') or line.startswith('Command processed') or isserver(line) or line.find('Force respawning Wild Dinos!') != -1:
         pass
@@ -798,7 +798,7 @@ async def asyncprocesscmdline(minst, atinstances, line):
             message = "Invalid command. Try !help"
             await asyncserverchatto(inst, steamid, message)
 
-        elif incmd.startswith(atinstances):
+        elif incmd.startswith(globvars.atinstances):
             newchatline = chatdict['line'].split(" ", 1)[1]
             tstamp = chatdict['time'].strftime('%m-%d %I:%M%p')
             await asyncwriteglobal(minst, chatdict['name'], newchatline)

@@ -31,6 +31,7 @@ status_counts = {}  # Counts for running checks (to avoid false positives)
 sharedpath = Path(sharedpath)
 arkrootpath = Path(arkroot)
 
+serverpre = ['@all']
 arkmanager_paths = []
 gameini_customconfig_files = {}
 gusini_customconfig_files = {}
@@ -50,3 +51,6 @@ for inst in instances:
     instarkbuild.update({inst: None})
     instarkversion.update({inst: None})
     instlinks.update({inst: {'steam': None, 'arkservers': None}})
+    serverpre.append(f'@{inst}')
+
+atinstances = tuple(serverpre)
