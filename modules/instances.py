@@ -1,6 +1,5 @@
 import asyncio
 from functools import partial
-from re import compile as rcompile
 
 from loguru import logger as log
 import globvars
@@ -8,13 +7,8 @@ from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
 from modules.subprotocol import SubProtocol
 from modules.players import getplayer
-from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd
+from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, filterline
 from modules.timehelper import Now
-
-
-def stripansi(stripstr):
-    ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-    return(ansi_escape.sub('', stripstr))
 
 
 @log.catch
@@ -97,7 +91,7 @@ async def asyncfinishstatus(inst):
 
 
 async def asyncprocessstatusline(inst, eline):
-        line = stripansi(eline.decode().replace('\n', '').replace('\r', '')).strip()
+        line = filterline(eline.decode())
         status_title = line.split(':', 1)[0]
         if not status_title.startswith('Running command'):
             status_value = line.split(':', 1)[1].strip()

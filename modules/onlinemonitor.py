@@ -8,7 +8,7 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring
 from modules.players import asyncnewplayer
-from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd
+from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd, filterline
 from modules.timehelper import Now, elapsedTime, playedTime
 from modules.subprotocol import SubProtocol
 
@@ -203,7 +203,8 @@ async def asynconlinedblchecker(instances):
 
 @log.catch
 async def asyncprocessonline(inst, eline):
-    line = eline.decode().strip('\n "\n')
+    line = filterline(eline.decode())
+    log.debug(f'# {line}')
     if line.startswith(('Running command', '"', ' "', 'Error:')):
         pass
     elif line == 'No Players Connected':

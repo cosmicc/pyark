@@ -2,14 +2,18 @@ import asyncio
 import subprocess
 from functools import partial
 from os.path import isfile
-from re import sub
-
+from re import sub, compile as rcompile
 import psutil
 from loguru import logger as log
 
 import globvars
 from modules.asyncdb import DB as db
 from modules.timehelper import Now, elapsedTime
+
+
+def filterline(stripstr):
+    ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    return(ansi_escape.sub('', stripstr).replace('\n', '').replace('\r', '').strip())
 
 
 def asynctimeit(func):
