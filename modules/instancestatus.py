@@ -15,6 +15,7 @@ class SubProtocol(asyncio.SubprocessProtocol):
         self.done = done_future
         self.inst = inst
         self.finishtask = finishtask
+        self.parsetask = parsetask
         super().__init__()
 
     def connection_made(self, transport):
