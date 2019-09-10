@@ -85,10 +85,11 @@ async def asyncmain():
         await asyncio.sleep(3)
     '''    
     pubsub.close()
+    await redis.connection_pool.disconnect()
+    print(asyncio.all_tasks())
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
-    await redis.connection_pool.disconnect()
     log.debug('All async tasks have finished')
 
 
