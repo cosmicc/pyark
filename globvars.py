@@ -47,7 +47,7 @@ for inst in instances:
     status_counts.update({inst: {'running': 0, 'listening': 0, 'online': 0}})
     instpidfiles.update({inst: Path(f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid')})
     instpids.update({inst: None})
-    instplayers.update({inst: {'active': None, 'connecting': None}})
+    instplayers.update({inst: {'online': None, 'active': None, 'connecting': None}})
     instarkbuild.update({inst: None})
     instarkversion.update({inst: None})
     instlinks.update({inst: {'steam': None, 'arkservers': None}})

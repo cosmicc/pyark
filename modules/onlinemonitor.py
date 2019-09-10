@@ -204,13 +204,16 @@ async def asynconlinedblchecker(instances):
 @log.catch
 async def asyncprocessonline(inst, eline):
     line = eline.decode().strip('\n "\n')
+    print(f'ELINE: {eline}')
+    print(f'LINE: {line}')
     if line.startswith(('Running command', '"', ' "', 'Error:', '"No Players')):
         pass
     else:
         lines = line.split('\n')
+        players = 0
         for line in lines:
+            players = players + 1
             rawline = line.split(',')
-            print(f'### {rawline}')
             if len(rawline) > 1:
                 steamid = rawline[1].strip()
                 steamname = cleanstring(rawline[0].split('. ', 1)[1])
@@ -221,6 +224,7 @@ async def asyncprocessonline(inst, eline):
                     log.debug(f'online player greeting aleady running for {steamname}')
             else:
                 log.error(f'problem with parsing online player - {rawline}')
+        globvars.instplayers[inst]['online'] = players
 
 
 async def onlineexecute(inst):
