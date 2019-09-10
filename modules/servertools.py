@@ -13,7 +13,7 @@ from modules.timehelper import Now, elapsedTime
 
 def filterline(stripstr):
     ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-    return(ansi_escape.sub('', stripstr).replace('\n', '').replace('\r', '').strip())
+    return(ansi_escape.sub('', stripstr).replace('\n', '').replace('\r', '').replace('"', '').strip())
 
 
 def asynctimeit(func):
