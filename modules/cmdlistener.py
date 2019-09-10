@@ -22,8 +22,7 @@ class CommandProtocol(asyncio.SubprocessProtocol):
 
     FD_NAMES = ['stdin', 'stdout', 'stderr']
 
-    def __init__(self, done_future, inst):
-        self.done = done_future
+    def __init__(self, inst):
         self.inst = inst
         super().__init__()
 
@@ -811,12 +810,10 @@ async def asyncprocesscmdline(minst, eline):
 
 async def cmdsexecute(inst):
     asyncloop = asyncio.get_running_loop()
-    cmd_done = asyncio.Future(loop=asyncloop)
-    factory = partial(CommandProtocol, cmd_done, inst)
+    factory = partial(CommandProtocol, inst)
     proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'rconcmd', 'getgamelog', f'@{inst}', stdin=None, stderr=None)
     try:
         transport, protocol = await proc
-        await cmd_done
     finally:
         transport.close()
 
@@ -824,12 +821,3 @@ async def cmdsexecute(inst):
 async def runcmds(instances):
     for inst in instances:
         asyncio.create_task(cmdsexecute(inst))
-
-
-async def asynccmdcheck(instances, atinstances):
-        for inst in instances:
-            if f'{inst}-cmdcheck' not in globvars.taskworkers and inst in globvars.islistening:
-                globvars.taskworkers.add(f'{inst}-cmdcheck')
-                asyncio.create_task(cmdrunner(inst, atinstances))
-                log.trace(f'running command check for {inst}')
-        return True
