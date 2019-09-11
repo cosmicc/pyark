@@ -50,8 +50,11 @@ psql_port = config.get('postgresql', 'port')
 psql_user = config.get('postgresql', 'user')
 psql_pw = config.get('postgresql', 'password')
 psql_db = config.get('postgresql', 'db')
-psql_statsdb = config.get('postgresql', 'statsdb')
-# psql_stats = "dbname='pyarkstats', user='pyark', host='{pshost}', port='{psport}', password='{pspw}'"
+
+# Redis
+redis_host = config.get('redis', 'host')
+redis_port = config.get('redis', 'port')
+redis_pw = config.get('redis', 'password')
 
 # Discord
 generalchat_id = config.get('discord', 'general_channel')

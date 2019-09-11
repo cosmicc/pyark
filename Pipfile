@@ -37,6 +37,7 @@ hypercorn = "*"
 fastapi = "*"
 fsmonitor = "*"
 aredis = "*"
+redis = "*"
 
 [requires]
 python_version = "3.7"
