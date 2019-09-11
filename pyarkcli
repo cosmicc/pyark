@@ -14,17 +14,20 @@ from modules.colorizer import (BCYN, BGN, BGRN, BLU, BMGT, BRED, BWHT, BYEL, GRN
 from modules.configreader import redis_host, redis_port
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('action_to_perform', action='store', choices=['start', 'stop', 'restart', 'log', 'debuglog', 'stopall', 'restartall', 'update', 'updateall'], help='Action to perform')
+parser.add_argument('action_to_perform', action='store', choices=['start', 'stop', 'restart', 'log', 'debuglog', 'startall', 'stopall', 'restartall', 'update', 'updateall', 'kill', 'killall'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
-action_group.add_argument('start', action='store_true', help='Start the pyark daemon Systemctl')
-action_group.add_argument('stop', action='store_true', help='Stop the pyark daemon Systemctl')
+action_group.add_argument('start', action='store_true', help='Start a pyark daemon')
+action_group.add_argument('startall', action='store_true', help='Start all the pyark daemons')
+action_group.add_argument('stop', action='store_true', help='Stop a pyark daemon')
 action_group.add_argument('stopall', action='store_true', help='Stop all the pyark daemons')
-action_group.add_argument('restart', action='store_true', help='Restart the pyark daemon Systemctl')
+action_group.add_argument('restart', action='store_true', help='Restart a pyark daemon')
 action_group.add_argument('restartall', action='store_true', help='Restart all the pyark daemons')
 action_group.add_argument('update', action='store_true', help='Update check a pyark daemon')
 action_group.add_argument('updateall', action='store_true', help='Update check all the pyark daemons')
+action_group.add_argument('kill', action='store_true', help='Kill a pyark daemon')
+action_group.add_argument('killall', action='store_true', help='Kill all the pyark daemons')
 action_group.add_argument('log', action='store_true', help='Pyark log')
-action_group.add_argument('debuglog', action='store_true', help='Pyark log')
+action_group.add_argument('debuglog', action='store_true', help='Pyark debug log')
 
 parser.add_argument('-s', '--server', action='store', help='Server name')
 parser.add_argument('-l', '--loglines', action='store', help='Number of log lines to show')
@@ -38,7 +41,7 @@ null = None
 r = redis.Redis(host=redis_host, port=redis_port, db=0)
 
 
-def killall():
+def oldkillall():
     with open('/tmp/pyark.pid') as inf:
         for line in inf:
             system(f'kill -9 {line}')
@@ -68,7 +71,8 @@ def sctl(scmd):
             subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
             print('PyArk Started')
         else:
-            print(f'Pyark cannot be started remotely (not implimented)')
+            print(f'Running pyark start on server: [{args.server}]\n')
+            r.publish(f'{args.server.lower()}-commands', 'start')
     elif scmd == 'stop':
         if args.server is None:
             command = '/bin/systemctl stop pyark'
@@ -76,7 +80,7 @@ def sctl(scmd):
             print('Stopping PyArk Daemon')
         else:
             print(f'Running pyark STOP on server: [{args.server}]\n')
-            r.publish(f'{args.server.lower()}-commands', 'pyarkstop')
+            r.publish(f'{args.server.lower()}-commands', 'stop')
     elif scmd == 'restart':
         if args.server is None:
             command = '/bin/systemctl restart pyark'
@@ -84,7 +88,16 @@ def sctl(scmd):
             print('Restarting PyArk Daemon')
         else:
             print(f'Running pyark restart on server: [{args.server}]\n')
-            r.publish(f'{args.server.lower()}-commands', 'pyarkrestart')
+            r.publish(f'{args.server.lower()}-commands', 'restart')
+
+
+def startall():
+    r = redis.Redis(host=redis_host, port=redis_port, db=0)
+    allservers = r.smembers('servers')
+    print(f'Running pyark start on {len(allservers)} servers: [{allservers}]\n')
+    for server in allservers:
+        server = server.decode()
+        r.publish(f'{server}-commands', 'start')
 
 
 def stopall():
@@ -93,7 +106,7 @@ def stopall():
     print(f'Running pyark STOP on {len(allservers)} servers: [{allservers}]\n')
     for server in allservers:
         server = server.decode()
-        r.publish(f'{server}-commands', 'pyarkstop')
+        r.publish(f'{server}-commands', 'stop')
 
 
 def restartall():
@@ -102,7 +115,28 @@ def restartall():
     print(f'Running pyark restart on {len(allservers)} servers: [{allservers}]\n')
     for server in allservers:
         server = server.decode()
-        r.publish(f'{server}-commands', 'pyarkrestart')
+        r.publish(f'{server}-commands', 'restart')
+
+
+def killall():
+    r = redis.Redis(host=redis_host, port=redis_port, db=0)
+    allservers = r.smembers('servers')
+    print(f'Running pyark kill process on {len(allservers)} servers: [{allservers}]\n')
+    for server in allservers:
+        server = server.decode()
+        r.publish(f'{server}-commands', 'kill')
+
+
+def killsvr():
+    allservers = r.smembers('servers')
+    if args.server is None:
+        print(f'You need to specify a server to kill the pyark\n')
+    else:
+        for server in allservers:
+            server = server.decode().lower()
+            if args.server.lower() == server:
+                print(f'Running pyark kill process on server: [{args.server}]\n')
+                r.publish(f'{server}-commands', 'kill')
 
 
 def updateall():
@@ -111,7 +145,7 @@ def updateall():
     print(f'Running pyark update check on {len(allservers)} servers: [{allservers}]\n')
     for server in allservers:
         server = server.decode()
-        r.publish(f'{server}-commands', 'pyarkupdate')
+        r.publish(f'{server}-commands', 'update')
 
 
 def updatesvr():
@@ -123,7 +157,7 @@ def updatesvr():
             server = server.decode().lower()
             if args.server.lower() == server:
                 print(f'Running pyark update check on server: [{args.server}]\n')
-                r.publish(f'{server}-commands', 'pyarkupdate')
+                r.publish(f'{server}-commands', 'update')
 
 
 def getresponse(question):
@@ -262,3 +296,13 @@ elif args.action_to_perform == 'updateall':
     updateall()
 elif args.action_to_perform == 'update':
     updatesvr()
+elif args.action_to_perform == 'startall':
+    startall()
+elif args.action_to_perform == 'stopall':
+    stopall()
+elif args.action_to_perform == 'restartall':
+    restartall()
+elif args.action_to_perform == 'kill':
+    killsvr()
+elif args.action_to_perform == 'killall':
+    killall()
