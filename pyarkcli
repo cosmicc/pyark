@@ -14,16 +14,19 @@ from modules.colorizer import (BCYN, BGN, BGRN, BLU, BMGT, BRED, BWHT, BYEL, GRN
 from modules.configreader import redis_host, redis_port
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('action_to_perform', action='store', choices=['start', 'stop', 'restart', 'log', 'debuglog', 'update', 'updateall'], help='Action to perform')
+parser.add_argument('action_to_perform', action='store', choices=['start', 'stop', 'restart', 'log', 'debuglog', 'stopall', 'restartall', 'update', 'updateall'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('start', action='store_true', help='Start the pyark daemon Systemctl')
 action_group.add_argument('stop', action='store_true', help='Stop the pyark daemon Systemctl')
+action_group.add_argument('stopall', action='store_true', help='Stop all the pyark daemons')
 action_group.add_argument('restart', action='store_true', help='Restart the pyark daemon Systemctl')
-action_group.add_argument('cluster', action='store_true', help='Cluster information')
+action_group.add_argument('restartall', action='store_true', help='Restart all the pyark daemons')
+action_group.add_argument('update', action='store_true', help='Update check a pyark daemon')
+action_group.add_argument('updateall', action='store_true', help='Update check all the pyark daemons')
 action_group.add_argument('log', action='store_true', help='Pyark log')
 action_group.add_argument('debuglog', action='store_true', help='Pyark log')
 
-parser.add_argument('-s', '--servername', action='store', help='Ark server instance name')
+parser.add_argument('-s', '--server', action='store', help='Server name')
 parser.add_argument('-l', '--loglines', action='store', help='Number of log lines to show')
 
 args = parser.parse_args()
@@ -31,6 +34,8 @@ args = parser.parse_args()
 print('    ')
 
 null = None
+
+r = redis.Redis(host=redis_host, port=redis_port, db=0)
 
 
 def killall():
@@ -58,41 +63,67 @@ def logwatch(debug=False):
 
 def sctl(scmd):
     if scmd == 'start':
-        command = '/bin/systemctl start pyark'
-        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-        command = '/bin/systemctl start arkwatchdog'
-        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-        print('PyArk Started')
+        if args.server is None:
+            command = '/bin/systemctl start pyark'
+            subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+            print('PyArk Started')
+        else:
+            print(f'Pyark cannot be started remotely (not implimented)')
     elif scmd == 'stop':
-        command = '/bin/systemctl stop arkwatchdog'
-        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-        command = '/bin/systemctl stop pyark'
-        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-        print('Stopping PyArk Daemon')
+        if args.server is None:
+            command = '/bin/systemctl stop pyark'
+            subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+            print('Stopping PyArk Daemon')
+        else:
+            print(f'Running pyark STOP on server: [{args.server}]\n')
+            r.publish(f'{args.server.lower()}-commands', 'pyarkstop')
     elif scmd == 'restart':
-        command = '/bin/systemctl restart pyark'
-        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-        print('Restarting PyArk Daemon')
+        if args.server is None:
+            command = '/bin/systemctl restart pyark'
+            subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+            print('Restarting PyArk Daemon')
+        else:
+            print(f'Running pyark restart on server: [{args.server}]\n')
+            r.publish(f'{args.server.lower()}-commands', 'pyarkrestart')
+
+
+def stopall():
+    r = redis.Redis(host=redis_host, port=redis_port, db=0)
+    allservers = r.smembers('servers')
+    print(f'Running pyark STOP on {len(allservers)} servers: [{allservers}]\n')
+    for server in allservers:
+        server = server.decode()
+        r.publish(f'{server}-commands', 'pyarkstop')
+
+
+def restartall():
+    r = redis.Redis(host=redis_host, port=redis_port, db=0)
+    allservers = r.smembers('servers')
+    print(f'Running pyark restart on {len(allservers)} servers: [{allservers}]\n')
+    for server in allservers:
+        server = server.decode()
+        r.publish(f'{server}-commands', 'pyarkrestart')
 
 
 def updateall():
     r = redis.Redis(host=redis_host, port=redis_port, db=0)
     allservers = r.smembers('servers')
-    print(allservers)
+    print(f'Running pyark update check on {len(allservers)} servers: [{allservers}]\n')
     for server in allservers:
         server = server.decode()
         r.publish(f'{server}-commands', 'pyarkupdate')
 
 
-def updateinst():
-    r = redis.Redis(host=redis_host, port=redis_port, db=0)
+def updatesvr():
     allservers = r.smembers('servers')
     if args.server is None:
-        print(f'You need to specify a server to check for updates')
-    for server in allservers:
-        server = server.decode().lower()
-        if args.server.lower() == server:
-            r.publish(f'{server}-commands', 'pyarkupdate')
+        print(f'You need to specify a server to check for updates\n')
+    else:
+        for server in allservers:
+            server = server.decode().lower()
+            if args.server.lower() == server:
+                print(f'Running pyark update check on server: [{args.server}]\n')
+                r.publish(f'{server}-commands', 'pyarkupdate')
 
 
 def getresponse(question):
@@ -229,3 +260,5 @@ elif args.action_to_perform == 'debuglog':
     logwatch(debug=True)
 elif args.action_to_perform == 'updateall':
     updateall()
+elif args.action_to_perform == 'update':
+    updatesvr()
