@@ -108,6 +108,8 @@ async def gitupdatecheck():
         log.log('GIT', f'New Pyark version found. Updating and Restarting...')
         origin.pull()
         await asyncserverexec(['systemctl', 'restart', 'pyark'], nice=0)
+    else:
+        log.debug('No git hub updates found')
 
 
 @log.catch
@@ -121,7 +123,7 @@ async def checkrediscommands(pubsub):
     response = await pubsub.get_message(timeout=0.01)
     if response is not None:
         if response['type'] == 'message':
-            log.info(f'Recieved Command: {response["data"].decode()}')
+            log.debug(f'Recieved Command: {response["data"].decode()}')
             if response['data'].decode() == 'update':
                 await gitupdatecheck()
 
