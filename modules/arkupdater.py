@@ -27,6 +27,7 @@ from modules.instances import (asyncgetlastrestart, asyncgetlastwipe,
                                asyncisinstanceenabled, asyncisinstanceup, asyncwipeit)
 from modules.players import asyncgetliveplayersonline, asyncgetplayersonline
 from modules.pushover import pushover
+from modules.redis import Redis
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
                                  asyncserverexec, asyncservernotify, asyncserverrconcmd,
                                  asyncserverscriptcmd, asynctimeit, serverexec, serverneedsrestart)
@@ -36,6 +37,7 @@ confupdtimer = 0
 dwtimer = 0
 updgennotify = Now() - Secs['hour']
 
+redis = Redis.redis
 
 def file_event(event):
     if event.action_name == 'modify':
