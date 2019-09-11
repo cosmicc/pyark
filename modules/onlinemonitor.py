@@ -8,9 +8,12 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring
 from modules.players import asyncnewplayer
-from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd, filterline
+from modules.redis import Redis
+from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now, elapsedTime, playedTime
+
+redis = Redis.redis
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -208,6 +211,7 @@ async def asyncprocessonline(inst, eline):
         pass
     elif line == 'No Players Connected':
         globvars.instplayers[inst]['online'] = 0
+        await redis.hset(inst, 'playersonline', 0)
     else:
         lines = line.split('\n')
         players = 0
@@ -225,6 +229,7 @@ async def asyncprocessonline(inst, eline):
             else:
                 log.error(f'problem with parsing online player - {rawline}')
         globvars.instplayers[inst]['online'] = players
+        await redis.hset(inst, 'playersonline', players)
 
 
 async def onlineexecute(inst):

@@ -7,9 +7,12 @@ import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
+from modules.redis import Redis
 from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, filterline
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now
+
+redis = Redis.redis
 
 
 @log.catch
@@ -61,26 +64,35 @@ async def asyncfinishstatus(inst):
     if globvars.status_counts[inst]['running'] >= 3:
         isrunning = 0
         globvars.isrunning.discard(inst)
+        await redis.hset(inst, 'isrunning', 0)
     else:
         isrunning = 1
         globvars.isrunning.add(inst)
+        await redis.hset(inst, 'isrunning', 1)
     if globvars.status_counts[inst]['listening'] >= 3:
         globvars.islistening.discard(inst)
         islistening = 0
+        await redis.hset(inst, 'islistening', 0)
     else:
         islistening = 1
         globvars.islistening.add(inst)
+        await redis.hset(inst, 'islistening', 1)
     if globvars.status_counts[inst]['online'] >= 3:
         globvars.isonline.discard(inst)
         isonline = 0
+        await redis.hset(inst, 'isonline', 0)
     else:
         globvars.isonline.add(inst)
         isonline = 1
+        await redis.hset(inst, 'isonline', 1)
     if globvars.instplayers[inst]['active'] is not None:
         if int(globvars.instplayers[inst]['active']) > 0:
             globvars.isrunning.add(inst)
             globvars.islistening.add(inst)
             globvars.isonline.add(inst)
+            redis.hset(inst, 'isrunning', 1)
+            redis.hset(inst, 'islistening', 1)
+            redis.hset(inst, 'isonline', 1)
             isrunning = 1
             islistening = 1
             isonline = 1
@@ -127,10 +139,14 @@ async def asyncprocessstatusline(inst, eline):
                 globvars.instservernames[inst] = servername
                 globvars.instplayers[inst]['connecting'] = connecting
                 globvars.instplayers[inst]['active'] = active
+                await redis.hset(inst, 'arkname', servername)
+                await redis.hset(inst, 'playersconnected', connecting)
+                await redis.hset(inst, 'playersactive', active)
 
             elif (status_title == 'Server build ID'):
                 try:
                     globvars.instarkbuild[inst] = int(status_value)
+                    await redis.hset(inst, 'arkbuild', int(status_value))
                 except ValueError:
                     globvars.instarkbuild[inst] = None
 
