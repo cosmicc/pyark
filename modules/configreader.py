@@ -55,6 +55,7 @@ psql_db = config.get('postgresql', 'db')
 redis_host = config.get('redis', 'host')
 redis_port = config.get('redis', 'port')
 redis_pw = config.get('redis', 'password')
+redis_db = config.get('redis', 'db')
 
 # Discord
 generalchat_id = config.get('discord', 'general_channel')
