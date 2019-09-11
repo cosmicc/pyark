@@ -129,7 +129,7 @@ async def checkrediscommands(pubsub):
     response = await pubsub.get_message(timeout=0.01)
     if response is not None:
         log.debug(f'redis: {response}')
-        if response['type'] == 'message' and response['channel'] == f'{hstname.lower()}-commands':
+        if response['type'] == 'message' and response['channel'].decode() == f'{hstname.lower()}-commands':
             log.debug(f'Recieved Command: {response["data"].decode()}')
             if response['data'].decode() == 'pyarkupdate':
                 await gitupdatecheck()
