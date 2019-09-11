@@ -78,6 +78,7 @@ def sctl(scmd):
 def updateall():
     r = redis.Redis(host=redis_host, port=redis_port, db=0)
     allservers = r.smembers('servers')
+    print(allservers)
     for server in allservers:
         server = server.decode()
         r.publish(f'{server}-commands', 'pyarkupdate')
