@@ -132,12 +132,6 @@ async def checkrediscommands(pubsub):
             log.debug(f'Recieved Server Command: {response["data"].decode()}')
             if response['data'].decode() == 'pyarkupdate':
                 await gitupdatecheck()
-            elif response['data'].decode() == 'pyarkrestart':
-                log.log('START', f'Restart command recieved. Restarting Pyark...')
-                await asyncserverexec(['systemctl', 'restart', 'pyark'], nice=0)
-            elif response['data'].decode() == 'pyarkstop':
-                log.warning('STOP command recieved. HALTING Pyark...')
-                await asyncserverexec(['systemctl', 'stop', 'pyark'], nice=0)
         for inst in instances:
             if response['type'] == 'message' and response['channel'].decode() == f'{inst}-commands':
                 log.debug(f'Recieved Instance Command: {response["data"].decode()}')
@@ -158,6 +152,7 @@ async def asyncmain():
     redis = Redis.redis
     await db.connect(process=__name__)
     pubsub = redis.pubsub()
+    await pubsub.subscribe([f'{hstname.lower()}-commands'])
     for inst in instances:
         await pubsub.subscribe([f'{inst}-commands'])
         await redis.sadd(f'{inst}-states', 'pyark')
