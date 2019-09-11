@@ -161,6 +161,7 @@ async def asyncmain():
     await pubsub.subscribe([f'{hstname.lower()}-commands'])
     for inst in instances:
         await pubsub.subscribe([f'{inst}-commands'])
+        await redis.hset(inst, 'tasks', 'pyark')
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
     tasktimer = asyncloop.time()
