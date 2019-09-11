@@ -80,8 +80,18 @@ def updateall():
     allinstances = r.smembers('allinstances')
     for inst in allinstances:
         inst = inst.decode()
-        print(inst)
         r.publish(f'{inst}-commands', 'pyarkupdate')
+
+
+def updateinst():
+    r = redis.Redis(host=redis_host, port=redis_port, db=0)
+    allservers = r.smembers('servers')
+    if args.server is None:
+        print(f'{args.instance} you need to specify a server')
+    for server in allservers:
+        server = server.decode().lower()
+        if args.server.lower() == server:
+            r.publish(f'{server}-commands', 'pyarkupdate')
 
 
 def getresponse(question):

@@ -127,6 +127,7 @@ def checkthreads():
 
 async def checkrediscommands(pubsub):
     response = await pubsub.get_message(timeout=0.01)
+    log.debug(f'redis: {response}')
     if response is not None:
         if response['type'] == 'message':
             log.debug(f'Recieved Command: {response["data"].decode()}')
@@ -158,6 +159,7 @@ async def asyncmain():
     redis = Redis.redis
     await db.connect(process=__name__)
     pubsub = redis.pubsub()
+    await pubsub.subscribe([f'{hstname.lower()}-commands'])
     for inst in instances:
         await pubsub.subscribe([f'{inst}-commands'])
     asyncloop = asyncio.get_running_loop()
