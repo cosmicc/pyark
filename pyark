@@ -143,9 +143,6 @@ async def checkrediscommands(pubsub):
                 log.debug(f'Recieved Instance Command: {response["data"].decode()}')
 
 
-
-
-
 async def asyncmain():
     global main_stop_event
     global file_event_notifier

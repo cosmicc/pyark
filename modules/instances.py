@@ -26,6 +26,7 @@ async def asyncgetinstancelist():
 
 @log.catch
 async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, bees=True):
+    await redis.sadd(inst, 'tasks', f'{inst}-wiping')
     if mating:
         log.debug(f'Shutting down dino mating on {inst}...')
         await asyncserverscriptcmd(inst, 'MatingOff_DS')
@@ -57,6 +58,7 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
         await asyncserverrconcmd(inst, 'DestroyWildDinos')
         await asyncio.sleep(5)
         log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
+    await redis.srem(inst, 'tasks', f'{inst}-wiping')
 
 
 async def asyncfinishstatus(inst):
@@ -117,12 +119,14 @@ async def asyncprocessstatusline(inst, eline):
             elif status_title == 'Server listening':
                 if status_value == 'Yes':
                     globvars.status_counts[inst]['listening'] = 0
+                    await redis.srem(inst, 'tasks', f'{inst}-restarting')
                 elif status_value == 'No':
                     globvars.status_counts[inst]['listening'] = globvars.status_counts[inst]['listening'] + 1
 
             elif status_title == 'Server online':
                 if status_value == 'Yes':
                     globvars.status_counts[inst]['online'] = 0
+                    await redis.srem(inst, 'tasks', f'{inst}-restarting')
                 elif status_value == 'No':
                     globvars.status_counts[inst]['online'] = globvars.status_counts[inst]['online'] + 1
 
