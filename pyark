@@ -30,7 +30,8 @@ from modules.lottery import lotterywatcher_thread
 from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinedblchecker, onlinecheck
 from modules.processlock import PLock
-from modules.servertools import processinststats, processserverstats, serverexec
+from modules.redis import Redis
+from modules.servertools import asyncserverexec, processinststats, processserverstats
 from modules.statcollector import statcollector_thread
 from modules.timehelper import Secs
 
@@ -98,7 +99,7 @@ checkgit = 0
 
 
 @log.catch
-def gitupdatecheck():
+async def gitupdatecheck():
     localdir = '/home/ark/pyark'
     repo = Repo(localdir)
     origin = repo.remotes.origin
@@ -106,8 +107,7 @@ def gitupdatecheck():
     if repo.head.commit != origin.refs[0].commit:
         log.log('GIT', f'New Pyark version found. Updating and Restarting...')
         origin.pull()
-        # origin.push()
-        serverexec(['systemctl', 'restart', 'pyark'], nice=0, null=True)
+        await asyncserverexec(['systemctl', 'restart', 'pyark'], nice=0)
 
 
 @log.catch
@@ -115,6 +115,13 @@ def checkthreads():
     for thread in threads:
         if not thread.is_alive():
             log.critical(f'!!!! CRITICAL ERROR! thread {thread.name} has crashed!!')
+
+
+async def checkrediscommands(pubsub):
+    response = await pubsub.get_message(timeout=0.01)
+    if response is not None:
+        if response['type'] == 'message':
+            log.info(f'Recieved Pyark Command: {response["data"].decode()}')
 
 
 async def asyncmain():
@@ -128,7 +135,12 @@ async def asyncmain():
     globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
+    await Redis.connect(__name__)
+    redis = Redis.redis
     await db.connect(process=__name__)
+    pubsub = redis.pubsub()
+    for inst in instances:
+        await pubsub.subscribe([f'{inst}-commands'])
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
     tasktimer = asyncloop.time()
@@ -145,6 +157,7 @@ async def asyncmain():
         log.debug(f'Found {len(instances)} ARK server instances: ({", ".join(instances).title()})')
 
         while not main_stop_event:
+            await checkrediscommands(pubsub)
             asynclooptime = asyncloop.time()
             if asynclooptime - globvars.timer['statuscheck'] > globvars.delay['statuscheck']:
                 asyncio.create_task(statuscheck(instances))
@@ -217,6 +230,7 @@ async def asyncmain():
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
     log.debug('All async tasks have finished')
+    await asyncio.sleep(1)
     await db.close()
 
 

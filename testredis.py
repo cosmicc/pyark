@@ -52,6 +52,13 @@ async def progressbar():
         progressposition = 0
 
 
+async def checkforrediscommands(pubsub):
+    response = await pubsub.get_message(timeout=0.01)
+    if response is not None:
+        if response['type'] == 'message':
+            log.info(f'Recieved Command: {response["data"].decode()}')
+
+
 async def asyncmain():
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
@@ -60,11 +67,9 @@ async def asyncmain():
     pubsub = redis.pubsub()
     await pubsub.subscribe([f'{inst}-commands'])
     while not main_stop_event:
-        #cmd = await pubsub.get_message(.01)
-        #log.info(f'Recieved Command: {cmd}')
+        await checkforrediscommands(pubsub)
         await progressbar()
         await asyncio.sleep(.05)
-
     #redispool.make_connection()
     '''
     await redis.hset(inst, 'isrunning', 1)
@@ -85,7 +90,7 @@ async def asyncmain():
         await asyncio.sleep(3)
     '''    
     pubsub.close()
-    redis.connection_pool.disconnect()
+    await Redis.disconnect()
     print(asyncio.all_tasks())
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
