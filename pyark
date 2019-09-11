@@ -158,7 +158,6 @@ async def asyncmain():
     redis = Redis.redis
     await db.connect(process=__name__)
     pubsub = redis.pubsub()
-    await pubsub.subscribe([f'{hstname.lower()}-commands'])
     for inst in instances:
         await pubsub.subscribe([f'{inst}-commands'])
         await redis.sadd(f'{inst}-states', 'pyark')
