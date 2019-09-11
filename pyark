@@ -131,8 +131,16 @@ async def checkrediscommands(pubsub):
         if response['type'] == 'message':
             log.debug(f'Recieved Command: {response["data"].decode()}')
             if response['data'].decode() == 'update':
-                
                 await gitupdatecheck()
+            elif response['data'].decode() == 'restart':
+                log.log('START', f'Restart command recieved. Restarting Pyark...')
+                await asyncserverexec(['systemctl', 'restart', 'pyark'], nice=0)
+            elif response['data'].decode() == 'stop':
+                log.warning('STOP command recieved. HALTING Pyark...')
+                await asyncserverexec(['systemctl', 'stop', 'pyark'], nice=0)
+
+
+
 
 
 async def asyncmain():
