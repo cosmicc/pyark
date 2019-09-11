@@ -3,7 +3,7 @@ import asyncio
 import aredis
 from loguru import logger as log
 
-from configreader import redis_db, redis_host, redis_port
+from modules.configreader import redis_db, redis_host, redis_port
 
 
 class RedisClass:
