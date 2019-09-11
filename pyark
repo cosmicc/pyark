@@ -161,7 +161,7 @@ async def asyncmain():
     await pubsub.subscribe([f'{hstname.lower()}-commands'])
     for inst in instances:
         await pubsub.subscribe([f'{inst}-commands'])
-        await redis.hset(inst, 'tasks', 'pyark')
+        await redis.sadd(f'{inst}-states', 'pyark')
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
     tasktimer = asyncloop.time()
@@ -247,6 +247,7 @@ async def asyncmain():
                     log.error(f'High number of async tasks running on {hstname} ({len(asyncio.Task.all_tasks())})')
                     tasktimer = asyncloop.time()
             await asyncio.sleep(.05)
+    await redis.srem(f'{inst}-states', 'pyark')
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
