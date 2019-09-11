@@ -77,17 +77,17 @@ def sctl(scmd):
 
 def updateall():
     r = redis.Redis(host=redis_host, port=redis_port, db=0)
-    allinstances = r.smembers('allinstances')
-    for inst in allinstances:
-        inst = inst.decode()
-        r.publish(f'{inst}-commands', 'pyarkupdate')
+    allservers = r.smembers('servers')
+    for server in allservers:
+        server = server.decode()
+        r.publish(f'{server}-commands', 'pyarkupdate')
 
 
 def updateinst():
     r = redis.Redis(host=redis_host, port=redis_port, db=0)
     allservers = r.smembers('servers')
     if args.server is None:
-        print(f'{args.instance} you need to specify a server')
+        print(f'You need to specify a server to check for updates')
     for server in allservers:
         server = server.decode().lower()
         if args.server.lower() == server:
