@@ -57,6 +57,8 @@ async def checkforrediscommands(pubsub):
     if response is not None:
         if response['type'] == 'message':
             log.info(f'Recieved Command: {response["data"].decode()}')
+            if response['data'].decode() == 'update':
+                await 
 
 
 async def asyncmain():
