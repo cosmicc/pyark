@@ -128,9 +128,8 @@ def checkthreads():
 async def checkrediscommands(pubsub):
     response = await pubsub.get_message(timeout=0.01)
     if response is not None:
-        log.debug(f'redis: {response}')
         if response['type'] == 'message' and response['channel'].decode() == f'{hstname.lower()}-commands':
-            log.debug(f'Recieved Command: {response["data"].decode()}')
+            log.debug(f'Recieved Server Command: {response["data"].decode()}')
             if response['data'].decode() == 'pyarkupdate':
                 await gitupdatecheck()
             elif response['data'].decode() == 'pyarkrestart':
@@ -139,6 +138,9 @@ async def checkrediscommands(pubsub):
             elif response['data'].decode() == 'pyarkstop':
                 log.warning('STOP command recieved. HALTING Pyark...')
                 await asyncserverexec(['systemctl', 'stop', 'pyark'], nice=0)
+        for inst in instances:
+            if response['type'] == 'message' and response['channel'].decode() == f'{inst}-commands':
+                log.debug(f'Recieved Instance Command: {response["data"].decode()}')
 
 
 
