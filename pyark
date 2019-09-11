@@ -100,6 +100,7 @@ checkgit = 0
 
 @log.catch
 async def gitupdatecheck():
+    log.debug(f'Update command recieved. Checking for updates...')
     localdir = '/home/ark/pyark'
     repo = Repo(localdir)
     origin = repo.remotes.origin
@@ -110,6 +111,11 @@ async def gitupdatecheck():
         await asyncserverexec(['systemctl', 'restart', 'pyark'], nice=0)
     else:
         log.debug('No git hub updates found')
+
+
+async def restartpyark():
+    log.log('START', f'Restart command recieved. Restarting Pyark...')
+    await asyncserverexec(['systemctl', 'restart', 'pyark'], nice=0)
 
 
 @log.catch
@@ -125,6 +131,7 @@ async def checkrediscommands(pubsub):
         if response['type'] == 'message':
             log.debug(f'Recieved Command: {response["data"].decode()}')
             if response['data'].decode() == 'update':
+                
                 await gitupdatecheck()
 
 
