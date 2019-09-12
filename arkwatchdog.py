@@ -35,7 +35,7 @@ def redislistener():
             elif response['data'].decode() == 'gitpull':
                 subprocess.run(['git', 'pull'], shell=True, cwd='/home/ark/pyark', capture_output=False)
             elif response['data'].decode() == 'restartwatchdog':
-                subprocess.run(['systemctl', 'start', 'arkwatchdog'], shell=True, cwd='/home/ark/pyark', capture_output=False)
+                subprocess.run(['systemctl', 'start', 'arkwatchdog'], shell=False, capture_output=False)
 
 
 thread = threading.Thread(name='redislistener', target=redislistener, args=(), daemon=True)
@@ -59,13 +59,13 @@ while True:
                     if count == 1:
                         log.error(f'Pyark process is not running. No process at pid [{pyarkpid}]')
                 else:
-                    log.debug('pyark process passed pid check')
+                    log.trace('pyark process passed pid check')
 
             try:
                 lockhandle = open(str(pyarklockfile), 'w')
                 fcntl.lockf(lockhandle, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except IOError:
-                log.debug('pyark process passed file lock check')
+                log.trace('pyark process passed file lock check')
             else:
                 fcntl.flock(lockhandle, fcntl.LOCK_UN)
                 lockhandle.close()
@@ -76,7 +76,7 @@ while True:
             log.exception(f'Error in arkwatchdog main loop!!')
 
     count += 1
-    if count == 10:
+    if count == 6:
         count = 1
 
     sleep(60)
