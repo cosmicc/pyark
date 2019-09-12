@@ -1,7 +1,7 @@
 import subprocess
 import threading
 from time import sleep
-
+import argparse
 import fcntl
 import modules.logging
 import psutil
@@ -10,8 +10,14 @@ from loguru import logger as log
 from modules.configreader import hstname, redis_host, redis_port
 from pathlib import Path
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')
+
 pyarkpidfile = Path('/run/pyark.pid')
 pyarklockfile = Path('/run/pyark.lock')
+
+args = parser.parse_args()
 
 
 def redislistener():
