@@ -184,7 +184,7 @@ def installconfigs(inst):
     config = configparser.RawConfigParser()
     config.optionxform = str
     config.read(globvars.gusini_baseconfig_file)
-    if inst in globvars.gusini_customconfig_files:
+    if globvars.gusini_customconfig_files[inst].exists():
         gusbuildfile = globvars.gusini_customconfig_files[inst].read_text().split('\n')
         for each in gusbuildfile:
             a = each.split(',')
@@ -249,7 +249,7 @@ async def asyncrestartinstnow(inst, startonly=False):
         await asyncunsetstartbit(inst)
         await asyncplayerrestartbit(inst)
         await asyncserverexec(['arkmanager', 'start', f'@{inst}'])
-        globvars.taskworkers.remove(f'{inst}-restarting')
+        globvars.taskworkers.discard(f'{inst}-restarting')
         await redis.sadd(f'{inst}-states', 'restarting')
         await redis.srem(f'{inst}-states', 'updating')
         await redis.srem(f'{inst}-states', 'updatewaiting')
