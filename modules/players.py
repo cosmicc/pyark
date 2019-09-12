@@ -48,9 +48,9 @@ async def asyncnewplayer(steamid, playername, inst):
         added = await db.update(f"INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
                  firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
                  primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, \
-                 steamlastlogoff, steamcreated, refreshauctions, refreshsteam) VALUES ('{steamid}', '{playername}', '{Now()}', \
+                 steamlastlogoff, steamcreated, refreshauctions, refreshsteam, homemovepoints) VALUES ('{steamid}', '{playername}', '{Now()}', \
                  '{inst}', '0', '0', '{Now()}', '1', '', '', '0', '0', '0', '0', '0', '{inst}', '0', '{Now()}', '0', 'True', 'True', \
-                 '0', '0', False, True)")
+                 '0', '0', False, True, 0)")
         if added:
             log.debug(f'Sending welcome message to [{playername.title()}] on [{inst.title()}]')
             await asyncio.sleep(3)
