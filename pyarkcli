@@ -150,7 +150,7 @@ def killsvr():
 
 def gitpull():
     allservers = r.smembers('servers')
-    if args.server is None or args.server not in allservers:
+    if args.server is None or args.server.encode() not in allservers:
         print(f'You need to specify a valid server to force git pull\n')
     else:
         for server in allservers:
