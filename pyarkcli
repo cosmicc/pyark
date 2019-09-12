@@ -14,7 +14,7 @@ from modules.colorizer import (BCYN, BGN, BGRN, BLU, BMGT, BRED, BWHT, BYEL, GRN
 from modules.configreader import redis_host, redis_port
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('action_to_perform', action='store', choices=['start', 'stop', 'restart', 'log', 'debuglog', 'startall', 'stopall', 'restartall', 'update', 'updateall', 'gitpull', 'kill', 'killall'], help='Action to perform')
+parser.add_argument('action_to_perform', action='store', choices=['start', 'stop', 'restart', 'log', 'debuglog', 'startall', 'stopall', 'restartall', 'update', 'updateall', 'gitpull', 'kill', 'killall', 'gitpull'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('start', action='store_true', help='Start a pyark daemon')
 action_group.add_argument('startall', action='store_true', help='Start all the pyark daemons')
