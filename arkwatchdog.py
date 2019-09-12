@@ -35,17 +35,20 @@ def redislistener():
 thread = threading.Thread(name='redislistener', target=redislistener, args=(), daemon=True)
 thread.start()
 
-
+log.debug('Starting the pyark process watch')
 while True:
     try:
         if pyarkpidfile.is_file() and pyarklockfile.is_file():
             pyarkpid = pyarkpidfile.read_text()
             if not psutil.pid_exists(pyarkpid):
                 log.error(f'Pyark process [{pyarkpid}] is not running. (No process at pid)')
+            else:
+                log.debug('pyark process passed pid check')
             try:
                 lockhandle = open(str(pyarkpidfile), 'w')
                 fcntl.lockf(lockhandle, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except IOError:
+                log.debug('pyark process passed file lock check')
                 pass
             else:
                 fcntl.flock(lockhandle, fcntl.LOCK_UN)
