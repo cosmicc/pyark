@@ -38,24 +38,27 @@ thread.start()
 log.debug('Starting the pyark process watch')
 while True:
     try:
-        if pyarkpidfile.is_file() and pyarklockfile.is_file():
+        if not pyarkpidfile.is_file() or not pyarklockfile.is_file():
+            log.warning('Pyark not running (pid and/or lock files missing')
+        else:
             pyarkpid = pyarkpidfile.read_text()
-            if not psutil.pid_exists(int(pyarkpid)):
-                log.error(f'Pyark process [{pyarkpid}] is not running. (No process at pid)')
+            if pyarkpid == '' or pyarkpid is None:
+                log.error(f'Pyark process is not running. (Empty pid found in pidfile)')
             else:
-                log.debug('pyark process passed pid check')
+                if not psutil.pid_exists(int(pyarkpid)):
+                    log.error(f'Pyark process is not running. No process at pid [{pyarkpid}]')
+                else:
+                    log.debug('pyark process passed pid check')
+
             try:
                 lockhandle = open(str(pyarklockfile), 'w')
                 fcntl.lockf(lockhandle, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except IOError:
                 log.debug('pyark process passed file lock check')
-                pass
             else:
                 fcntl.flock(lockhandle, fcntl.LOCK_UN)
                 lockhandle.close()
                 log.error(f'Pyark process [{pyarkpid}] is not running. (Lockfile not locked)')
-        else:
-            log.warning('Pyark not running (pid and/or lock files missing')
     except:
         log.exception(f'Error in arkwatchdog main loop!!')
     sleep(60)
