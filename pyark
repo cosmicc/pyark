@@ -10,6 +10,7 @@ import aiohttp
 import asyncio
 import globvars
 import uvloop
+import modules.logging
 from git import Repo
 from loguru import logger as log
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
