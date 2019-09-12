@@ -4,13 +4,15 @@ from functools import partial
 from os.path import isfile
 from re import compile as rcompile
 from re import sub
-
+from modules.redis import Redis
 import psutil
 from loguru import logger as log
 
 import globvars
 from modules.asyncdb import DB as db
 from modules.timehelper import Now, elapsedTime
+
+redis = Redis.redis
 
 
 def stripansi(stripstr):
@@ -125,7 +127,13 @@ def float_trunc_1dec(num):
 
 
 def getinstpid(inst):
-    return globvars.instpidfiles[inst].read_text()
+    try:
+        return globvars.instpidfiles[inst].read_text()
+    except FileNotFoundError:
+        redis.hset(inst, 'isrunning', 0)
+        redis.hset(inst, 'islistening', 0)
+        redis.hset(inst, 'isonline', 0)
+        return None
 
 
 async def getopenfiles():
@@ -162,15 +170,15 @@ async def getservermem():
 async def _procstats(inst):
     log.trace(f'Running process instances stats for {inst}')
     instpid = int(getinstpid(inst))
-    arkprocess = psutil.Process(instpid)
-    loop = asyncio.get_running_loop()
-    arkcpu = await loop.run_in_executor(None, partial(arkprocess.cpu_percent, interval=5))
-    rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, wait=True)
-    instrss, instvsz = rawsts['stdout'].decode('utf-8').split('\n')[1].split(' ')
-    instrss = int(instrss) / 1000000 // 0.01 / 100
-    instvsz = int(instvsz) / 1000000 // 0.01 / 100
-    await db.update(f"UPDATE instances SET actmem = '{instrss}', totmem = '{instvsz}', serverpid = '{instpid}', arkcpu = '{arkcpu}' WHERE name = '{inst}'")
-    return True
+    if instpid is not None:
+        arkprocess = psutil.Process(instpid)
+        loop = asyncio.get_running_loop()
+        arkcpu = await loop.run_in_executor(None, partial(arkprocess.cpu_percent, interval=5))
+        rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, wait=True)
+        instrss, instvsz = rawsts['stdout'].decode('utf-8').split('\n')[1].split(' ')
+        instrss = int(instrss) / 1000000 // 0.01 / 100
+        instvsz = int(instvsz) / 1000000 // 0.01 / 100
+        await db.update(f"UPDATE instances SET actmem = '{instrss}', totmem = '{instvsz}', serverpid = '{instpid}', arkcpu = '{arkcpu}' WHERE name = '{inst}'")
 
 
 async def processinststats(instances):
