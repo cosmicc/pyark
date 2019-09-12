@@ -210,7 +210,7 @@ def installconfigs(inst):
         globvars.gusini_tempconfig_file.unlink()
 
     with open(str(globvars.gusini_tempconfig_file), 'w') as configfile:
-            config.write(configfile)
+        config.write(configfile)
 
     shutil.copy(globvars.gusini_tempconfig_file, globvars.gusini_final_file)
     globvars.gusini_tempconfig_file.unlink()
@@ -254,6 +254,7 @@ async def asyncrestartinstnow(inst, startonly=False):
         globvars.taskworkers.remove(f'{inst}-restarting')
         await redis.sadd(f'{inst}-states', 'restarting')
         await redis.srem(f'{inst}-states', 'updating')
+        await redis.srem(f'{inst}-states', 'updatewaiting')
         await redis.srem(f'{inst}-states', 'restartwait')
         await redis.srem(f'{inst}-states', 'cfgupdate')
 
@@ -481,11 +482,10 @@ async def asynccheckupdates(instances):
                 msg = f'Ark Game Updare Released\nhttps://survivetheark.com/index.php?/forums/forum/5-changelog-patch-notes'
                 log.log('UPDATE', f'ARK update download complete. Update is staged. Notifying servers')
                 await db.update(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
+                await redis.srem(f'{inst}-states', 'updating')
                 pushoversend('Ark Update', msg)
         except:
             log.exception(f'error in determining ark version')
-        finally:
-            await redis.srem(f'{inst}-states', 'updating')
 
     for inst in instances:
         checkdirs(inst)
