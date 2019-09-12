@@ -212,7 +212,7 @@ def installconfigs(inst):
 
     shutil.copy(globvars.gusini_tempconfig_file, globvars.gusini_final_file)
     globvars.gusini_tempconfig_file.unlink()
-    if inst in globvars.gameini_customconfig_files:
+    if globvars.gameini_customconfig_files[inst].exists():
         shutil.copy(globvars.gameini_customconfig_files[inst], globvars.gameini_final_file)
     else:
         shutil.copy(globvars.gameini_baseconfig_file, globvars.gameini_final_file)
