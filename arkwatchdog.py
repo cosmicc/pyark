@@ -1,7 +1,8 @@
+import argparse
 import subprocess
 import threading
 from time import sleep
-import argparse
+
 import fcntl
 import modules.logging
 import psutil
@@ -9,7 +10,6 @@ import redis
 from loguru import logger as log
 from modules.configreader import hstname, redis_host, redis_port
 from pathlib import Path
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')
@@ -39,20 +39,25 @@ def redislistener():
 
 
 thread = threading.Thread(name='redislistener', target=redislistener, args=(), daemon=True)
+log.debug('Starting redis command listener thread')
 thread.start()
 
-log.debug('Starting the pyark process watch')
+log.debug('Starting pyark process watch')
+count = 1
 while True:
     try:
         if not pyarkpidfile.is_file() or not pyarklockfile.is_file():
-            log.warning('Pyark not running (pid and/or lock files missing')
+            if count == 1:
+                log.warning('Pyark not running (pid and/or lock files missing')
         else:
             pyarkpid = pyarkpidfile.read_text()
             if pyarkpid == '' or pyarkpid is None:
-                log.error(f'Pyark process is not running. (Empty pid found in pidfile)')
+                if count == 1:
+                    log.error(f'Pyark process is not running. (Empty pid found in pidfile)')
             else:
                 if not psutil.pid_exists(int(pyarkpid)):
-                    log.error(f'Pyark process is not running. No process at pid [{pyarkpid}]')
+                    if count == 1:
+                        log.error(f'Pyark process is not running. No process at pid [{pyarkpid}]')
                 else:
                     log.debug('pyark process passed pid check')
 
@@ -64,7 +69,14 @@ while True:
             else:
                 fcntl.flock(lockhandle, fcntl.LOCK_UN)
                 lockhandle.close()
-                log.error(f'Pyark process [{pyarkpid}] is not running. (Lockfile not locked)')
+                if count == 1:
+                    log.error(f'Pyark process [{pyarkpid}] is not running. (Lockfile not locked)')
     except:
-        log.exception(f'Error in arkwatchdog main loop!!')
+        if count == 1:
+            log.exception(f'Error in arkwatchdog main loop!!')
+
+    count += 1
+    if count == 10:
+        count = 1
+
     sleep(60)
