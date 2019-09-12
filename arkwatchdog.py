@@ -45,7 +45,7 @@ while True:
             else:
                 log.debug('pyark process passed pid check')
             try:
-                lockhandle = open(str(pyarkpidfile), 'w')
+                lockhandle = open(str(pyarklockfile), 'w')
                 fcntl.lockf(lockhandle, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except IOError:
                 log.debug('pyark process passed file lock check')
