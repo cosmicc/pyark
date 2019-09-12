@@ -15,3 +15,5 @@ for response in pubsub.listen():
             subprocess.run(['systemctl', 'stop', 'pyark'], shell=False, capture_output=False)
         elif response['data'].decode() == 'start':
             subprocess.run(['systemctl', 'start', 'pyark'], shell=False, capture_output=False)
+        elif response['data'].decode() == 'gitpull':
+            subprocess.run(['git', 'pull'], shell=True, cwd='/home/ark/pyark', capture_output=False)
