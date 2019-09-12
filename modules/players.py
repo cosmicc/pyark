@@ -45,12 +45,7 @@ async def asyncisplayeronline(steamid):
 async def asyncnewplayer(steamid, playername, inst):
     if steamid not in globvars.welcomes:
         log.log('NEW', f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
-        added = await db.update(f"INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
-                 firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-                 primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, \
-                 steamlastlogoff, steamcreated, refreshauctions, refreshsteam, homemovepoints) VALUES ('{steamid}', '{playername}', '{Now()}', \
-                 '{inst}', '0', '0', '{Now()}', '1', '', '', '0', '0', '0', '0', '0', '{inst}', '0', '{Now()}', '0', 'True', 'True', \
-                 '0', '0', False, True, 0)")
+        added = await db.update(f"INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated, refreshauctions, refreshsteam, homemovepoints) VALUES ('{steamid}', '{playername}', '{Now()}', '{inst}', '0', '0', '{Now()}', '1', '', '', '0', '0', '0', '0', '0', '{inst}', '0', '{Now()}', '0', 'True', 'True', '0', '0', False, True, 0)")
         if added:
             log.debug(f'Sending welcome message to [{playername.title()}] on [{inst.title()}]')
             await asyncio.sleep(3)
@@ -73,32 +68,6 @@ async def asyncnewplayer(steamid, playername, inst):
             globvars.welcomes.remove(steamid)
     else:
         log.debug(f'welcome message already running for [{playername}]')
-
-
-@log.catch
-def newplayer(steamid, playername, inst):
-    log.log('NEW', f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player')
-    dbupdate("INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, \
-             firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, \
-             primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated, refreshauctions, refreshsteam) VALUES \
-             ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', False, True)" % (steamid, playername, Now(), inst, 0, 0, Now(), 1, '', '', 0, 0, 0, 0, 0, inst, 0, Now(), 0, True, True, 0, 0))
-    pplayer = dbquery("SELECT * FROM players WHERE steamid = '%s'" % (steamid,), fetch='one')
-    dbupdate("UPDATE players SET welcomeannounce = True WHERE steamid = '%s'" % (steamid,))
-    log.debug(f'Sending welcome message to [{pplayer[1].title()}] on [{inst.title()}]')
-    sleep(3)
-    mtxt = 'Welcome to the Ultimate Extinction Core Galaxy Server Cluster!'
-    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-    sleep(3)
-    mtxt = 'Rewards points earned as you play, Public teleporters, crafting area, Build a rewards vault, free starter items inside.'
-    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-    sleep(3)
-    mtxt = 'Press F1 or Discord at anytime for help. Have Fun!'
-    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-    sleep(3)
-    mtxt = 'Everyone welcome a new player to the cluster!'
-    serverexec(['arkmanager', 'rconcmd', f'ServerChatTo "{steamid}" {mtxt}', f'@{inst}'], nice=19, null=True)
-    log.debug(f'welcome message thread complete for new player {steamid} on {inst}')
-    writechat(inst, 'ALERT', f'<<< A New player has joined the cluster!', wcstamp())
 
 
 async def asyncgetliveplayersonline(inst):
