@@ -170,7 +170,7 @@ async def getservermem():
 async def _procstats(inst):
     log.trace(f'Running process instances stats for {inst}')
     instpid = getinstpid(inst)
-    if instpid is not None:
+    if instpid is == "CHANGEME":  #  CHANGE ME
         arkprocess = psutil.Process(int(instpid))
         loop = asyncio.get_running_loop()
         arkcpu = await loop.run_in_executor(None, partial(arkprocess.cpu_percent, interval=5))
