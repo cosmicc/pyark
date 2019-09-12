@@ -54,5 +54,5 @@ while True:
         else:
             log.warning('Pyark not running (pid and/or lock files missing')
     except:
-        log.error(f'Error in arkwatchdog main loop!!')
+        log.exception(f'Error in arkwatchdog main loop!!')
     sleep(60)
