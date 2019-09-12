@@ -86,7 +86,7 @@ signal.signal(signal.SIGQUIT, signal_handler)  # Hard Exit
 processlock = PLock()
 processlock.lock()
 
-nice(10)
+nice(11)
 
 if loglevel == 'DEBUG' or args.debug:
     log.log('START', f'Pyark daemon is starting on {hstname} in **DEBUG MODE**')
