@@ -1,19 +1,13 @@
 import asyncio
 import configparser
-import logging
 import random
 import shutil
-import subprocess
-import sys
-import threading
 from datetime import datetime
 from datetime import time as dt
 from functools import partial
 from os import chown
 from pathlib import Path
-from time import sleep
 
-import uvloop
 from loguru import logger as log
 from timebetween import is_time_between
 
@@ -21,7 +15,7 @@ import globvars
 from fsmonitor import FSMonitorThread
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventrebootday, getcurrenteventext, iseventtime
-from modules.configreader import arkroot, hstname, instr, is_arkupdater, maint_hour, sharedpath
+from modules.configreader import arkroot, hstname, instr, is_arkupdater, maint_hour, sharedpath, instances
 from modules.discordbot import asyncwritediscord
 from modules.instances import (asyncgetlastrestart, asyncgetlastwipe,
                                asyncisinstanceenabled, asyncisinstanceup, asyncwipeit)
@@ -39,6 +33,7 @@ updgennotify = Now() - Secs['hour']
 
 redis = Redis.redis
 
+
 def file_event(event):
     if event.action_name == 'modify':
         if event.name == globvars.gameini_baseconfig_file.name:
@@ -53,18 +48,20 @@ def file_event(event):
                     asyncio.create_task(configupdatedetected(inst))
 
 
+"""
 async def configupdatedetected(cinst):
     if cinst == 'all':
         cinst = instances
     for inst in cinst:
         await redis.sadd(f'{inst}-states', 'cfgupdate')
-        if not isrebooting(inst):
+        if f'{inst}-restarting' not in redis.smembers(f'{inst}-states'):
             log.log('UPDATE', f'Config update detected for [{inst.title()}]')
             har = int(getcfgver(inst))
             setpendingcfgver(inst, har + 1)
         if getcfgver(inst) < getpendingcfgver(inst):
             maintrest = "configuration update"
             await asyncinstancerestart(inst, maintrest)
+"""
 
 
 async def pushoversend(title, message):
@@ -164,13 +161,13 @@ async def asynccheckwipe(instances):
                 dwtimer += 1
                 if dwtimer == 24:
                     dwtimer = 0
-        elif Now() - lastwipe > Secs['day'] and await asyncsinstanceup(inst):
+        elif Now() - lastwipe > Secs['day'] and await asyncisinstanceup(inst):
             log.log('WIPE', f'Dino wipe needed for [{inst.title()}], players online but forced, wiping now')
             bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 24 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Forcing a maintenance wild dino wipe in 10 seconds</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
             await asyncserverbcast(inst, bcast)
             await asyncio.sleep(10)
             await asyncwritechat(inst, 'ALERT', f'### Server is over 24 hours since wild dino wipe. Forcing wipe now.', wcstamp())
-            asyncio.create_task(wipeit(inst))
+            asyncio.create_task(asyncwipeit(inst))
             dwtimer = 0
         else:
             log.trace(f'no dino wipe is needed for {inst}')
@@ -314,7 +311,7 @@ async def asyncrestartloop(inst, startonly=False):
             await asyncserverbcast(inst, bcast)
             await asyncwritechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
     else:
-        log.debug(f'configuration restart skipped because {splayers} players and {aplayers} active players')
+        log.debug(f'configuration restart skipped because of active players')
 
 
 @log.catch
@@ -386,7 +383,7 @@ async def asyncinstancerestart(inst, reason, startonly=False):
     if f'{inst}-restarting' not in globvars.taskworkers:
         await db.update(f"UPDATE instances SET restartreason = '{reason}' WHERE name = '{inst}'")
         globvars.taskworkers.add(f'{inst}-restarting')
-        asyncio.create_task(restartloop(inst, startonly))
+        asyncio.create_task(asyncrestartloop(inst, startonly))
     else:
         log.debug(f'skipping start/restart for {inst} because restart already running')
 
@@ -434,13 +431,14 @@ async def asynccheckbackup(instances):
 
 @log.catch
 async def asynccheckifenabled(inst):
-    instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    #if serverneedsrestart():
+    pass
+    # instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    # if serverneedsrestart():
     #    await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
-    #if instdata['enabled'] and instdata['isrunning'] == 0 and f'{inst}-restarting' not in globvars.taskworkers:
+    # if instdata['enabled'] and instdata['isrunning'] == 0 and f'{inst}-restarting' not in globvars.taskworkers:
     #    log.log('MAINT', f'Instance [{inst.title()}] is set to [enabled]. Starting server')
     #    restartinstnow(inst, startonly=True)
-    #elif not instdata['enabled'] and instdata['isrunning'] == 1:
+    # elif not instdata['enabled'] and instdata['isrunning'] == 1:
     #    if f'{inst}-restarting' not in globvars.taskworkers:
     #        log.warning(f'Instance [{inst.title()}] is set to [disabled]. Stopping server')
     #        await asyncinstancerestart(inst, 'admin restart')
@@ -470,8 +468,10 @@ async def asynccheckupdates(instances):
             if not ustate:
                 log.trace('ark update check found no ark updates available')
             else:
+                for inst in instances:
+                    await redis.sadd(f'{inst}-states', 'updatewaiting')
+                    await redis.sadd(f'{inst}-states', 'updating')
                 updgennotify = Now()
-                await redis.sadd(f'{inst}-states', 'updating')
                 log.log('UPDATE', f'ARK update found ({curver}>{avlver}) downloading update.')
                 await asyncserverexec(['arkmanager', 'update', '--downloadonly', f'@{instances[0]}'])
                 log.debug('ark update downloaded to staging area')
@@ -484,11 +484,13 @@ async def asynccheckupdates(instances):
                 pushoversend('Ark Update', msg)
         except:
             log.exception(f'error in determining ark version')
+        finally:
+            await redis.srem(f'{inst}-states', 'updating')
 
     for inst in instances:
         checkdirs(inst)
         if f'{inst}-restarting' not in globvars.taskworkers:
-            ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{inst}'], wait=True) ##############
+            ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{inst}'], wait=True)  # #############
             ismodupd = ismodupdd['stdout'].decode('utf-8')
             modchk = 0
             ismodupd = ismodupd.split('\n')
@@ -500,6 +502,7 @@ async def asynccheckupdates(instances):
                     modname = al[2]
             if modchk != 0:
                 await redis.sadd(f'{inst}-states', 'updating')
+                await redis.sadd(f'{inst}-states', 'updatewaiting')
                 log.log('UPDATE', f'ARK mod update [{modname}] id [{modid}] detected for instance [{inst.title()}]')
                 log.debug(f'downloading mod updates for instance {inst}')
                 await asyncserverexec(['arkmanager', 'update', '--downloadonly', '--update-mods', f'@{inst}'])
@@ -508,6 +511,7 @@ async def asynccheckupdates(instances):
                 await asyncwritediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
                 msg = f'{modname} Mod Update\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
                 pushoversend('Mod Update', msg)
+                await redis.srem(f'{inst}-states', 'updating')
                 await asyncinstancerestart(inst, aname)
         else:
             log.trace(f'no updated mods were found for instance {inst}')

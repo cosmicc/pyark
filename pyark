@@ -45,7 +45,7 @@ __maintainer__ = "Ian Perry"
 __email__ = "ianperry99@gmail.com"
 __progname__ = "pyark-daemon"
 __description__ = "pyark daemon service"
-__detaildesc__ = ""
+__detaildesc__ = "ark server cluster manager"
 __name__ = "pyark"
 
 parser = argparse.ArgumentParser(prog=__progname__)
@@ -86,7 +86,7 @@ signal.signal(signal.SIGQUIT, signal_handler)  # Hard Exit
 processlock = PLock()
 processlock.lock()
 
-nice(11)
+nice(10)
 
 if loglevel == 'DEBUG' or args.debug:
     log.log('START', f'Pyark daemon is starting on {hstname} in **DEBUG MODE**')
@@ -298,8 +298,6 @@ def main():
         threads.append(thread)
         thread = threading.Thread(name='auctionapi', target=auctionapi_thread, args=(5, stop_event), daemon=False)
         threads.append(thread)
-        # thread = threading.Thread(name='dblcheckonline', target=dblcheckonline_thread, args=(30, stop_event), daemon=False)
-        # threads.append(thread)
         thread = threading.Thread(name='stat-collector', target=statcollector_thread, args=(Secs['5min'], stop_event), daemon=False)
         threads.append(thread)
     log.debug(f'Starting {len(threads)} threads')
@@ -309,9 +307,9 @@ def main():
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     if args.trace:
         warnings.simplefilter('always', ResourceWarning)
-        asyncio.run(asyncmain(), debug=True)  # Async branch to main loop
+        asyncio.run(asyncmain(), debug=True)  # Async branch to main loop (debug)
     else:
-        asyncio.run(asyncmain())
+        asyncio.run(asyncmain())  # Async branch to main loop
     if len(threads) > 0:
         log.debug(f'Waiting for {len(threads)} threads and tasks to exit...')
         for thread in threads:
@@ -319,38 +317,6 @@ def main():
     processlock.unlock()
     log.debug('Pyark Finished.')
     exit(0)
-
-    '''
-    while True:
-        try:
-            if shutil.disk_usage('/').free < 2000000000:
-                log.critical('Root Disk under 2Gig. Shutting instance and script down')
-                serverexec(['arkmanager', 'stop', '--warn', '@all'], null=True)
-                serverexec(['/home/ark/pyark/pyarlcli', 'stop'], null=True)
-                _exit(1)
-        except:
-            log.critical('unable to determine root freespace')
-            sleep(60)
-            _exit(1)
-        try:
-            if stat('/home/ark/shared/logs/pyark/pyark.log').st_size > 1000000000:
-                log.critical('Pyark log over 1Gig. Shutting script down')
-                serverexec(['/home/ark/pyark/pyarkcli', 'stop'], null=True)
-                _exit(0)
-        except:
-            log.critical('unable to determine pyark log filesize')
-            sleep(60)
-
-        if checkgit == 0:
-            # gitupdatecheck()
-            checkgit += 1
-        elif checkgit == 12:
-            checkgit = 0
-        else:
-            checkgit += 1
-        sleep(60)
-        checkthreads()
-'''
 
 
 if __name__ == 'pyark':
