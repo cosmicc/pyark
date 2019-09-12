@@ -15,6 +15,43 @@ from modules.timehelper import Now, elapsedTime
 redis = Redis.redis
 
 
+class instvar:
+    def __init__(self):
+        pass
+
+    async def set(self, inst, var, value):
+        await redis.hset(f'{inst}', var, value)
+
+    async def remove(self, inst, var):
+        await redis.hdel(f'{inst}', var)
+
+    async def get(self, inst, var):
+        return await redis.hget(f'{inst}', var)
+
+    async def inc(self, inst, var):
+        return await redis.hincrby(f'{inst}', var, 1)
+
+    async def dec(self, inst, var):
+        return await redis.hincrby(f'{inst}', var, -1)
+
+    async def check(self, inst, var):
+        return await redis.hexists(f'{inst}', var)
+
+
+class inststate:
+    def __init__(self):
+        pass
+
+    async def set(self, inst, state):
+        await redis.sadd(f'{inst}-states', state)
+
+    async def unset(self, inst, state):
+        await redis.srem(f'{inst}-states', state)
+
+    async def check(self, inst, state):
+        return redis.sismember(f'{inst}-states', state)
+
+
 def stripansi(stripstr):
     ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     return(ansi_escape.sub('', stripstr).strip())
@@ -170,7 +207,7 @@ async def getservermem():
 async def _procstats(inst):
     log.trace(f'Running process instances stats for {inst}')
     instpid = getinstpid(inst)
-    if instpid is == "CHANGEME":  #  CHANGE ME
+    if instpid == "CHANGEME":  # CHANGE ME
         arkprocess = psutil.Process(int(instpid))
         loop = asyncio.get_running_loop()
         arkcpu = await loop.run_in_executor(None, partial(arkprocess.cpu_percent, interval=5))
