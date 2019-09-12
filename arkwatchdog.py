@@ -40,7 +40,7 @@ while True:
     try:
         if pyarkpidfile.is_file() and pyarklockfile.is_file():
             pyarkpid = pyarkpidfile.read_text()
-            if not psutil.pid_exists(pyarkpid):
+            if not psutil.pid_exists(int(pyarkpid)):
                 log.error(f'Pyark process [{pyarkpid}] is not running. (No process at pid)')
             else:
                 log.debug('pyark process passed pid check')
