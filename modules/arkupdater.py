@@ -87,7 +87,6 @@ def checkdirs(inst):
             chown(str(path), 1001, 1005)
 
 
-@log.catch
 async def asyncupdatetimer(inst, ctime):
     await db.update(f"UPDATE instances SET restartcountdown = '{ctime}' WHERE name = '{inst}'")
 
@@ -140,7 +139,6 @@ async def asyncplayerrestartbit(inst):
     await db.update(f"UPDATE players SET restartbit = 1 WHERE server = '{inst}'")
 
 
-@log.catch
 async def asynccheckwipe(instances):
     global dwtimer
     for inst in instances:

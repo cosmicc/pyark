@@ -1,7 +1,7 @@
-from pathlib import Path
 from time import time
 
 from modules.configreader import arkroot, instances, sharedpath
+from pathlib import Path
 
 instpids = {}  # Instance pids
 instpidfiles = {}  # Instance pid files from arkmanager

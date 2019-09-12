@@ -1,6 +1,5 @@
 #!/usr/bin/env python3.7
 import argparse
-import asyncio
 import logging
 import signal
 import threading
@@ -8,20 +7,19 @@ import warnings
 from os import nice
 
 import aiohttp
+import asyncio
+import globvars
 import uvloop
 from git import Repo
 from loguru import logger as log
-
-import globvars
-import modules.logging
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
 from modules.arkupdater import asynccheckbackup, asynccheckmaint, asynccheckrestart, asynccheckupdates, asynccheckwipe
 from modules.asyncdb import DB as db
 from modules.clusterevents import eventwatcher_thread
 from modules.cmdlistener import cmdscheck
-from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile,
-                                  debugfile, gamelogfile, gamelograwfile, hstname, instances, instr,
-                                  is_arkupdater, jsondebugfile, jsonlogfile, loglevel, pointsfile)
+from modules.configreader import (adminfile, chatlogfile, colorlogfile, crashlogfile, critlogfile, debugfile,
+                                  gamelogfile, gamelograwfile, hstname, instances, instr, is_arkupdater, jsondebugfile,
+                                  jsonlogfile, loglevel, pointsfile)
 from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import gamelogger_thread
 from modules.gchatrelay import asyncgchatrelay
@@ -40,7 +38,7 @@ logging.basicConfig(level=logging.DEBUG)
 __author__ = "Ian Perry"
 __copyright__ = "Copyright 2018, Galaxy Media"
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "0.2.0"
 __maintainer__ = "Ian Perry"
 __email__ = "ianperry99@gmail.com"
 __progname__ = "pyark-daemon"
@@ -95,10 +93,7 @@ elif loglevel == 'TRACE' or args.trace:
 else:
     log.log('START', f'Pyark is starting on [{hstname}] for [{instr.title()}] in Normal Mode')
 
-checkgit = 0
 
-
-@log.catch
 async def gitupdatecheck():
     log.debug(f'Update command recieved. Checking for updates...')
     localdir = '/home/ark/pyark'
@@ -118,7 +113,6 @@ async def restartpyark():
     await asyncserverexec(['systemctl', 'restart', 'pyark'], nice=0)
 
 
-@log.catch
 def checkthreads():
     for thread in threads:
         if not thread.is_alive():
@@ -143,8 +137,6 @@ async def asyncmain():
     main_stop_event = False
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
-    # for s in signals:
-    #    asyncloop.add_signal_handler(s, lambda s=s: asyncio.create_task(async_signal_handler(s, asyncloop)))
     globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
@@ -249,8 +241,7 @@ async def asyncmain():
     await asyncio.sleep(1)
     await db.close()
 
-
-    #async with aiohttp.ClientSession() as session:
+    # async with aiohttp.ClientSession() as session:
     #    asyncio.create_task(asyncdblcheckonline())
     #    asyncio.create_task(asyncstatcollector())
     #    asyncio.create_task(gl.process())
@@ -259,12 +250,12 @@ async def asyncmain():
 
     # ending loop
 
-    #log.debug(f'still running tasks: {asyncio.Task.all_tasks()}')
-    #if len(asyncio.Task.all_tasks()) > 1:
+    # log.debug(f'still running tasks: {asyncio.Task.all_tasks()}')
+    # if len(asyncio.Task.all_tasks()) > 1:
     #    log.debug(f'Waiting for {len(asyncio.Task.all_tasks()) - 1} async tasks to finish...')
     #    while len(asyncio.Task.all_tasks()) > 1:
     #        await asyncio.sleep(.1)
-    #else:
+    # else:
     #    log.debug(f'No async pending tasks to finish.')
 
 
@@ -320,6 +311,4 @@ def main():
 
 
 if __name__ == 'pyark':
-    # gitupdatecheck()
-    gitcheck = 1
     main()

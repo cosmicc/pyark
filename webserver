@@ -3,7 +3,6 @@
 import argparse
 from os import nice
 
-import modules.logging
 from modules.configreader import webserver_ip, webserver_port
 from modules.processlock import PLock
 from web import create_app, socketio

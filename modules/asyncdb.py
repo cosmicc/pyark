@@ -1,11 +1,9 @@
-import asyncio
 from datetime import datetime
-from pathlib import Path
 
+import asyncio
 import asyncpg
 from loguru import logger as log
-
-from modules.configreader import hstname, psql_db, psql_host, psql_port, psql_pw, psql_user
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 
 
 class asyncDB:
@@ -41,7 +39,6 @@ class asyncDB:
             await self.cpool.close()
         log.debug(f'Database connection pool closed for [{self.process}]')
 
-    @log.catch
     async def _aquire(self):
         while self.connecting and self.cpool is None:
             await asyncio.sleep(.1)
