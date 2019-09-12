@@ -14,7 +14,7 @@ from modules.colorizer import (BCYN, BGN, BGRN, BLU, BMGT, BRED, BWHT, BYEL, GRN
 from modules.configreader import redis_host, redis_port
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('action_to_perform', action='store', choices=['start', 'stop', 'restart', 'log', 'debuglog', 'startall', 'stopall', 'restartall', 'update', 'updateall', 'gitpull', 'kill', 'killall', 'gitpull'], help='Action to perform')
+parser.add_argument('action_to_perform', action='store', choices=['start', 'stop', 'restart', 'log', 'debuglog', 'startall', 'stopall', 'restartall', 'update', 'updateall', 'kill', 'killall', 'gitpull', 'gitpullall', 'watchdogrestart'], help='Action to perform')
 action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('start', action='store_true', help='Start a pyark daemon')
 action_group.add_argument('startall', action='store_true', help='Start all the pyark daemons')
@@ -29,6 +29,8 @@ action_group.add_argument('killall', action='store_true', help='Kill all the pya
 action_group.add_argument('log', action='store_true', help='Pyark log')
 action_group.add_argument('debuglog', action='store_true', help='Pyark debug log')
 action_group.add_argument('gitpull', action='store_true', help='Force a git pull on server (to recover from bad commit)')
+action_group.add_argument('gitpullall', action='store_true', help='Force a git pull on all servers')
+action_group.add_argument('watchdogrestart', action='store_true', help='Restart Arkwatchdog on a server')
 
 parser.add_argument('-s', '--server', action='store', help='Server name')
 parser.add_argument('-l', '--loglines', action='store', help='Number of log lines to show')
@@ -100,6 +102,15 @@ def sctl(scmd):
             print(f'You need to specify a valid server to retart the pyark\n')
 
 
+def gitpullall():
+    r = redis.Redis(host=redis_host, port=redis_port, db=0)
+    allservers = r.smembers('servers')
+    print(f'Running force git pull on {len(allservers)} servers: [{allservers}]\n')
+    for server in allservers:
+        server = server.decode()
+        r.publish(f'{server}-commands', 'gitpull')
+
+
 def startall():
     r = redis.Redis(host=redis_host, port=redis_port, db=0)
     allservers = r.smembers('servers')
@@ -158,6 +169,18 @@ def gitpull():
             if args.server.lower() == server:
                 print(f'Running force git pull on server: [{args.server}]\n')
                 r.publish(f'{server}-commands', 'gitpull')
+
+
+def watchdogrestart():
+    allservers = r.smembers('servers')
+    if args.server is None or args.server.encode() not in allservers:
+        print(f'You need to specify a valid server to restart watchdog\n')
+    else:
+        for server in allservers:
+            server = server.decode().lower()
+            if args.server.lower() == server:
+                print(f'Running watchdog restart on server: [{args.server}]\n')
+                r.publish(f'{server}-commands', 'restartwatchdog')
 
 
 def updateall():
@@ -329,3 +352,7 @@ elif args.action_to_perform == 'killall':
     killall()
 elif args.action_to_perform == 'gitpull':
     gitpull()
+elif args.action_to_perform == 'gitpullall':
+    gitpullall()
+elif args.action_to_perform == 'watchdogrestart':
+    watchdogrestart()
