@@ -169,9 +169,9 @@ async def getservermem():
 
 async def _procstats(inst):
     log.trace(f'Running process instances stats for {inst}')
-    instpid = int(getinstpid(inst))
+    instpid = getinstpid(inst)
     if instpid is not None:
-        arkprocess = psutil.Process(instpid)
+        arkprocess = psutil.Process(int(instpid)
         loop = asyncio.get_running_loop()
         arkcpu = await loop.run_in_executor(None, partial(arkprocess.cpu_percent, interval=5))
         rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, wait=True)
@@ -199,10 +199,12 @@ async def processserverstats(instances):
 
 @log.catch
 def setarknice(inst):
-    proc = psutil.Process(getinstpid(inst))
-    if proc.nice() != -10:
-        log.debug(f'Setting priority for ark server instance [{inst}]')
-        proc.nice(-10)
+    instpid = getinstpid(inst)
+    if instpid is not None:
+        proc = psutil.Process(getinstpid)
+        if proc.nice() != -10:
+            log.debug(f'Setting priority for ark server instance [{inst}]')
+            proc.nice(-10)
 
 
 @log.catch
