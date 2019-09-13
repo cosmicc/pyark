@@ -455,7 +455,7 @@ async def asynccheckifenabled(inst):
 async def asynccheckifalreadyrestarting(inst):
     instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     if instdata['needsrestart'] == "True":
-        if not await instancestate.check(inst, 'restartwaiting'):
+        if not await instancestate.check(inst, 'restartwaiting') and not await instancestate.check(inst, 'restarting'):
             log.debug(f'restart flag set for instance {inst}, starting restart loop')
             asyncio.create_task(asyncrestartloop(inst))
         else:
