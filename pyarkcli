@@ -13,8 +13,32 @@ from modules.colorizer import (BCYN, BGN, BGRN, BLU, BMGT, BRED, BWHT, BYEL, GRN
                                MAU, MGT, ORG, PUR, RED, RMY, RST, SKN, SLT, WHT, YEL)
 from modules.configreader import redis_host, redis_port
 
+
+def startpyark(args):
+    print(args)
+    allservers = r.smembers('servers')
+    #if scmd == 'start':
+    #    if args.server is None:
+    #        command = '/bin/systemctl start pyark'
+    #        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    #        print('PyArk Started')
+    #    elif args.server in allservers:
+    #        print(f'Running pyark start on server: [{args.server}]\n')
+    #        r.publish(f'{args.server.lower()}-commands', 'start')
+    #    else:
+    #        print(f'You need to specify a valid server to start the pyark\n')
+
+
+parser = argparse.ArgumentParser()
+subparsers = parser.add_subparsers()
+
+parser_start = subparsers.add_parser('start')
+parser_start.add_argument('server', default=None)
+parser_start.set_defaults(func=startpyark)
+
+"""
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-# action_group = parser.add_argument_group(title='actions')
+action_group = parser.add_argument_group(title='actions')
 action_group.add_argument('start', action='store_true', help='Start a pyark daemon')
 action_group.add_argument('startall', action='store_true', help='Start all the pyark daemons')
 action_group.add_argument('stop', action='store_true', help='Stop a pyark daemon')
@@ -34,8 +58,7 @@ action_group.add_argument('loglevel', action='store_true', nargs=2, help='Set py
 
 parser.add_argument('-s', '--server', action='store', help='Server name')
 parser.add_argument('-l', '--loglines', action='store', help='Number of log lines to show')
-
-args = parser.parse_args()
+"""
 
 print('    ')
 
