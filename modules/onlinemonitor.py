@@ -8,12 +8,9 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring
 from modules.players import asyncnewplayer
-from modules.redis import Redis
-from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd
+from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd, instancevar
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now, elapsedTime, playedTime
-
-redis = Redis.redis
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -161,47 +158,39 @@ async def asyncplayergreet(steamid, steamname, inst):
                     mtxt = annc[0]
                     await asyncserverchatto(inst, steamid, mtxt)
             if xferpoints != 0:
-                    await asyncio.sleep(5)
-                    mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
-                    await asyncserverchatto(inst, steamid, mtxt)
+                await asyncio.sleep(5)
+                mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
+                await asyncserverchatto(inst, steamid, mtxt)
             if int(player['homemovepoints']) != 0:
-                    await asyncio.sleep(5)
-                    mtxt = f'{xferpoints} rewards points were transferred here from a home server move'
-                    await asyncserverchatto(inst, steamid, mtxt)
+                await asyncio.sleep(5)
+                mtxt = f'{xferpoints} rewards points were transferred here from a home server move'
+                await asyncserverchatto(inst, steamid, mtxt)
             await asynclottodeposits(player, inst)
             await asyncserverisinrestart(steamid, inst, player)
     globvars.greetings.remove(steamid)
 
 
 async def asynckickcheck(instances):
-    if 'kickcheck' not in globvars.taskworkers:
-        globvars.taskworkers.add('kickcheck')
-        for inst in instances:
-            if inst in globvars.isonline:
-                kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
-                if kicked:
-                    await asyncserverrconcmd(inst, f'kickplayer {kicked[1]}')
-                    log.log('KICK', f'Kicking user [{kicked[1]}] from server [{inst.title()}] on kicklist')
-                    await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
-        globvars.taskworkers.remove('kickcheck')
-        return True
+    for inst in instances:
+        if await instancevar.get(inst, 'islistening') == 1:
+            kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
+            if kicked:
+                await asyncserverrconcmd(inst, f'kickplayer {kicked[1]}')
+                log.log('KICK', f'Kicking user [{kicked[1]}] from server [{inst.title()}] on kicklist')
+                await db.update(f"DELETE FROM kicklist WHERE steamid = '{kicked[1]}'")
 
 
 @log.catch
 async def asynconlinedblchecker(instances):
-    globvars.taskworkers.add('dblchecker')
     for inst in instances:
-        if globvars.instplayers[inst]['active'] is not None and globvars.instplayers[inst]['online']:
-            if inst in globvars.islistening:
-                log.trace(f'Running online doublechecker for {inst}')
-                players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = '{inst}'")
-                for player in players:
-                    log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
-                    await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
-                    if player['homeserver'] != inst:
-                        command = f'tcsar setarctotal {player["steamid"]} 0'
-                        await asyncserverscriptcmd(inst, command)
-        globvars.taskworkers.discard('dblchecker')
+        log.trace(f'Running online doublechecker for {inst}')
+        players = await db.fetchall(f"SELECT * FROM players WHERE online = True AND lastseen <= {Now() - 300} AND server = '{inst}'")
+        for player in players:
+            log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
+            await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
+            if player['homeserver'] != inst:
+                command = f'tcsar setarctotal {player["steamid"]} 0'
+                await asyncserverscriptcmd(inst, command)
 
 
 @log.catch
@@ -210,8 +199,7 @@ async def asyncprocessonline(inst, eline):
     if line.startswith(('Running command', 'Error:')):
         pass
     elif line == 'No Players Connected':
-        globvars.instplayers[inst]['online'] = 0
-        await redis.hset(inst, 'playersonline', 0)
+        await instancevar.set(inst, 'playersonline', 0)
     else:
         lines = line.split('\n')
         players = 0
@@ -228,8 +216,7 @@ async def asyncprocessonline(inst, eline):
                     log.debug(f'online player greeting aleady running for {steamname}')
             else:
                 log.error(f'problem with parsing online player - {rawline}')
-        globvars.instplayers[inst]['online'] = players
-        await redis.hset(inst, 'playersonline', players)
+        await instancevar.set(inst, 'playersonline', players)
 
 
 async def onlineexecute(inst):
@@ -246,4 +233,5 @@ async def onlineexecute(inst):
 
 async def onlinecheck(instances):
     for inst in instances:
-        asyncio.create_task(onlineexecute(inst))
+        if await instancevar.get(inst, 'islistening') == 1:
+            asyncio.create_task(onlineexecute(inst))

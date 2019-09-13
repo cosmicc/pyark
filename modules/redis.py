@@ -53,6 +53,52 @@ Redis = RedisClass()
 redis = Redis.redis
 
 
+class globalvar:
+    def __init__(self):
+        pass
+
+    async def set(self, key, value):
+        """Set a global variable
+
+        Arguments:
+            key {string} -- Key to set value to
+            value {int, string} -- Value to set to key
+        """
+        await redis.set(key, value)
+
+    async def remove(self, key):
+        """Remove a global variable
+
+        Arguments:
+            key {string} -- Key to remove
+        """
+        await redis.delete(key)
+
+    async def get(self, key):
+        """Get a global variable
+
+        Arguments:
+            key {string} -- Key to get value from
+        """
+        return await redis.get(key)
+
+    async def inc(self, instance, key):
+        """Increment a global variable
+
+        Arguments:
+            key {string} -- Key to increment value
+        """
+        return await redis.incr(key)
+
+    async def dec(self, instance, key):
+        """Decrement a global variable
+
+        Arguments:
+            key {string} -- Key to decrement value
+        """
+        return await redis.decr(key)
+
+
 class instancevar:
     def __init__(self):
         pass

@@ -8,14 +8,13 @@ from loguru import logger as log
 
 import globvars
 from modules.asyncdb import DB as db
-from modules.configreader import hstname
 from modules.dbhelper import cleanstring
 from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, asyncwipeit, homeablelist
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import asyncnewplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
-                                 asyncserverexec, asyncserverscriptcmd)
+                                 asyncserverscriptcmd, instancestate, instancevar)
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
@@ -307,10 +306,10 @@ async def asyncstartvoter(inst, whoasked):
     if globvars.isvoting:
         message = 'Voting has already started. cast your vote now'
         await asyncserverchat(inst, message)
-    elif f'{hstname}-maintenance' in globvars.taskworkers:
+    elif instancestate.check(inst, 'maintenance'):
         message = 'You cannot start a vote during server maintenance'
         await asyncserverchat(inst, message)
-    elif f'{inst}-restarting' in globvars.taskworkers:
+    elif instancestate.check(inst, 'restartwaiting'):
         message = 'You cannot start a vote while the server is in restart countdown'
         await asyncserverchat(inst, message)
     elif time() - float(await asyncgetlastwipe(inst)) < Secs['4hour']:   # 4 hours between wipes
@@ -732,8 +731,7 @@ async def asyncprocesscmdline(minst, eline):
                 log.log('CMD', f'Responding to a [!myhome] request for [{whoasked.title()}] on [{minst.title()}]')
                 message = "The Home command is disabled for repairs"
                 await asyncserverchat(inst, message)
-
-                #await asynchomeserver(minst, whoasked, ninst)
+                # await asynchomeserver(minst, whoasked, ninst)
 
             elif incmd.startswith(('!vote', '!startvote', '!wipe')):
                 log.debug(f'Responding to a [!vote] request from [{whoasked.title()}] on [{minst.title()}]')
@@ -799,4 +797,5 @@ async def cmdsexecute(inst):
 
 async def cmdscheck(instances):
     for inst in instances:
-        asyncio.create_task(cmdsexecute(inst))
+        if await instancevar.get(inst, 'islistening') == 1:
+            asyncio.create_task(cmdsexecute(inst))

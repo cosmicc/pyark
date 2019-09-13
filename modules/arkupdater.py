@@ -234,6 +234,14 @@ async def asyncrestartinstnow(inst, startonly=False):
     elif serverneedsrestart() and inst != 'coliseum' and inst != 'crystal' and not startonly:
         await db.update(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
         log.log('MAINT', f'REBOOTING Server [{hstname.upper()}] for maintenance server reboot')
+        await instancestate.set(inst, 'restarting')
+        await instancestate.unset(inst, 'updating')
+        await instancestate.unset(inst, 'updatewaiting')
+        await instancestate.unset(inst, 'restartwaiting')
+        await instancestate.unset(inst, 'cfgupdate')
+        await instancevar.set(inst, 'isrunning', 0)
+        await instancevar.set(inst, 'isonline', 0)
+        await instancevar.set(inst, 'islistening', 0)
         await asyncserverexec(['reboot'])
     else:
         log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
@@ -251,6 +259,9 @@ async def asyncrestartinstnow(inst, startonly=False):
         await instancestate.unset(inst, 'updatewaiting')
         await instancestate.unset(inst, 'restartwaiting')
         await instancestate.unset(inst, 'cfgupdate')
+        await instancevar.set(inst, 'isrunning', 1)
+        await instancevar.set(inst, 'isonline', 0)
+        await instancevar.set(inst, 'islistening', 0)
 
 
 @log.catch
