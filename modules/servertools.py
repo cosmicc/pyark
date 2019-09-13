@@ -4,109 +4,13 @@ from functools import partial
 from os.path import isfile
 from re import compile as rcompile
 from re import sub
-from modules.redis import Redis
 import psutil
 from loguru import logger as log
 
 import globvars
 from modules.asyncdb import DB as db
 from modules.timehelper import Now, elapsedTime
-
-redis = Redis.redis
-
-
-class instancevar:
-
-    def __init__(self):
-        pass
-
-    async def set(self, instance, key, value):
-        """Set an instance variable
-
-        Arguments:
-            instance {string} -- Instance Name
-            key {string} -- Key to set value to
-            value {int, string} -- Value to set to key
-        """
-        await redis.hset(f'{instance}', key, value)
-
-    async def remove(self, instance, key):
-        """Remove an instance variable
-
-        Arguments:
-            instance {string} -- Instance Name
-            key {string} -- Key to remove
-        """
-        await redis.hdel(f'{instance}', key)
-
-    async def get(self, instance, key):
-        """Get an instance variable
-
-        Arguments:
-            instance {string} -- Instance Name
-            key {string} -- Key to get value from
-        """
-        return await redis.hget(f'{instance}', key)
-
-    async def inc(self, instance, key):
-        """Increment instance variable
-
-        Arguments:
-            instance {string} -- Instance Name
-            key {string} -- Key to increment value
-        """
-        return await redis.hincrby(f'{instance}', key, 1)
-
-    async def dec(self, instance, key):
-        """Decrement instance variable
-
-        Arguments:
-            instance {string} -- Instance Name
-            key {string} -- Key to decrement value
-        """
-        return await redis.hincrby(f'{instance}', key, -1)
-
-    async def check(self, instance, key):
-        """Check if instance variable exists
-
-        Arguments:
-            instance {string} -- Instance Name
-            key {string} -- Key to check
-        """
-        return await redis.hexists(f'{instance}', key)
-
-
-class instancestate:
-
-    def __init__(self):
-        pass
-
-    async def set(self, instance, state):
-        """Set an instance state
-
-        Arguments:
-            instance {string} -- Instance name
-            state {string} -- Instance state
-        """
-        await redis.sadd(f'{instance}-states', state)
-
-    async def unset(self, instance, state):
-        """Unset an instance state
-
-        Arguments:
-            instance {string} -- Instance name
-            state {string} -- Instance state
-        """
-        await redis.srem(f'{instance}-states', state)
-
-    async def check(self, instance, state):
-        """Check an instance state
-
-        Arguments:
-            instance {string} -- Instance name
-            state {string} -- Instance state
-        """
-        return redis.sismember(f'{instance}-states', state)
+from modules.redis import instancevar
 
 
 def stripansi(stripstr):
@@ -280,9 +184,9 @@ def getinstpid(inst):
     try:
         return globvars.instpidfiles[inst].read_text()
     except FileNotFoundError:
-        redis.hset(inst, 'isrunning', 0)
-        redis.hset(inst, 'islistening', 0)
-        redis.hset(inst, 'isonline', 0)
+        await instancevar.set(inst, 'isrunning', 0)
+        await instancevar.set(inst, 'islistening', 0)
+        await instancevar.set(inst, 'isonline', 0)
         return None
 
 

@@ -3,16 +3,13 @@ from functools import partial
 
 from loguru import logger as log
 
-import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
-from modules.redis import Redis
 from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, filterline
+from modules.redisvars import instancestate, instancevar
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now
-
-redis = Redis.redis
 
 
 @log.catch
@@ -26,7 +23,7 @@ async def asyncgetinstancelist():
 
 @log.catch
 async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, bees=True):
-    await redis.sadd(f'{inst}-states', 'wiping')
+    await instancestate.set(inst, 'wiping')
     if mating:
         log.debug(f'Shutting down dino mating on {inst}...')
         await asyncserverscriptcmd(inst, 'MatingOff_DS')
@@ -58,107 +55,88 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
         await asyncserverrconcmd(inst, 'DestroyWildDinos')
         await asyncio.sleep(5)
         log.log('WIPE', f'All wild dinos have been wiped from [{inst.title()}]')
-    await redis.srem(f'{inst}-states', 'wiping')
+    await instancestate.unset(inst, 'wiping')
 
 
 async def asyncfinishstatus(inst):
     log.trace('running statusline completion task')
-    if globvars.status_counts[inst]['running'] >= 3:
-        isrunning = 0
-        globvars.isrunning.discard(inst)
-        await redis.hset(inst, 'isrunning', 0)
+    if await instancevar.get(inst, 'missedrunning') >= 3:
+        await instancevar.set(inst, 'isrunning', 0)
     else:
-        isrunning = 1
-        globvars.isrunning.add(inst)
-        await redis.hset(inst, 'isrunning', 1)
-    if globvars.status_counts[inst]['listening'] >= 3:
-        globvars.islistening.discard(inst)
-        islistening = 0
-        await redis.hset(inst, 'islistening', 0)
+        await instancevar.set(inst, 'isrunning', 1)
+    if await instancevar.get(inst, 'missedlistening') >= 3:
+        await instancevar.set(inst, 'islistening', 0)
     else:
-        islistening = 1
-        globvars.islistening.add(inst)
-        await redis.hset(inst, 'islistening', 1)
-    if globvars.status_counts[inst]['online'] >= 3:
-        globvars.isonline.discard(inst)
-        isonline = 0
-        await redis.hset(inst, 'isonline', 0)
+        await instancevar.set(inst, 'islistening', 1)
+    if await instancevar.get(inst, 'missedonline') >= 3:
+        await instancevar.set(inst, 'isonline', 0)
     else:
-        globvars.isonline.add(inst)
-        isonline = 1
-        await redis.hset(inst, 'isonline', 1)
-    if globvars.instplayers[inst]['active'] is not None:
-        if int(globvars.instplayers[inst]['active']) > 0:
-            globvars.isrunning.add(inst)
-            globvars.islistening.add(inst)
-            globvars.isonline.add(inst)
-            redis.hset(inst, 'isrunning', 1)
-            redis.hset(inst, 'islistening', 1)
-            redis.hset(inst, 'isonline', 1)
-            isrunning = 1
-            islistening = 1
-            isonline = 1
-        log.trace(f'pid: {globvars.instpids[inst]}, online: {isonline}, listening: {islistening}, running: {isrunning}, {inst}')
-        await db.update(f"UPDATE instances SET serverpid = '{globvars.instpids[inst]}', isup = '{isonline}', islistening = '{islistening}', isrunning = '{isrunning}' WHERE name = '{inst}'")
-        if globvars.instplayers[inst]['connecting'] is not None and globvars.instplayers[inst]['active'] is not None and globvars.instlinks[inst]['steam'] is not None and globvars.instlinks[inst]['arkservers'] is not None and globvars.instarkbuild[inst] is not None and globvars.instarkversion[inst] is not None:
-            await db.update(f"""UPDATE instances SET hostname = '{globvars.instservernames[inst]}', steamlink = '{globvars.instlinks[inst]["steam"]}', arkserverslink = '{globvars.instlinks[inst]["arkservers"]}', connectingplayers = '{globvars.instplayers[inst]['connecting']}', activeplayers = '{globvars.instplayers[inst]['active']}', arkbuild = '{globvars.instarkbuild[inst]}', arkversion = '{globvars.instarkversion[inst]}' WHERE name = '{inst}'""")
+        await instancevar.set(inst, 'isonline', 1)
+
+    if await instancevar.get(inst, 'playersactive') > 0 or await instancevar.get(inst, 'playersconnected') > 0:
+        await instancevar.set(inst, 'isrunning', 1)
+        await instancevar.set(inst, 'islistening', 1)
+        await instancevar.set(inst, 'isonline', 1)
+        await db.update(f"""UPDATE instances SET serverpid = '{await instancevar.get(inst, "arkpid")}', isup = '{await instancevar.get(inst, "isonline")}', islistening = '{await instancevar.get(inst, "islistening")}', isrunning = '{await instancevar.get(inst, "isrunning")}' WHERE name = '{inst}'""")
+        await db.update(f"""UPDATE instances SET hostname = '{await instancevar.get(inst, "arkname")}', steamlink = '{await instancevar.get(inst, "steamlink")}', arkserverslink = '{await instancevar.get(inst, "arkserverlink")}', connectingplayers = '{await instancevar.get(inst, "playersconnected")}', activeplayers = '{await instancevar.get(inst, "playersactive")}', arkbuild = '{await instancevar.get(inst, "arkbuild")}', arkversion = '{await instancevar.get(inst, "arkversion")}' WHERE name = '{inst}'""")
         return True
 
 
 async def asyncprocessstatusline(inst, eline):
-        line = filterline(eline.decode())
-        status_title = line.split(':', 1)[0]
-        if not status_title.startswith('Running command'):
-            status_value = line.split(':', 1)[1].strip()
-            if status_title == 'Server running':
-                if status_value == 'Yes':
-                    globvars.status_counts[inst]['running'] = 0
-                elif status_value == 'No':
-                    globvars.status_counts[inst]['running'] = globvars.status_counts[inst]['running'] + 1
+    line = filterline(eline.decode())
+    status_title = line.split(':', 1)[0]
+    if not status_title.startswith('Running command'):
+        status_value = line.split(':', 1)[1].strip()
+        if status_title == 'Server running':
+            if status_value == 'Yes':
+                await instancevar.set(inst, 'missedrunning', 0)
+            elif status_value == 'No':
+                await instancevar.inc(inst, 'missedrunning')
 
-            elif status_title == 'Server listening':
-                if status_value == 'Yes':
-                    globvars.status_counts[inst]['listening'] = 0
-                    await redis.srem(f'{inst}-states', 'restarting')
-                elif status_value == 'No':
-                    globvars.status_counts[inst]['listening'] = globvars.status_counts[inst]['listening'] + 1
+        elif status_title == 'Server listening':
+            if status_value == 'Yes':
+                await instancevar.set(inst, 'missedlistening', 0)
+                await instancestate.unset(inst, 'restarting')
+            elif status_value == 'No':
+                await instancevar.inc(inst, 'missedlistening')
 
-            elif status_title == 'Server online':
-                if status_value == 'Yes':
-                    globvars.status_counts[inst]['online'] = 0
-                    await redis.srem(f'{inst}-states', 'restarting')
-                elif status_value == 'No':
-                    globvars.status_counts[inst]['online'] = globvars.status_counts[inst]['online'] + 1
+        elif status_title == 'Server online':
+            if status_value == 'Yes':
+                await instancevar.set(inst, 'missedonline', 0)
+                await instancestate.unset(inst, 'restarting')
+            elif status_value == 'No':
+                await instancevar.inc(inst, 'missedlistening')
 
-            elif (status_title == 'Server version'):
-                globvars.instarkversion[inst] = status_value
+        elif (status_title == 'Server version'):
+            if status_value:
+                await instancevar.set(inst, 'arkversion', status_value)
 
-            elif status_title == 'Server PID':
-                globvars.instpids[inst] = int(status_value)
+        elif status_title == 'Server PID':
+            if status_value:
+                await instancevar.set(inst, 'arkpid', int(status_value))
 
-            elif (status_title == 'Server Name'):
-                servername = status_value.split('Players', 1)[0]
-                connecting = int(status_value.split(' / ')[0].split('Players:')[1])
-                active = int(status_value.split('Active Players:')[1])
-                globvars.instservernames[inst] = servername
-                globvars.instplayers[inst]['connecting'] = connecting
-                globvars.instplayers[inst]['active'] = active
-                await redis.hset(inst, 'arkname', servername)
-                await redis.hset(inst, 'playersconnected', connecting)
-                await redis.hset(inst, 'playersactive', active)
+        elif (status_title == 'Server Name'):
+            servername = status_value.split('Players', 1)[0]
+            connecting = status_value.split(' / ')[0].split('Players:')[1]
+            active = status_value.split('Active Players:')[1]
+            if servername:
+                await instancevar.set(inst, 'arkname', servername)
+            if connecting:
+                await instancevar.set(inst, 'playersconnected', int(connecting))
+            if active:
+                await instancevar.set(inst, 'playersactive', int(active))
 
-            elif (status_title == 'Server build ID'):
-                try:
-                    globvars.instarkbuild[inst] = int(status_value)
-                    await redis.hset(inst, 'arkbuild', int(status_value))
-                except ValueError:
-                    globvars.instarkbuild[inst] = None
+        elif (status_title == 'Server build ID'):
+            if status_value:
+                await instancevar.set(inst, 'arkbuild', int(status_value))
 
-            elif (status_title == 'ARKServers link'):
-                globvars.instlinks[inst]['arkservers'] = status_value
+        elif (status_title == 'ARKServers link'):
+            if status_value:
+                await instancevar.set(inst, 'arkserverlink', status_value)
 
-            elif (status_title == 'Steam connect link'):
-                globvars.instlinks[inst]['steam'] = status_value
+        elif (status_title == 'Steam connect link'):
+            if status_value:
+                await instancevar.set(inst, 'steamlink', status_value)
 
 
 async def statusexecute(inst):
@@ -216,14 +194,6 @@ def isinrestart(inst):
 def isinstancerunning(inst):
     dbdata = dbquery("SELECT isrunning FROM instances WHERE name = '%s'" % (inst,), fetch='one')
     if dbdata[0] == 1:
-        return True
-    else:
-        return False
-
-
-async def asyncisinstanceup(inst):
-    dbdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    if dbdata['isup'] == 1:
         return True
     else:
         return False

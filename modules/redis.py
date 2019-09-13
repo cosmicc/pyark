@@ -9,17 +9,6 @@ from modules.configreader import redis_db, redis_host, redis_port
 class RedisClass:
 
     def __init__(self, host=redis_host, port=redis_port, db=redis_db, max_idle_time=30, idle_check_interval=.1):
-        """[summary]
-        Redis server wrapper class
-        [description]
-
-        Keyword Arguments:
-            host {[type]} -- [description] (default: {redis_host})
-            port {[type]} -- [description] (default: {redis_port})
-            db {[type]} -- [description] (default: {redis_db})
-            max_idle_time {number} -- [description] (default: {30})
-            idle_check_interval {number} -- [description] (default: {.1})
-        """
         self.db = db
         self.max_idle_time = max_idle_time
         self.idle_check_interval = idle_check_interval
@@ -61,3 +50,96 @@ class RedisClass:
 
 
 Redis = RedisClass()
+redis = Redis.redis
+
+
+class instancevar:
+    def __init__(self):
+        pass
+
+    async def set(self, instance, key, value):
+        """Set an instance variable
+
+        Arguments:
+            instance {string} -- Instance Name
+            key {string} -- Key to set value to
+            value {int, string} -- Value to set to key
+        """
+        await redis.hset(f'{instance}', key, value)
+
+    async def remove(self, instance, key):
+        """Remove an instance variable
+
+        Arguments:
+            instance {string} -- Instance Name
+            key {string} -- Key to remove
+        """
+        await redis.hdel(f'{instance}', key)
+
+    async def get(self, instance, key):
+        """Get an instance variable
+
+        Arguments:
+            instance {string} -- Instance Name
+            key {string} -- Key to get value from
+        """
+        return await redis.hget(f'{instance}', key)
+
+    async def inc(self, instance, key):
+        """Increment instance variable
+
+        Arguments:
+            instance {string} -- Instance Name
+            key {string} -- Key to increment value
+        """
+        return await redis.hincrby(f'{instance}', key, 1)
+
+    async def dec(self, instance, key):
+        """Decrement instance variable
+
+        Arguments:
+            instance {string} -- Instance Name
+            key {string} -- Key to decrement value
+        """
+        return await redis.hincrby(f'{instance}', key, -1)
+
+    async def check(self, instance, key):
+        """Check if instance variable exists
+
+        Arguments:
+            instance {string} -- Instance Name
+            key {string} -- Key to check
+        """
+        return await redis.hexists(f'{instance}', key)
+
+
+class instancestate:
+    def __init__(self):
+        pass
+
+    async def set(self, instance, state):
+        """Set an instance state
+
+        Arguments:
+            instance {string} -- Instance name
+            state {string} -- Instance state
+        """
+        await redis.sadd(f'{instance}-states', state)
+
+    async def unset(self, instance, state):
+        """Unset an instance state
+
+        Arguments:
+            instance {string} -- Instance name
+            state {string} -- Instance state
+        """
+        await redis.srem(f'{instance}-states', state)
+
+    async def check(self, instance, state):
+        """Check an instance state
+
+        Arguments:
+            instance {string} -- Instance name
+            state {string} -- Instance state
+        """
+        return redis.sismember(f'{instance}-states', state)

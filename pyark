@@ -27,8 +27,8 @@ from modules.lottery import lotterywatcher_thread
 from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinedblchecker, onlinecheck
 from modules.processlock import PLock
-from modules.redis import Redis
-from modules.servertools import asyncserverexec, instancestate, processserverstats, processinststats
+from modules.redis import Redis, instancestate, instancevar
+from modules.servertools import asyncserverexec, processserverstats, processinststats
 from modules.statcollector import statcollector_thread
 from modules.timehelper import Secs
 
@@ -147,6 +147,9 @@ async def asyncmain():
     for inst in instances:
         await pubsub.subscribe([f'{inst}-commands'])
         await instancestate.set(inst, 'pyark')
+        await instancevar.set(inst, 'missedrunning', 0)
+        await instancevar.set(inst, 'missedlistening', 0)
+        await instancevar.set(inst, 'missedonline', 0)
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
     tasktimer = asyncloop.time()

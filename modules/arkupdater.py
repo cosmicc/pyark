@@ -13,14 +13,13 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventrebootday, getcurrenteventext, iseventtime
 from modules.configreader import hstname, instances, is_arkupdater, maint_hour, sharedpath
 from modules.discordbot import asyncwritediscord
-from modules.instances import (asyncgetlastrestart, asyncgetlastwipe, asyncisinstanceenabled, asyncisinstanceup,
-                               asyncwipeit)
+from modules.instances import asyncgetlastrestart, asyncgetlastwipe, asyncisinstanceenabled, asyncwipeit
 from modules.players import asyncgetliveplayersonline, asyncgetplayersonline
 from modules.pushover import pushover
-from modules.redis import Redis
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverexec, asyncservernotify,
-                                 serverneedsrestart, instancestate)
+                                 serverneedsrestart)
 from modules.timehelper import Now, Secs, wcstamp
+from modules.redis import instancestate, instancevar
 from pathlib import Path
 from timebetween import is_time_between
 
@@ -30,7 +29,6 @@ confupdtimer = 0
 dwtimer = 0
 updgennotify = Now() - Secs['hour']
 
-redis = Redis.redis
 
 """
 def file_event(event):
@@ -143,7 +141,7 @@ async def asynccheckwipe(instances):
     for inst in instances:
         log.trace(f'running checkwipe for {inst}')
         lastwipe = await asyncgetlastwipe(inst)
-        if Now() - lastwipe > Secs['12hour'] and await asyncisinstanceup(inst):
+        if Now() - lastwipe > Secs['12hour'] and await instancevar.get(inst, 'isonline'):
             oplayers = await asyncgetliveplayersonline(inst)
             if oplayers['activeplayers'] == 0 and len(await asyncgetplayersonline(inst)) == 0:
                 log.log('WIPE', f'Dino wipe needed for [{inst.title()}], server is empty, wiping now')
@@ -158,7 +156,7 @@ async def asynccheckwipe(instances):
                 dwtimer += 1
                 if dwtimer == 24:
                     dwtimer = 0
-        elif Now() - lastwipe > Secs['day'] and await asyncisinstanceup(inst):
+        elif Now() - lastwipe > Secs['day'] and await instancevar.get(inst, 'isonline'):
             log.log('WIPE', f'Dino wipe needed for [{inst.title()}], players online but forced, wiping now')
             bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 24 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Forcing a maintenance wild dino wipe in 10 seconds</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
             await asyncserverbcast(inst, bcast)
@@ -316,14 +314,17 @@ async def asyncrestartloop(inst, startonly=False):
 async def asynccheckmaint(instances):
     t, s, e = datetime.now(), dt(int(maint_hour), 0), dt(int(maint_hour) + 1, 0)
     inmaint = is_time_between(t, s, e)
-    if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and f'{hstname}-maintenance' not in globvars.taskworkers:
-        log.log('MAINT', f'Daily maintenance window has opened for server [{hstname.upper()}]...')
-        globvars.taskworkers.add(f'{hstname}-maintenance')
-        await asyncsetlastmaint(hstname)
+    maint = False
+    for inst in instances:
+        if inmaint and await asyncgetlastmaint(hstname) < Now(fmt='dtd') and not await instancestate.check(inst, 'maintenance'):
+            log.log('MAINT', f'Daily maintenance window has opened for server [{hstname.upper()}]...')
+            maint = True
+    if maint:
         for inst in instances:
             await instancestate.set(inst, 'maintenance')
             bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="0,1,0,1">           Daily server maintenance has started (4am EST/8am GMT)</>\n\n<RichColor Color="1,1,0,1">    All dino mating will be toggled off, and all unclaimed dinos will be cleared</>\n<RichColor Color="1,1,0,1">            The server will also be performing updates and backups</>"""
             await asyncserverbcast(inst, bcast)
+        await asyncsetlastmaint(hstname)
         log.log('MAINT', f'Running server os maintenance on [{hstname.upper()}]...')
         log.debug(f'OS update started for {hstname}')
         await asyncserverexec(['apt', 'update'], _wait=True)
@@ -331,10 +332,8 @@ async def asynccheckmaint(instances):
         await asyncserverexec(['apt', 'upgrade', '-y'], _wait=True)
         log.debug(f'OS autoremove started for {hstname}')
         await asyncserverexec(['apt', 'autoremove', '-y'], _wait=True)
-        if serverneedsrestart():
-            log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
         for inst in instances:
-            if inst in globvars.islistening:
+            if await instancevar.get(inst, 'islistening') == 1:
                 checkdirs(inst)
                 if serverneedsrestart():
                     await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
@@ -364,12 +363,12 @@ async def asynccheckmaint(instances):
                         await asyncserverchat(inst, message)
                 except:
                     log.exception(f'Error during {hstname} instance daily maintenance')
-                    globvars.taskworkers.remove(f'{hstname}-maintenance')
                 finally:
                     await instancestate.unset(inst, 'maintenance')
         await asynccheckwipe(instances)
+        if serverneedsrestart():
+            log.warning(f'[{hstname.upper()}] server needs a hardware reboot after package updates')
         log.log('MAINT', f'Daily maintenance has ended for [{hstname.upper()}]')
-        globvars.taskworkers.remove(f'{hstname}-maintenance')
     else:
         log.trace(f'no maintenance needed, not in maintenance time window')
 
@@ -378,9 +377,8 @@ async def asynccheckmaint(instances):
 async def asyncinstancerestart(inst, reason, startonly=False):
     checkdirs(inst)
     log.debug(f'instance restart verification starting for {inst}')
-    if f'{inst}-restarting' not in globvars.taskworkers:
+    if not await instancestate.check(inst, 'restarting') or not await instancestate.check(inst, 'restartwaiting'):
         await db.update(f"UPDATE instances SET restartreason = '{reason}' WHERE name = '{inst}'")
-        globvars.taskworkers.add(f'{inst}-restarting')
         asyncio.create_task(asyncrestartloop(inst, startonly))
     else:
         log.debug(f'skipping start/restart for {inst} because restart already running')
@@ -418,13 +416,12 @@ async def asyncperformbackup(inst):
 async def asynccheckbackup(instances):
     for inst in instances:
         checkdirs(inst)
-        if f'{inst}-restarting' not in globvars.taskworkers:
-            lastrestart = await asyncgetlastrestart(inst)
-            lt = Now() - float(lastrestart)
-            if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
-                asyncio.create_task(asyncperformbackup(inst))
-            else:
-                log.trace(f'no backups needed for {inst}')
+        lastrestart = await asyncgetlastrestart(inst)
+        lt = Now() - float(lastrestart)
+        if (lt > 21600 and lt < 21900) or (lt > 43200 and lt < 43500) or (lt > 64800 and lt < 65100):
+            asyncio.create_task(asyncperformbackup(inst))
+        else:
+            log.trace(f'no backups needed for {inst}')
 
 
 @log.catch
