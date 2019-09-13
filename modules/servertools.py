@@ -15,7 +15,7 @@ from modules.timehelper import Now, elapsedTime
 redis = Redis.redis
 
 
-class instvar:
+class instancevar:
 
     def __init__(self):
         pass
@@ -76,7 +76,7 @@ class instvar:
         return await redis.hexists(f'{instance}', key)
 
 
-class inststate:
+class instancestate:
 
     def __init__(self):
         pass
