@@ -17,7 +17,7 @@ from modules.configreader import redis_host, redis_port
 def startpyark(args):
     print(args)
     allservers = r.smembers('servers')
-    #if scmd == 'start':
+    # if scmd == 'start':
     #    if args.server is None:
     #        command = '/bin/systemctl start pyark'
     #        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
@@ -347,6 +347,7 @@ def tribewipe():
         # print(f'{BGRN}TribeID {BMGT}{tribeid}{BGRN} has been DESTROYED from all servers!{RST}')
 
 
+"""
 if args.action_to_perform == 'start':
     sctl('start')
 elif args.action_to_perform == 'stop':
@@ -381,3 +382,4 @@ elif args.action_to_perform == 'watchdogrestart':
     watchdogrestart()
 elif args.loglevel:
     print(args.loglevel)
+"""
