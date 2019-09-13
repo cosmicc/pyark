@@ -7,7 +7,7 @@ from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, filterline
-from modules.redisvars import instancestate, instancevar
+from modules.redis import instancestate, instancevar
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now
 
