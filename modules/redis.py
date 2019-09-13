@@ -80,7 +80,7 @@ class globalvar:
         Arguments:
             key {string} -- Key to get value from
         """
-        return await redis.get(key).decode()
+        return (await redis.get(key)).decode()
 
     async def inc(instance, key):
         """Increment a global variable
@@ -129,7 +129,7 @@ class instancevar:
             instance {string} -- Instance Name
             key {string} -- Key to get value from
         """
-        return await redis.hget(f'{instance}', key).decode()
+        return (await redis.hget(f'{instance}', key)).decode()
 
     async def inc(instance, key):
         """Increment instance variable
