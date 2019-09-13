@@ -4,13 +4,14 @@ from functools import partial
 from os.path import isfile
 from re import compile as rcompile
 from re import sub
+
 import psutil
 from loguru import logger as log
 
 import globvars
 from modules.asyncdb import DB as db
-from modules.timehelper import Now, elapsedTime
 from modules.redis import instancevar
+from modules.timehelper import Now, elapsedTime
 
 
 def stripansi(stripstr):

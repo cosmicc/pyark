@@ -15,8 +15,9 @@ from modules.configreader import redis_host, redis_port
 
 
 def startpyark(args):
-    print(args)
-    allservers = r.smembers('servers')
+    print(f'args: {args}')
+    print(f'server: {args.servername}')
+    # allservers = r.smembers('servers')
     # if scmd == 'start':
     #    if args.server is None:
     #        command = '/bin/systemctl start pyark'
@@ -30,11 +31,14 @@ def startpyark(args):
 
 
 parser = argparse.ArgumentParser()
-subparsers = parser.add_subparsers()
+subparsers = parser.add_subparsers(title='action', description='valid actions to perform',)
 
 parser_start = subparsers.add_parser('start')
-parser_start.add_argument('server', default=None)
+parser_start.add_argument('servername')
 parser_start.set_defaults(func=startpyark)
+
+args = parser.parse_args()
+args.func(args)
 
 """
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)

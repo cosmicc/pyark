@@ -13,10 +13,9 @@ from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, asyncwipeit, homeablelist
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import asyncnewplayer
-from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
-                                 asyncserverscriptcmd)
-from modules.subprotocol import SubProtocol
 from modules.redis import instancestate, instancevar
+from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd
+from modules.subprotocol import SubProtocol
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 
