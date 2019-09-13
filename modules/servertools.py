@@ -149,10 +149,10 @@ async def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
         stdout, stderr = await proc.communicate()
         return {'returncode': proc.returncode, 'stdout': stdout}
     elif _wait:
-        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None, shell=True)
         await proc.communicate()
     else:
-        proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+        proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None, shell=True)
         asyncio.create_task(proc)
 
 
