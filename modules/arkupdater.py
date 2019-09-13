@@ -251,7 +251,6 @@ async def asyncrestartinstnow(inst, startonly=False):
         await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
         log.log('UPDATE', f'Instance [{inst.title()}] is starting')
         await asyncserverexec(['arkmanager', 'start', f'@{inst}'])
-        breakpoint()
         await instancestate.set(inst, 'restarting')
         await instancestate.unset(inst, 'updating')
         await instancestate.unset(inst, 'updatewaiting')
