@@ -131,7 +131,7 @@ async def asyncservernotify(inst, message, nice=10):
 
 
 @log.catch
-def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
+async def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
     """Server execute command
 
     Arguments:
@@ -145,7 +145,7 @@ def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)
     if wait:
-        proc = asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
+        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
         stdout, stderr = await proc.communicate()
         return {'returncode': proc.returncode, 'stdout': stdout}
     elif _wait:
