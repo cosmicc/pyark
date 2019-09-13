@@ -11,7 +11,7 @@ import globvars
 from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventrebootday, getcurrenteventext, iseventtime
-from modules.configreader import hstname, instances, is_arkupdater, maint_hour, sharedpath
+from modules.configreader import hstname, is_arkupdater, maint_hour, sharedpath
 from modules.discordbot import asyncwritediscord
 from modules.instances import asyncgetlastrestart, asyncgetlastwipe, asyncisinstanceenabled, asyncwipeit
 from modules.players import asyncgetliveplayersonline, asyncgetplayersonline
@@ -281,7 +281,7 @@ async def asyncrestartloop(inst, startonly=False):
             await asyncwritechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
             message = f'server {inst.capitalize()} is restarting now for a {reason}'
             await asyncserverexec(['arkmanager', f'notify "{message}"', f'@{inst}'])
-            pushoversend('Instance Restart', message)
+            await pushoversend('Instance Restart', message)
             await asyncrestartinstnow(inst)
         if reason != 'configuration update':
             await asyncsetrestartbit(inst)
@@ -465,7 +465,7 @@ async def asynccheckifalreadyrestarting(inst):
 
 
 @log.catch
-async def asynccheckupdates():
+async def asynccheckupdates(instances):
     global updgennotify
     if is_arkupdater == "True" and Now() - updgennotify > Secs['hour']:
         log.trace('running updatecheck for {hstname}')
