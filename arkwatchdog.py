@@ -3,6 +3,7 @@ import subprocess
 import threading
 from time import sleep
 
+import configparser
 import fcntl
 import modules.logging
 import psutil
@@ -16,6 +17,7 @@ parser.add_argument('-d', '--debug', action='store_true', help='verbose output (
 
 pyarkpidfile = Path('/run/pyark.pid')
 pyarklockfile = Path('/run/pyark.lock')
+pyarkcfgfile = Path('/home/ark/pyark.cfg')
 
 args = parser.parse_args()
 
@@ -36,6 +38,18 @@ def redislistener():
                 subprocess.run(['git', 'pull'], shell=True, cwd='/home/ark/pyark', capture_output=False)
             elif response['data'].decode() == 'restartwatchdog':
                 subprocess.run(['systemctl', 'start', 'arkwatchdog'], shell=False, capture_output=False)
+            elif response['data'].decode().startswith('loglevel'):
+                loglevel = response['data'].decode().split(':')[1]
+                config = configparser.RawConfigParser()
+                config.optionxform = str
+                config.read(pyarkcfgfile)
+                if config.get('general', 'loglevel') != loglevel.upper():
+                    log.debug(f'Changing pyark loglevel to [{loglevel.upper()}] on [{hstname}]')
+                    config.set('general', 'loglevel', loglevel.upper())
+                    with open(str(pyarkcfgfile), 'w') as configfile:
+                        config.write(configfile)
+                    sleep(1)
+                    subprocess.run(['systemctl', 'restart', 'pyark'], shell=False, capture_output=False)
 
 
 thread = threading.Thread(name='redislistener', target=redislistener, args=(), daemon=True)

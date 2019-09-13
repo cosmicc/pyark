@@ -50,7 +50,7 @@ async def asyncserverrconcmd(instance, command, nice=5):
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "{command}" @{instance}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.debug(f'cmd: {cmdstring}')
+    log.trace(f'cmd: {cmdstring}')
 
 
 @log.catch
@@ -67,7 +67,7 @@ async def asyncserverscriptcmd(instance, command, nice=5):
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{instance}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.debug(f'cmd: {cmdstring}')
+    log.trace(f'cmd: {cmdstring}')
 
 
 @log.catch
@@ -84,7 +84,7 @@ async def asyncserverchat(instance, message, nice=15):
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{instance}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.debug(f'cmd: {cmdstring}')
+    log.trace(f'cmd: {cmdstring}')
 
 
 @log.catch
@@ -102,7 +102,7 @@ async def asyncserverchatto(instance, steamid, message, nice=15):
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'ServerChatTo "{steamid}" {message}' @{instance}"""
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.debug(f'cmd: {cmdstring}')
+    log.trace(f'cmd: {cmdstring}')
 
 
 @log.catch
@@ -119,7 +119,7 @@ async def asyncserverbcast(instance, broadcast, nice=10):
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'Broadcast {broadcast}' @{instance}"""
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.debug(f"""cmd: {repr(cmdstring)}""")
+    log.trace(f"""cmd: {repr(cmdstring)}""")
 
 
 @log.catch
@@ -127,7 +127,7 @@ async def asyncservernotify(inst, message, nice=10):
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager notify "{message}" @{inst}"""
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.debug(f"""cmd: {repr(cmdstring)}""")
+    log.trace(f"""cmd: {repr(cmdstring)}""")
 
 
 @log.catch
