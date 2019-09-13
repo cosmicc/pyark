@@ -14,8 +14,9 @@ from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncge
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import asyncnewplayer
 from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverchatto,
-                                 asyncserverscriptcmd, instancestate, instancevar)
+                                 asyncserverscriptcmd)
 from modules.subprotocol import SubProtocol
+from modules.redis import instancestate, instancevar
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
 
 
