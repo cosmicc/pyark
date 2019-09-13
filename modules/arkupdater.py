@@ -250,9 +250,6 @@ async def asyncrestartinstnow(inst, startonly=False):
         await asyncserverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'])
         await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
         log.log('UPDATE', f'Instance [{inst.title()}] is starting')
-        await asyncresetlastrestart(inst)
-        await asyncunsetstartbit(inst)
-        await asyncplayerrestartbit(inst)
         await asyncserverexec(['arkmanager', 'start', f'@{inst}'])
         await instancestate.set(inst, 'restarting')
         await instancestate.unset(inst, 'updating')
@@ -262,6 +259,10 @@ async def asyncrestartinstnow(inst, startonly=False):
         await instancevar.set(inst, 'isrunning', 1)
         await instancevar.set(inst, 'isonline', 0)
         await instancevar.set(inst, 'islistening', 0)
+        await asyncresetlastrestart(inst)
+        await asyncunsetstartbit(inst)
+        await asyncplayerrestartbit(inst)
+        await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
 
 
 @log.catch
@@ -454,9 +455,8 @@ async def asynccheckifenabled(inst):
 async def asynccheckifalreadyrestarting(inst):
     instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     if instdata['needsrestart'] == "True":
-        if f'{inst}-restarting' not in globvars.taskworkers:
+        if not instancestate.check(inst, 'restartwaiting'):
             log.debug(f'restart flag set for instance {inst}, starting restart loop')
-            globvars.taskworkers.add(f'{inst}-restarting')
             asyncio.create_task(asyncrestartloop(inst))
         else:
             log.trace(f'instance {inst} trying to restart but already restarting')
@@ -494,30 +494,29 @@ async def asynccheckupdates(instances):
 
     for inst in instances:
         checkdirs(inst)
-        if f'{inst}-restarting' not in globvars.taskworkers:
-            ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{inst}'], wait=True)  # #############
-            ismodupd = ismodupdd['stdout'].decode('utf-8')
-            modchk = 0
-            ismodupd = ismodupd.split('\n')
-            for teach in ismodupd:
-                if teach.find('has been updated') != -1 or teach.find('needs to be applied') != -1:
-                    modchk += 1
-                    al = teach.split(' ')
-                    modid = al[1]
-                    modname = al[2]
-            if modchk != 0:
-                await instancestate.set(inst, "updating")
-                log.log('UPDATE', f'ARK mod update [{modname}] id [{modid}] detected for instance [{inst.title()}]')
-                log.debug(f'downloading mod updates for instance {inst}')
-                await asyncserverexec(['arkmanager', 'update', '--downloadonly', '--update-mods', f'@{inst}'])
-                log.debug(f'mod updates for instance {inst} download complete')
-                aname = f'{modname} Mod Update'
-                await asyncwritediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
-                msg = f'{modname} Mod Update\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
-                await pushoversend('Mod Update', msg)
-                await instancestate.unset(inst, 'updating')
-                await instancestate.set(inst, "updatewaiting")
-                await asyncinstancerestart(inst, aname)
+        ismodupdd = await asyncserverexec(['arkmanager', 'checkmodupdate', f'@{inst}'], wait=True)  # #############
+        ismodupd = ismodupdd['stdout'].decode('utf-8')
+        modchk = 0
+        ismodupd = ismodupd.split('\n')
+        for teach in ismodupd:
+            if teach.find('has been updated') != -1 or teach.find('needs to be applied') != -1:
+                modchk += 1
+                al = teach.split(' ')
+                modid = al[1]
+                modname = al[2]
+        if modchk != 0:
+            await instancestate.set(inst, "updating")
+            log.log('UPDATE', f'ARK mod update [{modname}] id [{modid}] detected for instance [{inst.title()}]')
+            log.debug(f'downloading mod updates for instance {inst}')
+            await asyncserverexec(['arkmanager', 'update', '--downloadonly', '--update-mods', f'@{inst}'])
+            log.debug(f'mod updates for instance {inst} download complete')
+            aname = f'{modname} Mod Update'
+            await asyncwritediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
+            msg = f'{modname} Mod Update\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
+            await pushoversend('Mod Update', msg)
+            await instancestate.unset(inst, 'updating')
+            await instancestate.set(inst, "updatewaiting")
+            await asyncinstancerestart(inst, aname)
         else:
             log.trace(f'no updated mods were found for instance {inst}')
 
