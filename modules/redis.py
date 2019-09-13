@@ -188,4 +188,4 @@ class instancestate:
             instance {string} -- Instance name
             state {string} -- Instance state
         """
-        return redis.sismember(f'{instance}-states', state)
+        return await redis.sismember(f'{instance}-states', state)
