@@ -272,55 +272,58 @@ async def asyncrestartloop(inst, startonly=False):
     if not await instancestate.check(inst, 'restartwaiting') and not await instancestate.check(inst, 'restarting'):
         log.debug(f'{inst} restart loop has started')
         if startonly:
-            await asyncrestartinstnow(inst, startonly=True)
-        instdata = await db.fetchone(f"SELECT * from instances WHERE name = '{inst}'")
-        timeleft = int(instdata['restartcountdown'])
-        reason = instdata['restartreason']
-        if instdata['connectingplayers'] == 0 and instdata['activeplayers'] == 0 and len(await asyncgetplayersonline(inst)) == 0:
-            await instancestate.set(inst, 'restartwaiting')
-            await asyncsetrestartbit(inst)
-            log.log('UPDATE', f'Server [{inst.title()}] is empty and restarting now for a [{reason}]')
-            await asyncwritechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
-            message = f'server {inst.capitalize()} is restarting now for a {reason}'
-            await asyncserverexec(['arkmanager', f'notify "{message}"', f'@{inst}'])
-            await pushoversend('Instance Restart', message)
-            await asyncrestartinstnow(inst)
-        if reason != 'configuration update':
-            await asyncsetrestartbit(inst)
-            if timeleft == 30:
-                log.log('UPDATE', f'Starting 30 min restart countdown for [{inst.title()}] for a [{reason}]')
-                await asyncwritechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}', wcstamp())
-            else:
-                log.log('UPDATE', f'Resuming {timeleft} min retart countdown for [{inst.title()}] for a [{reason}]')
-            await instancestate.set(inst, 'restartwaiting')
-            oplayer = await asyncgetliveplayersonline(inst)
-            pplayers = await asyncgetplayersonline(inst)
-            while await asyncstillneedsrestart(inst) and len(pplayers) != 0 and timeleft != 0 and oplayer['activeplayers'] != 0:
-                if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
-                    log.log('UPDATE', f'{timeleft} min broadcast message sent to [{inst.title()}]')
-                    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">{reason}</>\n\n<RichColor Color="1,1,0,1">                   The server will be restarting in</><RichColor Color="1,0,0,1">{timeleft}</><RichColor Color="1,1,0,1"> minutes</>"""
-                    await asyncserverbcast(inst, bcast)
-                await asyncio.sleep(Secs['1min'])
-                timeleft = timeleft - 1
-                await asyncupdatetimer(inst, timeleft)
-                oplayer = await asyncgetliveplayersonline(inst)
-            if await asyncstillneedsrestart(inst):
-                log.log('UPDATE', f'Server [{inst.title()}] is restarting now for a [{reason}]')
+            asyncio.create_task(asyncrestartinstnow(inst, startonly=True))
+        asyncio.sleep(1)
+        if not await instancestate.check(inst, 'restartwaiting') and not await instancestate.check(inst, 'restarting'):
+            instdata = await db.fetchone(f"SELECT * from instances WHERE name = '{inst}'")
+            timeleft = int(instdata['restartcountdown'])
+            reason = instdata['restartreason']
+            if instdata['connectingplayers'] == 0 and instdata['activeplayers'] == 0 and len(await asyncgetplayersonline(inst)) == 0:
+                await instancestate.set(inst, 'restartwaiting')
+                await asyncsetrestartbit(inst)
+                log.log('UPDATE', f'Server [{inst.title()}] is empty and restarting now for a [{reason}]')
+                await asyncwritechat(inst, 'ALERT', f'!!! Empty server restarting now for a {reason.capitalize()}', wcstamp())
                 message = f'server {inst.capitalize()} is restarting now for a {reason}'
-                bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">Ark Game Update</>\n\n<RichColor Color="1,1,0,1">                     !! THE SERVER IS RESTARTING</><RichColor Color="1,0,0,1">NOW</><RichColor Color="1,1,0,1"> !!</>\n\n     The server will be back up in 10 minutes, you can check status in Discord"""
-                await asyncserverbcast(inst, bcast)
-                await asyncwritechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
-                await asyncservernotify(inst, message)
+                await asyncserverexec(['arkmanager', f'notify "{message}"', f'@{inst}'])
                 await pushoversend('Instance Restart', message)
-                await asyncio.sleep(10)
                 asyncio.create_task(asyncrestartinstnow(inst))
-            else:
-                log.warning(f'server restart on {inst} has been canceled from forced cancel')
-                bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n\n<RichColor Color="1,1,0,1">                    The server restart has been cancelled!</>"""
-                await asyncserverbcast(inst, bcast)
-                await asyncwritechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
-        else:
-            log.debug(f'configuration restart skipped because of active players')
+                await asyncio.sleep(1)
+            if reason != 'configuration update' and not await instancestate.check(inst, 'restartwaiting') and not await instancestate.check(inst, 'restarting'):
+                await asyncsetrestartbit(inst)
+                if timeleft == 30:
+                    log.log('UPDATE', f'Starting 30 min restart countdown for [{inst.title()}] for a [{reason}]')
+                    await asyncwritechat(inst, 'ALERT', f'!!! Server will restart in 30 minutes for a {reason.capitalize()}', wcstamp())
+                else:
+                    log.log('UPDATE', f'Resuming {timeleft} min retart countdown for [{inst.title()}] for a [{reason}]')
+                await instancestate.set(inst, 'restartwaiting')
+                oplayer = await asyncgetliveplayersonline(inst)
+                pplayers = await asyncgetplayersonline(inst)
+                while await asyncstillneedsrestart(inst) and len(pplayers) != 0 and timeleft != 0 and oplayer['activeplayers'] != 0:
+                    if timeleft == 30 or timeleft == 15 or timeleft == 10 or timeleft == 5 or timeleft == 1:
+                        log.log('UPDATE', f'{timeleft} min broadcast message sent to [{inst.title()}]')
+                        bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">{reason}</>\n\n<RichColor Color="1,1,0,1">                   The server will be restarting in</><RichColor Color="1,0,0,1">{timeleft}</><RichColor Color="1,1,0,1"> minutes</>"""
+                        await asyncserverbcast(inst, bcast)
+                    await asyncio.sleep(Secs['1min'])
+                    timeleft = timeleft - 1
+                    await asyncupdatetimer(inst, timeleft)
+                    oplayer = await asyncgetliveplayersonline(inst)
+                if await asyncstillneedsrestart(inst):
+                    log.log('UPDATE', f'Server [{inst.title()}] is restarting now for a [{reason}]')
+                    message = f'server {inst.capitalize()} is restarting now for a {reason}'
+                    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="1,0,0,1">                 The server has an update and needs to restart</>\n                       Restart reason: <RichColor Color="0,1,0,1">Ark Game Update</>\n\n<RichColor Color="1,1,0,1">                     !! THE SERVER IS RESTARTING</><RichColor Color="1,0,0,1">NOW</><RichColor Color="1,1,0,1"> !!</>\n\n     The server will be back up in 10 minutes, you can check status in Discord"""
+                    await asyncserverbcast(inst, bcast)
+                    await asyncwritechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
+                    await asyncservernotify(inst, message)
+                    await pushoversend('Instance Restart', message)
+                    await asyncio.sleep(10)
+                    asyncio.create_task(asyncrestartinstnow(inst))
+                else:
+                    log.warning(f'server restart on {inst} has been canceled from forced cancel')
+                    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n\n<RichColor Color="1,1,0,1">                    The server restart has been cancelled!</>"""
+                    await asyncserverbcast(inst, bcast)
+                    await asyncwritechat(inst, 'ALERT', f'!!! Server restart for {reason.capitalize()} has been canceled', wcstamp())
+            elif reason == 'configuration update' and not await instancestate.check(inst, 'restartwaiting') and not await instancestate.check(inst, 'restarting'):
+                log.debug(f'configuration restart skipped because of active players')
 
 
 @log.catch
