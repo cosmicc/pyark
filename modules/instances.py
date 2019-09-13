@@ -129,7 +129,11 @@ async def asyncprocessstatusline(inst, eline):
 
         elif (status_title == 'Server build ID'):
             if status_value:
-                await instancevar.set(inst, 'arkbuild', int(status_value))
+                try:
+                    await instancevar.set(inst, 'arkbuild', int(status_value))
+                except ValueError:
+                    await instancevar.set(inst, 'arkbuild', int(status_value.split(' ', 1)[0]))
+                    await instancevar.set(inst, 'arkversion', status_value.split(':')[1].strip())
 
         elif (status_title == 'ARKServers link'):
             if status_value:
