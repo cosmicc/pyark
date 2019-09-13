@@ -488,7 +488,7 @@ async def asynccheckupdates(instances):
                 await db.update(f"UPDATE instances set needsrestart = 'True', restartreason = 'ark game update'")
                 await instancestate.set(inst, "updatewaiting")
                 await instancestate.unset(inst, "updating")
-                pushoversend('Ark Update', msg)
+                await pushoversend('Ark Update', msg)
         except:
             log.exception(f'error in determining ark version')
 
@@ -514,7 +514,7 @@ async def asynccheckupdates(instances):
                 aname = f'{modname} Mod Update'
                 await asyncwritediscord(f'{modname} Mod Update', Now(), name=f'https://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}', server='UPDATE')
                 msg = f'{modname} Mod Update\nhttps://steamcommunity.com/sharedfiles/filedetails/changelog/{modid}'
-                pushoversend('Mod Update', msg)
+                await pushoversend('Mod Update', msg)
                 await instancestate.unset(inst, 'updating')
                 await instancestate.set(inst, "updatewaiting")
                 await asyncinstancerestart(inst, aname)
