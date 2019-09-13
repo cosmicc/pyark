@@ -58,6 +58,7 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
     await instancestate.unset(inst, 'wiping')
 
 
+@log.catch
 async def asyncfinishstatus(inst):
     log.trace('running statusline completion task')
     if int(await instancevar.get(inst, 'missedrunning')) >= 3:
@@ -79,6 +80,9 @@ async def asyncfinishstatus(inst):
         await instancevar.set(inst, 'isonline', 1)
     await db.update(f"""UPDATE instances SET serverpid = '{await instancevar.get(inst, "arkpid")}', isup = '{await instancevar.get(inst, "isonline")}', islistening = '{await instancevar.get(inst, "islistening")}', isrunning = '{await instancevar.get(inst, "isrunning")}' WHERE name = '{inst}'""")
     await db.update(f"""UPDATE instances SET hostname = '{await instancevar.get(inst, "arkname")}', steamlink = '{await instancevar.get(inst, "steamlink")}', arkserverslink = '{await instancevar.get(inst, "arkserverlink")}', connectingplayers = '{await instancevar.get(inst, "playersconnected")}', activeplayers = '{await instancevar.get(inst, "playersactive")}', arkbuild = '{await instancevar.get(inst, "arkbuild")}', arkversion = '{await instancevar.get(inst, "arkversion")}' WHERE name = '{inst}'""")
+
+
+alog.catch
 
 
 async def asyncprocessstatusline(inst, eline):
