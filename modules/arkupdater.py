@@ -309,7 +309,7 @@ async def asyncrestartloop(inst, startonly=False):
                 await asyncserverbcast(inst, bcast)
                 await asyncwritechat(inst, 'ALERT', f'!!! Server restarting now for {reason.capitalize()}', wcstamp())
                 await asyncservernotify(inst, message)
-                pushoversend('Instance Restart', message)
+                await pushoversend('Instance Restart', message)
                 await asyncio.sleep(10)
                 asyncio.create_task(asyncrestartinstnow(inst))
             else:

@@ -48,7 +48,7 @@ async def asyncserverrconcmd(instance, command, nice=5):
         nice {number} -- Nice process level (default: {5})
     """
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "{command}" @{instance}'
-    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+    proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
 
@@ -65,7 +65,7 @@ async def asyncserverscriptcmd(instance, command, nice=5):
         nice {number} -- Nice process level (default: {5})
     """
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{instance}'
-    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+    proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
 
@@ -82,7 +82,7 @@ async def asyncserverchat(instance, message, nice=15):
         nice {number} -- Nice process level (default: {5})
     """
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{instance}'
-    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+    proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
 
@@ -100,7 +100,7 @@ async def asyncserverchatto(instance, steamid, message, nice=15):
         nice {number} -- Nice process level (default: {5})
     """
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'ServerChatTo "{steamid}" {message}' @{instance}"""
-    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+    proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
 
@@ -117,7 +117,7 @@ async def asyncserverbcast(instance, broadcast, nice=10):
         nice {number} -- Nice process level (default: {5})
     """
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'Broadcast {broadcast}' @{instance}"""
-    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+    proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f"""cmd: {repr(cmdstring)}""")
 
@@ -125,7 +125,7 @@ async def asyncserverbcast(instance, broadcast, nice=10):
 @log.catch
 async def asyncservernotify(inst, message, nice=10):
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager notify "{message}" @{inst}"""
-    proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+    proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f"""cmd: {repr(cmdstring)}""")
 
@@ -145,14 +145,14 @@ async def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)
     if wait:
-        proc = asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
+        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
         stdout, stderr = await proc.communicate()
         return {'returncode': proc.returncode, 'stdout': stdout}
     elif _wait:
-        proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
         await proc.communicate()
     else:
-        asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+        await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
 
 
 def removerichtext(text):
