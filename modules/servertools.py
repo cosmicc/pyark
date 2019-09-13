@@ -180,7 +180,7 @@ def float_trunc_1dec(num):
         return tnum
 
 
-def getinstpid(inst):
+async def getinstpid(inst):
     try:
         return globvars.instpidfiles[inst].read_text()
     except FileNotFoundError:
@@ -223,7 +223,7 @@ async def getservermem():
 
 async def _procstats(inst):
     log.trace(f'Running process instances stats for {inst}')
-    instpid = getinstpid(inst)
+    instpid = await getinstpid(inst)
     if instpid == "CHANGEME":  # CHANGE ME
         arkprocess = psutil.Process(int(instpid))
         loop = asyncio.get_running_loop()
@@ -253,7 +253,7 @@ async def processserverstats(instances):
 
 @log.catch
 def setarknice(inst):
-    instpid = getinstpid(inst)
+    instpid = await getinstpid(inst)
     if instpid is not None:
         proc = psutil.Process(getinstpid)
         if proc.nice() != -10:
