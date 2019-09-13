@@ -80,7 +80,7 @@ class globalvar:
         Arguments:
             key {string} -- Key to get value from
         """
-        return await redis.get(key)
+        return await redis.get(key).decode()
 
     async def inc(instance, key):
         """Increment a global variable
@@ -88,7 +88,7 @@ class globalvar:
         Arguments:
             key {string} -- Key to increment value
         """
-        return await redis.incr(key)
+        await redis.incr(key)
 
     async def dec(instance, key):
         """Decrement a global variable
@@ -96,7 +96,7 @@ class globalvar:
         Arguments:
             key {string} -- Key to decrement value
         """
-        return await redis.decr(key)
+        await redis.decr(key)
 
 
 class instancevar:
@@ -129,7 +129,7 @@ class instancevar:
             instance {string} -- Instance Name
             key {string} -- Key to get value from
         """
-        return await redis.hget(f'{instance}', key)
+        return await redis.hget(f'{instance}', key).decode()
 
     async def inc(instance, key):
         """Increment instance variable
@@ -138,7 +138,7 @@ class instancevar:
             instance {string} -- Instance Name
             key {string} -- Key to increment value
         """
-        return await redis.hincrby(f'{instance}', key, 1)
+        await redis.hincrby(f'{instance}', key, 1)
 
     async def dec(instance, key):
         """Decrement instance variable
@@ -147,7 +147,7 @@ class instancevar:
             instance {string} -- Instance Name
             key {string} -- Key to decrement value
         """
-        return await redis.hincrby(f'{instance}', key, -1)
+        await redis.hincrby(f'{instance}', key, -1)
 
     async def check(instance, key):
         """Check if instance variable exists
