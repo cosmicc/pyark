@@ -233,6 +233,5 @@ async def onlineexecute(inst):
 
 async def onlinecheck(instances):
     for inst in instances:
-        log.info(await instancevar.get(inst, 'islistening'))
-        if await instancevar.get(inst, 'islistening') == 1:
+        if await instancevar.get(inst, 'islistening') == '1':
             asyncio.create_task(onlineexecute(inst))
