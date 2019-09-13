@@ -133,40 +133,86 @@ async def gettotaldbconnections():
 
 
 @log.catch
-async def asyncserverrconcmd(inst, command, nice=5):
-    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "{command}" @{inst}'
+async def asyncserverrconcmd(instance, command, nice=5):
+    """Send instance rcon command
+
+    Arguments:
+        instance {string} -- Instance name
+        command {string} -- Rcon command to send
+
+    Keyword Arguments:
+        nice {number} -- Nice process level (default: {5})
+    """
+    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "{command}" @{instance}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
 
 
 @log.catch
-async def asyncserverscriptcmd(inst, command, nice=5):
-    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{inst}'
+async def asyncserverscriptcmd(instance, command, nice=5):
+    """Send instance script command
+
+    Arguments:
+        instance {string} -- Instance name
+        command {string} -- Script command to send
+
+    Keyword Arguments:
+        nice {number} -- Nice process level (default: {5})
+    """
+    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{instance}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
 
 
 @log.catch
-async def asyncserverchat(inst, message, nice=15):
-    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{inst}'
+async def asyncserverchat(instance, message, nice=15):
+    """Send instance global chat
+
+    Arguments:
+        instance {string} -- Instance name
+        message {string} -- Chat message to send
+
+    Keyword Arguments:
+        nice {number} -- Nice process level (default: {5})
+    """
+    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{instance}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
 
 
 @log.catch
-async def asyncserverchatto(inst, steamid, message, nice=15):
-    cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'ServerChatTo "{steamid}" {message}' @{inst}"""
+async def asyncserverchatto(instance, steamid, message, nice=15):
+    """Send instance rcon command
+
+    Arguments:
+        instance {string} -- Instance name
+        steamid {string} -- SteamID of the player to send message to
+        message {string} -- Privatr message to send to player
+
+    Keyword Arguments:
+        nice {number} -- Nice process level (default: {5})
+    """
+    cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'ServerChatTo "{steamid}" {message}' @{instance}"""
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f'cmd: {cmdstring}')
 
 
 @log.catch
-async def asyncserverbcast(inst, bcast, nice=10):
-    cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'Broadcast {bcast}' @{inst}"""
+async def asyncserverbcast(instance, broadcast, nice=10):
+    """Send instance broadcast
+
+    Arguments:
+        instance {string} -- Instance name
+        broadcast {string} -- Broadcast to send
+
+    Keyword Arguments:
+        nice {number} -- Nice process level (default: {5})
+    """
+    cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'Broadcast {broadcast}' @{instance}"""
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
     log.debug(f"""cmd: {repr(cmdstring)}""")
@@ -181,7 +227,17 @@ async def asyncservernotify(inst, message, nice=10):
 
 
 @log.catch
-async def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
+def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
+    """Server execute command
+
+    Arguments:
+        cmdlist {list} -- Command split into list
+
+    Keyword Arguments:
+        nice {number} -- Process nice level (default: {19})
+        wait {bool} -- Wait and return response (default: {False})
+        _wait {bool} -- Wait until ended (default: {False})
+    """
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)
     if wait:
