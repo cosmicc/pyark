@@ -251,6 +251,7 @@ async def processserverstats(instances):
         await db.update(f"UPDATE instances SET openfiles = '{openfiles[0]}', cpucores = '{serverload[0]}', cpufreq = '{serverload[1]}', cpuload1 = '{serverload[2]}', cpuload5 = '{serverload[3]}', cpuload15 = '{serverload[4]}', svrmemfree = '{servermem[0]}', svrmemavail = '{servermem[1]}', svrswapused = '{servermem[2]}', serveruptime = '{serveruptime}' WHERE name = '{inst}'")
 
 
+"""
 @log.catch
 def setarknice(inst):
     instpid = await getinstpid(inst)
@@ -259,6 +260,7 @@ def setarknice(inst):
         if proc.nice() != -10:
             log.debug(f'Setting priority for ark server instance [{inst}]')
             proc.nice(-10)
+"""
 
 
 @log.catch
