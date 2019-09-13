@@ -145,14 +145,14 @@ async def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
     fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
     cmdstring = ' '.join(fullcmdlist)
     if wait:
-        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
+        proc = asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
         stdout, stderr = await proc.communicate()
         return {'returncode': proc.returncode, 'stdout': stdout}
     elif _wait:
-        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+        proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
         await proc.communicate()
     else:
-        await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+        asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
 
 
 def removerichtext(text):
