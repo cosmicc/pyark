@@ -49,15 +49,18 @@ while True:
         if not pyarkpidfile.is_file() or not pyarklockfile.is_file():
             if count == 1:
                 log.warning('Pyark not running (pid and/or lock files missing')
+                count += 1
         else:
             pyarkpid = pyarkpidfile.read_text()
             if pyarkpid == '' or pyarkpid is None:
                 if count == 1:
                     log.error(f'Pyark process is not running. (Empty pid found in pidfile)')
+                count += 1
             else:
                 if not psutil.pid_exists(int(pyarkpid)):
                     if count == 1:
                         log.error(f'Pyark process is not running. No process at pid [{pyarkpid}]')
+                    count += 1
                 else:
                     log.trace('pyark process passed pid check')
 
@@ -74,8 +77,8 @@ while True:
     except:
         if count == 1:
             log.exception(f'Error in arkwatchdog main loop!!')
+            count += 1
 
-    count += 1
     if count == 6:
         count = 1
 
