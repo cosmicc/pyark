@@ -9,6 +9,17 @@ from modules.configreader import redis_db, redis_host, redis_port
 class RedisClass:
 
     def __init__(self, host=redis_host, port=redis_port, db=redis_db, max_idle_time=30, idle_check_interval=.1):
+        """[summary]
+        Redis server wrapper class
+        [description]
+
+        Keyword Arguments:
+            host {[type]} -- [description] (default: {redis_host})
+            port {[type]} -- [description] (default: {redis_port})
+            db {[type]} -- [description] (default: {redis_db})
+            max_idle_time {number} -- [description] (default: {30})
+            idle_check_interval {number} -- [description] (default: {.1})
+        """
         self.db = db
         self.max_idle_time = max_idle_time
         self.idle_check_interval = idle_check_interval
