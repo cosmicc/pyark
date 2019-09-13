@@ -160,10 +160,10 @@ class instancevar:
 
 
 class instancestate:
-    def __init__(self):
+    def __init__():
         pass
 
-    async def set(self, instance, state):
+    async def set(instance, state):
         """Set an instance state
 
         Arguments:
@@ -172,7 +172,7 @@ class instancestate:
         """
         await redis.sadd(f'{instance}-states', state)
 
-    async def unset(self, instance, state):
+    async def unset(instance, state):
         """Unset an instance state
 
         Arguments:
@@ -181,7 +181,7 @@ class instancestate:
         """
         await redis.srem(f'{instance}-states', state)
 
-    async def check(self, instance, state):
+    async def check(instance, state):
         """Check an instance state
 
         Arguments:
