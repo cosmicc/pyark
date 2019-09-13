@@ -54,10 +54,10 @@ redis = Redis.redis
 
 
 class globalvar:
-    def __init__(self):
+    def __init__():
         pass
 
-    async def set(self, key, value):
+    async def set(key, value):
         """Set a global variable
 
         Arguments:
@@ -66,7 +66,7 @@ class globalvar:
         """
         await redis.set(key, value)
 
-    async def remove(self, key):
+    async def remove(key):
         """Remove a global variable
 
         Arguments:
@@ -74,7 +74,7 @@ class globalvar:
         """
         await redis.delete(key)
 
-    async def get(self, key):
+    async def get(key):
         """Get a global variable
 
         Arguments:
@@ -82,7 +82,7 @@ class globalvar:
         """
         return await redis.get(key)
 
-    async def inc(self, instance, key):
+    async def inc(instance, key):
         """Increment a global variable
 
         Arguments:
@@ -90,7 +90,7 @@ class globalvar:
         """
         return await redis.incr(key)
 
-    async def dec(self, instance, key):
+    async def dec(instance, key):
         """Decrement a global variable
 
         Arguments:
@@ -100,10 +100,10 @@ class globalvar:
 
 
 class instancevar:
-    def __init__(self):
+    def __init__():
         pass
 
-    async def set(self, instance, key, value):
+    async def set(instance, key, value):
         """Set an instance variable
 
         Arguments:
@@ -113,7 +113,7 @@ class instancevar:
         """
         await redis.hset(f'{instance}', key, value)
 
-    async def remove(self, instance, key):
+    async def remove(instance, key):
         """Remove an instance variable
 
         Arguments:
@@ -122,7 +122,7 @@ class instancevar:
         """
         await redis.hdel(f'{instance}', key)
 
-    async def get(self, instance, key):
+    async def get(instance, key):
         """Get an instance variable
 
         Arguments:
@@ -131,7 +131,7 @@ class instancevar:
         """
         return await redis.hget(f'{instance}', key)
 
-    async def inc(self, instance, key):
+    async def inc(instance, key):
         """Increment instance variable
 
         Arguments:
@@ -140,7 +140,7 @@ class instancevar:
         """
         return await redis.hincrby(f'{instance}', key, 1)
 
-    async def dec(self, instance, key):
+    async def dec(instance, key):
         """Decrement instance variable
 
         Arguments:
@@ -149,7 +149,7 @@ class instancevar:
         """
         return await redis.hincrby(f'{instance}', key, -1)
 
-    async def check(self, instance, key):
+    async def check(instance, key):
         """Check if instance variable exists
 
         Arguments:
