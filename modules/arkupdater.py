@@ -268,6 +268,7 @@ async def asyncrestartinstnow(inst, startonly=False):
 @log.catch
 async def asyncrestartloop(inst, startonly=False):
     checkdirs(inst)
+    log.debug(f"{await instancestate.check(inst, 'restartwaiting')} - {await instancestate.check(inst, 'restarting')}")
     if not await instancestate.check(inst, 'restartwaiting') and not await instancestate.check(inst, 'restarting'):
         log.debug(f'{inst} restart loop has started')
         if startonly:
