@@ -113,6 +113,15 @@ class instancevar:
         """
         await redis.hset(f'{instance}', key, value)
 
+    async def mset(instance, kvdict):
+        """Set multiple instance variable
+
+        Arguments:
+            instance {string} -- Instance Name
+            kvdict {dict} -- Dict of key/values to set
+        """
+        await redis.hmset(f'{instance}', kvdict)
+
     async def remove(instance, key):
         """Remove an instance variable
 
@@ -122,14 +131,41 @@ class instancevar:
         """
         await redis.hdel(f'{instance}', key)
 
-    async def get(instance, key):
-        """Get an instance variable
+    async def getstring(instance, key):
+        """Get an instance variable as string
 
         Arguments:
             instance {string} -- Instance Name
             key {string} -- Key to get value from
         """
         return (await redis.hget(f'{instance}', key)).decode()
+
+    async def getint(instance, key):
+        """Get an instance variable as int
+
+        Arguments:
+            instance {string} -- Instance Name
+            key {string} -- Key to get value from
+        """
+        return int((await redis.hget(f'{instance}', key)).decode())
+
+    async def getbool(instance, key):
+        """Get an instance variable as bool
+
+        Arguments:
+            instance {string} -- Instance Name
+            key {string} -- Key to get value from
+        """
+        return bool((await redis.hget(f'{instance}', key)).decode())
+
+    async def getfloat(instance, key):
+        """Get an instance variable as float
+
+        Arguments:
+            instance {string} -- Instance Name
+            key {string} -- Key to get value from
+        """
+        return float((await redis.hget(f'{instance}', key)).decode())
 
     async def inc(instance, key):
         """Increment instance variable
@@ -163,23 +199,23 @@ class instancestate:
     def __init__():
         pass
 
-    async def set(instance, state):
+    async def set(instance, *args):
         """Set an instance state
 
         Arguments:
             instance {string} -- Instance name
-            state {string} -- Instance state
+            *args {string} -- Instance state(s) to set
         """
-        await redis.sadd(f'{instance}-states', state)
+        await redis.sadd(f'{instance}-states', *args)
 
-    async def unset(instance, state):
+    async def unset(instance, *args):
         """Unset an instance state
 
         Arguments:
             instance {string} -- Instance name
-            state {string} -- Instance state
+            *args {string} -- Instance state(s) to unset
         """
-        await redis.srem(f'{instance}-states', state)
+        await redis.srem(f'{instance}-states', *args)
 
     async def check(instance, state):
         """Check an instance state

@@ -141,7 +141,7 @@ async def asynccheckwipe(instances):
     for inst in instances:
         log.trace(f'running checkwipe for {inst}')
         lastwipe = await asyncgetlastwipe(inst)
-        if Now() - lastwipe > Secs['12hour'] and await instancevar.get(inst, 'isonline'):
+        if Now() - lastwipe > Secs['12hour'] and await instancevar.getbool(inst, 'islistening'):
             oplayers = await asyncgetliveplayersonline(inst)
             if oplayers['activeplayers'] == 0 and len(await asyncgetplayersonline(inst)) == 0:
                 log.log('WIPE', f'Dino wipe needed for [{inst.title()}], server is empty, wiping now')
@@ -156,7 +156,7 @@ async def asynccheckwipe(instances):
                 dwtimer += 1
                 if dwtimer == 24:
                     dwtimer = 0
-        elif Now() - lastwipe > Secs['day'] and await instancevar.get(inst, 'isonline'):
+        elif Now() - lastwipe > Secs['day'] and await instancevar.getbool(inst, 'islistening'):
             log.log('WIPE', f'Dino wipe needed for [{inst.title()}], players online but forced, wiping now')
             bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 24 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Forcing a maintenance wild dino wipe in 10 seconds</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
             await asyncserverbcast(inst, bcast)
@@ -235,13 +235,8 @@ async def asyncrestartinstnow(inst, startonly=False):
         await db.update(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
         log.log('MAINT', f'REBOOTING Server [{hstname.upper()}] for maintenance server reboot')
         await instancestate.set(inst, 'restarting')
-        await instancestate.unset(inst, 'updating')
-        await instancestate.unset(inst, 'updatewaiting')
-        await instancestate.unset(inst, 'restartwaiting')
-        await instancestate.unset(inst, 'cfgupdate')
-        await instancevar.set(inst, 'isrunning', 0)
-        await instancevar.set(inst, 'isonline', 0)
-        await instancevar.set(inst, 'islistening', 0)
+        await instancestate.unset(inst, 'updating', 'updatewaiting', 'restartwaiting', 'cfgupdate', 'maintenance')
+        await instancevar.mset(inst, {'isrunning': 0, 'isonline': 0, 'islistening': 0})
         await asyncserverexec(['reboot'])
     else:
         log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
@@ -253,13 +248,8 @@ async def asyncrestartinstnow(inst, startonly=False):
         await asyncserverexec(['arkmanager', 'start', f'@{inst}'], _wait=True)
         log.log('UPDATE', f'Instance [{inst.title()}] is starting')
         await instancestate.set(inst, 'restarting')
-        await instancestate.unset(inst, 'updating')
-        await instancestate.unset(inst, 'updatewaiting')
-        await instancestate.unset(inst, 'restartwaiting')
-        await instancestate.unset(inst, 'cfgupdate')
-        await instancevar.set(inst, 'isrunning', 1)
-        await instancevar.set(inst, 'isonline', 0)
-        await instancevar.set(inst, 'islistening', 0)
+        await instancestate.unset(inst, 'updating', 'updatewaiting', 'restartwaiting', 'cfgupdate', 'maintenance')
+        await instancevar.mset(inst, {'isrunning': 1, 'isonline': 0, 'islistening': 0})
         await asyncresetlastrestart(inst)
         await asyncunsetstartbit(inst)
         await asyncplayerrestartbit(inst)
@@ -350,7 +340,7 @@ async def asynccheckmaint(instances):
         log.debug(f'OS autoremove started for {hstname}')
         await asyncserverexec(['apt', 'autoremove', '-y'], _wait=True)
         for inst in instances:
-            if await instancevar.get(inst, 'islistening') == 1:
+            if await instancevar.getbool(inst, 'islistening'):
                 checkdirs(inst)
                 if serverneedsrestart():
                     await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
@@ -372,7 +362,7 @@ async def asynccheckmaint(instances):
                     if eventreboot:
                         maintrest = f"{eventreboot}"
                         await asyncinstancerestart(inst, maintrest)
-                    elif Now() - float(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst):
+                    elif Now() - int(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst):
                         maintrest = "maintenance restart"
                         await asyncinstancerestart(inst, maintrest)
                     else:

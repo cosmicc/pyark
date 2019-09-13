@@ -798,5 +798,5 @@ async def cmdsexecute(inst):
 
 async def cmdscheck(instances):
     for inst in instances:
-        if await instancevar.get(inst, 'islistening') == '1':
+        if await instancevar.getbool(inst, 'islistening'):
             asyncio.create_task(cmdsexecute(inst))

@@ -61,25 +61,25 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
 @log.catch
 async def asyncfinishstatus(inst):
     log.trace('running statusline completion task')
-    if int(await instancevar.get(inst, 'missedrunning')) >= 3:
+    if await instancevar.getint(inst, 'missedrunning') >= 3:
         await instancevar.set(inst, 'isrunning', 0)
     else:
         await instancevar.set(inst, 'isrunning', 1)
-    if int(await instancevar.get(inst, 'missedlistening')) >= 3:
+    if await instancevar.getint(inst, 'missedlistening') >= 3:
         await instancevar.set(inst, 'islistening', 0)
     else:
         await instancevar.set(inst, 'islistening', 1)
-    if int(await instancevar.get(inst, 'missedonline')) >= 3:
+    if await instancevar.getint(inst, 'missedonline') >= 3:
         await instancevar.set(inst, 'isonline', 0)
     else:
         await instancevar.set(inst, 'isonline', 1)
 
-    if int(await instancevar.get(inst, 'playersactive')) > 0 or int(await instancevar.get(inst, 'playersconnected')) > 0:
+    if await instancevar.getint(inst, 'playersactive') > 0 or await instancevar.getint(inst, 'playersconnected') > 0:
         await instancevar.set(inst, 'isrunning', 1)
         await instancevar.set(inst, 'islistening', 1)
         await instancevar.set(inst, 'isonline', 1)
-    await db.update(f"""UPDATE instances SET serverpid = '{await instancevar.get(inst, "arkpid")}', isup = '{await instancevar.get(inst, "isonline")}', islistening = '{await instancevar.get(inst, "islistening")}', isrunning = '{await instancevar.get(inst, "isrunning")}' WHERE name = '{inst}'""")
-    await db.update(f"""UPDATE instances SET hostname = '{await instancevar.get(inst, "arkname")}', steamlink = '{await instancevar.get(inst, "steamlink")}', arkserverslink = '{await instancevar.get(inst, "arkserverlink")}', connectingplayers = '{await instancevar.get(inst, "playersconnected")}', activeplayers = '{await instancevar.get(inst, "playersactive")}', arkbuild = '{await instancevar.get(inst, "arkbuild")}', arkversion = '{await instancevar.get(inst, "arkversion")}' WHERE name = '{inst}'""")
+    await db.update(f"""UPDATE instances SET serverpid = '{await instancevar.getint(inst, "arkpid")}', isup = '{await instancevar.getint(inst, "isonline")}', islistening = '{await instancevar.getint(inst, "islistening")}', isrunning = '{await instancevar.getint(inst, "isrunning")}' WHERE name = '{inst}'""")
+    await db.update(f"""UPDATE instances SET hostname = '{await instancevar.getstring(inst, "arkname")}', steamlink = '{await instancevar.getstring(inst, "steamlink")}', arkserverslink = '{await instancevar.getstring(inst, "arkserverlink")}', connectingplayers = '{await instancevar.getint(inst, "playersconnected")}', activeplayers = '{await instancevar.getint(inst, "playersactive")}', arkbuild = '{await instancevar.getint(inst, "arkbuild")}', arkversion = '{await instancevar.getstring(inst, "arkversion")}' WHERE name = '{inst}'""")
 
 
 @log.catch

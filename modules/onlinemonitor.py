@@ -172,7 +172,7 @@ async def asyncplayergreet(steamid, steamname, inst):
 
 async def asynckickcheck(instances):
     for inst in instances:
-        if await instancevar.get(inst, 'islistening') == 1:
+        if await instancevar.getbool(inst, 'islistening'):
             kicked = await db.fetchone(f"SELECT * FROM kicklist WHERE instance = '{inst}'")
             if kicked:
                 await asyncserverrconcmd(inst, f'kickplayer {kicked[1]}')
@@ -233,5 +233,5 @@ async def onlineexecute(inst):
 
 async def onlinecheck(instances):
     for inst in instances:
-        if await instancevar.get(inst, 'islistening') == '1':
+        if await instancevar.getbool(inst, 'islistening'):
             asyncio.create_task(onlineexecute(inst))
