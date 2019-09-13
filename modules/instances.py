@@ -60,20 +60,20 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
 
 async def asyncfinishstatus(inst):
     log.trace('running statusline completion task')
-    if await instancevar.get(inst, 'missedrunning') >= 3:
+    if int(await instancevar.get(inst, 'missedrunning')) >= 3:
         await instancevar.set(inst, 'isrunning', 0)
     else:
         await instancevar.set(inst, 'isrunning', 1)
-    if await instancevar.get(inst, 'missedlistening') >= 3:
+    if int(await instancevar.get(inst, 'missedlistening')) >= 3:
         await instancevar.set(inst, 'islistening', 0)
     else:
         await instancevar.set(inst, 'islistening', 1)
-    if await instancevar.get(inst, 'missedonline') >= 3:
+    if int(await instancevar.get(inst, 'missedonline')) >= 3:
         await instancevar.set(inst, 'isonline', 0)
     else:
         await instancevar.set(inst, 'isonline', 1)
 
-    if await instancevar.get(inst, 'playersactive') > 0 or await instancevar.get(inst, 'playersconnected') > 0:
+    if int(await instancevar.get(inst, 'playersactive')) > 0 or int(await instancevar.get(inst, 'playersconnected')) > 0:
         await instancevar.set(inst, 'isrunning', 1)
         await instancevar.set(inst, 'islistening', 1)
         await instancevar.set(inst, 'isonline', 1)
