@@ -16,7 +16,7 @@ from modules.configreader import (changelog_id, discordtoken, generalchat_id,
                                   hstname, infochat_id, maint_hour, serverchat_id)
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import getlastrestart, getlastrestartreason, getlastwipe, instancelist, writeglobal
-from modules.lottery import asyncgetlottowinnings, isinlottery, totallotterydeposits
+from modules.lottery import asyncgetlottowinnings, asyncisinlottery, totallotterydeposits
 from modules.players import (getnewestplayers, getplayer, getplayerlastseen, getplayerlastserver, getplayersonlinenames,
                              getplayerstoday, gettopplayedplayers, isplayeradmin, setprimordialbit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
@@ -169,7 +169,7 @@ def pyarkbot():
         while not client.is_closed():
             try:
                 log.trace('executing discord bot task checker')
-                if Now(fmt='dt') - await getlastannounce('lastlottoannounce') > timedelta(hours=7) and isinlottery():
+                if Now(fmt='dt') - await getlastannounce('lastlottoannounce') > timedelta(hours=7) and await asyncisinlottery():
                     linfo = await db.fetchone("SELECT * FROM lotteryinfo WHERE completed = False")
                     log.log('LOTTO', 'Announcing running lottery in discord')
                     embed = discord.Embed(title=f"A lottery is currently running!", color=INFO_COLOR)

@@ -6,12 +6,29 @@ from modules.redis import Redis
 import asyncio
 from loguru import logger as log
 from modules.asyncdb import DB as db
+from modules.dbhelper import dbquery
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, estshift
 from numpy import argmax
 from numpy.random import randint, seed, shuffle
 from timebetween import is_time_between
 
 redis = Redis.redis
+
+
+def isinlottery():
+    linfo = dbquery("SELECT * FROM lotteryinfo WHERE completed = False")
+    if linfo:
+        return True
+    else:
+        return False
+
+
+async def asyncisinlottery():
+    linfo = db.fetchone("SELECT * FROM lotteryinfo WHERE completed = False")
+    if linfo:
+        return True
+    else:
+        return False
 
 
 async def getlottowinnings(pname):
