@@ -1,12 +1,11 @@
 import asyncio
-from time import sleep
 
 from loguru import logger as log
 
 import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
-from modules.servertools import asyncserverchat, asyncserverchatto, serverexec
+from modules.servertools import asyncserverchat, asyncserverchatto
 from modules.timehelper import Now, Secs, wcstamp
 
 
@@ -84,8 +83,16 @@ def getbannedplayers():
     return dbquery("SELECT steamid, playername FROM players WHERE banned != '' ORDER BY playername ASC", fmt='tuple', single=True)
 
 
+async def asyncgethitnruns(atime):
+    return db.fetchall(f"SELECT playername FROM players WHERE banned = '' AND lastseen >= '{Now() - atime}' and playedtime < 15 and connects = 1 ORDER BY playername ASC")
+
+
 def gethitnruns(atime):
     return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen >= '%s' and playedtime < 15 and connects = 1 ORDER BY playername ASC" % (Now() - Secs['week'],), fmt='list', single=True)
+
+
+async def asyncgetactiveplayers(atime):
+    return db.fetchall(f"SELECT playername FROM players WHERE banned = '' AND lastseen >= '{Now() - atime}' and playedtime > 15 and connects > 1 ORDER BY playername ASC")
 
 
 def getactiveplayers(atime):
@@ -106,6 +113,10 @@ def getsteamnameplayers():
 
 def getexpiredplayers():
     return dbquery("SELECT playername FROM players WHERE banned = '' AND lastseen < '%s' ORDER BY playername ASC" % (Now() - Secs['month'],), fmt='list', single=True)
+
+
+async def asyncgetnewplayers(atime):
+    return db.fetchall(f"SELECT steamid, playername FROM players WHERE banned = '' AND firstseen >= '{Now() - atime}' ORDER BY playername ASC")
 
 
 def getnewplayers(atime):
@@ -199,7 +210,7 @@ def setprimordialbit(steamid, pbit):
 
 
 def kickplayer(instance, steamid):
-        dbupdate("INSERT INTO kicklist (instance,steamid) VALUES ('%s','%s')" % (instance, steamid))
+    dbupdate("INSERT INTO kicklist (instance,steamid) VALUES ('%s','%s')" % (instance, steamid))
 
 
 def isplayerold(playername='', steamid=''):

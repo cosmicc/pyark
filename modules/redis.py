@@ -98,6 +98,18 @@ class globalvar:
         """
         return bool((await redis.get(key)).decode())
 
+    async def getlist(key):
+        """Get a global variable as list
+
+        Arguments:
+            key {string} -- Key to get value from
+        """
+        reclist = await redis.smembers(key)
+        resplist = []
+        for inst in reclist:
+            resplist.append(inst.decode())
+        return resplist
+
     async def inc(instance, key):
         """Increment a global variable
 

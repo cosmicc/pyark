@@ -1,43 +1,23 @@
-from datetime import datetime
 from datetime import time as dt
-from time import sleep, time
+from datetime import datetime
 
+from modules.asyncdb import DB as db
 from loguru import logger as log
+from modules.players import asyncgetactiveplayers, asyncgethitnruns, asyncgetnewplayers
+from modules.redis import globalvar, instancevar
+from modules.timehelper import Now, Secs
 from timebetween import is_time_between
 
-from modules.dbhelper import dbquery, dbupdate, statsupdate
-from modules.players import getactiveplayers, gethitnruns, getnewplayers, getplayersonline
-from modules.timehelper import Now, Secs
 
-
-def stopsleep(sleeptime, stop_event):
-    for ntime in range(sleeptime):
-        if stop_event.is_set():
-            log.debug('Statcollector thread has ended')
-            exit(0)
-        sleep(1)
-
-
-def addvalue(inst, value):
-    statsupdate(inst, value)
-
-
-def flushold(tinst):  # not implimented
-    aweek = int(time()) - Secs['week']
-    dbupdate("DELETE FROM %s WHERE date < '%s'" % (tinst, aweek), db='statsdb')
+async def addvalue(inst, value):
+    await db.update(f"INSERT INTO {inst.lower()}_stats (date, value) VALUES ('{datetime.now().replace(microsecond=0)}', {value})")
 
 
 @log.catch
-def statcollector_thread(dtime, stop_event):
-    log.debug(f'Statcollector thread is starting')
-    stinst = dbquery('SELECT name FROM instances', fmt='list', single=True)
-    while not stop_event.is_set():
+async def asyncstatcollector():
         t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
         dailycollect = is_time_between(t, s, e)
         if dailycollect:
-            dbupdate("INSERT INTO clusterstats (timestamp, dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (Now(fmt='dt'), len(getactiveplayers(Secs['day'])), len(getactiveplayers(Secs['week'])), len(getactiveplayers(Secs['month'])), len(gethitnruns(Secs['day'])), len(getnewplayers(Secs['day']))), db='statsdb')
-        for each in stinst:
-            addvalue(each, getplayersonline(each, fmt='count'))
-        stopsleep(dtime, stop_event)
-    log.debug('Statcollector thread has ended')
-    exit(0)
+            await db.update("INSERT INTO clusterstats (timestamp, dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (Now(fmt='dt'), len(await asyncgetactiveplayers(Secs['day'])), len(await asyncgetactiveplayers(Secs['week'])), len(await asyncgetactiveplayers(Secs['month'])), len(await asyncgethitnruns(Secs['day'])), len(await asyncgetnewplayers(Secs['day']))))
+        for inst in await globalvar.getlist('allinstances'):
+            await addvalue(inst, await instancevar.get(inst, 'playersonline'))
