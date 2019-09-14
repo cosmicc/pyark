@@ -24,7 +24,7 @@ def isinlottery():
 
 
 async def asyncisinlottery():
-    linfo = db.fetchone("SELECT * FROM lotteryinfo WHERE completed = False")
+    linfo = await db.fetchone("SELECT * FROM lotteryinfo WHERE completed = False")
     if linfo:
         return True
     else:

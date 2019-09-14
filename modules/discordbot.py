@@ -16,7 +16,7 @@ from modules.configreader import (changelog_id, discordtoken, generalchat_id,
                                   hstname, infochat_id, maint_hour, serverchat_id)
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import getlastrestart, getlastrestartreason, getlastwipe, instancelist, writeglobal
-from modules.lottery import asyncgetlottowinnings, asyncisinlottery, totallotterydeposits
+from modules.lottery import asyncgetlottowinnings, asyncisinlottery, asynctotallotterydeposits
 from modules.players import (getnewestplayers, getplayer, getplayerlastseen, getplayerlastserver, getplayersonlinenames,
                              getplayerstoday, gettopplayedplayers, isplayeradmin, setprimordialbit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
@@ -530,7 +530,7 @@ def pyarkbot():
         log.debug(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
         ptime = playedTime(int(kuser[4]))
         ptr = elapsedTime(Now(), int(kuser[2]))
-        lpts = totallotterydeposits(kuser[0])
+        lpts = await asynctotallotterydeposits(kuser[0])
         xferpoints = kuser[5] + kuser[16] + lpts
         xfertable = await db.fetchall(f"""SELECT * FROM transferpoints WHERE steamid = '{kuser[0]}'""")
         for each in xfertable:
