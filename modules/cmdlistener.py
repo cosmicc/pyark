@@ -301,7 +301,7 @@ async def asyncvoter(inst, whoasked):
     log.debug(f'voting task has ended on {inst}')
     return True
 
-
+# FUCK YOU
 async def asyncstartvoter(inst, whoasked):
     if globvars.isvoting:
         message = 'Voting has already started. cast your vote now'
