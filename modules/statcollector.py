@@ -15,9 +15,9 @@ async def addvalue(inst, value):
 
 @log.catch
 async def asyncstatcollector():
-        t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
-        dailycollect = is_time_between(t, s, e)
-        if dailycollect:
-            await db.update("INSERT INTO clusterstats (timestamp, dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (Now(fmt='dt'), len(await asyncgetactiveplayers(Secs['day'])), len(await asyncgetactiveplayers(Secs['week'])), len(await asyncgetactiveplayers(Secs['month'])), len(await asyncgethitnruns(Secs['day'])), len(await asyncgetnewplayers(Secs['day']))))
-        for inst in await globalvar.getlist('allinstances'):
-            await addvalue(inst, await instancevar.get(inst, 'playersonline'))
+    t, s, e = datetime.now(), dt(9, 0), dt(9, 5)  # 9:00am GMT (5:00AM EST)
+    dailycollect = is_time_between(t, s, e)
+    if dailycollect:
+        await db.update("INSERT INTO clusterstats (timestamp, dailyactive, weeklyactive, monthlyactive, dailyhnr, dailynew) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (Now(fmt='dt'), len(await asyncgetactiveplayers(Secs['day'])), len(await asyncgetactiveplayers(Secs['week'])), len(await asyncgetactiveplayers(Secs['month'])), len(await asyncgethitnruns(Secs['day'])), len(await asyncgetnewplayers(Secs['day']))))
+    for inst in await globalvar.getlist('allinstances'):
+        await addvalue(inst, await instancevar.getint(inst, 'playersonline'))
