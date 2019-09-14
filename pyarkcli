@@ -89,7 +89,7 @@ parser_log.add_argument('servername', help=f"Name of the server to perform actio
 parser_log.set_defaults(func=_loglevel)
 
 args = parser.parse_args()
-if args.func is not None:
+if 'func' in args:
     args.func(args)
 else:
     parser.print_help()
