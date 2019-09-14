@@ -24,7 +24,7 @@ from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import gamelogger_thread
 from modules.gchatrelay import asyncgchatrelay
 from modules.instances import statuscheck
-from modules.lottery import lotterywatcher_thread
+from modules.lottery import asynclotterywatcher
 from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinedblchecker, onlinecheck
 from modules.processlock import PLock
@@ -136,7 +136,7 @@ async def asyncmain():
     main_stop_event = False
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
-    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'dblcheck': 30}
+    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     await Redis.connect(__name__)
@@ -153,12 +153,20 @@ async def asyncmain():
     tasktimer = asyncloop.time()
     if len(instances) == 0:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
-        globvars.timer = {'dblcheck': starttime}
+        globvars.timer = {'lottocheck': starttime}
 
         gl = GameLogger()
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
-                await asyncio.sleep(1)
+                asynclooptime = asyncloop.time()
+                if asynclooptime - globvars.timer['lottocheck'] > globvars.delay['lottocheck']:
+                    asyncio.create_task(asynclotterywatcher(instances))
+                    if asynclooptime - globvars.timer['lottocheck'] > globvars.delay['lottocheck'] + 2:
+                        log.error(f'lottocheck was delayed {asynclooptime - globvars.timer["lottocheck"] - globvars.delay["lottocheck"]}')
+                    globvars.timer.update({'lottocheck': asyncloop.time()})
+
+                    await asyncio.sleep(0.1)
+
     else:
         globvars.timer = {'serverstats': starttime, 'statuscheck': starttime - 30, 'restartcheck': starttime, 'backupcheck': starttime, 'wipecheck': starttime, 'updatecheck': starttime, 'maintcheck': starttime, 'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
         log.debug(f'Found {len(instances)} ARK server instances: ({", ".join(instances).title()})')
