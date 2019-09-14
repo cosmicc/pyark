@@ -48,7 +48,7 @@ def redislistener():
                 log.debug(config.get('general', 'loglevel'))
                 log.debug(loglevel.upper())
                 if config.get('general', 'loglevel') != loglevel.upper():
-                    log.debug(f'Changing pyark loglevel to [{loglevel.upper()}] on [{hstname}]')
+                    log.debug(f"Changing pyark loglevel from [{config.get('general', 'loglevel')}] to [{loglevel.upper()}] on [{hstname}]")
                     config.set('general', 'loglevel', loglevel.upper())
                     with open(str(pyarkcfgfile), 'w') as configfile:
                         config.write(configfile)
