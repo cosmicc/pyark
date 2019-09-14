@@ -45,8 +45,6 @@ def redislistener():
                 config = configparser.RawConfigParser()
                 config.optionxform = str
                 config.read(pyarkcfgfile)
-                log.debug(config.get('general', 'loglevel'))
-                log.debug(loglevel.upper())
                 if config.get('general', 'loglevel') != loglevel.upper():
                     log.debug(f"Changing pyark loglevel from [{config.get('general', 'loglevel')}] to [{loglevel.upper()}] on [{hstname}]")
                     config.set('general', 'loglevel', loglevel.upper())
