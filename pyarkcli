@@ -13,11 +13,26 @@ from modules.colorizer import (BCYN, BGN, BGRN, BLU, BMGT, BRED, BWHT, BYEL, GRN
                                MAU, MGT, ORG, PUR, RED, RMY, RST, SKN, SLT, WHT, YEL)
 from modules.configreader import redis_host, redis_port
 
+r = redis.Redis(host=redis_host, port=redis_port, db=0)
+allservers = r.smembers('servers')
 
-def startpyark(args):
+
+def _loglevel(args):
+    args.subparser_name = f'{args.subparser_name}:{args.loglevel}'
+    _execute(args)
+
+
+def _log(args):
+    if args.debug:
+        command = f'/home/ark/pyark/logclient {args.lines} -d'
+    else:
+        command = f'/home/ark/pyark/logclient {args.loglines}'
+    subprocess.run(command, stdout=sys.stdout, stderr=sys.stderr, shell=True)
+
+
+def _execute(args):
     print(f'args: {args.subparser_name}')
     print(f'server: {args.servername}')
-    allservers = r.smembers('servers')
     if args.server in allservers:
         print(f'Running pyark start on server: [{args.server}]\n')
         r.publish(f'{args.server.lower()}-commands', f'{args.subparser_name}')
@@ -34,45 +49,48 @@ subparsers = parser.add_subparsers(title='action', description='valid actions to
 
 parser_start = subparsers.add_parser('start')
 parser_start.add_argument('servername')
-parser_start.set_defaults(func=startpyark)
+parser_start.set_defaults(func=_execute)
 
-parser_start = subparsers.add_parser('stop')
-parser_start.add_argument('servername')
-parser_start.set_defaults(func=startpyark)
+parser_stop = subparsers.add_parser('stop')
+parser_stop.add_argument('servername')
+parser_stop.set_defaults(func=_execute)
+
+parser_restart = subparsers.add_parser('restart')
+parser_restart.add_argument('servername')
+parser_restart.set_defaults(func=_execute)
+
+parser_update = subparsers.add_parser('update')
+parser_update.add_argument('servername')
+parser_update.set_defaults(func=_execute)
+
+parser_kill = subparsers.add_parser('kill')
+parser_kill.add_argument('servername')
+parser_kill.set_defaults(func=_execute)
+
+parser_gitpull = subparsers.add_parser('gitpull')
+parser_gitpull.add_argument('servername')
+parser_gitpull.set_defaults(func=_execute)
+
+parser_rw = subparsers.add_parser('restartwatchdog')
+parser_rw.add_argument('servername')
+parser_rw.set_defaults(func=_execute)
+
+parser_log = subparsers.add_parser('log')
+parser_log.add_argument('-l', 'lines', default=20, help='Previous log lines to show')
+parser_log.add_argument('-d', 'debug', help='Include debug logs')
+parser_log.set_defaults(func=_log)
+
+parser_log = subparsers.add_parser('loglevel')
+parser_log.add_argument('level', help='Loglevel to set to')
+parser_log.set_defaults(func=_loglevel)
 
 
 args = parser.parse_args()
 args.func(args)
 
-"""
-parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-action_group = parser.add_argument_group(title='actions')
-action_group.add_argument('start', action='store_true', help='Start a pyark daemon')
-action_group.add_argument('startall', action='store_true', help='Start all the pyark daemons')
-action_group.add_argument('stop', action='store_true', help='Stop a pyark daemon')
-action_group.add_argument('stopall', action='store_true', help='Stop all the pyark daemons')
-action_group.add_argument('restart', action='store_true', help='Restart a pyark daemon')
-action_group.add_argument('restartall', action='store_true', help='Restart all the pyark daemons')
-action_group.add_argument('update', action='store_true', help='Update check a pyark daemon')
-action_group.add_argument('updateall', action='store_true', help='Update check all the pyark daemons')
-action_group.add_argument('kill', action='store_true', help='Kill a pyark daemon')
-action_group.add_argument('killall', action='store_true', help='Kill all the pyark daemons')
-action_group.add_argument('log', action='store_true', help='Pyark log')
-action_group.add_argument('debuglog', action='store_true', help='Pyark debug log')
-action_group.add_argument('gitpull', action='store_true', help='Force a git pull on server (to recover from bad commit)')
-action_group.add_argument('gitpullall', action='store_true', help='Force a git pull on all servers')
-action_group.add_argument('watchdogrestart', action='store_true', help='Restart Arkwatchdog on a server')
-action_group.add_argument('loglevel', action='store_true', nargs=2, help='Set pyark loglevel on a server')
-
-parser.add_argument('-s', '--server', action='store', help='Server name')
-parser.add_argument('-l', '--loglines', action='store', help='Number of log lines to show')
-"""
-
 print('    ')
 
 null = None
-
-r = redis.Redis(host=redis_host, port=redis_port, db=0)
 
 
 def oldkillall():
@@ -84,155 +102,6 @@ def oldkillall():
 
 def percentage(part, whole):
     return 100 * float(part) / float(whole)
-
-
-def logwatch(debug=False):
-    if args.loglines is None:
-        loglines = 50
-    else:
-        loglines = args.loglines
-    if debug:
-        command = f'/home/ark/pyark/logclient {loglines} -d'
-    else:
-        command = f'/home/ark/pyark/logclient {loglines}'
-    subprocess.run(command, stdout=sys.stdout, stderr=sys.stderr, shell=True)
-
-
-def sctl(scmd):
-    allservers = r.smembers('servers')
-    if scmd == 'start':
-        if args.server is None:
-            command = '/bin/systemctl start pyark'
-            subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-            print('PyArk Started')
-        elif args.server in allservers:
-            print(f'Running pyark start on server: [{args.server}]\n')
-            r.publish(f'{args.server.lower()}-commands', 'start')
-        else:
-            print(f'You need to specify a valid server to start the pyark\n')
-
-    elif scmd == 'stop':
-        if args.server is None:
-            command = '/bin/systemctl stop pyark'
-            subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-            print('Stopping PyArk Daemon')
-        elif args.server in allservers:
-            print(f'Running pyark STOP on server: [{args.server}]\n')
-            r.publish(f'{args.server.lower()}-commands', 'stop')
-        else:
-            print(f'You need to specify a valid server to stop the pyark\n')
-    elif scmd == 'restart':
-        if args.server is None:
-            command = '/bin/systemctl restart pyark'
-            subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-            print('Restarting PyArk Daemon')
-        elif args.server in allservers:
-            print(f'Running pyark restart on server: [{args.server}]\n')
-            r.publish(f'{args.server.lower()}-commands', 'restart')
-        else:
-            print(f'You need to specify a valid server to retart the pyark\n')
-
-
-def gitpullall():
-    r = redis.Redis(host=redis_host, port=redis_port, db=0)
-    allservers = r.smembers('servers')
-    print(f'Running force git pull on {len(allservers)} servers: [{allservers}]\n')
-    for server in allservers:
-        server = server.decode()
-        r.publish(f'{server}-commands', 'gitpull')
-
-
-def startall():
-    r = redis.Redis(host=redis_host, port=redis_port, db=0)
-    allservers = r.smembers('servers')
-    print(f'Running pyark start on {len(allservers)} servers: [{allservers}]\n')
-    for server in allservers:
-        server = server.decode()
-        r.publish(f'{server}-commands', 'start')
-
-
-def stopall():
-    r = redis.Redis(host=redis_host, port=redis_port, db=0)
-    allservers = r.smembers('servers')
-    print(f'Running pyark STOP on {len(allservers)} servers: [{allservers}]\n')
-    for server in allservers:
-        server = server.decode()
-        r.publish(f'{server}-commands', 'stop')
-
-
-def restartall():
-    r = redis.Redis(host=redis_host, port=redis_port, db=0)
-    allservers = r.smembers('servers')
-    print(f'Running pyark restart on {len(allservers)} servers: [{allservers}]\n')
-    for server in allservers:
-        server = server.decode()
-        r.publish(f'{server}-commands', 'restart')
-
-
-def killall():
-    r = redis.Redis(host=redis_host, port=redis_port, db=0)
-    allservers = r.smembers('servers')
-    print(f'Running pyark kill process on {len(allservers)} servers: [{allservers}]\n')
-    for server in allservers:
-        server = server.decode()
-        r.publish(f'{server}-commands', 'kill')
-
-
-def killsvr():
-    allservers = r.smembers('servers')
-    if args.server is None or args.server not in allservers:
-        print(f'You need to specify a valid server to kill the pyark\n')
-    else:
-        for server in allservers:
-            server = server.decode().lower()
-            if args.server.lower() == server:
-                print(f'Running pyark kill process on server: [{args.server}]\n')
-                r.publish(f'{server}-commands', 'kill')
-
-
-def gitpull():
-    allservers = r.smembers('servers')
-    if args.server is None or args.server.encode() not in allservers:
-        print(f'You need to specify a valid server to force git pull\n')
-    else:
-        for server in allservers:
-            server = server.decode().lower()
-            if args.server.lower() == server:
-                print(f'Running force git pull on server: [{args.server}]\n')
-                r.publish(f'{server}-commands', 'gitpull')
-
-
-def watchdogrestart():
-    allservers = r.smembers('servers')
-    if args.server is None or args.server.encode() not in allservers:
-        print(f'You need to specify a valid server to restart watchdog\n')
-    else:
-        for server in allservers:
-            server = server.decode().lower()
-            if args.server.lower() == server:
-                print(f'Running watchdog restart on server: [{args.server}]\n')
-                r.publish(f'{server}-commands', 'restartwatchdog')
-
-
-def updateall():
-    r = redis.Redis(host=redis_host, port=redis_port, db=0)
-    allservers = r.smembers('servers')
-    print(f'Running pyark update check on {len(allservers)} servers: [{allservers}]\n')
-    for server in allservers:
-        server = server.decode()
-        r.publish(f'{server}-commands', 'update')
-
-
-def updatesvr():
-    allservers = r.smembers('servers')
-    if args.server is None or args.server.encode() not in allservers:
-        print(f'You need to specify a valid server to check for updates\n')
-    else:
-        for server in allservers:
-            server = server.decode().lower()
-            if args.server.lower() == server:
-                print(f'Running pyark update check on server: [{args.server}]\n')
-                r.publish(f'{server}-commands', 'update')
 
 
 def getresponse(question):
@@ -353,41 +222,3 @@ def tribewipe():
         # sendtoserver(tribeid)
         # print('   ')
         # print(f'{BGRN}TribeID {BMGT}{tribeid}{BGRN} has been DESTROYED from all servers!{RST}')
-
-
-"""
-if args.action_to_perform == 'start':
-    sctl('start')
-elif args.action_to_perform == 'stop':
-    sctl('stop')
-elif args.action_to_perform == 'restart':
-    sctl('restart')
-elif args.action_to_perform == 'killall':
-    killall()
-elif args.action_to_perform == 'log':
-    logwatch()
-elif args.action_to_perform == 'debuglog':
-    logwatch(debug=True)
-elif args.action_to_perform == 'updateall':
-    updateall()
-elif args.action_to_perform == 'update':
-    updatesvr()
-elif args.action_to_perform == 'startall':
-    startall()
-elif args.action_to_perform == 'stopall':
-    stopall()
-elif args.action_to_perform == 'restartall':
-    restartall()
-elif args.action_to_perform == 'kill':
-    killsvr()
-elif args.action_to_perform == 'killall':
-    killall()
-elif args.action_to_perform == 'gitpull':
-    gitpull()
-elif args.action_to_perform == 'gitpullall':
-    gitpullall()
-elif args.action_to_perform == 'watchdogrestart':
-    watchdogrestart()
-elif args.loglevel:
-    print(args.loglevel)
-"""
