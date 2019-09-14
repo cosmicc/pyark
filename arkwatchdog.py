@@ -54,16 +54,17 @@ def redislistener():
                     sleep(1)
                     subprocess.run(['systemctl', 'restart', 'pyark'], shell=False, capture_output=False)
             elif response['data'].decode().startswith('setcfg'):
-                log.debug('!')
                 respsplit = response['data'].decode().split(':')
                 if len(respsplit) == 4:
-                    log.debug('!!')
                     section = respsplit[1]
                     key = respsplit[2]
                     value = respsplit[3]
                     config = configparser.RawConfigParser()
                     config.optionxform = str
                     config.read(pyarkcfgfile)
+                    log.debug(section)
+                    log.debug(key)
+                    log.debug(value)
                     if config.has_section(section):
                         if config.get(section, key) is None:
                             log.info(f"Adding pyark config entry [{key}] in [{section}] from [{config.get(key)}] to [{value}] on [{hstname}]")
@@ -75,6 +76,8 @@ def redislistener():
                             config.set(section, key, value)
                             with open(str(pyarkcfgfile), 'w') as configfile:
                                 config.write(configfile)
+                        else:
+                            log.debug('?')
                     else:
                         log.warning(f"Section [{section}] does not exist to add/change option [{key}] on [{hstname}]")
 
