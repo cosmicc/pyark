@@ -84,7 +84,7 @@ def iseventtime():
 
 async def asyncgetcurrenteventext():
     if await asynciseventtime():
-        inevent = await db.fetchone("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+        inevent = await db.fetchone("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')))
         if inevent:
             return inevent['cfgfilesuffix']
 
@@ -105,7 +105,7 @@ def getcurrenteventtitleabv():
 
 async def asyncgetcurrenteventinfo():
     if await asynciseventtime():
-        inevent = await db.fetchone("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+        inevent = await db.fetchone("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')))
         if inevent:
             return inevent
 
