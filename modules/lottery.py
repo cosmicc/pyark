@@ -14,6 +14,16 @@ from timebetween import is_time_between
 redis = Redis.redis
 
 
+async def getlottowinnings(pname):
+    pwins = db.fetchone(f"SELECT payout FROM lotteryinfo WHERE winner = '{pname}'")
+    totpoints = 0
+    twins = 0
+    for weach in pwins:
+        totpoints = totpoints + int(weach[0])
+        twins += 1
+    return twins, totpoints
+
+
 async def asyncwritediscord(msg, tstamp, server='generalchat', name='ALERT'):
     await db.update(f"INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('{server}', '{name}', '{msg}', '{tstamp}')")
 

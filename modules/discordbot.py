@@ -16,7 +16,7 @@ from modules.configreader import (changelog_id, discordtoken, generalchat_id,
                                   hstname, infochat_id, maint_hour, serverchat_id)
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import getlastrestart, getlastrestartreason, getlastwipe, instancelist, writeglobal
-from modules.lottery import getlottowinnings, isinlottery, totallotterydeposits
+from modules.lottery import asyncgetlottowinnings, isinlottery, totallotterydeposits
 from modules.players import (getnewestplayers, getplayer, getplayerlastseen, getplayerlastserver, getplayersonlinenames,
                              getplayerstoday, gettopplayedplayers, isplayeradmin, setprimordialbit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
@@ -539,7 +539,7 @@ def pyarkbot():
         msg = msg + f'Your current reward points: **{xferpoints}** (on your home server)\n'
         msg = msg + f'Your home server is: **{kuser[15].capitalize()}**\nYour total play time is: **{ptime}**\n'
         msg = msg + f'You have **{kuser[10]}** current auctions: **{kuser[11]}** Items & **{kuser[12]}** Dinos\n'
-        tpwins, twpoints = getlottowinnings(kuser[1])
+        tpwins, twpoints = await asyncgetlottowinnings(kuser[1])
         msg = msg + f'Total Lotterys Won: **{tpwins}**  Total Lottery Points Won: **{twpoints}** Points\n'
         woodtime = 1296000
         stonetime = 1987200
