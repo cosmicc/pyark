@@ -67,12 +67,15 @@ async def asyncmain():
     asyncloop.set_exception_handler(async_exception_handler)
     inst = 'ragnarok'
 
-    print(await redis.smembers('ragnarok-leaving'))
+    if await redis.smembers('ragnarok-leaving'):
+        print('yes')
+    else:
+        print('no')
 
-    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    log.debug(f'Waiting for {len(tasks)} async tasks to finish')
-    await asyncio.gather(*tasks, return_exceptions=True)
-    log.debug('All async tasks have finished')
+    #tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    #log.debug(f'Waiting for {len(tasks)} async tasks to finish')
+    #await asyncio.gather(*tasks, return_exceptions=True)
+    #log.debug('All async tasks have finished')
 
 
 def main():
