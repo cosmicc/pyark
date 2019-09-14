@@ -17,17 +17,16 @@ from modules.configreader import redis_host, redis_port
 def startpyark(args):
     print(f'args: {args}')
     print(f'server: {args.servername}')
-    # allservers = r.smembers('servers')
-    # if scmd == 'start':
-    #    if args.server is None:
-    #        command = '/bin/systemctl start pyark'
-    #        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-    #        print('PyArk Started')
-    #    elif args.server in allservers:
-    #        print(f'Running pyark start on server: [{args.server}]\n')
-    #        r.publish(f'{args.server.lower()}-commands', 'start')
-    #    else:
-    #        print(f'You need to specify a valid server to start the pyark\n')
+    allservers = r.smembers('servers')
+    if args.server in allservers:
+        print(f'Running pyark start on server: [{args.server}]\n')
+        r.publish(f'{args.server.lower()}-commands', 'start')
+    elif args.server.lower() == 'all':
+        print(f'Running pyark start on {len(allservers)} servers: [{allservers}]\n')
+        for server in allservers:
+            r.publish(f'{server.decode()}-commands', 'start')
+    else:
+        print(f'You need to specify a valid server to {args.desc} on\n')
 
 
 parser = argparse.ArgumentParser()
@@ -35,7 +34,13 @@ subparsers = parser.add_subparsers(title='action', description='valid actions to
 
 parser_start = subparsers.add_parser('start')
 parser_start.add_argument('servername')
+parser_start.add_argument('desc', action='const', default="description!")
 parser_start.set_defaults(func=startpyark)
+
+parser_start = subparsers.add_parser('stop')
+parser_start.add_argument('servername')
+parser_start.set_defaults(func=startpyark)
+
 
 args = parser.parse_args()
 args.func(args)
