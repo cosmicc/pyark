@@ -48,31 +48,31 @@ parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(title='action', description='valid actions to perform', dest='subparser_name')
 
 parser_start = subparsers.add_parser('start')
-parser_start.add_argument('servername')
+parser_start.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
 parser_start.set_defaults(func=_execute)
 
 parser_stop = subparsers.add_parser('stop')
-parser_stop.add_argument('servername')
+parser_stop.add_argument('servername', help="Name of the server to perform action on")
 parser_stop.set_defaults(func=_execute)
 
 parser_restart = subparsers.add_parser('restart')
-parser_restart.add_argument('servername')
+parser_restart.add_argument('servername', help="Name of the server to perform action on")
 parser_restart.set_defaults(func=_execute)
 
 parser_update = subparsers.add_parser('update')
-parser_update.add_argument('servername')
+parser_update.add_argument('servername', help="Name of the server to perform action on")
 parser_update.set_defaults(func=_execute)
 
 parser_kill = subparsers.add_parser('kill')
-parser_kill.add_argument('servername')
+parser_kill.add_argument('servername', help="Name of the server to perform action on")
 parser_kill.set_defaults(func=_execute)
 
 parser_gitpull = subparsers.add_parser('gitpull')
-parser_gitpull.add_argument('servername')
+parser_gitpull.add_argument('servername', help="Name of the server to perform action on")
 parser_gitpull.set_defaults(func=_execute)
 
 parser_rw = subparsers.add_parser('restartwatchdog')
-parser_rw.add_argument('servername')
+parser_rw.add_argument('servername', help="Name of the server to perform action on")
 parser_rw.set_defaults(func=_execute)
 
 parser_log = subparsers.add_parser('log')
@@ -82,6 +82,7 @@ parser_log.set_defaults(func=_log)
 
 parser_log = subparsers.add_parser('loglevel')
 parser_log.add_argument('level', help='Loglevel to set to')
+parser_log.add_argument('servername', help="Name of the server to perform action on")
 parser_log.set_defaults(func=_loglevel)
 
 
