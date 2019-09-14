@@ -34,7 +34,7 @@ subparsers = parser.add_subparsers(title='action', description='valid actions to
 
 parser_start = subparsers.add_parser('start')
 parser_start.add_argument('servername')
-parser_start.add_argument('desc', store='const', const="description!")
+parser_start.add_argument('desc', action='store', const="description!")
 parser_start.set_defaults(func=startpyark)
 
 parser_start = subparsers.add_parser('stop')
