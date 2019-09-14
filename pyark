@@ -136,7 +136,7 @@ async def asyncmain():
     main_stop_event = False
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
-    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60}
+    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60, 'statcollector': 300}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     await Redis.connect(__name__)
@@ -153,7 +153,7 @@ async def asyncmain():
     tasktimer = asyncloop.time()
     if len(instances) == 0:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
-        globvars.timer = {'lottocheck': starttime}
+        globvars.timer = {'lottocheck': starttime, 'statcollector': starttime}
 
         gl = GameLogger()
         async with aiohttp.ClientSession() as session:
@@ -165,6 +165,11 @@ async def asyncmain():
                         log.error(f'lottocheck was delayed {asynclooptime - globvars.timer["lottocheck"] - globvars.delay["lottocheck"]}')
                     globvars.timer.update({'lottocheck': asyncloop.time()})
 
+                if asynclooptime - globvars.timer['statcollector'] > globvars.delay['statcollector']:
+                    asyncio.create_task(asyncstatcollector())
+                    if asynclooptime - globvars.timer['statcollector'] > globvars.delay['statcollector'] + 2:
+                        log.error(f'statcollector was delayed {asynclooptime - globvars.timer["statcollector"] - globvars.delay["statcollector"]}')
+                    globvars.timer.update({'statcollector': asyncloop.time()})
                     await asyncio.sleep(0.1)
 
     else:
@@ -296,8 +301,6 @@ def main():
         thread = threading.Thread(name='steamapi', target=steamapi_thread, args=(5, stop_event), daemon=False)
         threads.append(thread)
         thread = threading.Thread(name='auctionapi', target=auctionapi_thread, args=(5, stop_event), daemon=False)
-        threads.append(thread)
-        thread = threading.Thread(name='stat-collector', target=statcollector_thread, args=(Secs['5min'], stop_event), daemon=False)
         threads.append(thread)
     log.debug(f'Starting {len(threads)} threads')
     for thread in threads:
