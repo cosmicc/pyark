@@ -85,7 +85,7 @@ def getbannedplayers():
 
 
 async def asyncgethitnruns(atime):
-    return db.fetchall(f"SELECT playername FROM players WHERE banned = '' AND lastseen >= '{Now() - atime}' and playedtime < 15 and connects = 1 ORDER BY playername ASC")
+    return await db.fetchall(f"SELECT playername FROM players WHERE banned = '' AND lastseen >= '{Now() - atime}' and playedtime < 15 and connects = 1 ORDER BY playername ASC")
 
 
 def gethitnruns(atime):
@@ -93,7 +93,7 @@ def gethitnruns(atime):
 
 
 async def asyncgetactiveplayers(atime):
-    return db.fetchall(f"SELECT playername FROM players WHERE banned = '' AND lastseen >= '{Now() - atime}' and playedtime > 15 and connects > 1 ORDER BY playername ASC")
+    return await db.fetchall(f"SELECT playername FROM players WHERE banned = '' AND lastseen >= '{Now() - atime}' and playedtime > 15 and connects > 1 ORDER BY playername ASC")
 
 
 def getactiveplayers(atime):
@@ -117,7 +117,7 @@ def getexpiredplayers():
 
 
 async def asyncgetnewplayers(atime):
-    return db.fetchall(f"SELECT steamid, playername FROM players WHERE banned = '' AND firstseen >= '{Now() - atime}' ORDER BY playername ASC")
+    return await db.fetchall(f"SELECT steamid, playername FROM players WHERE banned = '' AND firstseen >= '{Now() - atime}' ORDER BY playername ASC")
 
 
 def getnewplayers(atime):
