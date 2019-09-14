@@ -66,20 +66,16 @@ def redislistener():
                     log.debug(key)
                     log.debug(value)
                     if config.has_section(section):
-                        if config.get(section, key) is None:
-                            log.debug('1')
-                            log.info(f"Adding pyark config entry [{key}] in [{section}] from [{config.get(key)}] to [{value}] on [{hstname}]")
+                        if not config.has_option(section, key):
+                            log.info(f"Adding pyark config entry [{key}] in [{section}] from [{config.get(section, key)}] to [{value}] on [{hstname}]")
                             config.set(section, key, value)
                             with open(str(pyarkcfgfile), 'w') as configfile:
                                 config.write(configfile)
                         elif config.get(section, key) != value:
-                            log.debug('2')
-                            log.info(f"Changing pyark config entry [{key}] in [{section}] from [{config.get(key)}] to [{value}] on [{hstname}]")
+                            log.info(f"Changing pyark config entry [{key}] in [{section}] from [{config.get(section, key)}] to [{value}] on [{hstname}]")
                             config.set(section, key, value)
                             with open(str(pyarkcfgfile), 'w') as configfile:
                                 config.write(configfile)
-                        else:
-                            log.debug('3')
                     else:
                         log.warning(f"Section [{section}] does not exist to add/change option [{key}] on [{hstname}]")
 
@@ -91,11 +87,11 @@ def redislistener():
                     config = configparser.RawConfigParser()
                     config.optionxform = str
                     config.read(pyarkcfgfile)
-                    if config.has_section(section) and config.has_option(key):
+                    if config.has_section(section) and config.has_option(section, key):
                         if config.get(section, key) is None:
                             log.warning(f"Option [{key}] in [{section}] does not exist to remove on [{hstname}]")
                         elif config.get(section, key):
-                            log.info(f"Removing pyark config entry [{key}] in [{section}] value [{config.get(key)}] on [{hstname}]")
+                            log.info(f"Removing pyark config entry [{key}] in [{section}] value [{config.get(section, key)}] on [{hstname}]")
                             config.set(section, key, value)
                             with open(str(pyarkcfgfile), 'w') as configfile:
                                 config.write(configfile)
