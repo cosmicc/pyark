@@ -92,11 +92,11 @@ parser_log.set_defaults(func=_loglevel)
 
 args = parser.parse_args()
 if 'func' in args:
+    print('  ')
     args.func(args)
 else:
     parser.print_help()
 
-print('  ')
 
 null = None
 
