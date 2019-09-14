@@ -7,7 +7,9 @@ import warnings
 import uvloop
 from loguru import logger as log
 
-from modules.redis import instancestate, instancevar
+from modules.redis import instancestate, instancevar, Redis
+
+redis = Redis.redis
 
 main_stop_event = False
 
@@ -65,8 +67,7 @@ async def asyncmain():
     asyncloop.set_exception_handler(async_exception_handler)
     inst = 'ragnarok'
 
-    print(await instancestate.check(inst, 'restarting'))
-    print(type(await instancestate.check(inst, 'restarting')))
+    print(await redis.smembers('ragnarok-leaving'))
 
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
