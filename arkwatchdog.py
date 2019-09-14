@@ -52,6 +52,47 @@ def redislistener():
                         config.write(configfile)
                     sleep(1)
                     subprocess.run(['systemctl', 'restart', 'pyark'], shell=False, capture_output=False)
+            elif response['data'].decode().startswith('setcfg'):
+                respsplit = response['data'].decode().split(':')
+                if len(respsplit) == 4:
+                    section = respsplit[1]
+                    key = respsplit[2]
+                    value = respsplit[3]
+                    config = configparser.RawConfigParser()
+                    config.optionxform = str
+                    config.read(pyarkcfgfile)
+                    if config.has_section(section):
+                        if config.get(section, key) is None:
+                            log.info(f"Adding pyark config entry [{key}] in [{section}] from [{config.get(key)}] to [{value}] on [{hstname}]")
+                            config.set(section, key, value)
+                            with open(str(pyarkcfgfile), 'w') as configfile:
+                                config.write(configfile)
+                        elif config.get(section, key) != value:
+                            log.info(f"Changing pyark config entry [{key}] in [{section}] from [{config.get(key)}] to [{value}] on [{hstname}]")
+                            config.set(section, key, value)
+                            with open(str(pyarkcfgfile), 'w') as configfile:
+                                config.write(configfile)
+                    else:
+                        log.warning(f"Section [{section}] does not exist to add/change option [{key}] on [{hstname}]")
+
+            elif response['data'].decode().startswith('delcfg'):
+                respsplit = response['data'].decode().split(':')
+                if len(respsplit) == 3:
+                    section = respsplit[1]
+                    key = respsplit[2]
+                    config = configparser.RawConfigParser()
+                    config.optionxform = str
+                    config.read(pyarkcfgfile)
+                    if config.has_section(section) and config.has_option(key):
+                        if config.get(section, key) is None:
+                            log.warning(f"Option [{key}] in [{section}] does not exist to remove on [{hstname}]")
+                        elif config.get(section, key):
+                            log.info(f"Removing pyark config entry [{key}] in [{section}] value [{config.get(key)}] on [{hstname}]")
+                            config.set(section, key, value)
+                            with open(str(pyarkcfgfile), 'w') as configfile:
+                                config.write(configfile)
+                    else:
+                        log.warning(f"Option [{key}] or [{section}] does not exist to remove on [{hstname}]")
 
 
 thread = threading.Thread(name='redislistener', target=redislistener, args=(), daemon=True)
