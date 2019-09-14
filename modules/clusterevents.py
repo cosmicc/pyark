@@ -120,9 +120,9 @@ def getcurrenteventinfo():
 async def asyncreplacerates(event):
     try:
         if event == 'default':
-            newrates = db.fetchone(f"SELECT * FROM rates WHERE type = 'default'")
+            newrates = await db.fetchone(f"SELECT * FROM rates WHERE type = 'default'")
         else:
-            newrates = db.fetchone(f"SELECT * FROM autoevents WHERE title = '{event}'")
+            newrates = await db.fetchone(f"SELECT * FROM autoevents WHERE title = '{event}'")
         await db.update(f"UPDATE rates set breed = {newrates['breed']}, tame = {newrates['tame']}, harvest = {newrates['harvest']}, mating = {newrates['mating']}, matingint = {newrates['matingint']}, hatch = {newrates['hatch']}, playerxp = {newrates['playerxp']}, tamehealth = {newrates['tamehealth']}, playerhealth = {newrates['playerhealth']}, playersta = {newrates['playersta']}, foodwater = {newrates['foodwater']}, pph = {newrates['pph']}, pphx = {newrates['pphx']} WHERE type = 'current'")
         log.log('EVENTS', f'Replaced event rates with rates from {event}')
     except:
@@ -168,7 +168,7 @@ async def asyncstopserverevent(inst):
 
 
 async def asynccheckifeventover():
-    curevent = db.fetchone(f"""SELECT * FROM events WHERE completed = 0 AND (endtime < '{Now(fmt="dtd")}' OR endtime = "{Now(fmt='dtd')} ORDER BY endtime ASC""")
+    curevent = await db.fetchone(f"""SELECT * FROM events WHERE completed = 0 AND (endtime < '{Now(fmt="dtd")}' OR endtime = "{Now(fmt='dtd')} ORDER BY endtime ASC""")
     if curevent and not await asynciseventtime():
         log.log('EVENTS', f'Event {curevent[4]} is over. Closing down event')
         msg = f"{curevent[0]}"
