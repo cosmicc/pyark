@@ -30,7 +30,7 @@ from modules.onlinemonitor import asynckickcheck, asynconlinedblchecker, onlinec
 from modules.processlock import PLock
 from modules.redis import Redis, instancestate, instancevar
 from modules.servertools import asyncserverexec, processinststats, processserverstats
-from modules.statcollector import statcollector_thread
+from modules.statcollector import asyncstatcollector
 from modules.timehelper import Secs
 
 logging.basicConfig(level=logging.DEBUG)
