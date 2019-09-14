@@ -66,6 +66,7 @@ def redislistener():
                     log.debug(key)
                     log.debug(value)
                     if config.has_section(section):
+                        log.debug('!')
                         if config.get(section, key) is None:
                             log.info(f"Adding pyark config entry [{key}] in [{section}] from [{config.get(key)}] to [{value}] on [{hstname}]")
                             config.set(section, key, value)
@@ -77,7 +78,7 @@ def redislistener():
                             with open(str(pyarkcfgfile), 'w') as configfile:
                                 config.write(configfile)
                         else:
-                            log.debug('?')
+                            log.debug('???')
                     else:
                         log.warning(f"Section [{section}] does not exist to add/change option [{key}] on [{hstname}]")
 
