@@ -17,7 +17,7 @@ import modules.logging
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
 from modules.arkupdater import asynccheckbackup, asynccheckmaint, asynccheckrestart, asynccheckupdates, asynccheckwipe
 from modules.asyncdb import DB as db
-from modules.clusterevents import eventwatcher_thread
+from modules.clusterevents import asynceventwatcher
 from modules.cmdlistener import cmdscheck
 from modules.configreader import hstname, instances, is_arkupdater, loglevel
 from modules.dbhelper import dbquery, dbupdate
@@ -136,7 +136,7 @@ async def asyncmain():
     main_stop_event = False
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
-    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60, 'statcollector': 300}
+    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60, 'statcollector': 300, 'eventwatch': 60}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     await Redis.connect(__name__)
@@ -153,7 +153,7 @@ async def asyncmain():
     tasktimer = asyncloop.time()
     if len(instances) == 0:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
-        globvars.timer = {'lottocheck': starttime}
+        globvars.timer = {'lottocheck': starttime, 'eventwatch': starttime}
 
         gl = GameLogger()
         async with aiohttp.ClientSession() as session:
@@ -170,6 +170,13 @@ async def asyncmain():
                     if asynclooptime - await globalvar.getint('laststatcollect') > globvars.delay['statcollector'] + 2:
                         log.error(f"statcollector was delayed {asynclooptime - await globalvar.getint('laststatcollect') - globvars.delay['statcollector']}")
                     await globalvar.set('laststatcollect', asyncloop.time())
+
+                if asynclooptime - globvars.timer['eventwatch'] > globvars.delay['eventwatch']:
+                    asyncio.create_task(asynceventwatcher())
+                    if asynclooptime - globvars.timer['eventwatch'] > globvars.delay['eventwatch'] + 2:
+                        log.error(f'eventwatch was delayed {asynclooptime - globvars.timer["eventwatch"] - globvars.delay["eventwatch"]}')
+                    globvars.timer.update({'eventwatch': asyncloop.time()})
+
                     await asyncio.sleep(0.1)
 
     else:
@@ -255,29 +262,11 @@ async def asyncmain():
     await asyncio.sleep(1)
     await db.close()
 
-    # async with aiohttp.ClientSession() as session:
-    #    asyncio.create_task(asyncdblcheckonline())
-    #    asyncio.create_task(asyncstatcollector())
-    #    asyncio.create_task(gl.process())
-    #    asyncio.create_task(asynccheckdbconnections())
-    #    asyncio.create_task(asyncauctionapi(session))
-
-    # ending loop
-
-    # log.debug(f'still running tasks: {asyncio.Task.all_tasks()}')
-    # if len(asyncio.Task.all_tasks()) > 1:
-    #    log.debug(f'Waiting for {len(asyncio.Task.all_tasks()) - 1} async tasks to finish...')
-    #    while len(asyncio.Task.all_tasks()) > 1:
-    #        await asyncio.sleep(.1)
-    # else:
-    #    log.debug(f'No async pending tasks to finish.')
-
 
 @log.catch
 def main():
     log.debug(f'Pyark is sarting on {hstname.upper()}')
     global checkgit
-    global instance
     global stop_event
     global threads
     checkgit = 0
@@ -292,8 +281,6 @@ def main():
             log.trace(f'deleting global chat buffer for {inst}')
             dbupdate(f"DELETE FROM globalbuffer WHERE server = '{inst}'")
     elif len(instances) == 0:
-        thread = threading.Thread(name='eventwatcher', target=eventwatcher_thread, args=(1, stop_event), daemon=False)
-        threads.append(thread)
         thread = threading.Thread(name='arkservernet', target=arkservernet_thread, args=(Secs['15min'], stop_event), daemon=False)
         threads.append(thread)
         thread = threading.Thread(name='gamelogger', target=gamelogger_thread, args=(stop_event,), daemon=False)

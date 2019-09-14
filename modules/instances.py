@@ -293,6 +293,10 @@ def writeglobal(inst, whos, msg):
         dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (instance.lower(), whos, msg, Now()))
 
 
+async def asyncserverchat(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False):
+    await db.update("INSERT INTO globalbuffer (server,name,message,timestamp,private,broadcast) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (inst, whosent, msg, Now(), private, broadcast))
+
+
 def serverchat(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False):
     dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp,private,broadcast) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" %
              (inst, whosent, msg, Now(), private, broadcast))

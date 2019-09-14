@@ -11,7 +11,7 @@ from discord.ext import commands
 from loguru import logger as log
 
 from modules.asyncdb import DB as db
-from modules.clusterevents import getcurrenteventinfo, getlasteventinfo, getnexteventinfo, iseventtime
+from modules.clusterevents import asyncgetcurrenteventinfo, asyncgetlasteventinfo, asyncgetnexteventinfo, asynciseventtime
 from modules.configreader import (changelog_id, discordtoken, generalchat_id,
                                   hstname, infochat_id, maint_hour, serverchat_id)
 from modules.dbhelper import dbquery, dbupdate
@@ -181,9 +181,9 @@ def pyarkbot():
                     writeglobal('ALERT', 'LOTTERY', bcast)
                     await clearmessages('lotterymessage')
                     await addmessage('lotterymessage', msg.id)
-                if Now(fmt='dt') - await getlastannounce('lasteventannounce') > timedelta(hours=12) and iseventtime():
+                if Now(fmt='dt') - await getlastannounce('lasteventannounce') > timedelta(hours=12) and await asynciseventtime():
                     log.info('Announcing running event in discord')
-                    event = getcurrenteventinfo()
+                    event = await asyncgetcurrenteventinfo()
                     embed = discord.Embed(title=f"An event is running!", color=INFO_COLOR)
                     embed.set_author(name='Galaxy Cluster Server Events', icon_url='https://library.kissclipart.com/20180903/ueq/kissclipart-party-emoji-clipart-party-popper-emoji-aa28695001083d98.png')
                     embed.add_field(name=f"The {event[4]} Event is live on all servers", value=f"{event[5]}\nEvent ends in {elapsedTime(Now(), datetimeto(d2dt_maint(event[2]), fmt='epoch'))} ", inline=False)
@@ -248,7 +248,7 @@ def pyarkbot():
 
                         elif each[0] == 'EVENTSTART':
                             await setlastannounce('lasteventannounce', Now(fmt='dt'))
-                            event = getcurrenteventinfo()
+                            event = await asyncgetcurrenteventinfo()
                             embed = discord.Embed(title=f"A new event is starting!", color=INFO_COLOR)
                             embed.set_author(name='Galaxy Cluster Server Events', icon_url='https://library.kissclipart.com/20180903/ueq/kissclipart-party-emoji-clipart-party-popper-emoji-aa28695001083d98.png')
                             embed.add_field(name=f"The {event[4]} Event is live on all servers", value=f"{event[5]}", inline=False)
@@ -257,8 +257,8 @@ def pyarkbot():
                             await addmessage('eventmessage', msg.id)
 
                         elif each[0] == 'EVENTEND':
-                            event = getlasteventinfo()
-                            nevent = getnexteventinfo()
+                            event = await asyncgetlasteventinfo()
+                            nevent = await asyncgetnexteventinfo()
                             embed = discord.Embed(title=f"The current event is ending!", color=INFO_COLOR)
                             embed.set_author(name='Galaxy Cluster Server Events', icon_url='https://library.kissclipart.com/20180903/ueq/kissclipart-party-emoji-clipart-party-popper-emoji-aa28695001083d98.png')
                             embed.add_field(name=f"The {event[4]} Event is ending on all servers", value=f"Next event **{nevent[4]}** starts in **{elapsedTime(Now(), datetimeto(d2dt_maint(nevent[2]), fmt='epoch'))}**", inline=False)
@@ -395,7 +395,7 @@ def pyarkbot():
 
     async def serverrates(ctx, refresher=False):
         rates = await getrates()
-        cevent = getcurrenteventinfo()
+        cevent = await asyncgetcurrenteventinfo()
         if cevent is None:
             eventtext = 'No events are currently active (Normal Rates)'
         else:
@@ -644,9 +644,9 @@ def pyarkbot():
     @client.command(name='event', aliases=['events'])
     @commands.check(logcommand)
     async def _event(ctx):
-        lastevent = getlasteventinfo()
-        currentevent = getcurrenteventinfo()
-        nextevent = getnexteventinfo()
+        lastevent = await asyncgetlasteventinfo()
+        currentevent = await asyncgetcurrenteventinfo()
+        nextevent = await asyncgetnexteventinfo()
         try:
             if currentevent:
                 title = f'Event {currentevent[4]} is currently active'

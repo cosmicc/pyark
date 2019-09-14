@@ -1,20 +1,19 @@
 from datetime import datetime
 from datetime import time as dt
 from datetime import timedelta
-from sys import exit
-from time import sleep
 
 from loguru import logger as log
 
 from modules.asyncdb import DB as db
+from modules.redis import globalvar
 from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import instancelist, serverchat
+from modules.instances import asyncserverchat
 from modules.timehelper import Now
 
 
-def writediscord(msg, mtype, tstamp):
-    dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (mtype, 'ALERT', msg, tstamp))
+async def asyncwritediscord(msg, mtype, tstamp):
+    await db.update("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (mtype, 'ALERT', msg, tstamp))
 
 
 def d2dt_maint(dtme):
@@ -23,7 +22,7 @@ def d2dt_maint(dtme):
 
 
 def schedholidayevent(startdate, enddate):
-    if not getnexteventinfo():
+    if not await asyncgetnexteventinfo():
         einfo = dbquery("SELECT * FROM autoevents WHERE title = 'Holiday'", fmt='dict', fetch='one')
         dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix, announced) VALUES (0, '%s', '%s', '%s', '%s', '%s', False)" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
         log.log('EVENTS', f'Scheduling next Evolution Weekend Event {startdate} - {enddate}')
@@ -31,18 +30,16 @@ def schedholidayevent(startdate, enddate):
         log.log('EVENTS', f'Skipping auto-schedule of next Evo weekend to do existing next event')
 
 
-def autoschedevolution():
-    if not getnexteventinfo():
+async def asyncautoschedevolution():
+    if not await asyncgetnexteventinfo():
         now = Now(fmt='dt')
         while now.strftime('%a') != 'Fri':
             now += timedelta(1)
         enddt = now + timedelta(days=3)
         enddate = enddt.date()
         startdate = now.date()
-
-        einfo = dbquery("SELECT * FROM autoevents WHERE title = 'Evolution Weekend'", fmt='dict', fetch='one')
-        dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix, announced) VALUES (0, '%s', '%s', '%s', '%s', '%s', False)" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
-
+        einfo = await db.fetchone(f"SELECT * FROM autoevents WHERE title = 'Evolution Weekend'")
+        await db.update("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix, announced) VALUES (0, '%s', '%s', '%s', '%s', '%s', False)" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
         log.log('EVENTS', f'Scheduling next Evolution Weekend Event {startdate} - {enddate}')
     else:
         log.log('EVENTS', f'Skipping auto-schedule of next Evo weekend to do existing next event')
@@ -55,15 +52,6 @@ async def asynciseventrebootday():
         return f'{startday["title"]} Event Start'
     elif endday:
         return f'{startday["title"]} Event End'
-
-
-def iseventrebootday():
-    startday = dbquery("SELECT title FROM events WHERE starttime = '%s'" % (Now(fmt='dtd'),), fmt='string', fetch='one')
-    endday = dbquery("SELECT title FROM events WHERE endtime = '%s'" % (Now(fmt='dtd'),), fmt='string', fetch='one')
-    if startday:
-        return f'{startday} Event Start'
-    elif endday:
-        return f'{startday} Event End'
 
 
 async def asynciseventtime():
@@ -94,11 +82,11 @@ def iseventtime():
         return False
 
 
-def getcurrenteventext():
-    if iseventtime():
-        inevent = dbquery("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+async def asyncgetcurrenteventext():
+    if await asynciseventtime():
+        inevent = await db.fetchone("SELECT cfgfilesuffix FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
         if inevent:
-            return inevent[0]
+            return inevent['cfgfilesuffix']
 
 
 def getcurrenteventtitle():
@@ -115,6 +103,13 @@ def getcurrenteventtitleabv():
             return inevent[0]
 
 
+async def asyncgetcurrenteventinfo():
+    if await asynciseventtime():
+        inevent = await db.fetchone("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
+        if inevent:
+            return inevent
+
+
 def getcurrenteventinfo():
     if iseventtime():
         inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (starttime < '%s' OR starttime = '%s')" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
@@ -122,97 +117,83 @@ def getcurrenteventinfo():
             return inevent
 
 
-def replacerates(event):
+async def asyncreplacerates(event):
     try:
         if event == 'default':
-            newrates = dbquery("SELECT * FROM rates WHERE type = 'default'", fetch='one', fmt='dict')
+            newrates = db.fetchone(f"SELECT * FROM rates WHERE type = 'default'")
         else:
-            newrates = dbquery("SELECT * FROM autoevents WHERE title = '%s'" % (event,), fetch='one', fmt='dict')
-        dbupdate(f"UPDATE rates set breed = {newrates['breed']}, tame = {newrates['tame']}, harvest = {newrates['harvest']}, mating = {newrates['mating']}, matingint = {newrates['matingint']}, hatch = {newrates['hatch']}, playerxp = {newrates['playerxp']}, tamehealth = {newrates['tamehealth']}, playerhealth = {newrates['playerhealth']}, playersta = {newrates['playersta']}, foodwater = {newrates['foodwater']}, pph = {newrates['pph']}, pphx = {newrates['pphx']} WHERE type = 'current'")
+            newrates = db.fetchone(f"SELECT * FROM autoevents WHERE title = '{event}'")
+        await db.update(f"UPDATE rates set breed = {newrates['breed']}, tame = {newrates['tame']}, harvest = {newrates['harvest']}, mating = {newrates['mating']}, matingint = {newrates['matingint']}, hatch = {newrates['hatch']}, playerxp = {newrates['playerxp']}, tamehealth = {newrates['tamehealth']}, playerhealth = {newrates['playerhealth']}, playersta = {newrates['playersta']}, foodwater = {newrates['foodwater']}, pph = {newrates['pph']}, pphx = {newrates['pphx']} WHERE type = 'current'")
         log.log('EVENTS', f'Replaced event rates with rates from {event}')
     except:
         log.exception('Error replacing rates')
 
 
-def getlasteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 1 ORDER BY id DESC", fetch='one')
+async def asyncgetlasteventinfo():
+    inevent = await db.fetchone(f"SELECT * FROM events WHERE completed = 1 ORDER BY id DESC")
     return inevent
 
 
-def getnexteventinfo():
-    inevent = dbquery("SELECT * FROM events WHERE completed = 0 AND starttime > '%s' or starttime = '%s' ORDER BY starttime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='all')
+async def asyncgetnexteventinfo():
+    inevent = await db.fetchall(f"""SELECT * FROM events WHERE completed = 0 AND starttime > '{Now(fmt="dtd")}' or starttime = '{Now(fmt="dtd")}' ORDER BY starttime ASC""")
     if inevent:
-        if inevent[0][2] == (Now(fmt='dtd')) and not iseventtime():
+        if inevent[0][2] == (Now(fmt='dtd')) and not await asynciseventtime():
             return inevent[0]
-        elif inevent[0][2] == (Now(fmt='dtd')) and iseventtime():
+        elif inevent[0][2] == (Now(fmt='dtd')) and await asynciseventtime():
             if len(inevent) > 1:
                 return inevent[1]
         elif inevent[0][2] > (Now(fmt='dtd')):
             return inevent[0]
 
 
-def currentserverevent(inst):
-    inevent = dbquery("SELECT inevent FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    return inevent[0]
+async def asynccurrentserverevent(inst):
+    inevent = await db.fetchone(f"SELECT inevent FROM instances WHERE name = '{inst}'")
+    return inevent['inevent']
 
 
-def startserverevent(inst):
-    dbupdate("UPDATE instances SET inevent = '%s' WHERE name = '%s'" % (getcurrenteventext(), inst))
-    eventinfo = getcurrenteventinfo()
+async def asyncstartserverevent(inst):
+    await db.update(f"UPDATE instances SET inevent = '{await asyncgetcurrenteventext()}' WHERE name = '{inst}")
+    eventinfo = await asyncgetcurrenteventinfo()
     log.log('EVENTS', f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
     msg = f"\n\n                      {eventinfo[4]} Event is Starting Soon!\n\n                        {eventinfo[5]}"
-    serverchat(msg, inst=inst, broadcast=True)
+    await asyncserverchat(msg, inst=inst, broadcast=True)
 
 
-def stopserverevent(inst):
-    dbupdate("UPDATE instances SET inevent = 0 WHERE name = '%s'" % (inst,))
+async def asyncstopserverevent(inst):
+    await db.update(f"UPDATE instances SET inevent = 0 WHERE name = '{inst}'")
     log.log('EVENTS', f'Ending event on instance {inst.capitalize()}')
-    eventinfo = getlasteventinfo()
+    eventinfo = await asyncgetlasteventinfo()
     msg = f"\n\n                      {eventinfo[4]} Event is Ending Soon!"
-    serverchat(msg, inst=inst, broadcast=True)
+    await asyncserverchat(msg, inst=inst, broadcast=True)
 
 
-def checkifeventover():
-    curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND (endtime < '%s' OR endtime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one')
-    if curevent and not iseventtime():
+async def asynccheckifeventover():
+    curevent = db.fetchone(f"""SELECT * FROM events WHERE completed = 0 AND (endtime < '{Now(fmt="dtd")}' OR endtime = "{Now(fmt='dtd')} ORDER BY endtime ASC""")
+    if curevent and not await asynciseventtime():
         log.log('EVENTS', f'Event {curevent[4]} is over. Closing down event')
         msg = f"{curevent[0]}"
-        writediscord(msg, 'EVENTEND', Now())
-        dbupdate("UPDATE events SET completed = 1 WHERE id = '%s'" % (curevent[0],))
-        replacerates('default')
-        autoschedevolution()
+        await asyncwritediscord(msg, 'EVENTEND', Now())
+        await db.update(f"UPDATE events SET completed = 1 WHERE id = '{curevent[0]}'")
+        await asyncreplacerates('default')
+        await asyncautoschedevolution()
 
 
-def checkifeventstart():
-    curevent = dbquery("SELECT * FROM events WHERE completed = 0 AND announced = False AND (starttime < '%s' OR starttime = '%s') ORDER BY endtime ASC" % (Now(fmt='dtd'), Now(fmt='dtd')), fetch='one', fmt='dict')
-    if curevent and iseventtime():
+async def asynccheckifeventstart():
+    curevent = await db.fetchone(f"""SELECT * FROM events WHERE completed = 0 AND announced = False AND (starttime < '{Now(fmt="dtd")}' OR starttime = '{Now(fmt="dtd")}' ORDER BY endtime ASC""")
+    if curevent and await asynciseventtime():
         log.log('EVENTS', f'Event {curevent["title"]} has begun. Starting event')
         msg = f"{curevent['id']}"
-        writediscord(msg, 'EVENTSTART', Now())
-        dbupdate("UPDATE events SET announced = True WHERE id = '%s'" % (curevent['id'],))
-        replacerates(curevent['title'])
-        autoschedevolution()
+        await asyncwritediscord(msg, 'EVENTSTART', Now())
+        await db.update(f"""UPDATE events SET announced = True WHERE id = '{curevent["id"]}'""")
+        await asyncreplacerates(curevent['title'])
+        await asyncautoschedevolution()
 
 
-def stopsleep(sleeptime, stop_event):
-    for ntime in range(sleeptime):
-        if stop_event.is_set():
-            log.debug('Eventwatcher thread has ended')
-            exit(0)
-        sleep(1)
-
-
-def eventwatcher_thread(dtime, stop_event):
-    log.debug(f'Eventwatcher thread is starting')
-    instances = instancelist()
-    while not stop_event.is_set():
-        checkifeventover()
-        checkifeventstart()
-        for inst in instances:
-            if iseventtime() and currentserverevent(inst) == '0':
-                startserverevent(inst)
-            elif not iseventtime() and currentserverevent(inst) != '0':
-                stopserverevent(inst)
-        stopsleep(dtime, stop_event)
-    log.debug('Eventwatcher thread has ended')
-    exit(0)
+async def asynceventwatcher():
+    await asynccheckifeventover()
+    await asynccheckifeventstart()
+    for inst in await globalvar.getlist('allinstances'):
+        if await asynciseventtime() and await asynccurrentserverevent(inst) == '0':
+            await asyncstartserverevent(inst)
+        elif not await asynciseventtime() and await asynccurrentserverevent(inst) != '0':
+            await asyncstopserverevent(inst)

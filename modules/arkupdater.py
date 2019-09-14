@@ -13,7 +13,7 @@ from timebetween import is_time_between
 
 import globvars
 from modules.asyncdb import DB as db
-from modules.clusterevents import asynciseventrebootday, getcurrenteventext, iseventtime
+from modules.clusterevents import asynciseventrebootday, asyncgetcurrenteventext, asynciseventtime
 from modules.configreader import hstname, is_arkupdater, maint_hour, sharedpath
 from modules.discordbot import asyncwritediscord
 from modules.instances import asyncgetlastrestart, asyncgetlastwipe, asyncisinstanceenabled, asyncwipeit
@@ -178,7 +178,7 @@ async def asyncstillneedsrestart(inst):
 
 
 @log.catch
-def installconfigs(inst):
+async def installconfigs(inst):
     config = configparser.RawConfigParser()
     config.optionxform = str
     config.read(globvars.gusini_baseconfig_file)
@@ -191,8 +191,8 @@ def installconfigs(inst):
     else:
         log.debug(f'No custom config found for {inst}')
 
-    if iseventtime():
-        eventext = getcurrenteventext()
+    if await asynciseventtime():
+        eventext = await asyncgetcurrenteventext()
         globvars.gusini_event_file = Path(f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini')
         if globvars.gusini_event_file.exists():
             for each in globvars.gusini_event_file.read_text().split('\n'):
@@ -241,7 +241,7 @@ async def asyncrestartinstnow(inst, startonly=False):
         await asyncserverexec(['reboot'])
     else:
         log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
-        installconfigs(inst)
+        await installconfigs(inst)
         log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
         await asyncserverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'], _wait=True)
         await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
