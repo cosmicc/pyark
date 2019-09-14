@@ -235,7 +235,8 @@ async def asyncmain():
                     log.error(f'High number of async tasks running on {hstname} ({len(asyncio.Task.all_tasks())})')
                     tasktimer = asyncloop.time()
             await asyncio.sleep(.05)
-    await instancestate.unset(inst, 'pyark')
+    for inst in instances:
+        await instancestate.unset(inst, 'pyark')
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
