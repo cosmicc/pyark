@@ -14,7 +14,7 @@ from modules.colorizer import (BCYN, BGN, BGRN, BLU, BMGT, BRED, BWHT, BYEL, GRN
 from modules.configreader import redis_host, redis_port
 
 r = redis.Redis(host=redis_host, port=redis_port, db=0)
-aallservers = r.smembers('servers')
+aallservers = r.smembers('cliservers')
 allservers = []
 for asvr in aallservers:
     allservers.append(asvr.decode())
@@ -28,6 +28,7 @@ def _loglevel(args):
     else:
         print(f'Invalid level {args.level}')
 
+
 def _log(args):
     if args.debug:
         command = f'/home/ark/pyark/logclient {args.lines} -d'
@@ -39,13 +40,13 @@ def _log(args):
 def _execute(args):
     print(f'args: {args.subparser_name}')
     print(f'server: {args.servername}')
-    if args.servername.encode() in allservers:
+    if args.servername in allservers:
         print(f'Running pyark start on server: [{args.servername}]\n')
         r.publish(f'{args.servername.lower()}-commands', f'{args.subparser_name}')
     elif args.servername.lower() == 'all':
         print(f'Running pyark {args.subparser_name} on {len(allservers)} servers: {str(allservers)}\n')
         for server in allservers:
-            r.publish(f'{server.decode()}-commands', f'{args.subparser_name}')
+            r.publish(f'{server}-commands', f'{args.subparser_name}')
     else:
         print(f'You need to specify a valid server to execute {args.subparser_name} on\n')
 
