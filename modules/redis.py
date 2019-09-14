@@ -118,6 +118,15 @@ class globalvar:
             resplist.append(inst.decode())
         return resplist
 
+    async def checklist(key, value):
+        """Check a global list for a value
+
+        Arguments:
+            key {string} -- Key to get value from
+            value {string} -- Value to check in list
+        """
+        return await redis.sismember(key, value)
+
     async def inc(instance, key):
         """Increment a global variable
 
