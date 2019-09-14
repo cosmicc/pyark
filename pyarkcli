@@ -33,10 +33,10 @@ def _log(args):
 def _execute(args):
     print(f'args: {args.subparser_name}')
     print(f'server: {args.servername}')
-    if args.server in allservers:
+    if args.servername in allservers:
         print(f'Running pyark start on server: [{args.server}]\n')
-        r.publish(f'{args.server.lower()}-commands', f'{args.subparser_name}')
-    elif args.server.lower() == 'all':
+        r.publish(f'{args.servername.lower()}-commands', f'{args.subparser_name}')
+    elif args.servername.lower() == 'all':
         print(f'Running pyark {args.subparser_name} on {len(allservers)} servers: [{allservers}]\n')
         for server in allservers:
             r.publish(f'{server.decode()}-commands', f'{args.subparser_name}')
