@@ -21,9 +21,12 @@ for asvr in aallservers:
 
 
 def _loglevel(args):
-    args.subparser_name = f'{args.subparser_name}:{args.loglevel}'
-    _execute(args)
-
+    levels = ('TRACE', 'DEBUG', 'INFO')
+    if args.level.upper() in levels:
+        args.subparser_name = f'{args.subparser_name}:{args.level.upper()}'
+        _execute(args)
+    else:
+        print(f'Invalid level {args.level}')
 
 def _log(args):
     if args.debug:
