@@ -1,18 +1,16 @@
 from datetime import time as dt
 from datetime import datetime, timedelta
 from random import choice
-from modules.redis import Redis
 
 import asyncio
 from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery
+from modules.redis import globalvar
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, estshift
 from numpy import argmax
 from numpy.random import randint, seed, shuffle
 from timebetween import is_time_between
-
-redis = Redis.redis
 
 
 def isinlottery():
@@ -142,15 +140,15 @@ async def asynclotteryloop(lottoinfo):
     if lottoinfo['announced'] is False:
         log.debug('clearing lotteryplayers table')
         await db.update("DELETE FROM lotteryplayers")
-    redis.set('inlottery', 1)
+    await globalvar.set('inlottery', 1)
     log.debug('lottery loop has begun, waiting for lottery entries')
-    while redis.get('inlottery') == 1:
+    while await globalvar.getbool('inlottery'):
         await asyncio.sleep(Secs['5min'])
         tdy = lottoinfo['startdate'] + timedelta(hours=lottoinfo['days'])
         # tdy = lottoinfo['startdate'] + timedelta(minutes=5)  # quick 5 min for testing
         if Now(fmt='dt') >= tdy:
             await asyncdeterminewinner(lottoinfo)
-            redis.set('inlottery', 1)
+            await globalvar.set('inlottery', 0)
     log.debug(f'Lottery loop has completed')
 
 

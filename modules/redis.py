@@ -74,13 +74,29 @@ class globalvar:
         """
         await redis.delete(key)
 
-    async def get(key):
-        """Get a global variable
+    async def getstring(key):
+        """Get a global variable as a string
 
         Arguments:
             key {string} -- Key to get value from
         """
         return (await redis.get(key)).decode()
+
+    async def getint(key):
+        """Get a global variable as int
+
+        Arguments:
+            key {string} -- Key to get value from
+        """
+        return int((await redis.get(key)).decode())
+
+    async def getbool(key):
+        """Get a global variable as bool
+
+        Arguments:
+            key {string} -- Key to get value from
+        """
+        return bool((await redis.get(key)).decode())
 
     async def inc(instance, key):
         """Increment a global variable
