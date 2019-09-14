@@ -160,7 +160,7 @@ async def asyncmain():
             while not main_stop_event:
                 asynclooptime = asyncloop.time()
                 if asynclooptime - globvars.timer['lottocheck'] > globvars.delay['lottocheck']:
-                    asyncio.create_task(asynclotterywatcher(instances))
+                    asyncio.create_task(asynclotterywatcher())
                     if asynclooptime - globvars.timer['lottocheck'] > globvars.delay['lottocheck'] + 2:
                         log.error(f'lottocheck was delayed {asynclooptime - globvars.timer["lottocheck"] - globvars.delay["lottocheck"]}')
                     globvars.timer.update({'lottocheck': asyncloop.time()})
