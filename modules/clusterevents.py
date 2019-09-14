@@ -179,7 +179,7 @@ async def asynccheckifeventover():
 
 
 async def asynccheckifeventstart():
-    curevent = await db.fetchone(f"""SELECT * FROM events WHERE completed = 0 AND announced = False AND (starttime < '{Now(fmt="dtd")}' OR starttime = '{Now(fmt="dtd")}' ORDER BY endtime ASC""")
+    curevent = await db.fetchone(f"""SELECT * FROM events WHERE completed = 0 AND announced = False AND (starttime < '{Now(fmt="dtd")}' OR starttime = '{Now(fmt="dtd")}') ORDER BY endtime ASC""")
     if curevent and await asynciseventtime():
         log.log('EVENTS', f'Event {curevent["title"]} has begun. Starting event')
         msg = f"{curevent['id']}"
