@@ -7,7 +7,8 @@ import warnings
 import uvloop
 from loguru import logger as log
 
-from modules.redis import instancevar, instancestate
+from modules.redis import instancestate, instancevar
+
 main_stop_event = False
 
 logging.basicConfig(level=logging.DEBUG)
@@ -64,10 +65,9 @@ async def asyncmain():
     asyncloop.set_exception_handler(async_exception_handler)
     inst = 'ragnarok'
 
-    print(await instancevar.get(inst, 'isrunning'))
-    print(type(await instancevar.get(inst, 'isrunning')))
+    print(await instancestate.check(inst, 'restarting'))
+    print(type(await instancestate.check(inst, 'restarting')))
 
-    print(asyncio.all_tasks())
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)

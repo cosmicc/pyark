@@ -1,16 +1,17 @@
 import argparse
+import fcntl
 import subprocess
 import threading
+from pathlib import Path
 from time import sleep
 
 import configparser
-import fcntl
 import modules.logging
 import psutil
 import redis
 from loguru import logger as log
+
 from modules.configreader import hstname, redis_host, redis_port
-from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')

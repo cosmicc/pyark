@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.7
 import argparse
+import asyncio
 import logging
 import signal
 import threading
@@ -7,12 +8,12 @@ import warnings
 from os import nice
 
 import aiohttp
-import asyncio
-import globvars
-import modules.logging
 import uvloop
 from git import Repo
 from loguru import logger as log
+
+import globvars
+import modules.logging
 from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
 from modules.arkupdater import asynccheckbackup, asynccheckmaint, asynccheckrestart, asynccheckupdates, asynccheckwipe
 from modules.asyncdb import DB as db
@@ -28,7 +29,7 @@ from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinedblchecker, onlinecheck
 from modules.processlock import PLock
 from modules.redis import Redis, instancestate, instancevar
-from modules.servertools import asyncserverexec, processserverstats, processinststats
+from modules.servertools import asyncserverexec, processinststats, processserverstats
 from modules.statcollector import statcollector_thread
 from modules.timehelper import Secs
 

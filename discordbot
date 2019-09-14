@@ -4,8 +4,9 @@ import argparse
 import sys
 from os import nice
 
-import modules.logging
 from loguru import logger as log
+
+import modules.logging
 from modules.discordbot import pyarkbot
 from modules.processlock import PLock
 
