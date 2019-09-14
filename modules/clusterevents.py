@@ -21,7 +21,7 @@ def d2dt_maint(dtme):
     return datetime.combine(dtme, tme)
 
 
-def schedholidayevent(startdate, enddate):
+async def asyncschedholidayevent(startdate, enddate):
     if not await asyncgetnexteventinfo():
         einfo = dbquery("SELECT * FROM autoevents WHERE title = 'Holiday'", fmt='dict', fetch='one')
         dbupdate("INSERT INTO events (completed, starttime, endtime, title, description, cfgfilesuffix, announced) VALUES (0, '%s', '%s', '%s', '%s', '%s', False)" % (startdate, enddate, einfo['title'], einfo['description'], einfo['cfgfilesuffix']))
