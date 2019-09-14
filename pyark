@@ -147,9 +147,7 @@ async def asyncmain():
     for inst in instances:
         await pubsub.subscribe([f'{inst}-commands'])
         await instancestate.set(inst, 'pyark')
-        await instancevar.set(inst, 'missedrunning', 0)
-        await instancevar.set(inst, 'missedlistening', 0)
-        await instancevar.set(inst, 'missedonline', 0)
+        await instancevar.mset(inst, {'server': hstname, 'missedrunning': 0, 'missedlistening': 0, 'missedonline': 0})
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
     tasktimer = asyncloop.time()

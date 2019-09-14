@@ -15,9 +15,13 @@ from modules.configreader import redis_host, redis_port
 
 r = redis.Redis(host=redis_host, port=redis_port, db=0)
 aallservers = r.smembers('cliservers')
+aallinstances = r.smembers('allinstances')
 allservers = []
+allinstances = []
 for asvr in aallservers:
     allservers.append(asvr.decode())
+for bsvr in aallinstances:
+    allinstances.append(bsvr.decode())
 
 
 def _loglevel(args):
@@ -38,8 +42,10 @@ def _log(args):
 
 
 def _execute(args):
+    if args.servername in allinstances:
+        args.servername = r.hget(args.servername, 'server')
     if args.servername in allservers:
-        print(f'Running pyark start on server: [{args.servername}]\n')
+        print(f'Running pyark {args.subparser_name} on server: [{args.servername}]\n')
         r.publish(f'{args.servername.lower()}-commands', f'{args.subparser_name}')
     elif args.servername.lower() == 'all':
         print(f'Running pyark {args.subparser_name} on {len(allservers)} servers: {str(allservers)}\n')
