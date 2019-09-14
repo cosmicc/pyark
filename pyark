@@ -165,10 +165,10 @@ async def asyncmain():
                         log.error(f'lottocheck was delayed {asynclooptime - globvars.timer["lottocheck"] - globvars.delay["lottocheck"]}')
                     globvars.timer.update({'lottocheck': asyncloop.time()})
 
-                if asynclooptime - await globalvar.getint('laststatcollect') > globvars.delay['statcollector']:
+                if asynclooptime - await globalvar.getfloat('laststatcollect') > globvars.delay['statcollector']:
                     asyncio.create_task(asyncstatcollector())
-                    if asynclooptime - await globalvar.getint('laststatcollect') > globvars.delay['statcollector'] + 2:
-                        log.error(f"statcollector was delayed {asynclooptime - await globalvar.getint('laststatcollect') - globvars.delay['statcollector']}")
+                    if asynclooptime - await globalvar.getfloat('laststatcollect') > globvars.delay['statcollector'] + 2:
+                        log.error(f"statcollector was delayed {asynclooptime - await globalvar.getfloat('laststatcollect') - globvars.delay['statcollector']}")
                     await globalvar.set('laststatcollect', asyncloop.time())
 
                 if asynclooptime - globvars.timer['eventwatch'] > globvars.delay['eventwatch']:

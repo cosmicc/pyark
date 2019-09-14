@@ -90,6 +90,14 @@ class globalvar:
         """
         return int((await redis.get(key)).decode())
 
+    async def getfloat(key):
+        """Get a global variable as float
+
+        Arguments:
+            key {string} -- Key to get value from
+        """
+        return float((await redis.get(key)).decode())
+
     async def getbool(key):
         """Get a global variable as bool
 
