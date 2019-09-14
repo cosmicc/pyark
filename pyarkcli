@@ -43,7 +43,7 @@ def _log(args):
 
 def _execute(args):
     if args.servername in allinstances:
-        args.servername = r.hget(args.servername, 'server')
+        args.servername = r.hget(args.servername, 'server').decode().lower()
     if args.servername in allservers:
         print(f'Running pyark {args.subparser_name} on server: [{args.servername}]\n')
         r.publish(f'{args.servername.lower()}-commands', f'{args.subparser_name}')
@@ -52,7 +52,7 @@ def _execute(args):
         for server in allservers:
             r.publish(f'{server}-commands', f'{args.subparser_name}')
     else:
-        print(f'You need to specify a valid server or to execute {args.subparser_name} on\n{str(allservers)} or {str(allinstances)}')
+        print(f'You need to specify a valid server or to execute {args.subparser_name} on\n{str(allinstances)} or \n{str(allservers)}')
 
 
 parser = argparse.ArgumentParser()
