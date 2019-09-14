@@ -52,7 +52,7 @@ def _execute(args):
         for server in allservers:
             r.publish(f'{server}-commands', f'{args.subparser_name}')
     else:
-        print(f'You need to specify a valid server to execute {args.subparser_name} on\n')
+        print(f'You need to specify a valid server or to execute {args.subparser_name} on\n{str(allservers)} or {str(allinstances)}')
 
 
 parser = argparse.ArgumentParser()

@@ -64,7 +64,7 @@ while True:
     try:
         if not pyarkpidfile.is_file() or not pyarklockfile.is_file():
             if count == 1:
-                log.warning('Pyark not running (pid and/or lock files missing')
+                log.warning('Pyark not running (pid and/or lock files missing)')
                 count += 1
         else:
             pyarkpid = pyarkpidfile.read_text()
