@@ -26,7 +26,7 @@ def _log(args):
     if args.debug:
         command = f'/home/ark/pyark/logclient {args.lines} -d'
     else:
-        command = f'/home/ark/pyark/logclient {args.loglines}'
+        command = f'/home/ark/pyark/logclient {args.lines}'
     subprocess.run(command, stdout=sys.stdout, stderr=sys.stderr, shell=True)
 
 
