@@ -39,7 +39,7 @@ def redislistener():
             elif response['data'].decode() == 'gitpull':
                 subprocess.run(['git', 'pull'], shell=True, cwd='/home/ark/pyark', capture_output=False)
             elif response['data'].decode() == 'restartwatchdog':
-                subprocess.run(['systemctl', 'start', 'arkwatchdog'], shell=False, capture_output=False)
+                subprocess.run(['systemctl', 'restart', 'arkwatchdog'], shell=False, capture_output=False)
             elif response['data'].decode().startswith('loglevel'):
                 loglevel = response['data'].decode().split(':')[1]
                 config = configparser.RawConfigParser()
