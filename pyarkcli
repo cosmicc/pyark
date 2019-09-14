@@ -96,7 +96,7 @@ if 'func' in args:
 else:
     parser.print_help()
 
-print('')
+print(' ')
 
 null = None
 

@@ -29,6 +29,7 @@ def redislistener():
     pubsub.subscribe([f'{hstname.lower()}-commands'])
     for response in pubsub.listen():
         if response['type'] == 'message' and response['channel'].decode() == f'{hstname.lower()}-commands':
+            log.debug(f'Recieved Server Command: {response["data"].decode()}')
             if response['data'].decode() == 'restart':
                 subprocess.run(['systemctl', 'restart', 'pyark'], shell=False, capture_output=False)
             elif response['data'].decode() == 'stop':
