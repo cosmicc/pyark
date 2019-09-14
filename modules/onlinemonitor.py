@@ -157,6 +157,8 @@ async def asyncplayergreet(steamid, steamname, inst):
                     await asyncio.sleep(2)
                     mtxt = annc[0]
                     await asyncserverchatto(inst, steamid, mtxt)
+                await asyncserverisinrestart(steamid, inst, player)
+
             if xferpoints != 0:
                 await asyncio.sleep(5)
                 mtxt = f'{xferpoints} rewards points were transferred to you from other cluster servers'
@@ -165,8 +167,8 @@ async def asyncplayergreet(steamid, steamname, inst):
                 await asyncio.sleep(5)
                 mtxt = f'{xferpoints} rewards points were transferred here from a home server move'
                 await asyncserverchatto(inst, steamid, mtxt)
+
             await asynclottodeposits(player, inst)
-            await asyncserverisinrestart(steamid, inst, player)
     globvars.greetings.remove(steamid)
 
 
