@@ -306,10 +306,10 @@ async def asyncstartvoter(inst, whoasked):
     if globvars.isvoting:
         message = 'Voting has already started. cast your vote now'
         await asyncserverchat(inst, message)
-    elif instancestate.check(inst, 'maintenance'):
+    elif await instancestate.check(inst, 'maintenance'):
         message = 'You cannot start a vote during server maintenance'
         await asyncserverchat(inst, message)
-    elif instancestate.check(inst, 'restartwaiting'):
+    elif await instancestate.check(inst, 'restartwaiting'):
         message = 'You cannot start a vote while the server is in restart countdown'
         await asyncserverchat(inst, message)
     elif time() - float(await asyncgetlastwipe(inst)) < Secs['4hour']:   # 4 hours between wipes
