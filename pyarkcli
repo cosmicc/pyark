@@ -33,6 +33,16 @@ def _loglevel(args):
         print(f'Invalid level {args.level}')
 
 
+def _setcfg(args):
+    args.subparser_name = f'{args.subparser_name}:{args.section}:{args.option}:{args.value}'
+    _execute(args)
+
+
+def _delcfg(args):
+    args.subparser_name = f'{args.subparser_name}:{args.section}:{args.option}'
+    _execute(args)
+
+
 def _log(args):
     if args.debug:
         command = f'/home/ark/pyark/logclient {args.lines} -d'
@@ -59,31 +69,31 @@ parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(title='action', description='valid actions to perform', dest='subparser_name')
 
 parser_start = subparsers.add_parser('start')
-parser_start.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
+parser_start.add_argument('servername', help=f"Name of the server to perform action on")
 parser_start.set_defaults(func=_execute)
 
 parser_stop = subparsers.add_parser('stop')
-parser_stop.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
+parser_stop.add_argument('servername', help=f"Name of the server to perform action on")
 parser_stop.set_defaults(func=_execute)
 
 parser_restart = subparsers.add_parser('restart')
-parser_restart.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
+parser_restart.add_argument('servername', help=f"Name of the server to perform action on")
 parser_restart.set_defaults(func=_execute)
 
 parser_update = subparsers.add_parser('update')
-parser_update.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
+parser_update.add_argument('servername', help=f"Name of the server to perform action on")
 parser_update.set_defaults(func=_execute)
 
 parser_kill = subparsers.add_parser('kill')
-parser_kill.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
+parser_kill.add_argument('servername', help=f"Name of the server to perform action on")
 parser_kill.set_defaults(func=_execute)
 
 parser_gitpull = subparsers.add_parser('gitpull')
-parser_gitpull.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
+parser_gitpull.add_argument('servername', help=f"Name of the server to perform action on")
 parser_gitpull.set_defaults(func=_execute)
 
 parser_rw = subparsers.add_parser('restartwatchdog')
-parser_rw.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
+parser_rw.add_argument('servername', help=f"Name of the server to perform action on")
 parser_rw.set_defaults(func=_execute)
 
 parser_log = subparsers.add_parser('log')
@@ -93,16 +103,29 @@ parser_log.set_defaults(func=_log)
 
 parser_log = subparsers.add_parser('loglevel')
 parser_log.add_argument('level', help='Loglevel to set to')
-parser_log.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
+parser_log.add_argument('servername', help=f"Name of the server to perform action on")
 parser_log.set_defaults(func=_loglevel)
 
+parser_setcfg = subparsers.add_parser('setcfg')
+parser_setcfg.add_argument('section', help='Section in config file')
+parser_setcfg.add_argument('option', help='Option in config file')
+parser_setcfg.add_argument('value', help='Value to change in config file')
+parser_setcfg.add_argument('servername', help=f"Name of the server to perform action on")
+parser_setcfg.set_defaults(func=_setcfg)
+
+parser_setcfg = subparsers.add_parser('delcfg')
+parser_setcfg.add_argument('section', help='Section in config file')
+parser_setcfg.add_argument('option', help='Option in config file')
+parser_setcfg.add_argument('servername', help=f"Name of the server to perform action on")
+parser_setcfg.set_defaults(func=_delcfg)
+
 args = parser.parse_args()
+
 if 'func' in args:
     print('  ')
     args.func(args)
 else:
     parser.print_help()
-
 
 null = None
 
