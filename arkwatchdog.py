@@ -23,6 +23,7 @@ pyarkcfgfile = Path('/home/ark/pyark.cfg')
 args = parser.parse_args()
 
 
+@log.catch
 def redislistener():
     r = redis.Redis(host=redis_host, port=redis_port, db=0)
     pubsub = r.pubsub()
