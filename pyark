@@ -291,8 +291,6 @@ def main():
         threads.append(thread)
         thread = threading.Thread(name='arkservernet', target=arkservernet_thread, args=(Secs['15min'], stop_event), daemon=False)
         threads.append(thread)
-        thread = threading.Thread(name='lotterywatcher', target=lotterywatcher_thread, args=(Secs['5min'], stop_event), daemon=False)
-        threads.append(thread)
         thread = threading.Thread(name='gamelogger', target=gamelogger_thread, args=(stop_event,), daemon=False)
         threads.append(thread)
         thread = threading.Thread(name='steamapi', target=steamapi_thread, args=(5, stop_event), daemon=False)
