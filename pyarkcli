@@ -49,6 +49,7 @@ def _execute(args):
 
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(title='action', description='valid actions to perform', dest='subparser_name')
+parser.set_defaults(func=parser.print_help)
 
 parser_start = subparsers.add_parser('start')
 parser_start.add_argument('servername', help=f"Name of the server to perform action on {str(allservers)}")
