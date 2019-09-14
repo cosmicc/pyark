@@ -168,7 +168,7 @@ async def asyncstopserverevent(inst):
 
 
 async def asynccheckifeventover():
-    curevent = await db.fetchone(f"""SELECT * FROM events WHERE completed = 0 AND (endtime < '{Now(fmt="dtd")}' OR endtime = '{Now(fmt="dtd")}'' ORDER BY endtime ASC""")
+    curevent = await db.fetchone(f"""SELECT * FROM events WHERE completed = 0 AND (endtime < '{Now(fmt="dtd")}' OR endtime = '{Now(fmt="dtd")}' ORDER BY endtime ASC""")
     if curevent and not await asynciseventtime():
         log.log('EVENTS', f'Event {curevent[4]} is over. Closing down event')
         msg = f"{curevent[0]}"
