@@ -167,7 +167,7 @@ async def asyncstartlottery(lottoinfo):
 
 
 async def asyncgeneratelottery():
-    log.debug('Generate new lottery check')
+    log.trace('Generate new lottery check')
     lottodata = await db.fetchone("SELECT * FROM lotteryinfo WHERE completed = False")
     if not lottodata:
         t, s, e = datetime.now(), dt(21, 0), dt(21, 10)  # Automatic Lottery 9:00pm GMT (5:00PM EST)
@@ -181,7 +181,7 @@ async def asyncgeneratelottery():
 
 
 async def asynccheckforlottery():
-    log.debug('Running lottery check')
+    log.trace('Running lottery check')
     lottoinfo = await db.fetchone("SELECT * FROM lotteryinfo WHERE completed = False")
     if lottoinfo:
         await asyncstartlottery(lottoinfo)
