@@ -62,9 +62,6 @@ def redislistener():
                     config = configparser.RawConfigParser()
                     config.optionxform = str
                     config.read(pyarkcfgfile)
-                    log.debug(section)
-                    log.debug(key)
-                    log.debug(value)
                     if config.has_section(section):
                         if not config.has_option(section, key):
                             log.info(f"Adding pyark config entry [{key}] in [{section}] from [{config.get(section, key)}] to [{value}] on [{hstname}]")
@@ -76,6 +73,8 @@ def redislistener():
                             config.set(section, key, value)
                             with open(str(pyarkcfgfile), 'w') as configfile:
                                 config.write(configfile)
+                        elif config.get(section, key) == value:
+                            log.info(f"Pyark config entry [{key}] in [{section}] already set to [{value}] on [{hstname}]")
                     else:
                         log.warning(f"Section [{section}] does not exist to add/change option [{key}] on [{hstname}]")
 
