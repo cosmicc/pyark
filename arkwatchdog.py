@@ -54,8 +54,10 @@ def redislistener():
                     sleep(1)
                     subprocess.run(['systemctl', 'restart', 'pyark'], shell=False, capture_output=False)
             elif response['data'].decode().startswith('setcfg'):
+                log.debug('!')
                 respsplit = response['data'].decode().split(':')
                 if len(respsplit) == 4:
+                    log.debug('!!')
                     section = respsplit[1]
                     key = respsplit[2]
                     value = respsplit[3]
