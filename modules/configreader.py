@@ -92,5 +92,3 @@ errorlogfile = pylogpath / errorfile
 pointslogfile = pylogpath / pointsfile
 adminlogfile = pylogpath / adminfile
 chatlogfile = pylogpath / chatfile
-
-
