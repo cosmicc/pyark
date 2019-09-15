@@ -254,7 +254,7 @@ def processlogline(line, single=False):
         count = int(redis.zcard('pyarklog'))
         log.debug(count)
         if count > 50:
-            redis.zremrangebyrank('pyarklog', 0, count - 50)
+            redis.zremrangebyrank('pyarklog', 0, 0)
         for client in client_threads:
             if client['showonly'] != 'ALL':
                 if data["record"]["level"]["name"].lower() == client['showonly'].lower():
