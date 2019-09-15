@@ -20,7 +20,7 @@ class LogWatcher(object):
 
     def __init__(self, folder, callback,
                  matching_file_names=[],
-                 extensions=["log"], tail_lines=0):
+                 extensions=["json"], tail_lines=0):
         """Arguments:
         (str) @folder:
             the folder to watch
@@ -53,8 +53,7 @@ class LogWatcher(object):
             if (os.path.exists(offset_file_name) and
                     os.path.getsize(offset_file_name)):
                 offset_fh = open(offset_file_name, "r")
-                _file_inode, offset = \
-                    [int(line.strip()) for line in offset_fh]
+                _file_inode, offset = [int(line.strip()) for line in offset_fh]
                 # file has been rotated, need to real all the left over
                 # from the rotated file before
                 if _file_inode != os.stat(file.name).st_ino:
