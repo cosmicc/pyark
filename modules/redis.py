@@ -143,7 +143,7 @@ class globalvar:
             key {string} -- Key to remove value
             value {string} -- Value to remove from list
         """
-        return await redis.sadd(key, value)
+        return await redis.srem(key, value)
 
     async def inc(instance, key):
         """Increment a global variable
