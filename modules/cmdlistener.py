@@ -13,7 +13,7 @@ from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, asyncwipeit, homeablelist
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import asyncnewplayer
-from modules.redis import instancestate, instancevar
+from modules.redis import instancestate, instancevar, globalvar
 from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
@@ -173,10 +173,9 @@ async def asyncpopulatevoters(inst):
     log.trace(f'populating vote table for {inst}')
     globvars.votertable = []
     playercount = 0
-    players = await db.fetchall(f"SELECT * FROM players WHERE server = '{inst}' and lastseen > '{time() - 40}'")
+    players = await db.fetchall(f"SELECT * FROM players WHERE server = '{inst}' and online = True")
     for player in players:
-        checktime = time() - float(player['lastseen'])
-        if checktime < 90:
+        if not globvars.checklist(f'{inst}-leaving', player['steamid']):
             playercount += 1
             newvoter = [player['steamid'], player['playername'], 3]
             globvars.votertable.append(newvoter)
@@ -301,7 +300,7 @@ async def asyncvoter(inst, whoasked):
     log.debug(f'voting task has ended on {inst}')
     return True
 
-# FUCK YOU
+
 async def asyncstartvoter(inst, whoasked):
     if globvars.isvoting:
         message = 'Voting has already started. cast your vote now'
@@ -511,6 +510,7 @@ async def asyncleavingplayerwatch(player, inst):
             log.log('XFER', f'Player [{player["playername"].title()}] has transfered from [{inst.title()}] to [{queryplayer["server"].title()}]')
             transferred = True
             stop_watch = True
+            await globalvar.remlist(f'{inst}-leaving', player['steamid'])
         await asyncio.sleep(2)
 
     if not transferred and time() - int(queryplayer['lastseen']) >= 250:
@@ -519,6 +519,7 @@ async def asyncleavingplayerwatch(player, inst):
         log.log('LEAVE', f'Player [{player["playername"].title()}] left the cluster from [{inst.title()}]')
         mtxt = f'{player["playername"].title()} has logged off the cluster'
         await asyncserverchat(inst, mtxt)
+        await globalvar.remlist(f'{inst}-leaving', player['steamid'])
     nplayer = await db.fetchone(f"""SELECT * FROM players where steamid = '{player["steamid"]}'""")
     if player['homeserver'] != inst:
         if not nplayer['online'] or (nplayer['online'] and nplayer['server'] != inst):
@@ -532,6 +533,7 @@ async def playerleave(line, inst):
     newline = line[:-15].split(':')
     player = await db.fetchone(f"SELECT * FROM players WHERE steamname = '{cleanstring(newline[1].strip())}'")
     if player:
+        await globalvar.addlist(f'{inst}-leaving', player['steamid'])
         await asyncleavingplayerwatch(player, inst)
     else:
         log.error(f'Player with steam name [{newline[1].strip()}] was not found while leaving server')

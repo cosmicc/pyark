@@ -127,6 +127,24 @@ class globalvar:
         """
         return await redis.sismember(key, value)
 
+    async def addlist(key, value):
+        """Add a value to a global list
+
+        Arguments:
+            key {string} -- Key to add value
+            value {string} -- Value to add to list
+        """
+        return await redis.sadd(key, value)
+
+    async def remlist(key, value):
+        """Remove a value from a global list
+
+        Arguments:
+            key {string} -- Key to remove value
+            value {string} -- Value to remove from list
+        """
+        return await redis.sadd(key, value)
+
     async def inc(instance, key):
         """Increment a global variable
 
