@@ -337,9 +337,9 @@ class LogWatcher(object):
                 sig, mtime, offset = self.load_checkpoint(file.name)
             else:
                 log.debug(" > used provided kwarg value")
-                sig = list(checkpoint)[0]
-                mtime = list(checkpoint)[1]
-                offset = list(checkpoint)[2]
+                # sig = list(checkpoint)[0]
+                # mtime = list(checkpoint)[1]
+                # offset = list(checkpoint)[2]
 
             log.debug("<< loading checkpoint")
 
