@@ -121,7 +121,7 @@ async def asyncplayergreet(steamid, steamname, inst):
                 await db.update(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}' WHERE steamid = '{steamid}'")
                 await asynclottodeposits(player, inst)
             else:  # new player connection
-                log.debug(f'New online player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
+                log.debug(f'New connected player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
                 await db.update(f"UPDATE players SET online = True, welcomeannounce = False, lastseen = '{Now()}', server = '{inst}', connects = {int(player[7]) + 1}, refreshauctions = True, refreshsteam = True WHERE steamid = '{steamid}'")
                 laston = elapsedTime(Now(), int(player['lastseen']))
                 totplay = playedTime(int(player[4]))
