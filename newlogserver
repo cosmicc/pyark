@@ -57,7 +57,7 @@ elif args.verbose == 1:
 else:
     log.add(sink=sys.stderr, level=50, backtrace=False, diagnose=False, colorize=True)
 
-log.add(sink=str(logserver_logfile, level=20, buffering=1, enqueue=False, backtrace=True, diagnose=True, serialize=False, colorize=False))
+log.add(sink=str(logserver_logfile), level=20, buffering=1, enqueue=False, backtrace=True, diagnose=True, serialize=False, colorize=False)
 
 processlock = PLock()
 processlock.lock()
