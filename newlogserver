@@ -29,16 +29,16 @@ pyark_gamelogfile = {}
 pyark_chatlogfile = {}
 
 redis = Redis(host=redis_host, port=redis_port, db=0)
-aallinstances = redis.smembers('allinstances')
-for bsvr in aallinstances:
-    allinstances.append(bsvr.decode())
+allservers = ()
+for aserver in redis.smembers('cliservers'):
+    allservers = allservers + (aserver.decode(),)
 
 logserver_logfile = Path('/home/ark/shared/logs/pyark/logserver.log')
-for inst in allinstances:
-    pyark_logfile.update({inst: Path(f'/home/ark/shared/logs/{inst}/pyarklog.json')})
-    pyark_debugfile.update({inst: Path(f'/home/ark/shared/logs/{inst}/debuglog.json')})
-    pyark_gamelogfile.update({inst: Path(f'/home/ark/shared/logs/{inst}/gamelog.json')})
-    pyark_chatlogfile.update({inst: Path(f'/home/ark/shared/logs/{inst}/chatloglog.json')})
+for server in allservers:
+    pyark_logfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_log.json')})
+    pyark_debugfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_debug.json')})
+    pyark_gamelogfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_game.json')})
+    pyark_chatlogfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_chat.json')})
 
 log_queue = Queue()
 
