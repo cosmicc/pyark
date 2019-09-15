@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "cbdc7821a74a0ea01af981debe4a1ebba4238fbed0158ed025e43feaba057cc0"
+            "sha256": "61372b12a4add1917dda93aa837f9989d20417cdb2ed1db9f09a7139acc8b3e9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -514,14 +514,6 @@
                 "sha256:43526aea08fa32c6b6dbbbe9963c4c767285b78147b7437597f992812f69d280"
             ],
             "version": "==1.7.1"
-        },
-        "portalocker": {
-            "hashes": [
-                "sha256:1ed88cff4807267ec3331d2a843529399256043851509c39487db97146dda821",
-                "sha256:934a848531ecd03b78d780402ddbf57e518172c67f0b4b9fbe2ea253fdaf6c3f"
-            ],
-            "index": "pypi",
-            "version": "==1.5.1"
         },
         "priority": {
             "hashes": [
