@@ -39,6 +39,8 @@ fsmonitor = "*"
 aredis = "*"
 redis = "*"
 aiohttp = "*"
+portalocker = "*"
+regex = "*"
 
 [requires]
 python_version = "3.7"
