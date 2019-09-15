@@ -14,9 +14,9 @@ from pathlib import Path
 from loguru import logger as log
 
 from modules.processlock import PLock
+from modules.logwath import LogWatcher
 from modules.configreader import redis_host, redis_port
 from redis import Redis
-from modules.tail import Tail
 
 log.remove()
 
@@ -70,27 +70,27 @@ def checkconnections():
             client_threads.remove(client)
 
 
+def callback(filename, lines):
+    for line in lines:
+        if not line.strip():
+            pass
+        elif line.find(':::') == -1:
+            print("new line in file %s: %s" % (filename, line))
+            processlogline(line)
+        else:
+            data = line.split(':::')
+            try:
+                print(data[0], data[1],
+                      zlib.decompress(base64.decodestring(data[2])))
+                processlogline(zlib.decompress(base64.decodestring(data[2])))
+            except Exception as e:
+                print(str(e))
+                print('caught exception rendering a new log line in %s' % filename)
+
+
 def logwatcher():
-    for server in allservers:
-        if not pyark_logfile[server].is_file():
-            log.warning(f'{server} pyarklog.json not found. waiting for it..')
-            sleep(10)
-        else:
-            tlog = Tail(str(pyark_logfile[server]))
-            tlog.register_callback(processlogline)
-            log.debug(f'{server} pyarklog.json found. following it..')
-            tlog.follow()
-
-
-def debugwatcher():
-    for server in allservers:
-        if not pyark_debugfile[server].is_file():
-            log.debug(f'{server} debuglog.json not found. skipping it..')
-        else:
-            tlog = Tail(str(pyark_debugfile[server]))
-            tlog.register_callback(processlogline)
-            log.debug(f'{server} debuglog.json found. following it..')
-            tlog.follow()
+    lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=5)
+    lw.loop()
 
 
 def clientloop(clientsocket, addr):
