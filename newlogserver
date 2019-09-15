@@ -71,25 +71,25 @@ def checkconnections():
 
 
 def logwatcher():
-    for inst in allinstances:
-        if not pyark_logfile[inst].is_file():
-            log.warning(f'{inst} pyarklog.json not found. waiting for it..')
+    for server in allservers:
+        if not pyark_logfile[server].is_file():
+            log.warning(f'{server} pyarklog.json not found. waiting for it..')
             sleep(10)
         else:
-            tlog = Tail(str(pyark_logfile[inst]))
+            tlog = Tail(str(pyark_logfile[server]))
             tlog.register_callback(processlogline)
-            log.debug(f'{inst} pyarklog.json found. following it..')
+            log.debug(f'{server} pyarklog.json found. following it..')
             tlog.follow()
 
 
 def debugwatcher():
-    for inst in allinstances:
-        if not pyark_debugfile[inst].is_file():
-            log.debug(f'{inst} debuglog.json not found. skipping it..')
+    for server in allservers:
+        if not pyark_debugfile[server].is_file():
+            log.debug(f'{server} debuglog.json not found. skipping it..')
         else:
-            tlog = Tail(str(pyark_debugfile[inst]))
+            tlog = Tail(str(pyark_debugfile[server]))
             tlog.register_callback(processlogline)
-            log.debug(f'{inst} debuglog.json found. following it..')
+            log.debug(f'{server} debuglog.json found. following it..')
             tlog.follow()
 
 
