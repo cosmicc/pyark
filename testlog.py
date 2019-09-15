@@ -1,4 +1,5 @@
 from modules.logwatch import LogWatcher
+import os
 
 
 def callback(filename, lines):
@@ -6,5 +7,7 @@ def callback(filename, lines):
         print(line)
 
 
-watcher = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=5)
+watcher = LogWatcher(os.path.dirname("/home/ark/shared/logs/pyark/json"), callback, ["log"], persistent_checkpoint=False)
+
+
 watcher.loop()
