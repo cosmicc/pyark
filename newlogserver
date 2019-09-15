@@ -135,6 +135,7 @@ def clientloop(clientsocket, addr):
         bigdata = {}
         lines = {}
         times = {}
+        """
         for inst in allinstances:
             bigdata.update({inst: open(str(pyark_logfile[inst]))})
             lines.update({inst: bigdata[inst].readline().strip('\x00')})
@@ -148,6 +149,7 @@ def clientloop(clientsocket, addr):
             times.update({lowestinst: data["record"]["extra"]['timestamp']})
         for inst in allinstances:
             bigdata[inst].close()
+        """
     except:
         log.exception('SHIT')
     if not argsfollow:
