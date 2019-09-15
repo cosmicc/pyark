@@ -39,7 +39,6 @@ fsmonitor = "*"
 aredis = "*"
 redis = "*"
 aiohttp = "*"
-portalocker = "*"
 
 [requires]
 python_version = "3.7"
