@@ -210,7 +210,9 @@ class LogWatcher(object):
                     f.seek(0)
                     exit = True
                 else:
-                    f.seek(step, os.SEEK_END)
+                    # f.seek(step, os.SEEK_END)
+                    f.seek(0, 2)
+                    f.seek(step, 2)
                 data = f.read().strip()
                 if data.count('\n') >= window:
                     break
