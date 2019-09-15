@@ -250,7 +250,7 @@ def processlogline(line, single=False):
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
         log.debug(f'Got from log: {data["text"]}')
-        redis.zadd('pyarklog', {data["text"]: data["time"]["timestamp"]})
+        redis.zadd('pyarklog', {data["text"]: data["record"]["time"]["timestamp"]})
         for client in client_threads:
             if client['showonly'] != 'ALL':
                 if data["record"]["level"]["name"].lower() == client['showonly'].lower():
