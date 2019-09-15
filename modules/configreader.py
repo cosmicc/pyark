@@ -30,7 +30,7 @@ adminfile = config.get('general', 'adminlogfile')
 pointsfile = config.get('general', 'pointslogfile')
 jsondebugfile = config.get('general', 'jsondebugfile')
 crashlogfile = config.get('general', 'crashlogfile')
-errorlogfile = config.get('general', 'errorlogfile')
+#errorlogfile = config.get('general', 'errorlogfile')
 chatlogfile = config.get('general', 'chatlogfile')
 
 maint_hour = config.get('general', 'maint_hour')
