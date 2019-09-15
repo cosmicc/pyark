@@ -304,8 +304,9 @@ class LogWatcher(object):
         pass
 
     def close(self):
-        for id, file in self.files_map.iteritems():
-            file.close()
+        pass
+        # for id, file in self.files_map.iteritems():
+        #    file.close()
         self.files_map.clear()
 
 
