@@ -21,18 +21,17 @@ hstname = gethostname().upper()
 # General
 loglevel = config.get('general', 'loglevel')
 sharedpath = config.get('general', 'shared')
-arkroot = config.get('general', 'arkroot')
-jsonlogfile = config.get('general', 'jsonlogfile')
-colorlogfile = config.get('general', 'colorlogfile')
-debugfile = config.get('general', 'debugfile')
+arkrootpath = config.get('general', 'arkroot')
+jsonlogpath = config.get('general', 'jsonlogpath')
+pyarklogpath = config.get('general', 'pyarklogpath')
+pyarklogfile = config.get('general', 'pyarklogfile')
+
 adminfile = config.get('general', 'adminlogfile')
 pointsfile = config.get('general', 'pointslogfile')
 jsondebugfile = config.get('general', 'jsondebugfile')
 crashlogfile = config.get('general', 'crashlogfile')
-critlogfile = config.get('general', 'critlogfile')
+errorlogfile = config.get('general', 'errorlogfile')
 chatlogfile = config.get('general', 'chatlogfile')
-gamelogfile = config.get('general', 'gamelogfile')
-gamelograwfile = config.get('general', 'gamelograwfile')
 
 maint_hour = config.get('general', 'maint_hour')
 
@@ -76,20 +75,8 @@ secsalt = config.get('webserver', 'security_salt')
 testing_seckey = config.get('webserver', 'debug_testkey')
 
 numinstances = int(config.get('general', 'instances'))
-instance = [dict() for x in range(numinstances)]
-localinstances = []
-instr = ''
 
-if numinstances == 0:
-    instr = 'Master Server'
-else:
-    for each in range(numinstances):
-        a = config.get('instance%s' % (each), 'name')
-        localinstances.append(a)
-        instance[each] = {'name': a, }
-        if instr == '':
-            instr = '%s' % (a)
-        else:
-            instr = instr + ', %s' % (a)
+instances = ()
 
-instances = tuple(localinstances)
+for each in range(numinstances):
+    instances = instances + config.get(f'instance{each}', 'name')
