@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 from socket import gethostname
+from pathlib import Path
 
 configfile = '/home/ark/pyark.cfg'
 
@@ -22,16 +23,15 @@ hstname = gethostname().upper()
 loglevel = config.get('general', 'loglevel')
 sharedpath = config.get('general', 'shared')
 arkrootpath = config.get('general', 'arkroot')
-#jsonlogpath = config.get('general', 'jsonlogpath')
-#pyarklogpath = config.get('general', 'pyarklogpath')
-#pyarklogfile = config.get('general', 'pyarklogfile')
+jsonpath = config.get('general', 'jsonlogpath')
+pylogpath = config.get('general', 'pyarklogpath')
+pyarkfile = config.get('general', 'pyarklogfile')
 
 adminfile = config.get('general', 'adminlogfile')
 pointsfile = config.get('general', 'pointslogfile')
-jsondebugfile = config.get('general', 'jsondebugfile')
-crashlogfile = config.get('general', 'crashlogfile')
-#errorlogfile = config.get('general', 'errorlogfile')
-chatlogfile = config.get('general', 'chatlogfile')
+crashfile = config.get('general', 'crashlogfile')
+errorfile = config.get('general', 'errorlogfile')
+chatfile = config.get('general', 'chatlogfile')
 
 maint_hour = config.get('general', 'maint_hour')
 
@@ -80,3 +80,15 @@ instances = ()
 
 for each in range(numinstances):
     instances = instances + (config.get(f'instance{each}', 'name'),)
+
+jsonlogfile = Path(jsonpath) / f'{hstname.lower()}_log.json'
+jsondebugfile = Path(jsonpath) / f'{hstname.lower()}_debug.json'
+jsonchatfile = Path(jsonpath) / f'{hstname.lower()}_chat.json'
+jsongamefile = Path(jsonpath) / f'{hstname.lower()}_game.json'
+pyarklogfile = Path(pylogpath) / Path(pyarkfile)
+pointslogfile = Path(pylogpath) / Path(pointsfile)
+crashlogfile = Path(pylogpath) / Path(crashfile)
+errorlogfile = Path(pylogpath) / Path(errorfile)
+pointslogfile = Path(pylogpath) / Path(pointsfile)
+adminlogfile = Path(pylogpath) / Path(adminfile)
+chatlogfile = Path(pylogpath) / Path(chatfile)
