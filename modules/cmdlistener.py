@@ -438,7 +438,7 @@ async def asynclotteryinfo(lottery, player, inst):
     if inlotto:
         message = f'You are enterted into this lottery. Good Luck!'
     else:
-        message = f'Type !lotto join to spend {lottery["buyin"]} points and enter into this lottery'
+        message = f'Type !lotto join to spend 10 points and enter into this lottery'
     await asyncserverchatto(inst, player['steamid'], message)
 
 

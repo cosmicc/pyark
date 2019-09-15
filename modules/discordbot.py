@@ -177,7 +177,7 @@ def pyarkbot():
                     embed.add_field(name=f"Current lottery is up to **{linfo['payout']} Points**", value=f"**{linfo['players'] + 1}** Players have entered into this lottery so far\nLottery ends in **{elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}**\n\n**`!lotto enter`** to join the lottery\n**`!points`** for more information\n**`!winners`** for recent results", inline=True)
                     msg = await generalchat.send(embed=embed)
                     await setlastannounce('lastlottoannounce', Now(fmt='dt'))
-                    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">                      A points lottery is currently running!</>\n                        {linfo['buyin']} points to enter in this lottery\n<RichColor Color="1,1,0,1">           Current lottery is up to {linfo['payout']} points and grows as players enter </>\n                      Lottery Ends in {elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}\n\n                  Type !lotto for more info or !lotto enter to join"""
+                    bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n<RichColor Color="0,1,0,1">                      A points lottery is currently running!</>\n                        10 points to enter in this lottery\n<RichColor Color="1,1,0,1">           Current lottery is up to {linfo['payout']} points and grows as players enter </>\n                      Lottery Ends in {elapsedTime(datetimeto(linfo['startdate'] + timedelta(hours=linfo['days']), fmt='epoch'),Now())}\n\n                  Type !lotto for more info or !lotto enter to join"""
                     writeglobal('ALERT', 'LOTTERY', bcast)
                     await clearmessages('lotterymessage')
                     await addmessage('lotterymessage', msg.id)
@@ -232,8 +232,7 @@ def pyarkbot():
                             await setlastannounce('lastlottoannounce', Now(fmt='dt'))
                             embed = discord.Embed(title=f"A new Lottery has started!", color=INFO_COLOR)
                             embed.set_author(name='Galaxy Cluster Reward Points Lottery', icon_url='https://blacklabelagency.com/wp-content/uploads/2017/08/money-icon.png')
-                            buyin = int(each[2]) / 25
-                            embed.add_field(name=f"Starting Pot: {each[2]} Points", value=f"It costs **{int(buyin)} Points** to join this lottery, lottery winnings grow as more join\nLottery will end in **{each[1]}**\n**`!lotto enter`** to join this lottery\n**`!points`** for more information\n**`!winners`** for recent results", inline=False)
+                            embed.add_field(name=f"Starting Pot: {each[2]} Points", value=f"It costs **10 Points** to join a lottery, lottery winnings grow as more join\nLottery will end in **{each[1]}**\n**`!lotto enter`** to join this lottery\n**`!points`** for more information\n**`!winners`** for recent results", inline=False)
                             msg = await generalchat.send(embed=embed)
                             await clearmessages('lotterymessage')
                             await addmessage('lotterymessage', msg.id)
@@ -600,8 +599,8 @@ def pyarkbot():
         whofor = str(ctx.message.author).lower()
         kuser = getplayer(discordid=whofor)
         msg2 = 'Galaxy Cluster Structure & Dino expire times:'
-        msg = 'Dinos: **30 Days**, Tek: **38 Days**, Metal: **30 Days**, Stone: **23 Days**, Wood: **15 Days**\n'
-        msg = msg + f'Thatch: **7.5 Days**, Greenhouse: **9.5 Days** (Use MetalGlass for **30 Day** Greenhouse).\n\n'
+        msg = 'Dinos: **30 Days**, Tek: **38 Days**, Metal: **40 Days**, Stone: **30 Days**, Wood: **23 Days**\n'
+        msg = msg + f'Thatch: **9.5 Days**, Greenhouse: **9.5 Days** (Use MetalGlass for **40 Day** Greenhouse).\n\n'
         if kuser:
             if kuser[8] != whofor:
                 log.info(f'decay request from {whofor} public only, no account linked')
@@ -969,7 +968,7 @@ def pyarkbot():
                                 if type(ctx.message.channel) != discord.channel.DMChannel and str(ctx.message.channel) != 'bot-channel':
                                     await ctx.message.delete()
                             else:
-                                msg = f'You are already participating in the current lottery for {lfo}.\nThis lottery is currently at **{linfo["payout"]}** points.\nLottery ends in **{elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}**'
+                                msg = f'You are already participating in the reward point lottery.\nThis lottery is currently at **{linfo["payout"]}** points.\nLottery ends in **{elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}**'
                                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
                                 if str(ctx.message.channel) == 'bot-channel':
                                     await ctx.message.channel.send(embed=embed)
@@ -979,7 +978,7 @@ def pyarkbot():
                                     await ctx.message.delete()
                 else:
                     if linfo:
-                        msg = f'It costs **{linfo["buyin"]} points** to join this lottery\n**`!lotto enter`** to join the lottery\n**`!winners`** for recent results\n**`!points`** for more information'
+                        msg = f'It costs **10 points** to join a lottery\n**`!lotto enter`** to join the lottery\n**`!winners`** for recent results\n**`!points`** for more information'
                         embed = discord.Embed(title=f"Current lottery is up to {linfo['payout']} reward points", description=f"{linfo['players']} players have entered into this lottery so far", color=SUCCESS_COLOR)
                         embed.add_field(name=f'Lottery ends in {elapsedTime(datetimeto(linfo["startdate"] + timedelta(hours=linfo["days"]), fmt="epoch"),Now())}', value=msg, inline=False)
                         if str(ctx.message.channel) == 'bot-channel':

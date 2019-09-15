@@ -115,7 +115,7 @@ async def asyncdeterminewinner(lottoinfo):
             log.debug(f'queuing up lottery deposits for {winners}')
             for ueach in winners:
                 kk = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{ueach}'")
-                await db.update(f"INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES ('{kk[0]}', '{kk[1]}', '{Now()}', '{lottoinfo['buyin']}', 0)")
+                await db.update(f"INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES ('{kk[0]}', '{kk[1]}', '{Now()}', 10, 0)")
             bcast = f"""<RichColor Color="0,1,0,1"> </>\n<RichColor Color="0,1,0,1">                The current lottery has ended, and the winner is...</>\n<RichColor Color="1,1,0,1">                                  {lwinner[1].upper()}!</>\n                      {lwinner[1].capitalize()} has won {lottoinfo["payout"]} Reward Points!\n\n                         Next lottery begins in 1 hour."""
             await asyncwriteglobal('ALERT', 'LOTTERY', bcast)
             await asyncwritediscord(f'{lwinner[1].title()}', Now(), name=f'{lottoinfo["payout"]}', server='LOTTOEND')
