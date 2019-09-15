@@ -14,7 +14,7 @@ from pathlib import Path
 from loguru import logger as log
 
 from modules.processlock import PLock
-from modules.logwath import LogWatcher
+from modules.logwatch import LogWatcher
 from modules.configreader import redis_host, redis_port
 from redis import Redis
 
