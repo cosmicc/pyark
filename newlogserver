@@ -89,7 +89,7 @@ def callback(filename, lines):
 
 
 def logwatcher():
-    lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=5)
+    lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=10)
     lw.loop()
 
 
@@ -251,6 +251,9 @@ def processlogline(line, single=False):
         data = json.loads(line.strip(), strict=False)
         log.debug(f'Got from log: {data["record"]["time"]["timestamp"]}')
         redis.zadd('pyarklog', {data["text"]: data["record"]["time"]["timestamp"]}, nx=True)
+        count = int(redis.zcard('pyarklog'))
+        if count > 50:
+            redis.zremrangebyrank('pyarklog', 0, count - 50)
         for client in client_threads:
             if client['showonly'] != 'ALL':
                 if data["record"]["level"]["name"].lower() == client['showonly'].lower():
