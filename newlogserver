@@ -76,7 +76,7 @@ def callback(filename, lines):
         if not line.strip():
             pass
         elif line.find(':::') == -1:
-            print("new line in file %s: %s" % (filename, line))
+            #print("new line in file %s: %s" % (filename, line))
             processlogline(line)
         else:
             data = line.split(':::')
@@ -250,7 +250,7 @@ def processlogline(line, single=False):
     try:
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
-        # log.trace(f'Got from log: {data["text"]}')
+        log.debug(f'Got from log: {data["text"]}')
         for client in client_threads:
             if client['showonly'] != 'ALL':
                 if data["record"]["level"]["name"].lower() == client['showonly'].lower():
