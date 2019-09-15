@@ -48,7 +48,7 @@ class LogWatcher(object):
         # The first time we run the script we move all file markers at EOF.
         # In case of files created afterwards we don't do this.
         # In ascyn mode we will need to move to the last recorded offset
-        for id, file in self.files_map.iteritems():
+        for id, file in self.files_map.items():
             offset_file_name = self._get_offset_file(file.name)
             if (os.path.exists(offset_file_name) and
                     os.path.getsize(offset_file_name)):
@@ -162,7 +162,7 @@ class LogWatcher(object):
         """
         while True:
             self.update_files(nonblock)
-            for _fid, file in list(self.files_map.iteritems()):
+            for _fid, file in list(self.files_map.items()):
                 self.readfile(file)
             if nonblock:
                 return
@@ -235,7 +235,7 @@ class LogWatcher(object):
                 ls.append((fid, absname))
 
         # check existent files
-        for fid, file in list(self.files_map.iteritems()):
+        for fid, file in list(self.files_map.items()):
             try:
                 st = os.stat(file.name)
             except EnvironmentError as err:
@@ -256,7 +256,7 @@ class LogWatcher(object):
 
         # for async mode we will need to keep track of the last bulk
         if nonblock and self.tail_lines:
-            for fid, file in list(self.files_map.iteritems()):
+            for fid, file in list(self.files_map.items()):
                 offset = os.path.getsize(file.name)
                 inode = os.stat(file.name).st_ino
                 fh = open(self._get_offset_file(file.name), "w")
@@ -304,9 +304,8 @@ class LogWatcher(object):
         pass
 
     def close(self):
-        pass
-        # for id, file in self.files_map.iteritems():
-        #    file.close()
+        for id, file in self.files_map.items():
+            file.close()
         self.files_map.clear()
 
 
