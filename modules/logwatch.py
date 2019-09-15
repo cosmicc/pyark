@@ -329,5 +329,5 @@ if __name__ == '__main__':
                           'caught exception rendering a new log line in %s'
                           % filename)
 
-    lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback)
+    lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=5)
     lw.loop()
