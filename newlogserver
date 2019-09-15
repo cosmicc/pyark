@@ -71,33 +71,26 @@ def checkconnections():
 
 
 def logwatcher():
-    count = 1
-    while True:
-        for inst in allinstances:
-            if not pyark_logfile[inst].is_file():
-                if count == 1 or count == 3600:
-                    pass
-                    # log.warning(f'{inst} pyarklog.json not found. waiting for it..')
-                sleep(1)
-                count += 1
-            else:
-                tlog = Tail(str(pyark_logfile[inst]))
-                tlog.register_callback(processlogline)
-                log.debug(f'{inst} pyarklog.json found. following it..')
-                tlog.follow()
+    for inst in allinstances:
+        if not pyark_logfile[inst].is_file():
+            log.warning(f'{inst} pyarklog.json not found. waiting for it..')
+            sleep(10)
+        else:
+            tlog = Tail(str(pyark_logfile[inst]))
+            tlog.register_callback(processlogline)
+            log.debug(f'{inst} pyarklog.json found. following it..')
+            tlog.follow()
 
 
 def debugwatcher():
-    while True:
-        for inst in allinstances:
-            if not pyark_debugfile[inst].is_file():
-                pass
-                # log.debug(f'{inst} debuglog.json not found. skipping it..')
-            else:
-                tlog = Tail(str(pyark_debugfile[inst]))
-                tlog.register_callback(processlogline)
-                log.debug(f'{inst} debuglog.json found. following it..')
-                tlog.follow()
+    for inst in allinstances:
+        if not pyark_debugfile[inst].is_file():
+            log.debug(f'{inst} debuglog.json not found. skipping it..')
+        else:
+            tlog = Tail(str(pyark_debugfile[inst]))
+            tlog.register_callback(processlogline)
+            log.debug(f'{inst} debuglog.json found. following it..')
+            tlog.follow()
 
 
 def clientloop(clientsocket, addr):
