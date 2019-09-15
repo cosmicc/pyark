@@ -21,17 +21,17 @@ hstname = gethostname().upper()
 
 # General
 loglevel = config.get('general', 'loglevel')
-sharedpath = config.get('general', 'shared')
-arkrootpath = config.get('general', 'arkroot')
-jsonpath = config.get('general', 'jsonlogpath')
-pylogpath = config.get('general', 'pyarklogpath')
-pyarkfile = config.get('general', 'pyarklogfile')
+sharedpath = Path(config.get('general', 'sharedpath'))
+arkrootpath = Path(config.get('general', 'arkrootpath'))
+jsonpath = Path(config.get('general', 'jsonlogpath'))
+pylogpath = Path(config.get('general', 'pyarklogpath'))
+pyarkfile = Path(config.get('general', 'pyarklogfile'))
 
-adminfile = config.get('general', 'adminlogfile')
-pointsfile = config.get('general', 'pointslogfile')
-crashfile = config.get('general', 'crashlogfile')
-errorfile = config.get('general', 'errorlogfile')
-chatfile = config.get('general', 'chatlogfile')
+adminfile = Path(config.get('general', 'adminlogfile'))
+pointsfile = Path(config.get('general', 'pointslogfile'))
+crashfile = Path(config.get('general', 'crashlogfile'))
+errorfile = Path(config.get('general', 'errorlogfile'))
+chatfile = Path(config.get('general', 'chatlogfile'))
 
 maint_hour = config.get('general', 'maint_hour')
 
@@ -81,14 +81,14 @@ instances = ()
 for each in range(numinstances):
     instances = instances + (config.get(f'instance{each}', 'name'),)
 
-jsonlogfile = Path(jsonpath) / f'{hstname.lower()}_log.json'
-jsondebugfile = Path(jsonpath) / f'{hstname.lower()}_debug.json'
-jsonchatfile = Path(jsonpath) / f'{hstname.lower()}_chat.json'
-jsongamefile = Path(jsonpath) / f'{hstname.lower()}_game.json'
-pyarklogfile = Path(pylogpath) / Path(pyarkfile)
-pointslogfile = Path(pylogpath) / Path(pointsfile)
-crashlogfile = Path(pylogpath) / Path(crashfile)
-errorlogfile = Path(pylogpath) / Path(errorfile)
-pointslogfile = Path(pylogpath) / Path(pointsfile)
-adminlogfile = Path(pylogpath) / Path(adminfile)
-chatlogfile = Path(pylogpath) / Path(chatfile)
+jsonlogfile = jsonpath / f'{hstname.lower()}_log.json'
+jsondebugfile = jsonpath / f'{hstname.lower()}_debug.json'
+jsonchatfile = jsonpath / f'{hstname.lower()}_chat.json'
+jsongamefile = jsonpath / f'{hstname.lower()}_game.json'
+pyarklogfile = pylogpath / pyarkfile
+pointslogfile = pylogpath / pointsfile
+crashlogfile = pylogpath / crashfile
+errorlogfile = pylogpath / errorfile
+pointslogfile = pylogpath / pointsfile
+adminlogfile = pylogpath / adminfile
+chatlogfile = pylogpath / chatfile
