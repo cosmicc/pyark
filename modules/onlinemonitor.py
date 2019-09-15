@@ -11,6 +11,7 @@ from modules.players import asyncnewplayer
 from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd, instancevar
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now, elapsedTime, playedTime
+from modules.redis import globalvar
 
 
 async def asyncstopsleep(sleeptime, stop_event):
@@ -52,20 +53,25 @@ async def asyncisinlottery(steamid):
 async def asynclottodeposits(player, inst):
     steamid = player["steamid"]
     lottocheck = await db.fetchall(f"""SELECT * FROM lotterydeposits WHERE steamid = '{steamid}'""")
-    if lottocheck and inst == player[5]:
-        for weach in lottocheck:
-            if weach[4] == 1:
-                log.log('POINTS', f'{weach[3]} lottery win points added to [{player[1].title()}]')
-                msg = f'{weach[3]} Reward points have been deposited into your account for a lottery win!'
-                await asyncserverchatto(inst, steamid, msg)
-                scmd = f'tcsar addarctotal {steamid} {int(weach[3])}'
-                await asyncserverscriptcmd(inst, scmd)
-            elif weach[4] == 0:
-                log.log('POINTS', f'{weach[3]} lottery entry points removed from [{player[1].title()}]')
-                msg = f'{weach[3]} Reward points have been withdrawn from your account for a lottery entry'
-                await asyncserverchatto(inst, steamid, msg)
-                scmd = f'tcsar setarctotal {steamid} {int(player[5]) - int(weach[3])}'
-                await asyncserverscriptcmd(inst, scmd)
+    if lottocheck and inst.lower() == player['homeserver'].lower():
+        totallotto = 0
+        for lotto in lottocheck:
+            if lotto['givetake'] == 1:
+                totallotto = totallotto + lotto['points']
+            elif lotto['givetake'] == 0:
+                totallotto = totallotto - lotto['points']
+        if totallotto > 0:
+            log.log('POINTS', f'{totallotto} lottery win points added to [{player[1].title()}]')
+            msg = f'{lotto["points"]} Reward points have been deposited into your account for lottery wins!'
+            await asyncserverchatto(inst, steamid, msg)
+            scmd = f'tcsar addarctotal {steamid} {int(totallotto)}'
+            await asyncserverscriptcmd(inst, scmd)
+        elif totallotto < 0:
+            log.log('POINTS', f'{abs(totallotto)} lottery entry points removed from [{player[1].title()}]')
+            msg = f'{abs(totallotto)} Reward points have been withdrawn from your account for a lottery entries'
+            await asyncserverchatto(inst, steamid, msg)
+            scmd = f'tcsar setarctotal {steamid} {int(player["rewardpoints"]) - int(abs(totallotto))}'
+            await asyncserverscriptcmd(inst, scmd)
         await db.update(f"DELETE FROM lotterydeposits WHERE steamid = '{steamid}'")
 
 
@@ -113,6 +119,7 @@ async def asyncplayergreet(steamid, steamname, inst):
             if not player['welcomeannounce']:  # existing online player
                 log.trace(f'Existing online player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
                 await db.update(f"UPDATE players SET online = True, lastseen = '{Now()}', server = '{inst}' WHERE steamid = '{steamid}'")
+                await asynclottodeposits(player, inst)
             else:  # new player connection
                 log.debug(f'New online player [{player[1].title()}] was found on [{inst.title()}]. updating info.')
                 await db.update(f"UPDATE players SET online = True, welcomeannounce = False, lastseen = '{Now()}', server = '{inst}', connects = {int(player[7]) + 1}, refreshauctions = True, refreshsteam = True WHERE steamid = '{steamid}'")
@@ -167,7 +174,6 @@ async def asyncplayergreet(steamid, steamname, inst):
                 await asyncio.sleep(5)
                 mtxt = f'{xferpoints} rewards points were transferred here from a home server move'
                 await asyncserverchatto(inst, steamid, mtxt)
-
             await asynclottodeposits(player, inst)
     globvars.greetings.remove(steamid)
 
@@ -190,6 +196,7 @@ async def asynconlinedblchecker(instances):
         for player in players:
             log.warning(f'Player [{player["playername"].title()}] wasnt seen logging off [{inst.title()}] Clearing player from online status')
             await db.update("UPDATE players SET online = False, welcomeannounce = True, refreshsteam = True, server = '%s' WHERE steamid = '%s'" % (player["server"], player["steamid"]))
+            await globalvar.remlist(f'{inst}-leaving', '{player["steamid"]}')
             if player['homeserver'] != inst:
                 command = f'tcsar setarctotal {player["steamid"]} 0'
                 await asyncserverscriptcmd(inst, command)
