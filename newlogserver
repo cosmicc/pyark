@@ -125,7 +125,8 @@ def clientloop(clientsocket, addr):
 
     log.debug(f'Requested playback of {linerequest} lines')
     try:
-        loglines = redis.zrangebyscore('pyarklog', 0, 50)
+        startlines = 50 - int(linerequest)
+        loglines = redis.zrange('pyarklog', startlines, 50)
         log.debug(f'Loglines history retrived: {len(loglines)}')
         for sline in loglines:
             line = sline.split('||')
