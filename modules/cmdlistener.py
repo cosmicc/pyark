@@ -175,7 +175,7 @@ async def asyncpopulatevoters(inst):
     playercount = 0
     players = await db.fetchall(f"SELECT * FROM players WHERE server = '{inst}' and online = True")
     for player in players:
-        if not globvars.checklist(f'{inst}-leaving', player['steamid']):
+        if not await globalvar.checklist(f'{inst}-leaving', player['steamid']):
             playercount += 1
             newvoter = [player['steamid'], player['playername'], 3]
             globvars.votertable.append(newvoter)
