@@ -125,24 +125,7 @@ def clientloop(clientsocket, addr):
 
     log.debug(f'Requested playback of {linerequest} lines')
     try:
-        bigdata = {}
-        lines = {}
-        times = {}
-        """
-        for inst in allinstances:
-            bigdata.update({inst: open(str(pyark_logfile[inst]))})
-            lines.update({inst: bigdata[inst].readline().strip('\x00')})
-            data = json.loads(lines[inst].strip(), strict=False)
-            times.update({inst: data["record"]["extra"]['timestamp']})
-        while True:
-            lowestinst = min(times, key=times.get)
-            processlogline(lines[lowestinst].strip(), single=addr)
-            lines.update({lowestinst: bigdata[lowestinst].readline()})
-            data = json.loads(lines[lowestinst].strip(), strict=False)
-            times.update({lowestinst: data["record"]["extra"]['timestamp']})
-        for inst in allinstances:
-            bigdata[inst].close()
-        """
+
     except:
         log.exception('SHIT')
     if not argsfollow:
@@ -253,8 +236,7 @@ def processlogline(line, single=False):
         count = int(redis.zcard('pyarklog'))
         if count == 50:
             redis.zremrangebyrank('pyarklog', 0, 0)
-        redis.zadd('pyarklog', {data["text"]: data["record"]["time"]["timestamp"]}, nx=True)
-        log.debug(count)
+        redis.zadd('pyarklog', {data: data["record"]["time"]["timestamp"]}, nx=True)
         for client in client_threads:
             if client['showonly'] != 'ALL':
                 if data["record"]["level"]["name"].lower() == client['showonly'].lower():
