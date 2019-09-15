@@ -79,4 +79,4 @@ numinstances = int(config.get('general', 'instances'))
 instances = ()
 
 for each in range(numinstances):
-    instances = instances + config.get(f'instance{each}', 'name')
+    instances = instances + (config.get(f'instance{each}', 'name'),)
