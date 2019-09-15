@@ -129,7 +129,7 @@ def clientloop(clientsocket, addr):
         loglines = redis.zrange('pyarklog', startlines, 50)
         log.debug(f'Loglines history retrived: {len(loglines)}')
         for sline in loglines:
-            line = sline.split('||')
+            line = sline.decode().split('||')
             thisqueue.put(line[1].strip())
             # if line[0] == 'TRACE':
             #    if client['trace'] and not client['errorsonly']:
