@@ -125,7 +125,13 @@ def clientloop(clientsocket, addr):
 
     log.debug(f'Requested playback of {linerequest} lines')
     try:
-        pass
+        loglines = redis.zrangebyscore('pyarklog', 0, 50)
+        for sline in loglines:
+            line = sline.split('||')
+            thisqueue.put(line[1].strip())
+            # if line[0] == 'TRACE':
+            #    if client['trace'] and not client['errorsonly']:
+            #        thisqueue.put(line[1].strip())
     except:
         log.exception('SHIT')
     if not argsfollow:
@@ -236,7 +242,7 @@ def processlogline(line, single=False):
         count = int(redis.zcard('pyarklog'))
         if count == 50:
             redis.zremrangebyrank('pyarklog', 0, 0)
-        redis.zadd('pyarklog', {f'{data["record"]["level"]["name"].lower()}||{data["text"]}': data["record"]["time"]["timestamp"]}, nx=True)
+        redis.zadd('pyarklog', {f'{data["record"]["level"]["name"].upper()}||{data["text"]}': data["record"]["time"]["timestamp"]}, nx=True)
         for client in client_threads:
             if client['showonly'] != 'ALL':
                 if data["record"]["level"]["name"].lower() == client['showonly'].lower():
