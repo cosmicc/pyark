@@ -98,7 +98,7 @@ parser_rw.set_defaults(func=_execute)
 
 parser_log = subparsers.add_parser('log')
 parser_log.add_argument('-l', '--lines', default=20, help='Previous log lines to show')
-parser_log.add_argument('-d', '--debug', help='Include debug logs')
+parser_log.add_argument('-d', '--debug', action='store_true', help='Include debug logs')
 parser_log.set_defaults(func=_log)
 
 parser_log = subparsers.add_parser('loglevel')
