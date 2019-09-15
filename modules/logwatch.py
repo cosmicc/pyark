@@ -39,7 +39,7 @@ class LogWatcher(object):
         self.callback = callback
         self.folder = os.path.realpath(folder)
         self.extensions = extensions
-        self.tail_lines = 0
+        self.tail_lines = tail_lines
         self.matching_file_names = matching_file_names
         assert os.path.isdir(self.folder), "%s does not exists" \
             % self.folder
