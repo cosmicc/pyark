@@ -34,6 +34,7 @@ for aserver in redis.smembers('cliservers'):
     allservers = allservers + (aserver.decode(),)
 
 logserver_logfile = Path('/home/ark/shared/logs/pyark/logserver.log')
+print(allservers)
 for server in allservers:
     pyark_logfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_log.json')})
     pyark_debugfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_debug.json')})
@@ -292,8 +293,6 @@ def main():
     log.debug('Starting log tail thread')
     logwatch_thread = threading.Thread(target=logwatcher)
     logwatch_thread.start()
-    debugwatch_thread = threading.Thread(target=debugwatcher)
-    debugwatch_thread.start()
     client_threads = []
     cleanup_thread = threading.Thread(target=checkconnections)
     cleanup_thread.start()
