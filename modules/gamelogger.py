@@ -20,7 +20,7 @@ async def asyncprocessgamelog():
     globvars.gamelogger = True
     count = await redis.zcard('gamelog')
     log.debug(f'gamelog count: {count}')
-    for each in range(count - 1):
+    for each in range(count):
         sline = await redis.zpopmin('gamelog', count=1)
         log.debug(f'popped: {sline}')
         if sline:
