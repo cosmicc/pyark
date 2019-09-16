@@ -244,12 +244,12 @@ def processlogline(line, single=False):
             debugcount = int(redis.zcard('pyarkdebuglog'))
             if debugcount == 50:
                 redis.zremrangebyrank('pyarkdebuglog', 0, 0)
-            redis.zadd('pyarkdebuglog', {{data["text"]}: data["record"]["time"]["timestamp"]}, nx=True)
+            redis.zadd('pyarkdebuglog', {data["text"]: data["record"]["time"]["timestamp"]}, nx=True)
         else:
             count = int(redis.zcard('pyarklog'))
             if count == 50:
                 redis.zremrangebyrank('pyarklog', 0, 0)
-            redis.zadd('pyarklog', {{data["text"]}: data["record"]["time"]["timestamp"]}, nx=True)
+            redis.zadd('pyarklog', {data["text"]: data["record"]["time"]["timestamp"]}, nx=True)
         for client in client_threads:
             if client['showonly'] != 'ALL':
                 if data["record"]["level"]["name"].lower() == client['showonly'].lower():
