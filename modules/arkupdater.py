@@ -149,7 +149,7 @@ async def asynccheckwipe(instances):
                 asyncio.create_task(asyncwipeit(inst))
                 await instancevar.set(inst, 'last12hourannounce', Now())
             else:
-                if Now() - await instancevar.getint(inst, 'last12hourannouce') > 3600:
+                if Now() - await instancevar.getint(inst, 'last12hourannounce') > 3600:
                     await instancevar.set(inst, 'last12hourannounce', Now())
                     log.log('WIPE', f'12 Hour dino wipe needed for [{inst.title()}], but players are online. Waiting...')
                     bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 12 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Consider doing a</><RichColor Color="0,1,0,1">!vote </><RichColor Color="1,1,0,1">for fresh new dino selection</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
