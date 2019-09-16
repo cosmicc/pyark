@@ -7,6 +7,7 @@ from modules.redis import redis
 from modules.servertools import removerichtext
 from modules.timehelper import Now
 from modules.tribes import asyncgettribeinfo, asyncputplayerintribe, asyncremoveplayerintribe
+from time import time
 
 
 def checkgamelog(record):
@@ -14,6 +15,14 @@ def checkgamelog(record):
         return True
     else:
         return False
+
+
+@log.catch
+async def addredisloghistory(rlog, max, line):
+    count = int(redis.zcard(rlog))
+    if count >= max:
+        await redis.zremrangebyrank(rlog, 0, max - count)
+        await redis.zadd(rlog, line, time(), nx=True)
 
 
 @log.catch
@@ -40,14 +49,18 @@ async def _processgameline(inst, ptype, line):
         playername = msgsplit[0].strip()
         await asyncputplayerintribe(tribeid, playername)
         dino = msgsplit[1].strip().replace(')', '').replace('(', '')
-        clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has trapped [{dino}]')
+        line = f'{logheader}[{playername.title()}] of ({tribename}) has trapped [{dino}]'
+        clog.log(ptype, line)
+        await addredisloghistory('glhistory', 50, line)
     elif ptype == 'RELEASE':
         tribename, tribeid = await asyncgettribeinfo(linesplit, inst, ptype)
         msgsplit = linesplit[2][10:].split('released:')
         playername = msgsplit[0].strip()
         await asyncputplayerintribe(tribeid, playername)
         dino = msgsplit[1].strip().replace(')', '').replace('(', '')
-        clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) has released [{dino}]')
+        line = f'{logheader}[{playername.title()}] of ({tribename}) has released [{dino}]'
+        clog.log(ptype, line)
+        await addredisloghistory('glhistory', 50, line)
     elif ptype == 'DEATH':
         # clog.debug(f'{ptype} - {linesplit}')
         tribename, tribeid = await asyncgettribeinfo(linesplit, inst, ptype)
@@ -57,10 +70,14 @@ async def _processgameline(inst, ptype, line):
             if deathsplit[1].find('was killed by') != -1:
                 killedby = deathsplit[1].split('was killed by')[1].strip()[:-1].replace('()', '').strip()
                 playerlevel = deathsplit[1].split('was killed by')[0].strip().replace('()', '')
-                clog.log(ptype, f'{logheader}[{playername.title()}] {playerlevel} was killed by [{killedby}]')
+                line = f'{logheader}[{playername.title()}] {playerlevel} was killed by [{killedby}]'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
             elif deathsplit[1].find('killed!') != -1:
                 level = deathsplit[1].split(' was killed!')[0].strip('()')
-                clog.log(ptype, f'{logheader}[{playername.title()}] {level} has been killed')
+                line = f'{logheader}[{playername.title()}] {level} has been killed'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
             else:
                 log.warning(f'not found gameparse death: {deathsplit}')
         else:
@@ -71,16 +88,22 @@ async def _processgameline(inst, ptype, line):
         tribename, tribeid = await asyncgettribeinfo(linesplit, inst, ptype)
         if tribename is None:
             tamed = linesplit[0].split(' Tamed ')[1].strip(')').strip('!')
-            clog.log(ptype, f'{logheader}A tribe has tamed [{tamed}]')
+            line = f'{logheader}A tribe has tamed [{tamed}]'
+            clog.log(ptype, line)
+            await addredisloghistory('glhistory', 50, line)
         else:
             # log.debug(f'TRIBETAME: {inst}, {linesplit}')
             playername = linesplit[2][10:].split(' Tamed')[0].strip()
             await asyncputplayerintribe(tribeid, playername)
             tamed = linesplit[2].split(' Tamed')[1].strip(')').strip('!').strip()
             if playername.title() == 'Your Tribe':
-                clog.log(ptype, f'{logheader}[{tribename}] tamed [{tamed}]')
+                line = f'{logheader}[{tribename}] tamed [{tamed}]'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
             else:
-                clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) tamed [{tamed}]')
+                line = f'{logheader}[{playername.title()}] of ({tribename}) tamed [{tamed}]'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
     elif ptype == 'DEMO':
         # clog.debug(f'{ptype} - {linesplit}')
         tribename, tribeid = await asyncgettribeinfo(linesplit, inst, ptype)
@@ -93,7 +116,9 @@ async def _processgameline(inst, ptype, line):
             await asyncputplayerintribe(tribeid, playername)
             if len(linesplit[2].split(' demolished a ')) > 0 and linesplit[2].find(' demolished a ') != -1:
                 demoitem = linesplit[2].split(' demolished a ')[1].replace("'", "").strip(')').strip('!').strip()
-                clog.log(ptype, f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]')
+                line = f'{logheader}[{playername.title()}] of ({tribename}) demolished a [{demoitem}]'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
     elif ptype == 'ADMIN':
         # clog.debug(f'{ptype} - {linesplit}')
         steamid = linesplit[2].strip()[9:].strip(')')
@@ -104,13 +129,17 @@ async def _processgameline(inst, ptype, line):
             await db.update("INSERT INTO kicklist (instance,steamid) VALUES ('%s','%s')" % (inst, steamid))
             await db.update("UPDATE players SET banned = 'true' WHERE steamid = '%s')" % (steamid, ))
         else:
-            clog.log(ptype, f'{logheader}[{pname.title()}] executed admin command [{cmd}] ')
+            line = f'{logheader}[{pname.title()}] executed admin command [{cmd}] '
+            clog.log(ptype, line)
+            await addredisloghistory('glhistory', 50, line)
     elif ptype == 'DECAY':
         # clog.debug(f'{ptype} - {linesplit}')
         tribename, tribeid = await asyncgettribeinfo(linesplit, inst, ptype)
         decayitem = linesplit[2].split("'", 1)[1].split("'")[0]
         # decayitem = re.search('\(([^)]+)', linesplit[2]).group(1)
-        clog.log(ptype, f'{logheader}Tribe ({tribename}) auto-decayed [{decayitem}]')
+        line = f'{logheader}Tribe ({tribename}) auto-decayed [{decayitem}]'
+        clog.log(ptype, line)
+        await addredisloghistory('glhistory', 50, line)
         # wglog(inst, removerichtext(line[21:]))
     elif ptype == 'CLAIM':
         # log.debug(f'{ptype} : {linesplit}')
@@ -120,12 +149,16 @@ async def _processgameline(inst, ptype, line):
                 playername = linesplit[2][10:].split(' claimed ')[0].strip()
                 await asyncputplayerintribe(tribeid, playername)
                 claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
-                clog.log(ptype, f'{logheader}[{playername}] of ({tribename}) has claimed [{claimitem}]')
+                line = f'{logheader}[{playername}] of ({tribename}) has claimed [{claimitem}]'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
             elif linesplit[2].find(" unclaimed '") != -1:
                 playername = linesplit[2][10:].split(' claimed ')[0].strip()
                 await asyncputplayerintribe(tribeid, playername)
                 claimitem = linesplit[2].split("'", 1)[1].split("'")[0]
-                clog.log(ptype, f'{logheader}[{playername}] of ({tribename}) has un-claimed [{claimitem}]')
+                line = f'{logheader}[{playername}] of ({tribename}) has un-claimed [{claimitem}]'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
         else:
             pass
             # clog.log(ptype, f'{logheader} SINGLECLAIM: {linesplit}')
@@ -138,22 +171,32 @@ async def _processgameline(inst, ptype, line):
                 playername2 = linesplit[2][10:].split(' was added to the Tribe by ')[1].strip().strip(')').strip('!')
                 await asyncputplayerintribe(tribeid, playername)
                 await asyncputplayerintribe(tribeid, playername2)
-                clog.log(ptype, f'[{playername.title()}] was added to Tribe ({tribename}) by [{playername2.title()}]')
+                line = f'[{playername.title()}] was added to Tribe ({tribename}) by [{playername2.title()}]'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
             elif linesplit[2].find(' was removed from the Tribe!') != -1:
                 playername = linesplit[2][10:].split(' was removed from the Tribe!')[0].strip()
                 await asyncremoveplayerintribe(tribeid, playername)
-                clog.log(ptype, f'[{playername.title()}] was removed from Tribe ({tribename})')
+                line = f'[{playername.title()}] was removed from Tribe ({tribename})'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
             elif linesplit[2].find(' was added to the Tribe!') != -1:
                 playername = linesplit[2][10:].split(' was added to the Tribe!')[0].strip()
                 await asyncputplayerintribe(tribeid, playername)
-                clog.log(ptype, f'[{playername.title()}] was added to the Tribe ({tribename})')
+                line = f'[{playername.title()}] was added to the Tribe ({tribename})'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
             elif linesplit[2].find(' set to Rank Group ') != -1:
                 playername = linesplit[2][10:].split(' set to Rank Group ')[0].strip()
                 await asyncputplayerintribe(tribeid, playername)
                 rankgroup = linesplit[2][10:].split(' set to Rank Group ')[1].strip().strip('!')
-                clog.log(ptype, f'[{playername.title()}] set to rank group [{rankgroup}] in Tribe ({tribename})')
+                line = f'[{playername.title()}] set to rank group [{rankgroup}] in Tribe ({tribename})'
+                clog.log(ptype, line)
+                await addredisloghistory('glhistory', 50, line)
         else:
             clog.log(ptype, f'{logheader}{linesplit}')
     else:
         log.debug(f'UNKNOWN {ptype} - {linesplit}')
-        clog.log(ptype, f'{linesplit}')
+        line = f'{linesplit}'
+        clog.log(ptype, line)
+        await addredisloghistory('glhistory', 50, line)

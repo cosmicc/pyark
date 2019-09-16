@@ -16,7 +16,8 @@ from modules.players import asyncnewplayer
 from modules.redis import redis, instancestate, instancevar, globalvar
 from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd
 from modules.subprotocol import SubProtocol
-from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp, truncate
+from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
+from modules.gamelogger import addredisloghistory
 
 
 async def asyncwriteglobal(inst, whos, msg):
@@ -561,6 +562,7 @@ async def asyncchatlinedetected(inst, chatdict):
     transmsg = trans_to_eng(chatdict['line'])
     tstamp = chatdict['time'].strftime('%m-%d %I:%M%p')
     log.log('CHAT', f'{inst} | {chatdict["name"]} | {transmsg}')
+    await addredisloghistory('clhistory', 20, {transmsg})
     await asyncwritechat(inst, chatdict["name"].lower(), transmsg.replace("'", ""), tstamp)
     await asyncwritechatlog(inst, chatdict["name"].lower(), transmsg, tstamp)
 
