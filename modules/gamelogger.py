@@ -19,14 +19,14 @@ def checkgamelog(record):
 
 @log.catch
 async def asyncprocessgamelog():
-    globvars.gamelog = True
+    globvars.gamelogger = True
     count = redis.zcard('gamelog')
     for each in range(count - 1):
         sline = redis.zpopmin('gamelog', count=1)
         if sline:
             line = sline.split('||')
             await _processgameline(line[1], line[2], line[3])
-    globvars.gamelog = False
+    globvars.gamelogger = False
 
 
 @log.catch
