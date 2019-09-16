@@ -1,3 +1,5 @@
+import asyncio
+import globvars
 from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.players import isplayeradmin
@@ -5,7 +7,6 @@ from modules.redis import redis
 from modules.servertools import removerichtext
 from modules.timehelper import Now
 from modules.tribes import asyncgettribeinfo, asyncputplayerintribe, asyncremoveplayerintribe
-import globvars
 
 
 def checkgamelog(record):
@@ -19,14 +20,12 @@ def checkgamelog(record):
 async def asyncprocessgamelog():
     globvars.gamelogger = True
     count = await redis.zcard('gamelog')
-    log.debug(f'gamelog count: {count}')
     for each in range(count):
         sline = await redis.zpopmin('gamelog', 1)
-        log.debug(f'popped: {sline}')
         if sline:
             line = sline[0].decode().split('||')
-            log.debug(f'line: {line}')
             await _processgameline(line[0], line[1], line[2])
+    await asyncio.sleep(1)
     globvars.gamelogger = False
 
 
