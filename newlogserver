@@ -126,7 +126,7 @@ def clientloop(clientsocket, addr):
     log.debug(f'Requested playback of {linerequest} lines')
     try:
         startlines = 50 - int(linerequest)
-        loglines = redis.zrange('pyarklog', startlines, 50)
+        loglines = redis.zrange('pyarkdebuglog', startlines, 50)
         log.debug(f'Loglines history retrived: {len(loglines)}')
         for line in loglines:
             thisqueue.put(line.decode().strip())
@@ -157,13 +157,11 @@ def clientloop(clientsocket, addr):
             log.debug(f'Ending thread for port {addr}')
             exit(0)
         if int(datetime.now().timestamp()) - now >= 15:
-            log.trace(f'Sending heartbeat to {addr}')
             sendmsg(clientsocket, addr, '!')
             now = int(datetime.now().timestamp())
 
         if not thisqueue.empty():
             logline = thisqueue.get()
-            log.trace(f'got from queue: {logline.split("|")[2]}')
             sendmsg(clientsocket, addr, logline)
         else:
             sleep(.01)
@@ -179,7 +177,6 @@ def sendmsg(clientsocket, addr, logline):
         else:
             nlogline = logline.strip().encode("utf-32")
             msg = f'{len(nlogline):<{HEADER}}'.encode("utf-32") + nlogline
-            log.debug(f'sending: {len(nlogline)}')
             clientsocket.sendall(msg)
     except ConnectionResetError:
         clist = client_threads.copy()
