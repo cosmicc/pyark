@@ -1,4 +1,5 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
+from math import trunc
 
 tzfix = timedelta(hours=4)
 
@@ -12,6 +13,11 @@ intervals = (
     ('hours', 3600),    # 60 * 60
     ('minutes', 60),
     ('seconds', 1),)
+
+
+def truncate(number, digits) -> float:
+    stepper = 10.0 ** digits
+    return trunc(stepper * number) / stepper
 
 
 def datetimeto(dt, fmt, est=False):
