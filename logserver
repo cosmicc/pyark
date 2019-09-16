@@ -59,19 +59,18 @@ async def addredisloghistory(rlog, max, line):
 
 
 async def altcallback(filename, lines):
-    print(filename)
     for line in lines:
         if not line.strip():
             pass
         elif line.find(':::') == -1:
-            if filename == 'game.log':
+            if filename == str(gamelogfile):
                 await addredisloghistory('glhistory', 100, line.strip())
-            elif filename == 'clusterchat.log':
+            elif filename == str(chatlogfile):
                 await addredisloghistory('clhistory', 50, line.strip())
             for client in clients.keys():
-                if filename == 'game.log' and clients[client]['logtype'] == 'game':
+                if filename == str(gamelogfile) and clients[client]['logtype'] == 'game':
                     clients[client]["queue"].put(line.strip())
-                elif filename == 'clusterchat.log' and clients[client]['logtype'] == 'chat':
+                elif filename == str(chatlogfile) and clients[client]['logtype'] == 'chat':
                     clients[client]["queue"].put(line.strip())
         else:
             data = line.split(':::')
@@ -79,9 +78,9 @@ async def altcallback(filename, lines):
                 print(data[0], data[1],
                       zlib.decompress(base64.decodestring(data[2])))
                 for client in clients.keys():
-                    if filename == 'game.log' and clients[client]['logtype'] == 'game':
+                    if filename == str(gamelogfile) and clients[client]['logtype'] == 'game':
                         clients[client]["queue"].put(zlib.decompress(base64.decodestring(data[2])))
-                    elif filename == 'clusterchat.log' and clients[client]['logtype'] == 'chat':
+                    elif filename == str(chatlogfile) and clients[client]['logtype'] == 'chat':
                         clients[client]["queue"].put(line.strip())
             except Exception as e:
                 print(str(e))
