@@ -21,11 +21,11 @@ async def asyncprocessgamelog():
     count = await redis.zcard('gamelog')
     log.debug(f'gamelog count: {count}')
     for each in range(count):
-        sline = await redis.zpopmin('gamelog', 2)
+        sline = await redis.zpopmin('gamelog', 1)
         log.debug(f'popped: {sline}')
         if sline:
-            log.debug(f'## {sline}')
-            line = sline.split('||')
+            line = sline[0].decode().split('||')
+            log.debug(f'line: {line}')
             await _processgameline(line[1], line[2], line[3])
     globvars.gamelogger = False
 
