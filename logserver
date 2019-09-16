@@ -245,12 +245,12 @@ async def asyncprocesslogline(line, single=False):
         data = json.loads(line.strip(), strict=False)
         log.debug(f'Got from log: {data["record"]["time"]["timestamp"]}')
         if data["record"]["level"]["name"] == 'TRACE' or data["record"]["level"]["name"] == 'DEBUG' or data["record"]["level"]["name"] == 'ERROR' or data["record"]["level"]["name"] == 'CRITICAL' or data["record"]["level"]["name"] == 'EXIT' or data["record"]["level"]["name"] == 'START' or data["record"]["level"]["name"] == 'GIT':
-            debugcount = int(redis.zcard('pyarkdebuglog'))
+            debugcount = int(await redis.zcard('pyarkdebuglog'))
             if debugcount == 50:
-                redis.zremrangebyrank('pyarkdebuglog', 0, 0)
+                await redis.zremrangebyrank('pyarkdebuglog', 0, 0)
             await redis.zadd('pyarkdebuglog', {data["text"]: data["record"]["time"]["timestamp"]}, nx=True)
         else:
-            count = int(redis.zcard('pyarklog'))
+            count = int(await redis.zcard('pyarklog'))
             if count == 50:
                 await redis.zremrangebyrank('pyarklog', 0, 0)
             await redis.zadd('pyarklog', {data["text"]: data["record"]["time"]["timestamp"]}, nx=True)
