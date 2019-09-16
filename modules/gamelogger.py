@@ -25,7 +25,7 @@ async def asyncprocessgamelog():
         if sline:
             line = sline[0].decode().split('||')
             await _processgameline(line[0], line[1], line[2])
-    await asyncio.sleep(1)
+    await asyncio.sleep(.1)
     globvars.gamelogger = False
 
 
