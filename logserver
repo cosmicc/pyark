@@ -89,12 +89,13 @@ async def callback(filename, lines):
                 print('caught exception rendering a new log line in %s' % filename)
 
 
-def removeclientfromqueues(addr):
+def removeclient(addr):
     if addr in clients.keys():
         del clients[addr]
 
 
 async def asynclogclient(reader, writer):
+    global clients
     addr = writer.get_extra_info('peername')
     log.debug(f'New client connected: {addr}')
     header = await reader.read(80)
@@ -120,7 +121,7 @@ async def asynclogclient(reader, writer):
 
     log.debug(f'Client [{addr}] requested {linerequest} lines')
     if argslogtype == 'game':
-        getlines = 100
+        getlines = 50
         startlines = getlines - int(linerequest)
         loglines = await redis.zrange('glhistory', startlines, getlines)
         log.debug(f'gamelines history retrived: {len(loglines)}')
@@ -128,7 +129,7 @@ async def asynclogclient(reader, writer):
             thisqueue.put(line.decode().strip())
 
     elif argslogtype == 'chat':
-        getlines = 50
+        getlines = 20
         startlines = getlines - int(linerequest)
         loglines = await redis.zrange('clhistory', startlines, getlines)
         log.debug(f'chatlines history retrived: {len(loglines)}')
@@ -140,10 +141,10 @@ async def asynclogclient(reader, writer):
             if argsdebug or argstrace:
                 await redis.zunionstore('mergelog', ['pyarklog', 'pyarkdebuglog'])
                 getlog = 'mergelog'
-                getlines = 200
+                getlines = 100
             else:
                 getlog = 'pyarklog'
-                getlines = 100
+                getlines = 50
             startlines = getlines - int(linerequest)
             loglines = await redis.zrange(getlog, startlines, getlines)
             log.debug(f'Loglines history retrived: {len(loglines)}')
@@ -160,7 +161,7 @@ async def asynclogclient(reader, writer):
         await asyncio.sleep(.01)
         await asyncsendmsg(writer, addr, '##')
         log.info(f'Non follow connection ended. Removing: [{addr}]')
-        removeclientfromqueues(addr)
+        removeclient(addr)
     else:
         asyncio.create_task(asyncmainclientloop(writer, addr, thisqueue))
 
@@ -184,6 +185,7 @@ async def asyncmainclientloop(writer, addr, thisqueue):
 
 
 async def asyncsendmsg(writer, addr, logline):
+    global clients
     try:
         if logline == '!':
             nlogline = logline.encode("utf-32")
@@ -196,17 +198,11 @@ async def asyncsendmsg(writer, addr, logline):
             writer.write(msg)
             await writer.drain()
     except ConnectionResetError:
-        clist = client_threads.copy()
-        for num, client in enumerate(clist):
-            if int(client['address']) == int(addr):
-                log.info(f'Dropped connection detected. Removing: {client["address"]}')
-                client_threads.remove(num)
+        log.info(f'Dropped connection detected. Removing: {addr}')
+        removeclient(addr)
     except BrokenPipeError:
-        clist = client_threads.copy()
-        for num, client in enumerate(clist):
-            if int(client['address']) == int(addr):
-                log.info(f'Dead connection detected. Removing: {client["address"]}')
-                client_threads.remove(client)
+        log.info(f'Dead connection detected. Removing: {addr}')
+        removeclient(addr)
 
 
 @log.catch
