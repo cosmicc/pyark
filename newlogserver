@@ -125,11 +125,19 @@ def clientloop(clientsocket, addr):
 
     log.debug(f'Requested playback of {linerequest} lines')
     try:
+
+        if argsdebug or argstrace:
+            redis.zunionstore('mergelog', ['pyarklog', 'pyarkdebuglog'])
+            getlog = 'mergelog'
+        else:
+            getlog = 'pyarklog'
         startlines = 50 - int(linerequest)
-        loglines = redis.zrange('pyarklog', startlines, 50)
+        loglines = redis.zrange(getlog, startlines, 50)
         log.debug(f'Loglines history retrived: {len(loglines)}')
         for line in loglines:
             thisqueue.put(line.decode().strip())
+        if argsdebug or argstrace:
+            redis.delete('mergelog')
             # if line[0] == 'TRACE':
             #    if client['trace'] and not client['errorsonly']:
             #        thisqueue.put(line[1].strip())
