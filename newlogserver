@@ -277,7 +277,6 @@ def processlogline(line, single=False):
                         putqueue(data, client, single)
                 elif not client['errorsonly']:
                     putqueue(data, client, single)
-            sleep(.01)
 
     except json.decoder.JSONDecodeError:
         log.error(f'DECODE ERROR: {repr(line)}')
