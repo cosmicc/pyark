@@ -260,9 +260,15 @@ async def asyncprocesslogline(line, single=False):
 
 
 @log.catch
-async def loglistener(lw, lg):
+async def loglistener(lw):
     while not globalexitwatch:
         lw.loop(nonblocking=True)
+        await asyncio.sleep(.1)
+
+
+@log.catch
+async def altloglistener(lg):
+    while not globalexitwatch:
         lg.loop(nonblocking=True)
         await asyncio.sleep(.1)
 
@@ -277,9 +283,10 @@ async def asyncmain():
     for server in allservers:
         pyark_logfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_log.json')})
         pyark_debugfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_debug.json')})
-    lw = LogWatcher(str(jsonpath), callback, tail_lines=50)
-    lg = LogWatcher(str(pylogpath), altcallback, matching_file_names=['game.log', 'clusterchat.log'], tail_lines=50)
-    asyncio.create_task(loglistener(lw, lg))
+    lw = LogWatcher(str(jsonpath), callback, extensions=['json'], tail_lines=50)
+    lg = LogWatcher(str(pylogpath), altcallback, matching_file_names=['game.log', 'clusterchat.log'], extensions=['log'], tail_lines=50)
+    asyncio.create_task(altloglistener(lg))
+    asyncio.create_task(loglistener(lw))
     server = await asyncio.start_server(asynclogclient, '172.31.250.115', 11024)
     async with server:
         await server.serve_forever()

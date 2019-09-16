@@ -21,7 +21,7 @@ class LogWatcher(object):
 
     def __init__(self, folder, callback,
                  matching_file_names=[],
-                 extensions=["json"], tail_lines=0):
+                 extensions=[], tail_lines=0):
         """Arguments:
         (str) @folder:
             the folder to watch
@@ -168,7 +168,7 @@ class LogWatcher(object):
                 return
             time.sleep(interval)
 
-    def log(self, line):
+    def logg(self, line):
         """Log when a file is un/watched"""
         log.debug(line)
 
@@ -284,7 +284,7 @@ class LogWatcher(object):
             if err.errno != errno.ENOENT:
                 raise
         else:
-            self.log("watching logfile %s" % fname)
+            self.logg("watching logfile %s" % fname)
             self.files_map[fid] = file
 
     def unwatch(self, file, fid):
@@ -293,7 +293,7 @@ class LogWatcher(object):
         # log rotator has written something in it.
         # (TODO): test this!
         lines = self.readfile(file)
-        self.log("un-watching logfile %s" % file.name)
+        self.logg("un-watching logfile %s" % file.name)
         del self.files_map[fid]
         if lines:
             asyncio.create_task(self.callback(file.name, lines))
@@ -309,28 +309,3 @@ class LogWatcher(object):
         for id, file in self.files_map.items():
             file.close()
         self.files_map.clear()
-
-
-if __name__ == '__main__':
-    import base64
-    import zlib
-
-    def callback(filename, lines):
-        for line in lines:
-            if not line.strip():
-                pass
-            elif line.find(':::') == -1:
-                print("new line in file %s: %s" % (filename, line))
-            else:
-                data = line.split(':::')
-                try:
-                    print(data[0], data[1],
-                          zlib.decompress(base64.decodestring(data[2])))
-                except Exception as e:
-                    print(str(e))
-                    print(time.time(),
-                          'caught exception rendering a new log line in %s'
-                          % filename)
-
-    lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=5)
-    lw.loop()
