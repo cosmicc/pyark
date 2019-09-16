@@ -290,7 +290,7 @@ async def asyncprocesslogline(line, single=False):
 async def loglistener(lw, lg, lc):
     while not globalexitwatch:
         lw.loop(nonblocking=True)
-        lg.loop(nonblocking=True)
+        #lg.loop(nonblocking=True)
         lc.loop(nonblocking=True)
         await asyncio.sleep(.01)
 
@@ -306,7 +306,7 @@ async def asyncmain():
         pyark_logfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_log.json')})
         pyark_debugfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_debug.json')})
         lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=50)
-        lg = LogWatcher("/home/ark/shared/logs/pyark/game.log", gamecallback, tail_lines=50)
+        #lg = LogWatcher("/home/ark/shared/logs/pyark/game.log", gamecallback, tail_lines=50)
         lc = LogWatcher("/home/ark/shared/logs/pyark/clusterchat.log", chatcallback, tail_lines=20)
     asyncio.create_task(loglistener(lw, lg, lc))
     server = await asyncio.start_server(asynclogclient, '172.31.250.115', 11024)
