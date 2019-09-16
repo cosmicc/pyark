@@ -278,7 +278,7 @@ async def asyncmain():
         pyark_logfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_log.json')})
         pyark_debugfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_debug.json')})
     lw = LogWatcher(str(jsonpath), callback, tail_lines=50)
-    lg = LogWatcher(str(pylogpath), altcallback, matching_file_names=[str(gamelogfile), str(chatlogfile)], tail_lines=50)
+    lg = LogWatcher(str(pylogpath), altcallback, matching_file_names=['game.log', 'clusterchat.log'], tail_lines=50)
     asyncio.create_task(loglistener(lw, lg))
     server = await asyncio.start_server(asynclogclient, '172.31.250.115', 11024)
     async with server:
