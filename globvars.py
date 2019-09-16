@@ -6,6 +6,8 @@ from modules.configreader import arkrootpath, instances, sharedpath
 instpids = {}  # Instance pids
 instpidfiles = {}  # Instance pid files from arkmanager
 
+gamelog = False  # if the gamelogger is running or not
+
 taskworkers = set([])  # list of working tasks
 votertable = []  # populated voter table for wild wipe votes
 votestarttime = time()

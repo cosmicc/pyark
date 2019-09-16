@@ -1,5 +1,5 @@
 from loguru import logger as log
-from modules.configreader import hstname, loglevel, jsonlogfile, jsondebugfile, pointslogfile, pyarklogfile, adminlogfile, crashlogfile, errorlogfile, chatlogfile
+from modules.configreader import hstname, loglevel, jsonlogfile, jsondebugfile, pointslogfile, pyarklogfile, adminlogfile, crashlogfile, errorlogfile, chatlogfile, gamelogfile
 
 log.remove()
 
@@ -125,3 +125,6 @@ log.add(sink=str(errorlogfile), level=40, buffering=1, enqueue=True, backtrace=T
 
 # chat Logging error.log
 log.add(sink=str(chatlogfile), level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=False, format=chatlogformat, delay=False, filter=checkchatlog)
+
+# game Logging game.log
+log.add(sink=str(gamelogfile), level=3, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=False, colorize=True, format=gamelogformat, delay=False, filter=checkgamelog)

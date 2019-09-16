@@ -21,7 +21,7 @@ from modules.clusterevents import asynceventwatcher
 from modules.cmdlistener import cmdscheck
 from modules.configreader import hstname, instances, is_arkupdater, loglevel
 from modules.dbhelper import dbquery, dbupdate
-from modules.gamelogger import gamelogger_thread
+from modules.gamelogger import asyncprocessgamelog
 from modules.gchatrelay import asyncgchatrelay
 from modules.instances import statuscheck
 from modules.lottery import asynclotterywatcher
@@ -154,7 +154,6 @@ async def asyncmain():
     if len(instances) == 0:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
         globvars.timer = {'lottocheck': starttime, 'eventwatch': starttime}
-
         gl = GameLogger()
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
@@ -176,8 +175,10 @@ async def asyncmain():
                     if asynclooptime - globvars.timer['eventwatch'] > globvars.delay['eventwatch'] + 2:
                         log.error(f'eventwatch was delayed {asynclooptime - globvars.timer["eventwatch"] - globvars.delay["eventwatch"]}')
                     globvars.timer.update({'eventwatch': asyncloop.time()})
+                if not globvars.gamelogger:
+                    asyncio.create_task(asyncprocessgamelog())
 
-                    await asyncio.sleep(0.1)
+                await asyncio.sleep(0.1)
 
     else:
         globvars.timer = {'serverstats': starttime, 'statuscheck': starttime - 30, 'restartcheck': starttime, 'backupcheck': starttime, 'wipecheck': starttime, 'updatecheck': starttime, 'maintcheck': starttime, 'kickcheck': starttime, 'gchatrelay': starttime, 'cmdcheck': starttime, 'onlinecheck': starttime}
@@ -283,8 +284,6 @@ def main():
             dbupdate(f"DELETE FROM globalbuffer WHERE server = '{inst}'")
     elif len(instances) == 0:
         thread = threading.Thread(name='arkservernet', target=arkservernet_thread, args=(Secs['15min'], stop_event), daemon=False)
-        threads.append(thread)
-        thread = threading.Thread(name='gamelogger', target=gamelogger_thread, args=(stop_event,), daemon=False)
         threads.append(thread)
         thread = threading.Thread(name='steamapi', target=steamapi_thread, args=(5, stop_event), daemon=False)
         threads.append(thread)
