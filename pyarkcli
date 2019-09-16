@@ -45,9 +45,9 @@ def _delcfg(args):
 
 def _log(args):
     if args.debug:
-        command = f'/home/ark/pyark/logclient {args.lines} -d'
+        command = f'/home/ark/pyark/logclient {args.logtype} {args.lines} -d'
     else:
-        command = f'/home/ark/pyark/logclient {args.lines}'
+        command = f'/home/ark/pyark/logclient {args.logtype} {args.lines}'
     subprocess.run(command, stdout=sys.stdout, stderr=sys.stderr, shell=True)
 
 
@@ -97,6 +97,7 @@ parser_rw.add_argument('servername', help=f"Name of the server to perform action
 parser_rw.set_defaults(func=_execute)
 
 parser_log = subparsers.add_parser('log')
+parser_log.add_argument('logtype', default='pyark', help='Which log to show (pyark, game, chat)')
 parser_log.add_argument('-l', '--lines', default=20, help='Previous log lines to show')
 parser_log.add_argument('-d', '--debug', action='store_true', help='Include debug logs')
 parser_log.set_defaults(func=_log)
