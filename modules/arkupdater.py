@@ -27,7 +27,6 @@ from modules.timehelper import Now, Secs, wcstamp
 # from fsmonitor import FSMonitorThread
 
 confupdtimer = 0
-dwtimer = 0
 updgennotify = Now() - Secs['hour']
 
 
@@ -148,15 +147,13 @@ async def asynccheckwipe(instances):
                 log.log('WIPE', f'Dino wipe needed for [{inst.title()}], server is empty, wiping now')
                 await asyncwritechat(inst, 'ALERT', f'### Empty server is over 12 hours since wild dino wipe. Wiping now.', wcstamp())
                 asyncio.create_task(asyncwipeit(inst))
-                dwtimer = 0
+                await instancevar.set(inst, 'last12hourannounce', Now())
             else:
-                if dwtimer == 0:
+                if Now() - await instancevar.getint(inst, 'last12hourannouce') > 3600:
+                    await instancevar.set(inst, 'last12hourannounce', Now())
                     log.log('WIPE', f'12 Hour dino wipe needed for [{inst.title()}], but players are online. Waiting...')
                     bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 12 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Consider doing a</><RichColor Color="0,1,0,1">!vote </><RichColor Color="1,1,0,1">for fresh new dino selection</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
                     await asyncserverbcast(inst, bcast)
-                dwtimer += 1
-                if dwtimer == 24:
-                    dwtimer = 0
         elif Now() - lastwipe > Secs['day'] and await instancevar.getbool(inst, 'islistening'):
             log.log('WIPE', f'Dino wipe needed for [{inst.title()}], players online but forced, wiping now')
             bcast = f"""<RichColor Color="0.0.0.0.0.0"> </>\n\n<RichColor Color="1,0.65,0,1">         It has been 24 hours since this server has had a wild dino wipe</>\n\n<RichColor Color="1,1,0,1">               Forcing a maintenance wild dino wipe in 10 seconds</>\n\n<RichColor Color="0.65,0.65,0.65,1">     A wild dino wipe does not affect tame dinos that are already knocked out</>"""
