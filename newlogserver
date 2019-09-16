@@ -126,7 +126,7 @@ def clientloop(clientsocket, addr):
     log.debug(f'Requested playback of {linerequest} lines')
     try:
         startlines = 50 - int(linerequest)
-        loglines = redis.zrange('pyarkdebuglog', startlines, 50)
+        loglines = redis.zrange('pyarklog', startlines, 50)
         log.debug(f'Loglines history retrived: {len(loglines)}')
         for line in loglines:
             thisqueue.put(line.decode().strip())
