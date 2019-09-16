@@ -52,39 +52,21 @@ processlock = PLock()
 processlock.lock()
 
 
-async def chatcallback(filename, lines):
+async def altcallback(filename, lines):
+    print(filename)
     for line in lines:
         if not line.strip():
             pass
         elif line.find(':::') == -1:
             for client in client_threads:
-                client["chatqueue"].put(line.strip())
+                client["queue"].put(line.strip())
         else:
             data = line.split(':::')
             try:
                 print(data[0], data[1],
                       zlib.decompress(base64.decodestring(data[2])))
                 for client in client_threads:
-                    client["chatqueue"].put(zlib.decompress(base64.decodestring(data[2])))
-            except Exception as e:
-                print(str(e))
-                print('caught exception rendering a new chat line in %s' % filename)
-
-
-async def gamecallback(filename, lines):
-    for line in lines:
-        if not line.strip():
-            pass
-        elif line.find(':::') == -1:
-            for client in client_threads:
-                client["gamequeue"].put(line.strip())
-        else:
-            data = line.split(':::')
-            try:
-                print(data[0], data[1],
-                      zlib.decompress(base64.decodestring(data[2])))
-                for client in client_threads:
-                    client["gamequeue"].put(zlib.decompress(base64.decodestring(data[2])))
+                    client["queue"].put(zlib.decompress(base64.decodestring(data[2])))
             except Exception as e:
                 print(str(e))
                 print('caught exception rendering a new game line in %s' % filename)
@@ -290,8 +272,7 @@ async def asyncprocesslogline(line, single=False):
 async def loglistener(lw, lg, lc):
     while not globalexitwatch:
         lw.loop(nonblocking=True)
-        #lg.loop(nonblocking=True)
-        lc.loop(nonblocking=True)
+        lg.loop(nonblocking=True)
         await asyncio.sleep(.01)
 
 
@@ -306,8 +287,7 @@ async def asyncmain():
         pyark_logfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_log.json')})
         pyark_debugfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_debug.json')})
         lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=50)
-        #lg = LogWatcher("/home/ark/shared/logs/pyark/game.log", gamecallback, tail_lines=50)
-        lc = LogWatcher("/home/ark/shared/logs/pyark/clusterchat.log", chatcallback, tail_lines=20)
+        lg = LogWatcher("/home/ark/shared/logs/pyark/game.log", altcallback, matching_file_names=['game.log', 'clusterchat.log'], tail_lines=50)
     asyncio.create_task(loglistener(lw, lg, lc))
     server = await asyncio.start_server(asynclogclient, '172.31.250.115', 11024)
     async with server:
