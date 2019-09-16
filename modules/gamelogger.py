@@ -24,6 +24,7 @@ async def asyncprocessgamelog():
         sline = await redis.zpopmin('gamelog', 1)
         log.debug(f'popped: {sline}')
         if sline:
+            log.debug(f'## {sline}')
             line = sline.split('||')
             await _processgameline(line[1], line[2], line[3])
     globvars.gamelogger = False
