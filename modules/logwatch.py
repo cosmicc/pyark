@@ -161,10 +161,10 @@ class LogWatcher(object):
         If async is True make one loop then return.
         """
         while True:
-            self.update_files(nonblock)
+            self.update_files(nonblocking)
             for _fid, file in list(self.files_map.items()):
                 self.readfile(file)
-            if nonblock:
+            if nonblocking:
                 return
             time.sleep(interval)
 
@@ -221,7 +221,7 @@ class LogWatcher(object):
                     block -= 1
             return data.splitlines()[-window:]
 
-    def update_files(self, nonblock=False):
+    def update_files(self, nonblocking=False):
         ls = []
         for name in self.listdir():
             absname = os.path.realpath(os.path.join(self.folder, name))
@@ -257,7 +257,7 @@ class LogWatcher(object):
                 self.watch(fname)
 
         # for async mode we will need to keep track of the last bulk
-        if nonblock and self.tail_lines:
+        if nonblocking and self.tail_lines:
             for fid, file in list(self.files_map.items()):
                 offset = os.path.getsize(file.name)
                 inode = os.stat(file.name).st_ino
