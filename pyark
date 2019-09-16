@@ -25,7 +25,6 @@ from modules.gamelogger import asyncprocessgamelog
 from modules.gchatrelay import asyncgchatrelay
 from modules.instances import statuscheck
 from modules.lottery import asynclotterywatcher
-from modules.masterserver import GameLogger
 from modules.onlinemonitor import asynckickcheck, asynconlinedblchecker, onlinecheck
 from modules.processlock import PLock
 from modules.redis import Redis, instancestate, instancevar, globalvar
@@ -154,7 +153,6 @@ async def asyncmain():
     if len(instances) == 0:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
         globvars.timer = {'lottocheck': starttime, 'eventwatch': starttime}
-        gl = GameLogger()
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
                 asynclooptime = asyncloop.time()
