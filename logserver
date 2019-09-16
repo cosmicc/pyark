@@ -269,7 +269,7 @@ async def asyncprocesslogline(line, single=False):
 
 
 @log.catch
-async def loglistener(lw, lg, lc):
+async def loglistener(lw, lg):
     while not globalexitwatch:
         lw.loop(nonblocking=True)
         lg.loop(nonblocking=True)

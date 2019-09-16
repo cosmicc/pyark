@@ -4,6 +4,7 @@ import glob
 import os
 import stat
 import time
+from loguru import logger as log
 
 
 class LogWatcher(object):
@@ -169,7 +170,7 @@ class LogWatcher(object):
 
     def log(self, line):
         """Log when a file is un/watched"""
-        print(line)
+        log.debug(line)
 
     def listdir(self):
         """List directory and filter files by extension.
