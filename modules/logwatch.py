@@ -73,7 +73,7 @@ class LogWatcher(object):
             if self.tail_lines:
                 lines = self.tail(file.name, tail_lines)
                 if lines:
-                    self.callback(file.name, lines)
+                    asyncio.create_task(self.callback(file.name, lines))
 
     def _determine_rotated_logfile(self, fname, old_file_inode):
         """
