@@ -567,8 +567,7 @@ async def asyncchatlinedetected(inst, chatdict):
 
 @log.catch
 async def addgamelog(inst, ptype, line):
-    goline = {f'{inst}||{ptype}||{line}': f'{float(time())}'}
-    await redis.zadd('gamelog', **goline, nx=True)
+    await redis.zadd('gamelog', time(), f'{inst}||{ptype}||{line}', nx=True)
 
 
 @log.catch

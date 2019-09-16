@@ -86,11 +86,11 @@ processlock.lock()
 nice(10)
 
 if loglevel == 'DEBUG' or args.debug:
-    log.log('START', f'Pyark daemon is starting on {hstname} in **DEBUG MODE**')
+    log.log('START', f'Pyark daemon is starting on [{hstname}] in **DEBUG MODE**')
 elif loglevel == 'TRACE' or args.trace:
-    log.log('START', f'Pyark daemon is starting on {hstname} in ***TRACE MODE***')
+    log.log('START', f'Pyark daemon is starting on [{hstname}] in ***TRACE MODE***')
 else:
-    log.log('START', f'Pyark is starting on [{hstname}] in Normal Mode')
+    log.log('START', f'Pyark daemon is starting on [{hstname}] in Normal Mode')
 
 
 async def gitupdatecheck():
