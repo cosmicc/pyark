@@ -50,12 +50,24 @@ processlock = PLock()
 processlock.lock()
 
 
+@log.catch
+async def addredisloghistory(rlog, max, line):
+    count = int(await redis.zcard(rlog))
+    if count >= max:
+        await redis.zremrangebyrank(rlog, 0, max - count)
+    await redis.zadd(rlog, time(), line)
+
+
 async def altcallback(filename, lines):
     print(filename)
     for line in lines:
         if not line.strip():
             pass
         elif line.find(':::') == -1:
+            if filename == 'game.log':
+                await addredisloghistory('glhistory', 100, line.strip())
+            elif filename == 'clusterchat.log':
+                await addredisloghistory('clhistory', 50, line.strip())
             for client in clients.keys():
                 if filename == 'game.log' and clients[client]['logtype'] == 'game':
                     clients[client]["queue"].put(line.strip())
