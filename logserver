@@ -56,15 +56,21 @@ async def altcallback(filename, lines):
         if not line.strip():
             pass
         elif line.find(':::') == -1:
-            for client in client_threads:
-                client["queue"].put(line.strip())
+            for client in clients.keys():
+                if filename == 'game.log' and clients[client]['logtype'] == 'game':
+                    clients[client]["queue"].put(line.strip())
+                elif filename == 'clusterchat.log' and clients[client]['logtype'] == 'chat':
+                    clients[client]["queue"].put(line.strip())
         else:
             data = line.split(':::')
             try:
                 print(data[0], data[1],
                       zlib.decompress(base64.decodestring(data[2])))
-                for client in client_threads:
-                    client["queue"].put(zlib.decompress(base64.decodestring(data[2])))
+                for client in clients.keys():
+                    if filename == 'game.log' and clients[client]['logtype'] == 'game':
+                        clients[client]["queue"].put(zlib.decompress(base64.decodestring(data[2])))
+                    elif filename == 'clusterchat.log' and clients[client]['logtype'] == 'chat':
+                        clients[client]["queue"].put(line.strip())
             except Exception as e:
                 print(str(e))
                 print('caught exception rendering a new game line in %s' % filename)
@@ -207,7 +213,6 @@ async def asyncsendmsg(writer, addr, logline):
 async def asyncputqueue(data, client, single):
     if not single or single == client['address']:
         if client['server'] == 'ALL' or client['server'] == data["record"]["extra"]['hostname']:
-            log.trace(f'Adding to {client["address"]} queue {data["text"].strip()}')
             if client['debug'] or client['trace'] or client['extend']:
                 msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
                 client["queue"].put(data["text"].strip() + msgapp)
@@ -232,28 +237,29 @@ async def asyncprocesslogline(line, single=False):
                 await redis.zremrangebyrank('pyarklog', 0, 0)
             await redis.zadd('pyarklog', data["record"]["time"]["timestamp"], data["text"])
         for client in clients.keys():
-            if data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
-                if clients[client]['errors'] or clients[client]['errorsonly']:
+            if clients[client]['logtype'] == 'pyark':
+                if data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
+                    if clients[client]['errors'] or clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
+                elif data["record"]["level"]["name"] == 'WARNING':
                     await asyncputqueue(data, clients[client], single)
-            elif data["record"]["level"]["name"] == 'WARNING':
-                await asyncputqueue(data, clients[client], single)
-            elif data["record"]["level"]["name"] == 'TRACE':
-                if clients[client]['trace'] and not clients[client]['errorsonly']:
+                elif data["record"]["level"]["name"] == 'TRACE':
+                    if clients[client]['trace'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
+                elif data["record"]["level"]["name"] == 'DEBUG':
+                    if clients[client]['debug'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
+                elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT" or data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL" or data["record"]["level"]["name"] == "GIT":
+                    if clients[client]['startexit'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
+                elif data["record"]["level"]["name"] == "CMD":
+                    if clients[client]['commands'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
+                elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
+                    if clients[client]['joinleave'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
+                elif not clients[client]['errorsonly']:
                     await asyncputqueue(data, clients[client], single)
-            elif data["record"]["level"]["name"] == 'DEBUG':
-                if clients[client]['debug'] and not clients[client]['errorsonly']:
-                    await asyncputqueue(data, clients[client], single)
-            elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT" or data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL" or data["record"]["level"]["name"] == "GIT":
-                if clients[client]['startexit'] and not clients[client]['errorsonly']:
-                    await asyncputqueue(data, clients[client], single)
-            elif data["record"]["level"]["name"] == "CMD":
-                if clients[client]['commands'] and not clients[client]['errorsonly']:
-                    await asyncputqueue(data, clients[client], single)
-            elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
-                if clients[client]['joinleave'] and not clients[client]['errorsonly']:
-                    await asyncputqueue(data, clients[client], single)
-            elif not clients[client]['errorsonly']:
-                await asyncputqueue(data, clients[client], single)
 
     except json.decoder.JSONDecodeError:
         log.error(f'DECODE ERROR: {repr(line)}')
