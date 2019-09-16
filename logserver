@@ -233,33 +233,33 @@ async def asyncprocesslogline(line, single=False):
             if count == 50:
                 await redis.zremrangebyrank('pyarklog', 0, 0)
             await redis.zadd('pyarklog', data["record"]["time"]["timestamp"], data["text"])
-        for client in clients:
-            if client['showonly'] != 'ALL':
-                if data["record"]["level"]["name"].lower() == client['showonly'].lower():
-                    await asyncputqueue(data, client, single)
+        for client in clients.keys():
+            if clients[client]['showonly'] != 'ALL':
+                if data["record"]["level"]["name"].lower() == clients[client]['showonly'].lower():
+                    await asyncputqueue(data, clients[client], single)
             else:
                 if data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
-                    if client['errors'] or client['errorsonly']:
-                        await asyncputqueue(data, client, single)
+                    if clients[client]['errors'] or clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
                 elif data["record"]["level"]["name"] == 'WARNING':
-                    await asyncputqueue(data, client, single)
+                    await asyncputqueue(data, clients[client], single)
                 elif data["record"]["level"]["name"] == 'TRACE':
-                    if client['trace'] and not client['errorsonly']:
-                        await asyncputqueue(data, client, single)
+                    if clients[client]['trace'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
                 elif data["record"]["level"]["name"] == 'DEBUG':
-                    if client['debug'] and not client['errorsonly']:
-                        await asyncputqueue(data, client, single)
+                    if clients[client]['debug'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
                 elif data["record"]["level"]["name"] == "START" or data["record"]["level"]["name"] == "EXIT" or data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL" or data["record"]["level"]["name"] == "GIT":
-                    if client['startexit'] and not client['errorsonly']:
-                        await asyncputqueue(data, client, single)
+                    if clients[client]['startexit'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
                 elif data["record"]["level"]["name"] == "CMD":
-                    if client['commands'] and not client['errorsonly']:
-                        await asyncputqueue(data, client, single)
+                    if clients[client]['commands'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
                 elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
-                    if client['joinleave'] and not client['errorsonly']:
-                        await asyncputqueue(data, client, single)
+                    if clients[client]['joinleave'] and not clients[client]['errorsonly']:
+                        await asyncputqueue(data, clients[client], single)
                 elif not client['errorsonly']:
-                    await asyncputqueue(data, client, single)
+                    await asyncputqueue(data, clients[client], single)
 
     except json.decoder.JSONDecodeError:
         log.error(f'DECODE ERROR: {repr(line)}')
