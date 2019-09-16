@@ -117,7 +117,7 @@ async def asynclogclient(reader, writer):
 
     thisqueue = Queue()
 
-    clients.update({addr: {'logtype': argslogtype, 'queue': thisqueue, 'writer': writer, 'debug': argsdebug, 'trace': argstrace, 'extend': argsextend, 'errors': argserrors, 'startexit': argsstartexit, 'commands': argscommands, 'errorsonly': argserroronly, 'joinleave': argsjoinleave}})
+    clients.update({addr: {'logtype': argslogtype, 'queue': thisqueue, 'writer': writer, 'debug': argsdebug, 'trace': argstrace, 'extend': argsextend, 'errors': argserrors, 'startexit': argsstartexit, 'commands': argscommands, 'errorsonly': argserroronly, 'joinleave': argsjoinleave, 'server': argsserver}})
 
     log.debug(f'Client [{addr}] requested {linerequest} lines')
     if argslogtype == 'game':
