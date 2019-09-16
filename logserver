@@ -181,7 +181,7 @@ async def asyncmainclientloop(writer, addr, thisqueue):
             elif not thisqueue.empty():
                 await asyncsendmsg(writer, addr, thisqueue.get())
             else:
-                await asyncio.sleep(.01)
+                await asyncio.sleep(.05)
 
 
 async def asyncsendmsg(writer, addr, logline):
@@ -270,7 +270,7 @@ async def loglistener(lw, lg):
     while not globalexitwatch:
         lw.loop(nonblocking=True)
         lg.loop(nonblocking=True)
-        await asyncio.sleep(.01)
+        await asyncio.sleep(.1)
 
 
 @log.catch
