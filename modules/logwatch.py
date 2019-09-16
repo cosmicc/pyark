@@ -156,7 +156,7 @@ class LogWatcher(object):
     def __del__(self):
         self.close()
 
-    def loop(self, interval=0.1, nonblock=False):
+    def loop(self, interval=0.1, nonblocking=False):
         """Start the loop.
         If async is True make one loop then return.
         """
