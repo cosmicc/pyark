@@ -248,12 +248,12 @@ async def asyncprocesslogline(line, single=False):
             debugcount = int(await redis.zcard('pyarkdebuglog'))
             if debugcount == 50:
                 await redis.zremrangebyrank('pyarkdebuglog', 0, 0)
-            await redis.zadd('pyarkdebuglog', {data["text"]: data["record"]["time"]["timestamp"]}, nx=True)
+            await redis.zadd('pyarkdebuglog', {data["text"]: data["record"]["time"]["timestamp"]})
         else:
             count = int(await redis.zcard('pyarklog'))
             if count == 50:
                 await redis.zremrangebyrank('pyarklog', 0, 0)
-            await redis.zadd('pyarklog', {data["text"]: data["record"]["time"]["timestamp"]}, nx=True)
+            await redis.zadd('pyarklog', {data["text"]: data["record"]["time"]["timestamp"]})
         for client in clients:
             if client['showonly'] != 'ALL':
                 if data["record"]["level"]["name"].lower() == client['showonly'].lower():
