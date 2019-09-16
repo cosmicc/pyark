@@ -129,10 +129,12 @@ def clientloop(clientsocket, addr):
         if argsdebug or argstrace:
             redis.zunionstore('mergelog', ['pyarklog', 'pyarkdebuglog'])
             getlog = 'mergelog'
+            getlines = 100
         else:
             getlog = 'pyarklog'
-        startlines = 50 - int(linerequest)
-        loglines = redis.zrange(getlog, startlines, 50)
+            getlines = 50
+        startlines = getlines - int(linerequest)
+        loglines = redis.zrange(getlog, startlines, getlines)
         log.debug(f'Loglines history retrived: {len(loglines)}')
         for line in loglines:
             thisqueue.put(line.decode().strip())
