@@ -10,9 +10,9 @@ import asyncio
 from loguru import logger as log
 from modules.logwatch import LogWatcher
 from modules.processlock import PLock
+from modules.redis import redis
 from pathlib import Path
 from queue import Queue
-from redis import redis
 
 log.remove()
 
