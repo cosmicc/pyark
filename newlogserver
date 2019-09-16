@@ -237,7 +237,7 @@ def processlogline(line, single=False):
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
         # log.debug(f'Got from log: {data["record"]["time"]["timestamp"]}')
-        if data["record"]["level"]["name"] == 'TRACE' or data["record"]["level"]["name"] == 'DEBUG' or data["record"]["level"]["name"] == 'ERROR' or data["record"]["level"]["name"] == 'CRITICAL':
+        if data["record"]["level"]["name"] == 'TRACE' or data["record"]["level"]["name"] == 'DEBUG' or data["record"]["level"]["name"] == 'ERROR' or data["record"]["level"]["name"] == 'CRITICAL' or data["record"]["level"]["name"] == 'EXIT' or data["record"]["level"]["name"] == 'START' or data["record"]["level"]["name"] == 'GIT':
             debugcount = int(redis.zcard('pyarkdebuglog'))
             if debugcount == 50:
                 redis.zremrangebyrank('pyarkdebuglog', 0, 0)
