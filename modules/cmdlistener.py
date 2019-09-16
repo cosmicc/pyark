@@ -588,27 +588,38 @@ async def asyncprocesscmdline(minst, eline):
         elif line.find('joined this ARK!') != -1:
             await playerjoin(line, minst)
         elif line.find('AdminCmd:') != -1 or line.find('Admin Removed Soul Recovery Entry:') != -1:
-            await redis.zadd('gamelog', {f'{inst}||ADMIN||{line}': Now()}, nx=True)
+            goline = {f'{inst}||ADMIN||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.find(" demolished a '") != -1 or line.find('Your Tribe killed') != -1:
-            await redis.zadd('gamelog', {f'{inst}||DEMO||{line}': Now()}, nx=True)
+            goline = {f'{inst}||DEMO||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.find('released:') != -1:
-            await redis.zadd('gamelog', {f'{inst}||RELEASE||{line}': Now()}, nx=True)
+            goline = {f'{inst}||RELEASE||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.find('trapped:') != -1:
-            await redis.zadd('gamelog', {f'{inst}||TRAP||{line}': Now()}, nx=True)
+            goline = {f'{inst}||TRAP||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.find(' was killed!') != -1 or line.find(' was killed by ') != -1:
-            await redis.zadd('gamelog', {f'{inst}||DEATH||{line}': Now()}, nx=True)
+            goline = {f'{inst}||DEATH||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.find('Tamed a') != -1:
-            await redis.zadd('gamelog', {f'{inst}||TAME||{line}': Now()}, nx=True)
+            goline = {f'{inst}||TAME||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.find(" claimed '") != -1 or line.find(" unclaimed '") != -1:
-            await redis.zadd('gamelog', {f'{inst}||CLAIM||{line}': Now()}, nx=True)
+            goline = {f'{inst}||CLAIM||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.find(' was added to the Tribe by ') != -1 or line.find(' was promoted to ') != -1 or line.find(' was demoted from ') != -1 or line.find(' uploaded a') != -1 or line.find(' downloaded a dino:') != -1 or line.find(' requested an Alliance ') != -1 or line.find(' Tribe to ') != -1 or line.find(' was removed from the Tribe!') != -1 or line.find(' set to Rank Group ') != -1 or line.find(' requested an Alliance with ') != -1 or line.find(' was added to the Tribe!') != -1:
-            await redis.zadd('gamelog', {f'{inst}||TRIBE||{line}': Now()}, nx=True)
+            goline = {f'{inst}||TRIBE||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.find('starved to death!') != -1:
-            await redis.zadd('gamelog', {f'{inst}||DECAY||{line}': Now()}, nx=True)
+            goline = {f'{inst}||DECAY||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.find('was auto-decay destroyed!') != -1 or line.find('was destroyed!') != -1:
-            await redis.zadd('gamelog', {f'{inst}||DECAY||{line}': Now()}, nx=True)
+            goline = {f'{inst}||DECAY||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         elif line.startswith('Error:'):
-            await redis.zadd('gamelog', {f'{inst}||UNKNOWN||{line}': Now()}, nx=True)
+            goline = {f'{inst}||UNKNOWN||{line}': Now()}
+            await redis.zadd('gamelog', **goline, nx=True)
         else:
             chatdict = deconstructchatline(line)
             whoasked = chatdict['name']
