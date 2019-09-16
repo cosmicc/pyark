@@ -12,6 +12,7 @@ from modules.logclient import LogClient
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('logtype', action='store', default='pyark', help='Which log to show (pyark, game, chat)')
     parser.add_argument('lines', action='store', help='number of lines in log history to show')
     parser.add_argument('-v', '--verbose', action='store_true', help='verbose (client debug)')
     parser.add_argument('--html', action='store_true', help='html output')
@@ -19,7 +20,6 @@ def main():
     parser.add_argument('-d', '--debug', action='store_true', help='show debug log')
     parser.add_argument('-t', '--trace', action='store_true', help='show trace log')
     parser.add_argument('-ex', '--extend', action='store_true', help='show extended info lines')
-    parser.add_argument('--showonly', action='store', default='ALL', help='show only this log type')
     parser.add_argument('-eo', '--errorsonly', action='store_true', help='warning, errors, and critical only')
     parser.add_argument('-nf', '--nofollow', action='store_false', help='dont follow continuous log')
     parser.add_argument('-re', '--errors', action='store_false', help='remove error/crit entries')
@@ -45,16 +45,12 @@ def main():
     argsfollow = 1 if args.nofollow else 0
     argserrors = 1 if args.errors else 0
 
-    if args.showonly != 'ALL':
-        argsshowonly = f'{args.showonly:<8}!'
-    else:
-        argsshowonly = f'ALL     !'
+    argslogtype = f'{args.logtype:<8}!'
     if args.server != 'ALL':
         argsserver = f'{args.server:<5}'
     else:
         argsserver = f'ALL   '
-    logwatch = LogClient(args.lines, argsdebug, argstrace, argsextend, argsstartexit, argscommands, argserrorsonly, argsjoinleave, argsfollow, argserrors, argsshowonly, argsserver, args.html)
-    # logwatch.connect()
+    logwatch = LogClient(args.lines, argsdebug, argstrace, argsextend, argsstartexit, argscommands, argserrorsonly, argsjoinleave, argsfollow, argserrors, argslogtype, argsserver, args.html)
     logwatch.connect()
     while True:
         try:

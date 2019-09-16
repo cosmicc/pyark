@@ -1,4 +1,4 @@
-
+import asyncio
 import errno
 import glob
 import os
@@ -273,7 +273,7 @@ class LogWatcher(object):
         file_h.seek(current_p)
         lines = file_h.readlines()
         if lines:
-            self.callback(file_h.name, lines)
+            asyncio.create_task(self.callback(file_h.name, lines))
 
     def watch(self, fname):
         try:
@@ -295,7 +295,7 @@ class LogWatcher(object):
         self.log("un-watching logfile %s" % file.name)
         del self.files_map[fid]
         if lines:
-            self.callback(file.name, lines)
+            asyncio.create_task(self.callback(file.name, lines))
 
     @staticmethod
     def get_file_id(st):

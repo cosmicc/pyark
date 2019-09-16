@@ -94,7 +94,7 @@ def ChatThread(sid):
 
 def LogThread(sid):
     log.debug(f'Starting log thread for {sid}')
-    logwatch = LogClient(200, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'ALL', 'ALL', 1)
+    logwatch = LogClient(200, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
     logwatch.connect()
     while True:
         stillrun = False
@@ -198,7 +198,7 @@ def _str2time():
 @webui.context_processor
 def _htmlheaders():
     def htmlheaders():
-        c = LogClient(20, 0, 0, 0, 0, 1, 1, 1, 1, 1, 'ALL', 'ALL', 1)
+        c = LogClient(20, 0, 0, 0, 0, 1, 1, 1, 1, 1, 'pyark', 'ALL', 1)
         cd = c.htmlheaders()
         print(cd)
         return cd
