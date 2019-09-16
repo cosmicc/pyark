@@ -17,6 +17,8 @@ greetings = set([])  # list of steamid or running returning player greets
 delay = {}  # Delay times for each task
 timer = {}  # timers for each task
 
+atinstances = ('@island', '@ragnarok', '@valguero', '@crystal', '@coliseum')
+
 arkmanager_paths = []
 gameini_customconfig_files = {}
 gusini_customconfig_files = {}
