@@ -97,7 +97,8 @@ def removeclientfromqueues(addr):
 async def asynclogclient(reader, writer):
     addr = writer.get_extra_info('peername')
     log.debug(f'New client connected: {addr}')
-    header = await reader.read(80).decode("utf-8")
+    header = await reader.read(80)
+    header = header.decode("utf-8")
     log.trace(f'Client header recieved: {header}')
     log.trace(header.split('!'))
     linerequest = int(header.split('!')[1])
