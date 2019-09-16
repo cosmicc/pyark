@@ -83,7 +83,6 @@ for each in range(numinstances):
 
 jsonlogfile = jsonpath / f'{hstname.lower()}_log.json'
 jsondebugfile = jsonpath / f'{hstname.lower()}_debug.json'
-jsonchatfile = jsonpath / f'{hstname.lower()}_chat.json'
 pyarklogfile = pylogpath / pyarkfile
 pointslogfile = pylogpath / pointsfile
 crashlogfile = pylogpath / crashfile

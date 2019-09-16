@@ -13,6 +13,7 @@ from modules.processlock import PLock
 from modules.redis import redis
 from pathlib import Path
 from queue import Queue
+from modules.configreader import pylogpath, jsonpath, gamelogfile, chatlogfile
 
 log.remove()
 
@@ -26,10 +27,7 @@ pyark_chatlogfile = {}
 clients = {}
 globalexitwatch = False
 
-
 logserver_logfile = Path('/home/ark/shared/logs/pyark/logserver.log')
-
-# log_queue = Queue()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', action='count', default=0)
@@ -272,15 +270,15 @@ async def loglistener(lw, lg):
 @log.catch
 async def asyncmain():
     global client_threads
-    await redis.delete('pyarklog', 'pyarkdebuglog')
+    await redis.delete('pyarklog', 'pyarkdebuglog', 'glhistory', 'clhistory')
     allservers = ()
     for aserver in await redis.smembers('cliservers'):
         allservers = allservers + (aserver.decode(),)
     for server in allservers:
         pyark_logfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_log.json')})
         pyark_debugfile.update({server: Path(f'/home/ark/shared/logs/pyark/json/{server}_debug.json')})
-    lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=50)
-    lg = LogWatcher("/home/ark/shared/logs/pyark", altcallback, matching_file_names=['game.log', 'clusterchat.log'], tail_lines=50)
+    lw = LogWatcher(str(jsonpath), callback, tail_lines=50)
+    lg = LogWatcher(str(pylogpath), altcallback, matching_file_names=[str(gamelogfile), str(chatlogfile)], tail_lines=50)
     asyncio.create_task(loglistener(lw, lg))
     server = await asyncio.start_server(asynclogclient, '172.31.250.115', 11024)
     async with server:
