@@ -254,7 +254,7 @@ async def asyncprocesslogline(line, single=False):
             elif data["record"]["level"]["name"] == "JOIN" or data["record"]["level"]["name"] == "LEAVE":
                 if clients[client]['joinleave'] and not clients[client]['errorsonly']:
                     await asyncputqueue(data, clients[client], single)
-            elif not client['errorsonly']:
+            elif not clients[client]['errorsonly']:
                 await asyncputqueue(data, clients[client], single)
 
     except json.decoder.JSONDecodeError:
