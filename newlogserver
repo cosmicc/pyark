@@ -89,7 +89,7 @@ def callback(filename, lines):
 
 
 def logwatcher():
-    lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=10)
+    lw = LogWatcher("/home/ark/shared/logs/pyark/json", callback, tail_lines=50)
     lw.loop()
 
 
@@ -128,9 +128,8 @@ def clientloop(clientsocket, addr):
         startlines = 50 - int(linerequest)
         loglines = redis.zrange('pyarklog', startlines, 50)
         log.debug(f'Loglines history retrived: {len(loglines)}')
-        for sline in loglines:
-            line = sline.decode().split('||')
-            thisqueue.put(line[1].strip())
+        for line in loglines:
+            thisqueue.put(line.strip())
             # if line[0] == 'TRACE':
             #    if client['trace'] and not client['errorsonly']:
             #        thisqueue.put(line[1].strip())
@@ -241,10 +240,16 @@ def processlogline(line, single=False):
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
         # log.debug(f'Got from log: {data["record"]["time"]["timestamp"]}')
-        count = int(redis.zcard('pyarklog'))
-        if count == 50:
-            redis.zremrangebyrank('pyarklog', 0, 0)
-        redis.zadd('pyarklog', {f'{data["record"]["level"]["name"].upper()}||{data["text"]}': data["record"]["time"]["timestamp"]}, nx=True)
+        if data["record"]["level"]["name"] == 'TRACE' or data["record"]["level"]["name"] == 'TRACE' or data["record"]["level"]["name"] == 'ERROR' or data["record"]["level"]["name"] == 'CRITICAL':
+            debugcount = int(redis.zcard('pyarkdebuglog'))
+            if debugcount == 50:
+                redis.zremrangebyrank('pyarkdebuglog', 0, 0)
+            redis.zadd('pyarkdebuglog', {{data["text"]}: data["record"]["time"]["timestamp"]}, nx=True)
+        else:
+            count = int(redis.zcard('pyarklog'))
+            if count == 50:
+                redis.zremrangebyrank('pyarklog', 0, 0)
+            redis.zadd('pyarklog', {{data["text"]}: data["record"]["time"]["timestamp"]}, nx=True)
         for client in client_threads:
             if client['showonly'] != 'ALL':
                 if data["record"]["level"]["name"].lower() == client['showonly'].lower():
