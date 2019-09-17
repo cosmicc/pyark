@@ -57,13 +57,12 @@ processlock.lock()
 
 
 @log.catch
-async def addredisloghistory(rlog, max, line):
+async def addredisloghistory(rlog, max, line, tstamp=time()):
     count = await redis.zcard(rlog)
     if count is not None:
         if int(count) >= max:
             await redis.zremrangebyrank(rlog, 0, int(count) - max)
-    res = await redis.zaddoption(rlog, 'NX', time(), line)
-    print(res)
+    await redis.zaddoption(rlog, 'NX', tstamp, line)
 
 
 @log.catch
@@ -293,11 +292,9 @@ async def asyncprocesslogline(line, single=False):
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
         if data["record"]["level"]["name"] == 'TRACE' or data["record"]["level"]["name"] == 'DEBUG' or data["record"]["level"]["name"] == 'ERROR' or data["record"]["level"]["name"] == 'CRITICAL' or data["record"]["level"]["name"] == 'EXIT' or data["record"]["level"]["name"] == 'START' or data["record"]["level"]["name"] == 'GIT':
-            await addredisloghistory('pyarkdebuglog', 100, data["text"])
+            await addredisloghistory('pyarkdebuglog', 100, data["text"], tstamp=["record"]["time"]["timestamp"])
         else:
-            print(repr(data))
-            print('  ')
-            await addredisloghistory('pyarklog', 100, data["text"])
+            await addredisloghistory('pyarklog', 100, data["text"], tstamp=["record"]["time"]["timestamp"])
         for client in clients.keys():
             if clients[client]['logtype'] == 'pyark':
                 if data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
