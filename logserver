@@ -67,7 +67,7 @@ def convertdt(line):
     pline = line.split('m', 1)[1][19:]
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
     dts = dt.strftime("%a %I:%M %p")
-    buildline = f'{pre}{dts}{pline}'
+    buildline = f'{pre}m{dts}{pline}'
     print(repr(buildline))
     return buildline
 
