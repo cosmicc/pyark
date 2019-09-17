@@ -125,7 +125,7 @@ async def asyncmain():
     main_stop_event = False
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
-    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60, 'statcollector': 300, 'eventwatch': 60, 'steamapi': 60, 'auctionapi': 60, 'arkserversapi': 60}
+    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60, 'statcollector': 300, 'eventwatch': 60, 'steamapi': 60, 'auctionapi': 60, 'arkserversapi': 600}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     await Redis.connect(__name__)
