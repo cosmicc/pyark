@@ -328,14 +328,14 @@ async def asyncprocesslogline(line, single=False):
 async def loglistener(lw):
     while not globalexitwatch:
         lw.loop(nonblocking=True)
-        await asyncio.sleep(.1)
+        await asyncio.sleep(.5)
 
 
 @log.catch
 async def altloglistener(lg):
     while not globalexitwatch:
         lg.loop(nonblocking=True)
-        await asyncio.sleep(.1)
+        await asyncio.sleep(.5)
 
 
 @log.catch
