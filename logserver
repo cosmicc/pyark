@@ -62,7 +62,7 @@ async def addredisloghistory(rlog, max, line):
     if count is not None:
         if int(count) >= max:
             await redis.zremrangebyrank(rlog, 0, int(count) - max)
-    await redis.zadd(rlog, time(), line)
+    await redis.zaddoption(rlog, 'NX', time(), line)
 
 
 @log.catch
