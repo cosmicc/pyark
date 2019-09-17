@@ -80,9 +80,9 @@ def convertdt2(line):
     print(repr(ptime))
     pline = sline[2][23:]
     print(repr(sline))
-    dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S.%f'))
-    dts = dt.strftime("%a %I:%M:%S.%f%p ")
-    return f'{pre}m{dts}{pline}'
+    #dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S.%f'))
+    #dts = dt.strftime("%a %I:%M:%S.%f%p ")
+    #return f'{pre}m{dts}{pline}'
 
 
 async def altcallback(filename, lines):
