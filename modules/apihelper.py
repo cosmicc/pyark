@@ -19,7 +19,7 @@ async def asyncarkserverdatafetcher(session):
         except:
             log.error(f'Error fetching ArkServers data from web')
         else:
-            log.debug(f'Updated ArkServerNet API player information for [{inst}]')
+            log.trace(f'Updated ArkServerNet API information for [{inst}]')
             if adata is not None:
                 await db.update("UPDATE instances SET hostname = '%s', rank = '%s', score = '%s', uptime = '%s', votes = '%s' WHERE name = '%s'" % (adata['hostname'], adata['rank'], adata['score'], adata['uptime'], adata['votes'], inst))
         await asyncio.sleep(5)
