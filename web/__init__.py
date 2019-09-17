@@ -23,7 +23,6 @@ def register_blueprints(app):
     from .webui.views import webui
     from .api.views import webapi
     app.register_blueprint(webui, url_prefix='/')
-    app.register_blueprint(webapi, url_prefix='/api')
 
 
 def register_extensions(app):
@@ -34,5 +33,6 @@ def register_extensions(app):
             DebugToolbarExtension(app)
         except ImportError:
             pass
+
 
 app = create_app('config.BaseConfig')

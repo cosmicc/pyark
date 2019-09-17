@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from modules.asyncdb import asyncDB
 from modules.redis import instancevar, globalvar, instancestate
 
-app = FastAPI()
+app = FastAPI(openapi_prefix="/api")
 
 db = asyncDB()
 
