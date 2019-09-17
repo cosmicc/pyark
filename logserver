@@ -6,6 +6,7 @@ import os
 import sys
 from time import time
 from datetime import datetime
+from colored import fg
 
 import asyncio
 from loguru import logger as log
@@ -87,13 +88,20 @@ def convertpyarkline(line):
 
 @log.catch
 def convertchatline(line):
+    global chatcolorindex
+    global chatters
     ptime = line[:19]
     pline = line[19:]
     pname = line.split('|')[2].split(':', 1)[0].strip()
-    print(pname)
+    if pname not in chatters:
+        ncolor = int(chatcolors[chatcolorindex])
+        if chatcolorindex == len(chatcolors) - 1:
+            chatcolorindex = 0
+        chatcolorindex += 1
+        chatters.update({pname: ncolor})
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
     dts = dt.strftime("%a %I:%M:%S %p")
-    return f'{dts}{pline}'
+    return f'{fg(chatters[pname])}{dts}{pline}{fg(0)}'
 
 
 async def altcallback(filename, lines):
