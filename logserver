@@ -286,15 +286,9 @@ async def asyncprocesslogline(line, single=False):
         line = line.strip('\x00')
         data = json.loads(line.strip(), strict=False)
         if data["record"]["level"]["name"] == 'TRACE' or data["record"]["level"]["name"] == 'DEBUG' or data["record"]["level"]["name"] == 'ERROR' or data["record"]["level"]["name"] == 'CRITICAL' or data["record"]["level"]["name"] == 'EXIT' or data["record"]["level"]["name"] == 'START' or data["record"]["level"]["name"] == 'GIT':
-            debugcount = int(await redis.zcard('pyarkdebuglog'))
-            if debugcount == 50:
-                await redis.zremrangebyrank('pyarkdebuglog', 0, 0)
-            await redis.zadd('pyarkdebuglog', data["record"]["time"]["timestamp"], data["text"])
+            await addredisloghistory('pyarkdebuglog', 100, data["text"])
         else:
-            count = int(await redis.zcard('pyarklog'))
-            if count == 50:
-                await redis.zremrangebyrank('pyarklog', 0, 0)
-            await redis.zadd('pyarklog', data["record"]["time"]["timestamp"], data["text"])
+            await addredisloghistory('pyarklog', 100, data["text"])
         for client in clients.keys():
             if clients[client]['logtype'] == 'pyark':
                 if data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
