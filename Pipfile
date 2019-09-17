@@ -39,6 +39,7 @@ fsmonitor = "*"
 aredis = "*"
 redis = "*"
 aiohttp = "*"
+pytz = "*"
 
 [requires]
 python_version = "3.7"
