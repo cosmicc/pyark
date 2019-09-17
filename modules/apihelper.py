@@ -93,7 +93,7 @@ async def getsteaminfo(steamid, playername, session):
             lastlogoff = 0
         await db.update(f"""UPDATE players SET steamname = '{player["personaname"]}', steamrealname = '{realname}', steamlastlogoff = {lastlogoff}, steamcreated = {steamcreated}, steamcountry = '{steamcountry}' WHERE steamid = '{steamid}'""")
     except:
-        log.warning(f'HTTP Error fetching steam api player data for [{playername}] ({steamid})')
+        log.exception(f'HTTP Error fetching steam api player data for [{playername}] ({steamid})')
         return False
     else:
         log.debug(f'Updated steam API player information for [{playername}] ({steamid})')
@@ -111,7 +111,7 @@ async def getsteambans(steamid, playername, session):
             economyban = True
         await db.update(f"""UPDATE players SET steamcommunityban = {player["CommunityBanned"]}, steamvacban = {player["VACBanned"]}, steamvacbannum = {player["NumberOfVACBans"]}, steamgamesbannum = {player["NumberOfGameBans"]}, steamlastbandays = {player["DaysSinceLastBan"]}, steameconomyban = {economyban} WHERE steamid = '{steamid}'""")
     except:
-        log.warning(f'Error fetching steam api ban data for [{playername}] ({steamid})')
+        log.exception(f'Error fetching steam api ban data for [{playername}] ({steamid})')
         return False
     else:
         log.debug(f'Updated Steam API ban information for [{playername}] ({steamid}])')
