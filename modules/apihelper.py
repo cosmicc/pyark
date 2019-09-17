@@ -71,7 +71,7 @@ async def asyncfetchurldata(session, url):
 async def getsteaminfo(steamid, playername, session):
     try:
         url = f'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={steamapikey}&steamids={steamid}'
-        player = await asyncfetchurldata(session, url)['response']['players'][0]
+        player = await (asyncfetchurldata(session, url))['response']['players'][0]
         if 'loccountrycode' in player:
             steamcountry = player['loccountrycode']
         else:
@@ -101,7 +101,7 @@ async def getsteaminfo(steamid, playername, session):
 async def getsteambans(steamid, playername, session):
     try:
         url = f'http://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key={steamapikey}&steamids={steamid}'
-        player = await asyncfetchurldata(session, url)['players'][0]
+        player = await (asyncfetchurldata(session, url))['players'][0]
         if player['EconomyBan'] == 'none':
             economyban = False
         else:
