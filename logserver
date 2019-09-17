@@ -62,7 +62,8 @@ async def addredisloghistory(rlog, max, line):
     if count is not None:
         if int(count) >= max:
             await redis.zremrangebyrank(rlog, 0, int(count) - max)
-    await redis.zaddoption(rlog, 'NX', time(), line)
+    res = await redis.zaddoption(rlog, 'NX CH', time(), line)
+    print(res)
 
 
 @log.catch
@@ -294,8 +295,8 @@ async def asyncprocesslogline(line, single=False):
         if data["record"]["level"]["name"] == 'TRACE' or data["record"]["level"]["name"] == 'DEBUG' or data["record"]["level"]["name"] == 'ERROR' or data["record"]["level"]["name"] == 'CRITICAL' or data["record"]["level"]["name"] == 'EXIT' or data["record"]["level"]["name"] == 'START' or data["record"]["level"]["name"] == 'GIT':
             await addredisloghistory('pyarkdebuglog', 100, data["text"])
         else:
-            print(repr(data))
-            print('  ')
+            #print(repr(data))
+            #print('  ')
             await addredisloghistory('pyarklog', 100, data["text"])
         for client in clients.keys():
             if clients[client]['logtype'] == 'pyark':
