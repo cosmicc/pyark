@@ -73,8 +73,8 @@ def convertdt(line):
 @log.catch
 def convertdt2(line):
     pre = line.split('m', 1)[0]
-    ptime = line.split('m', 1)[1][:19]
-    pline = line.split('m', 1)[1][19:]
+    ptime = line.split('m', 1)[1][:23]
+    pline = line.split('m', 1)[1][23:]
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S.%f'))
     dts = dt.strftime("%a %I:%M:%S.%f%p ")
     return f'{pre}m{dts}{pline}'
