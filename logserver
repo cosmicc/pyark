@@ -65,12 +65,11 @@ def convertdt(line):
     pre = line.split('m', 1)[0]
     ptime = line.split('m', 1)[1][:19]
     pline = line.split('m', 1)[1][19:]
-    print(ptime)
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
-    print(dt)
     dts = dt.strftime("%a %I:%M %p")
-    print(dts)
-    return f'{pre}{dts}{pline}'
+    buildline = f'{pre}{dts}{pline}'
+    print(repr(buildline))
+    return buildline
 
 
 async def altcallback(filename, lines):
