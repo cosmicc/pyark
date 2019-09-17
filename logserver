@@ -295,8 +295,8 @@ async def asyncprocesslogline(line, single=False):
         if data["record"]["level"]["name"] == 'TRACE' or data["record"]["level"]["name"] == 'DEBUG' or data["record"]["level"]["name"] == 'ERROR' or data["record"]["level"]["name"] == 'CRITICAL' or data["record"]["level"]["name"] == 'EXIT' or data["record"]["level"]["name"] == 'START' or data["record"]["level"]["name"] == 'GIT':
             await addredisloghistory('pyarkdebuglog', 100, data["text"])
         else:
-            #print(repr(data))
-            #print('  ')
+            print(repr(data))
+            print('  ')
             await addredisloghistory('pyarklog', 100, data["text"])
         for client in clients.keys():
             if clients[client]['logtype'] == 'pyark':
