@@ -179,6 +179,7 @@ async def installconfigs(inst):
     config.optionxform = str
     config.read(globvars.gusini_baseconfig_file)
     if globvars.gusini_customconfig_files[inst].exists():
+        log.debug(f'custom GUS ini file exists for {inst}')
         gusbuildfile = globvars.gusini_customconfig_files[inst].read_text().split('\n')
         for each in gusbuildfile:
             a = each.split(',')
@@ -190,6 +191,7 @@ async def installconfigs(inst):
     if await asynciseventtime():
         globvars.gusini_event_file = sharedpath / 'config/GameUserSettings-{eventext.strip()}.ini'
         if globvars.gusini_event_file.exists():
+            log.debug(f'event GUS ini file exists for {inst}')
             for each in globvars.gusini_event_file.read_text().split('\n'):
                 a = each.split(',')
                 if len(a) == 3:
@@ -204,11 +206,14 @@ async def installconfigs(inst):
         config.write(configfile)
 
     shutil.copy(globvars.gusini_tempconfig_file, globvars.gusini_final_file)
+    log.debug(f'{inst} {globvars.gusini_tempconfig_file} > {globvars.gusini_final_file}')
     globvars.gusini_tempconfig_file.unlink()
     if globvars.gameini_customconfig_files[inst].exists():
         shutil.copy(globvars.gameini_customconfig_files[inst], globvars.gameini_final_file)
+        log.debug(f'{inst} {globvars.gameini_customconfig_files[inst]} > {globvars.gameini_final_file}')
     else:
         shutil.copy(globvars.gameini_baseconfig_file, globvars.gameini_final_file)
+        log.debug(f'{inst} {globvars.gameini_baseconfig_file} > {globvars.gameini_final_file}')
     chown(str(globvars.gameini_final_file), 1001, 1005)
     chown(str(globvars.gusini_final_file), 1001, 1005)
     log.debug(f'Server {inst} built and updated config files')
