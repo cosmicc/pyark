@@ -81,12 +81,13 @@ def convertdt2(line):
     pline = sline[1][18:]
     print(f'line: {repr(pline)}')
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S.%f'))
-    dts = dt.strftime("%a %I:%M:%S.%f%p ")
+    dts = dt.strftime("%a %I:%M:%S.%f %p ")
     return f'{pre}{dts.replace("000", "")}{pline}'
 
 
 async def altcallback(filename, lines):
     for line in lines:
+        line = line.strip('\x00')
         if not line.strip():
             pass
         elif line.find(':::') == -1:
