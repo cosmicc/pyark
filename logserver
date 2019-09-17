@@ -75,11 +75,11 @@ def convertdt(line):
 def convertdt2(line):
     sline = line.split('-', 1)
     pre = sline[0][:-4]
-    # print(f'pre: {repr(pre)}')
+    print(f'pre: {repr(pre)}')
     ptime = f'{sline[0][-4:]}-{sline[1][:18]}'
-    # print(f'time: {repr(ptime)}')
+    print(f'time: {repr(ptime)}')
     pline = sline[1][18:]
-    # print(f'line: {repr(pline)}')
+    print(f'line: {repr(pline)}')
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S.%f'))
     dts = dt.strftime("%a %I:%M:%S.%f%p ")
     return f'{pre}m{dts}{pline}'
@@ -269,12 +269,12 @@ async def asyncprocesslogline(line, single=False):
             debugcount = int(await redis.zcard('pyarkdebuglog'))
             if debugcount == 50:
                 await redis.zremrangebyrank('pyarkdebuglog', 0, 0)
-            await redis.zadd('pyarkdebuglog', data["record"]["time"]["timestamp"], convertdt2(data["text"]))
+            await redis.zadd('pyarkdebuglog', data["record"]["time"]["timestamp"], data["text"])
         else:
             count = int(await redis.zcard('pyarklog'))
             if count == 50:
                 await redis.zremrangebyrank('pyarklog', 0, 0)
-            await redis.zadd('pyarklog', data["record"]["time"]["timestamp"], convertdt2(data["text"]))
+            await redis.zadd('pyarklog', data["record"]["time"]["timestamp"], data["text"])
         for client in clients.keys():
             if clients[client]['logtype'] == 'pyark':
                 if data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
