@@ -46,7 +46,7 @@ class ExtendedRegisterForm(RegisterForm):
 
 def GameThread(sid):
     log.debug(f'Starting game log watch for {sid}')
-    gamewatch = LogClient(50, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'game', 'ALL', 1)
+    gamewatch = LogClient(30, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'game', 'ALL', 1)
     gamewatch.connect()
     while True:
         stillrun = False
@@ -69,7 +69,7 @@ def GameThread(sid):
 
 def ChatThread(sid):
     log.debug(f'Starting chat log watch for {sid}')
-    chatwatch = LogClient(30, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'chat', 'ALL', 1)
+    chatwatch = LogClient(20, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'chat', 'ALL', 1)
     chatwatch.connect()
     while True:
         stillrun = False
@@ -92,7 +92,7 @@ def ChatThread(sid):
 
 def LogThread(sid):
     log.debug(f'Starting pyark log watch for {sid}')
-    logwatch = LogClient(100, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
+    logwatch = LogClient(50, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
     logwatch.connect()
     while True:
         stillrun = False
