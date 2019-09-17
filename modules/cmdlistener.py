@@ -558,9 +558,11 @@ def deconstructchatline(line):
 @log.catch
 async def asyncchatlinedetected(inst, chatdict):
     log.trace(f'chatline detected: {chatdict}')
-    transmsg = trans_to_eng(chatdict['line'])
+    ttrans = partial(trans_to_eng, chatdict['line'])
+    asyncloop = asyncio.get_running_loop()
+    transmsg = await asyncloop.run_in_executor(None, ttrans)
     tstamp = chatdict['time'].strftime('%m-%d %I:%M%p')
-    log.log('CHAT', f'{inst.upper()}| {chatdict["name"]}: {transmsg}')
+    log.log('CHAT', f'{inst.upper():>8}| {chatdict["name"]}: {transmsg}')
     await asyncwritechat(inst, chatdict["name"].lower(), transmsg.replace("'", ""), tstamp)
     await asyncwritechatlog(inst, chatdict["name"].lower(), transmsg, tstamp)
 
