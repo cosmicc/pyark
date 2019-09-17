@@ -1,53 +1,48 @@
-import asyncio
-
-import uvloop
 from fastapi import FastAPI
-from hypercorn.asyncio import serve
-from hypercorn.config import Config
-
 from modules.asyncdb import asyncDB
+from modules.redis import instancevar, globalvar, instancestate
 
-api = FastAPI()
-config = Config()
-config.bind = ["172.31.250.115:8080"]
-db = asyncDB(min=1, max=5)
+app = FastAPI()
 
-
-@api.on_event("startup")
-async def startup_event():
-    await db.connect()
+db = asyncDB()
 
 
-@api.on_event("shutdown")
-async def shutdown_event():
+@app.on_event("startup")
+async def startup():
+    db = asyncDB()
+    await db.connect(min=1, max=5, timeout=60)
+
+
+@app.on_event("shutdown")
+async def shutdown():
     await db.close()
 
 
-@api.get('/players/online')
-async def players_online():
-    players = await db.fetchall('SELECT * FROM players WHERE online = True')
-    allplayers = []
-    for player in players:
-        allplayers.append(player['playername'])
-    return {'players': len(players), 'names': allplayers}
-
-
-@api.get('/servers/status')
+@app.get('/servers/status')
 async def servers_status():
-    insts = await db.fetchall('SELECT * FROM instances')
-    nap = []
-    for inst in insts:
-        if inst['isup'] == 1:
-            if inst['needsrestart'] == "True":
+    instances = await globalvar.getlist('allinstances')
+    statuslist = ()
+    for inst in instances:
+        if instancevar.getint(inst, 'islistening') == 1:
+            if instancestate.check(inst, 'restartwaiting'):
                 status = 'restarting'
             else:
-                status = "online"
+                status = 'online'
         else:
-            status = "offline"
-        nap.append(status)
-    return nap
+            status = 'offline'
+        statuslist = statuslist + ((status,))
 
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-asyncloop = asyncio.new_event_loop()
-asyncio.set_event_loop(asyncloop)
-asyncloop.run_until_complete(serve(api, config))
+
+@app.get("/players/online")
+async def players_online():
+    return await db.fetchone(f"SELECT COUNT(*) FROM players WHERE online = True")
+
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: str = None):
+    return {"item_id": item_id, "q": q}
