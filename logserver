@@ -111,7 +111,7 @@ async def altcallback(filename, lines):
             pass
         elif line.find(':::') == -1:
             if filename == str(gamelogfile):
-                await addredisloghistory('glhistory', 100, line.strip())
+                await addredisloghistory('glhistory', 50, line.strip())
             elif filename == str(chatlogfile):
                 await addredisloghistory('clhistory', 50, line.strip())
             for client in clients.keys():
@@ -213,7 +213,8 @@ async def asynclogclient(reader, writer):
             loglines = await redis.zrange(getlog, startlines, int(getlines))
             log.debug(f'Loglines history retrived: {len(loglines)}')
             for line in loglines:
-                thisqueue.put(convertpyarkline(line.decode().strip()))
+                thisqueue.put(line.decode().strip())
+                # thisqueue.put(convertpyarkline(line.decode().strip()))
             if argsdebug or argstrace:
                 await redis.delete('mergelog')
         except:
