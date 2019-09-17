@@ -15,16 +15,14 @@ from pycountry import countries
 from wtforms import IntegerField, StringField
 from wtforms.validators import InputRequired, Length
 
-from modules.chatclient import ChatClient
 from modules.clusterevents import getcurrenteventtitle, getcurrenteventtitleabv, iseventtime
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 from modules.dbhelper import dbquery, dbupdate
-from modules.gameclient import GameClient
 from modules.instances import (disableinstance, enableinstance, getlastcrash, getlog, instancelist, iscurrentconfig,
                                isinrestart, isinstanceenabled, isinstanceup, restartinstance, serverchat)
 from modules.logclient import LogClient, loggerchat
 from modules.lottery import getlotteryendtime, getlotteryplayers, isinlottery
-from modules.messages import getmessages, sendmessage, validatelastsent, validatenumsent
+from modules.messages import sendmessage, validatelastsent, validatenumsent
 from modules.players import (banunbanplayer, getactiveplayers, getbannedplayers, getdiscordplayers, gethitnruns,
                              getlastplayersonline, getnewplayers, getplayer, getplayernames, getplayersonline,
                              getsteamnameplayers, isplayerbanned, isplayerold, isplayeronline, kickplayer)
@@ -47,9 +45,9 @@ class ExtendedRegisterForm(RegisterForm):
 
 
 def GameThread(sid):
-    log.debug(f'Starting game thread for {sid}')
-    gamewatch = GameClient('ALL', 20, True)
-    gamewatch.start()
+    log.debug(f'Starting game log watch for {sid}')
+    gamewatch = LogClient(200, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'game', 'ALL', 1)
+    gamewatch.connect()
     while True:
         stillrun = False
         for each in logthreads:
@@ -66,13 +64,13 @@ def GameThread(sid):
             log.exception('ERROR!!')
         finally:
             socketio.sleep(.03)
-    log.debug(f'Closing down game thread for {sid}')
+    log.debug(f'Closing down game log watch for {sid}')
 
 
 def ChatThread(sid):
-    log.debug(f'Starting chat thread for {sid}')
-    chatwatch = ChatClient('ALL', 30, True)
-    chatwatch.start()
+    log.debug(f'Starting chat log watch for {sid}')
+    chatwatch = LogClient(200, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'chat', 'ALL', 1)
+    chatwatch.connect()
     while True:
         stillrun = False
         for each in logthreads:
@@ -89,11 +87,11 @@ def ChatThread(sid):
             log.exception('ERROR!!')
         finally:
             socketio.sleep(.03)
-    log.debug(f'Closing down chat thread for {sid}')
+    log.debug(f'Closing down chat log watch for {sid}')
 
 
 def LogThread(sid):
-    log.debug(f'Starting log thread for {sid}')
+    log.debug(f'Starting pyark log watch for {sid}')
     logwatch = LogClient(200, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
     logwatch.connect()
     while True:
@@ -112,7 +110,7 @@ def LogThread(sid):
             log.exception('ERROR!!')
         finally:
             socketio.sleep(.03)
-    log.debug(f'Closing down log thread for {sid}')
+    log.debug(f'Closing down pyark log watch for {sid}')
 
 
 class LotteryForm(FlaskForm):
