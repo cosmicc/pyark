@@ -67,9 +67,7 @@ def convertdt(line):
     pline = line.split('m', 1)[1][19:]
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
     dts = dt.strftime("%a %I:%M%p ")
-    buildline = f'{pre}m{dts}{pline}'
-    print(repr(buildline))
-    return buildline
+    return f'{pre}m{dts}{pline}'
 
 
 async def altcallback(filename, lines):
@@ -150,12 +148,13 @@ async def asynclogclient(reader, writer):
 
     log.debug(f'Client [{addr}] requested {linerequest} lines')
     if argslogtype == 'game':
-        getlines = int(await redis.zcard('glhistory'))
-        startlines = getlines - int(linerequest)
-        loglines = await redis.zrange('glhistory', startlines, getlines)
-        log.debug(f'gamelines history retrived: {len(loglines)}')
-        for line in loglines:
-            thisqueue.put(line.decode().strip())
+        getlines = await redis.zcard('glhistory')
+        if getlines is not None:
+            startlines = int(getlines) - int(linerequest)
+            loglines = await redis.zrange('glhistory', startlines, int(getlines))
+            log.debug(f'gamelines history retrived: {len(loglines)}')
+            for line in loglines:
+                thisqueue.put(line.decode().strip())
 
     elif argslogtype == 'chat':
         getlines = await redis.zcard('clhistory')
