@@ -39,6 +39,9 @@ def redislistener():
                 subprocess.run(['systemctl', 'start', 'pyark'], shell=False, capture_output=False)
             elif response['data'].decode() == 'gitpull':
                 subprocess.run(['git', 'pull'], shell=True, cwd='/home/ark/pyark', capture_output=False)
+            elif response['data'].decode() == 'pipsync':
+                subprocess.run(['pipenv', 'sync'], shell=True, cwd='/home/ark/pyark', capture_output=False)
+                subprocess.run(['pipenv', 'clean'], shell=True, cwd='/home/ark/pyark', capture_output=False)
             elif response['data'].decode() == 'restartwatchdog':
                 subprocess.run(['systemctl', 'restart', 'arkwatchdog'], shell=False, capture_output=False)
             elif response['data'].decode().startswith('loglevel'):

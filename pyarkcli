@@ -92,6 +92,10 @@ parser_gitpull = subparsers.add_parser('gitpull')
 parser_gitpull.add_argument('servername', help=f"Name of the server to perform action on")
 parser_gitpull.set_defaults(func=_execute)
 
+parser_gitpull = subparsers.add_parser('pipsync')
+parser_gitpull.add_argument('servername', help=f"Name of the server to perform action on")
+parser_gitpull.set_defaults(func=_execute)
+
 parser_rw = subparsers.add_parser('restartwatchdog')
 parser_rw.add_argument('servername', help=f"Name of the server to perform action on")
 parser_rw.set_defaults(func=_execute)
@@ -114,11 +118,11 @@ parser_setcfg.add_argument('value', help='Value to change in config file')
 parser_setcfg.add_argument('servername', help=f"Name of the server to perform action on")
 parser_setcfg.set_defaults(func=_setcfg)
 
-parser_setcfg = subparsers.add_parser('delcfg')
-parser_setcfg.add_argument('section', help='Section in config file')
-parser_setcfg.add_argument('option', help='Option in config file')
-parser_setcfg.add_argument('servername', help=f"Name of the server to perform action on")
-parser_setcfg.set_defaults(func=_delcfg)
+parser_delcfg = subparsers.add_parser('delcfg')
+parser_delcfg.add_argument('section', help='Section in config file')
+parser_delcfg.add_argument('option', help='Option in config file')
+parser_delcfg.add_argument('servername', help=f"Name of the server to perform action on")
+parser_delcfg.set_defaults(func=_delcfg)
 
 args = parser.parse_args()
 
