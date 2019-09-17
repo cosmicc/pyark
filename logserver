@@ -82,7 +82,7 @@ def convertdt2(line):
     print(f'line: {repr(pline)}')
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S.%f'))
     dts = dt.strftime("%a %I:%M:%S.%f%p ")
-    return f'{pre}{dts[:-3]}{pline}'
+    return f'{pre}{dts.replace("000", "")}{pline}'
 
 
 async def altcallback(filename, lines):
