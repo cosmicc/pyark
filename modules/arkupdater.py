@@ -6,7 +6,6 @@ from datetime import datetime
 from datetime import time as dt
 from functools import partial
 from os import chown
-from pathlib import Path
 
 from loguru import logger as log
 from timebetween import is_time_between
@@ -189,8 +188,7 @@ async def installconfigs(inst):
         log.debug(f'No custom config found for {inst}')
 
     if await asynciseventtime():
-        eventext = await asyncgetcurrenteventext()
-        globvars.gusini_event_file = Path(f'{sharedpath}/config/GameUserSettings-{eventext.strip()}.ini')
+        globvars.gusini_event_file = sharedpath / 'config/GameUserSettings-{eventext.strip()}.ini'
         if globvars.gusini_event_file.exists():
             for each in globvars.gusini_event_file.read_text().split('\n'):
                 a = each.split(',')
@@ -436,7 +434,7 @@ async def asynccheckifenabled(inst):
         await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
     if instdata['enabled'] and instdata['isrunning'] == 0 and not await instancestate.check(inst, 'restartwaiting') and not await instancestate.check(inst, 'restarting'):
         log.log('MAINT', f'Instance [{inst.title()}] is not running and set to [enabled]. Starting server')
-        await asyncrestartinstnow(inst, startonly=True)
+        asyncio.create_task(asyncrestartinstnow(inst, startonly=True))
     elif not instdata['enabled'] and instdata['isrunning'] == 1 and not await instancestate.check(inst, 'restartwaiting'):
         log.warning(f'Instance [{inst.title()}] is running and set to [disabled]. Stopping server')
         await asyncinstancerestart(inst, 'admin restart')
