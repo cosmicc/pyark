@@ -104,7 +104,7 @@ async def asyncprocessstatusline(inst, eline):
                 await instancevar.set(inst, 'missedonline', 0)
                 await instancestate.unset(inst, 'restarting')
             elif status_value == 'No':
-                await instancevar.inc(inst, 'missedlistening')
+                await instancevar.inc(inst, 'missedonline')
 
         elif (status_title == 'Server version'):
             if status_value:
