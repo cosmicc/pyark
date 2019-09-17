@@ -437,7 +437,7 @@ async def asynccheckifenabled(inst):
     if instdata['enabled'] and instdata['isrunning'] == 0 and not await instancestate.check(inst, 'restartwaiting') and not await instancestate.check(inst, 'restarting'):
         log.log('MAINT', f'Instance [{inst.title()}] is not running and set to [enabled]. Starting server')
         await asyncrestartinstnow(inst, startonly=True)
-    elif not instdata['enabled'] and instdata['isrunning'] == 1 and not await instancestate(inst, 'restartwaiting'):
+    elif not instdata['enabled'] and instdata['isrunning'] == 1 and not await instancestate.check(inst, 'restartwaiting'):
         log.warning(f'Instance [{inst.title()}] is running and set to [disabled]. Stopping server')
         await asyncinstancerestart(inst, 'admin restart')
 
