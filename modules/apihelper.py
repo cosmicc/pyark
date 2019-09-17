@@ -19,17 +19,20 @@ async def asyncarkserverdatafetcher(session):
         except:
             log.error(f'Error fetching ArkServers data from web')
         else:
+            log.debug(f'Updated ArkServerNet API player information for [{inst}]')
             if adata is not None:
                 await db.update("UPDATE instances SET hostname = '%s', rank = '%s', score = '%s', uptime = '%s', votes = '%s' WHERE name = '%s'" % (adata['hostname'], adata['rank'], adata['score'], adata['uptime'], adata['votes'], inst))
+        await asyncio.sleep(5)
 
 
 @log.catch
-async def asyncfetchauctiondata(session, steamid):
+async def asyncfetchauctiondata(session, steamid, playername):
     try:
         url = f"https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?PlayerSteamID={steamid}"
         data = await asyncfetchurldata(session, url)
         auctions = data['Auctions']
         log.trace(f'fetched auction data {data}')
+        log.debug(f'Updated Auction API player information for [{playername}] ({steamid})')
         if auctions:
             return auctions
         else:
@@ -63,7 +66,7 @@ async def asyncwriteauctionstats(steamid, numauctions, numitems, numdinos):
 async def asyncfetchurldata(session, url):
     async with session.get(url) as response:
         html = await response.text()
-        log.debug(f'fetch data retrieved {html}')
+        log.trace(f'fetch data retrieved {html}')
         return json.loads(html)
 
 
@@ -164,7 +167,7 @@ async def asyncauctionapifetcher(session):
             await db.update(f"UPDATE players SET refreshauctions = False, auctionrefreshtime = '{rtime}' WHERE steamid = '{player[0]}'")
             if refresh:
                 log.debug(f"retrieving auction information for player [{player['playername']}] ({player['steamid']}]")
-                pauctions = await asyncfetchauctiondata(session, player['steamid'])
+                pauctions = await asyncfetchauctiondata(session, player['steamid'], player['playername'])
                 totauctions, iauctions, dauctions = getauctionstats(pauctions)
                 await asyncwriteauctionstats(player['steamid'], totauctions, iauctions, dauctions)
                 log.debug(f"retrieved auctions for player [{player['playername']}] total: {totauctions}, items: {iauctions}, dinos: {dauctions}")
