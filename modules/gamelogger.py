@@ -32,7 +32,7 @@ async def asyncprocessgamelog():
 @log.catch
 async def _processgameline(inst, ptype, line):
     clog = log.patch(lambda record: record["extra"].update(instance=inst))
-    logheader = f'{Now(fmt="dt").strftime("%a %I:%M%p")}|{inst.upper():>8}|{ptype:<7}| '
+    logheader = f'{Now(fmt="dt").strftime("%Y-%m-%d %H:%M:%S")}|{inst.upper():>8}|{ptype:<7}| '
     linesplit = removerichtext(line[21:]).split(", ")
     if ptype == 'TRAP':
         tribename, tribeid = await asyncgettribeinfo(linesplit, inst, ptype)
