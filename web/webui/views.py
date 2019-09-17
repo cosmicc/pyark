@@ -92,7 +92,7 @@ def ChatThread(sid):
 
 def LogThread(sid):
     log.debug(f'Starting pyark log watch for {sid}')
-    logwatch = LogClient(50, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
+    logwatch = LogClient(80, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
     logwatch.connect()
     while True:
         stillrun = False
