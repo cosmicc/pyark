@@ -29,7 +29,7 @@ pyark_gamelogfile = {}
 pyark_chatlogfile = {}
 clients = {}
 globalexitwatch = False
-chatcolors = [45, 85, 105, 155, 225, 215, 195, 175, 115, 145, 185, 165, 205]
+chatcolors = [45, 85, 189, 155, 225, 215, 195, 175, 115, 145, 185, 165, 205]
 chatcolorindex = 0
 chatters = {}
 
