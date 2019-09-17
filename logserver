@@ -76,7 +76,7 @@ def convertdt2(line):
     sline = line.split('-', 1)
     pre = sline[0][:-4]
     print(f'pre: {repr(pre)}')
-    ptime = f'{sline[0][4:]}-{sline[1][:18]}'
+    ptime = f'{sline[0][-4:]}-{sline[1][:18]}'
     print(f'time: {repr(ptime)}')
     pline = sline[1][18:]
     print(f'line: {repr(pline)}')
