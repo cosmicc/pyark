@@ -431,16 +431,15 @@ async def asynccheckbackup(instances):
 @log.catch
 async def asynccheckifenabled(inst):
     pass
-    # instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    # if serverneedsrestart():
-    #    await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
-    # if instdata['enabled'] and instdata['isrunning'] == 0 and f'{inst}-restarting' not in globvars.taskworkers:
-    #    log.log('MAINT', f'Instance [{inst.title()}] is set to [enabled]. Starting server')
-    #    restartinstnow(inst, startonly=True)
-    # elif not instdata['enabled'] and instdata['isrunning'] == 1:
-    #    if f'{inst}-restarting' not in globvars.taskworkers:
-    #        log.warning(f'Instance [{inst.title()}] is set to [disabled]. Stopping server')
-    #        await asyncinstancerestart(inst, 'admin restart')
+    instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+    if serverneedsrestart():
+        await db.update(f"UPDATE instances SET restartserver = True WHERE name = '{inst.lower()}'")
+    if instdata['enabled'] and instdata['isrunning'] == 0 and not await instancestate.check(inst, 'restartwaiting') and not await instancestate.check(inst, 'restarting'):
+        log.log('MAINT', f'Instance [{inst.title()}] is not running and set to [enabled]. Starting server')
+        await asyncrestartinstnow(inst, startonly=True)
+    elif not instdata['enabled'] and instdata['isrunning'] == 1 and not await instancestate(inst, 'restartwaiting'):
+        log.warning(f'Instance [{inst.title()}] is running and set to [disabled]. Stopping server')
+        await asyncinstancerestart(inst, 'admin restart')
 
 
 @log.catch
