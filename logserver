@@ -70,6 +70,16 @@ def convertdt(line):
     return f'{pre}m{dts}{pline}'
 
 
+@log.catch
+def convertdt2(line):
+    pre = line.split('m', 1)[0]
+    ptime = line.split('m', 1)[1][:19]
+    pline = line.split('m', 1)[1][19:]
+    dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S.%f'))
+    dts = dt.strftime("%a %I:%M:%S.%f%p ")
+    return f'{pre}m{dts}{pline}'
+
+
 async def altcallback(filename, lines):
     for line in lines:
         if not line.strip():
@@ -240,9 +250,9 @@ async def asyncputqueue(data, client, single):
         if client['server'] == 'ALL' or client['server'] == data["record"]["extra"]['hostname']:
             if client['debug'] or client['trace'] or client['extend']:
                 msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
-                client["queue"].put(data["text"].strip() + msgapp)
+                client["queue"].put(convertdt2(data["text"].strip()) + msgapp)
             else:
-                client["queue"].put(data["text"].strip())
+                client["queue"].put(convertdt2(data["text"].strip()))
 
 
 @log.catch
@@ -254,12 +264,12 @@ async def asyncprocesslogline(line, single=False):
             debugcount = int(await redis.zcard('pyarkdebuglog'))
             if debugcount == 50:
                 await redis.zremrangebyrank('pyarkdebuglog', 0, 0)
-            await redis.zadd('pyarkdebuglog', data["record"]["time"]["timestamp"], data["text"])
+            await redis.zadd('pyarkdebuglog', data["record"]["time"]["timestamp"], convertdt2(data["text"]))
         else:
             count = int(await redis.zcard('pyarklog'))
             if count == 50:
                 await redis.zremrangebyrank('pyarklog', 0, 0)
-            await redis.zadd('pyarklog', data["record"]["time"]["timestamp"], data["text"])
+            await redis.zadd('pyarklog', data["record"]["time"]["timestamp"], convertdt2(data["text"]))
         for client in clients.keys():
             if clients[client]['logtype'] == 'pyark':
                 if data["record"]["level"]["name"] == "ERROR" or data["record"]["level"]["name"] == "CRITICAL":
