@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, pytz
 from math import trunc
 
 tzfix = timedelta(hours=4)
@@ -61,6 +61,11 @@ def epochto(epoch, fmt, est=False):
             return datetimeto(datetime.fromtimestamp(int(epoch)), 'string', est=True)
         else:
             return datetimeto(datetime.fromtimestamp(int(epoch)), 'string')
+
+
+def estconvert(utc_dt):
+    ndt = utc_dt.replace(tzinfo=pytz.UTC)
+    return ndt.astimezone(pytz.timezone("America/Detroit"))
 
 
 def estshift(otime):

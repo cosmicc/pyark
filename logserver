@@ -5,12 +5,14 @@ import json
 import os
 import sys
 from time import time
+from datetime import datetime
 
 import asyncio
 from loguru import logger as log
 from modules.logwatch import LogWatcher
 from modules.processlock import PLock
 from modules.redis import redis
+from modules.timehelper import estconvert
 from pathlib import Path
 from queue import Queue
 from modules.configreader import pylogpath, jsonpath, gamelogfile, chatlogfile
@@ -58,20 +60,29 @@ async def addredisloghistory(rlog, max, line):
     await redis.zadd(rlog, time(), line)
 
 
+@log.catch
+async def convertdt(line):
+    ptime = line[:19]
+    pline = line[19:]
+    dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
+    dts = dt.strftime("%a %I:%M %p")
+    return f'{dts}{pline}'
+
+
 async def altcallback(filename, lines):
     for line in lines:
         if not line.strip():
             pass
         elif line.find(':::') == -1:
             if filename == str(gamelogfile):
-                await addredisloghistory('glhistory', 100, line.strip())
+                await addredisloghistory('glhistory', 100, convertdt(line.strip()))
             elif filename == str(chatlogfile):
-                await addredisloghistory('clhistory', 50, line.strip())
+                await addredisloghistory('clhistory', 50, convertdt(line.strip()))
             for client in clients.keys():
                 if filename == str(gamelogfile) and clients[client]['logtype'] == 'game':
-                    clients[client]["queue"].put(line.strip())
+                    clients[client]["queue"].put(convertdt(line.strip()))
                 elif filename == str(chatlogfile) and clients[client]['logtype'] == 'chat':
-                    clients[client]["queue"].put(line.strip())
+                    clients[client]["queue"].put(convertdt(line.strip()))
         else:
             data = line.split(':::')
             try:
@@ -79,9 +90,9 @@ async def altcallback(filename, lines):
                       zlib.decompress(base64.decodestring(data[2])))
                 for client in clients.keys():
                     if filename == str(gamelogfile) and clients[client]['logtype'] == 'game':
-                        clients[client]["queue"].put(zlib.decompress(base64.decodestring(data[2])))
+                        clients[client]["queue"].put(convertdt(zlib.decompress(base64.decodestring(data[2]))))
                     elif filename == str(chatlogfile) and clients[client]['logtype'] == 'chat':
-                        clients[client]["queue"].put(line.strip())
+                        clients[client]["queue"].put(convertdt(line.strip()))
             except Exception as e:
                 print(str(e))
                 print('caught exception rendering a new game line in %s' % filename)
