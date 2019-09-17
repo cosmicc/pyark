@@ -75,11 +75,8 @@ def convertdt(line):
 def convertdt2(line):
     sline = line.split('-', 1)
     pre = sline[0][:-4]
-    print(f'pre: {repr(pre)}')
     ptime = f'{sline[0][-4:]}-{sline[1][:18]}'
-    print(f'time: {repr(ptime)}')
     pline = sline[1][18:]
-    print(f'line: {repr(pline)}')
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S.%f'))
     dts = dt.strftime("%a %I:%M:%S.%f %p ")
     return f'{pre}{dts.replace("000", "")}{pline}'
@@ -89,6 +86,7 @@ def convertdt2(line):
 def convertdt3(line):
     ptime = line[:19]
     pline = line[19:]
+    print(ptime)
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
     dts = dt.strftime("%a %I:%M:%S %p ")
     return f'{dts}{pline}'
