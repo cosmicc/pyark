@@ -31,7 +31,7 @@ gusini_baseconfig_file = sharedpath / 'config/GameUserSettings-base.ini'
 gusini_tempconfig_file = sharedpath / 'config/GameUserSettings.tmp'
 for inst in instances:
     arkmanager_paths.append(sharedpath / f'logs/arkmanager/{inst}')
-    gusini_customconfig_files.update({inst: sharedpath / 'config/GameUserSettings-{inst.lower()}.ini'})
-    gameini_customconfig_files.update({inst: sharedpath / 'config/Game-{inst.lower()}.ini'})
+    gusini_customconfig_files.update({inst: sharedpath / f'config/GameUserSettings-{inst.lower()}.ini'})
+    gameini_customconfig_files.update({inst: sharedpath / f'config/Game-{inst.lower()}.ini'})
     instpidfiles.update({inst: Path(f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid')})
     instpids.update({inst: None})
