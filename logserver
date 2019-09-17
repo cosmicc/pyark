@@ -54,10 +54,11 @@ processlock.lock()
 
 @log.catch
 async def addredisloghistory(rlog, max, line):
-    count = int(await redis.zcard(rlog))
-    if count >= max:
-        await redis.zremrangebyrank(rlog, 0, max - count)
-    await redis.zadd(rlog, time(), line)
+    count = await redis.zcard(rlog)
+    if count is not None:
+        if int(count) >= max:
+            await redis.zremrangebyrank(rlog, 0, max - int(count))
+        await redis.zadd(rlog, time(), line)
 
 
 @log.catch
@@ -72,9 +73,10 @@ def convertdt(line):
 
 @log.catch
 def convertdt2(line):
-    pre = line.split('m', 2)[0]
-    ptime = line.split('m', 2)[1][:23]
-    pline = line.split('m', 2)[1][23:]
+    sline = line.split('m', 2)
+    pre = sline[0] + sline[1]
+    ptime = sline[2][:23]
+    pline = sline[2][23:]
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S.%f'))
     dts = dt.strftime("%a %I:%M:%S.%f%p ")
     return f'{pre}m{dts}{pline}'
