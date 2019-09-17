@@ -144,7 +144,7 @@ async def asynclogclient(reader, writer):
             thisqueue.put(line.decode().strip())
 
     elif argslogtype == 'chat':
-        getlines = 20
+        getlines = 50
         startlines = getlines - int(linerequest)
         loglines = await redis.zrange('clhistory', startlines, getlines)
         log.debug(f'chatlines history retrived: {len(loglines)}')
