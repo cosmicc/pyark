@@ -91,9 +91,9 @@ async def altcallback(filename, lines):
             pass
         elif line.find(':::') == -1:
             if filename == str(gamelogfile):
-                await addredisloghistory('glhistory', 100, convertdt(line.strip()))
+                await addredisloghistory('glhistory', 100, line.strip())
             elif filename == str(chatlogfile):
-                await addredisloghistory('clhistory', 50, convertdt(line.strip()))
+                await addredisloghistory('clhistory', 50, line.strip())
             for client in clients.keys():
                 if filename == str(gamelogfile) and clients[client]['logtype'] == 'game':
                     clients[client]["queue"].put(convertdt(line.strip()))
@@ -169,7 +169,7 @@ async def asynclogclient(reader, writer):
             loglines = await redis.zrange('glhistory', startlines, int(getlines))
             log.debug(f'gamelines history retrived: {len(loglines)}')
             for line in loglines:
-                thisqueue.put(line.decode().strip())
+                thisqueue.put(convertdt(line.decode().strip()))
 
     elif argslogtype == 'chat':
         getlines = await redis.zcard('clhistory')
@@ -178,7 +178,7 @@ async def asynclogclient(reader, writer):
             loglines = await redis.zrange('clhistory', startlines, getlines)
             log.debug(f'chatlines history retrived: {len(loglines)}')
             for line in loglines:
-                thisqueue.put(line.decode().strip())
+                thisqueue.put(convertdt(line.decode().strip()))
 
     elif argslogtype == 'pyark':
         try:
@@ -193,7 +193,7 @@ async def asynclogclient(reader, writer):
             loglines = await redis.zrange(getlog, startlines, int(getlines))
             log.debug(f'Loglines history retrived: {len(loglines)}')
             for line in loglines:
-                thisqueue.put(line.decode().strip())
+                thisqueue.put(convertdt2(line.decode().strip()))
             if argsdebug or argstrace:
                 await redis.delete('mergelog')
         except:
