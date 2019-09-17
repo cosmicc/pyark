@@ -85,6 +85,15 @@ def convertdt2(line):
     return f'{pre}{dts.replace("000", "")}{pline}'
 
 
+@log.catch
+def convertdt3(line):
+    ptime = line[:19]
+    pline = line[19:]
+    dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
+    dts = dt.strftime("%a %I:%M%p ")
+    return f'{dts}{pline}'
+
+
 async def altcallback(filename, lines):
     for line in lines:
         line = line.strip('\x00')
@@ -99,7 +108,7 @@ async def altcallback(filename, lines):
                 if filename == str(gamelogfile) and clients[client]['logtype'] == 'game':
                     clients[client]["queue"].put(convertdt(line.strip()))
                 elif filename == str(chatlogfile) and clients[client]['logtype'] == 'chat':
-                    clients[client]["queue"].put(convertdt(line.strip()))
+                    clients[client]["queue"].put(convertdt3(line.strip()))
         else:
             data = line.split(':::')
             try:
@@ -109,7 +118,7 @@ async def altcallback(filename, lines):
                     if filename == str(gamelogfile) and clients[client]['logtype'] == 'game':
                         clients[client]["queue"].put(convertdt(zlib.decompress(base64.decodestring(data[2]))))
                     elif filename == str(chatlogfile) and clients[client]['logtype'] == 'chat':
-                        clients[client]["queue"].put(convertdt(line.strip()))
+                        clients[client]["queue"].put(convertdt3(line.strip()))
             except Exception as e:
                 print(str(e))
                 print('caught exception rendering a new game line in %s' % filename)
