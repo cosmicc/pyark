@@ -31,6 +31,7 @@ async def servers_status():
         else:
             status = 'offline'
         statuslist = statuslist + ((status,))
+    return statuslist
 
 
 @app.get("/players/online")
