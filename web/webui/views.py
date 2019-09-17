@@ -140,7 +140,6 @@ def processlogline(line):
 @log.catch
 @socketio.on('connect', namespace='/logstream')
 def connect():
-    global logclients
     log.debug(f'Logstream started for: {request.sid}')
     logthreads.append(request.sid)
     socketio.start_background_task(target=LogThread, sid=request.sid)
@@ -153,7 +152,6 @@ def connect():
 @log.catch
 @socketio.on('disconnect', namespace='/logstream')
 def disconnect():
-    global logclients
     log.debug(f'Logstream ended for: {request.sid}')
     logthreads.remove(request.sid)
 

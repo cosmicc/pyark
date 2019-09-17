@@ -28,6 +28,9 @@ pyark_gamelogfile = {}
 pyark_chatlogfile = {}
 clients = {}
 globalexitwatch = False
+chatcolors = [45, 85, 105, 155, 225, 215, 195, 175, 115, 145, 185, 165, 205]
+chatcolorindex = 0
+chatters = {}
 
 logserver_logfile = Path('/home/ark/shared/logs/pyark/logserver.log')
 
@@ -62,7 +65,7 @@ async def addredisloghistory(rlog, max, line):
 
 
 @log.catch
-def convertdt(line):
+def convertgameline(line):
     pre = line.split('m', 1)[0]
     ptime = line.split('m', 1)[1][:19]
     pline = line.split('m', 1)[1][19:]
@@ -72,7 +75,7 @@ def convertdt(line):
 
 
 @log.catch
-def convertdt2(line):
+def convertpyarkline(line):
     sline = line.split('-', 1)
     pre = sline[0][:-4]
     ptime = f'{sline[0][-4:]}-{sline[1][:18]}'
@@ -83,9 +86,11 @@ def convertdt2(line):
 
 
 @log.catch
-def convertdt3(line):
+def convertchatline(line):
     ptime = line[:19]
     pline = line[19:]
+    pname = line.split('|')[2].split(':', 1)[0].strip()
+    print(pname)
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
     dts = dt.strftime("%a %I:%M:%S %p")
     return f'{dts}{pline}'
@@ -103,9 +108,9 @@ async def altcallback(filename, lines):
                 await addredisloghistory('clhistory', 50, line.strip())
             for client in clients.keys():
                 if filename == str(gamelogfile) and clients[client]['logtype'] == 'game':
-                    clients[client]["queue"].put(convertdt(line.strip()))
+                    clients[client]["queue"].put(convertgameline(line.strip()))
                 elif filename == str(chatlogfile) and clients[client]['logtype'] == 'chat':
-                    clients[client]["queue"].put(convertdt3(line.strip()))
+                    clients[client]["queue"].put(convertchatline(line.strip()))
         else:
             data = line.split(':::')
             try:
@@ -113,9 +118,9 @@ async def altcallback(filename, lines):
                       zlib.decompress(base64.decodestring(data[2])))
                 for client in clients.keys():
                     if filename == str(gamelogfile) and clients[client]['logtype'] == 'game':
-                        clients[client]["queue"].put(convertdt(zlib.decompress(base64.decodestring(data[2]))))
+                        clients[client]["queue"].put(convertgameline(zlib.decompress(base64.decodestring(data[2]))))
                     elif filename == str(chatlogfile) and clients[client]['logtype'] == 'chat':
-                        clients[client]["queue"].put(convertdt3(line.strip()))
+                        clients[client]["queue"].put(convertchatline(line.strip()))
             except Exception as e:
                 print(str(e))
                 print('caught exception rendering a new game line in %s' % filename)
@@ -176,7 +181,7 @@ async def asynclogclient(reader, writer):
             loglines = await redis.zrange('glhistory', startlines, int(getlines))
             log.debug(f'gamelines history retrived: {len(loglines)}')
             for line in loglines:
-                thisqueue.put(convertdt(line.decode().strip()))
+                thisqueue.put(convertgameline(line.decode().strip()))
 
     elif argslogtype == 'chat':
         getlines = await redis.zcard('clhistory')
@@ -185,7 +190,7 @@ async def asynclogclient(reader, writer):
             loglines = await redis.zrange('clhistory', startlines, getlines)
             log.debug(f'chatlines history retrived: {len(loglines)}')
             for line in loglines:
-                thisqueue.put(convertdt3(line.decode().strip()))
+                thisqueue.put(convertchatline(line.decode().strip()))
 
     elif argslogtype == 'pyark':
         try:
@@ -200,7 +205,7 @@ async def asynclogclient(reader, writer):
             loglines = await redis.zrange(getlog, startlines, int(getlines))
             log.debug(f'Loglines history retrived: {len(loglines)}')
             for line in loglines:
-                thisqueue.put(convertdt2(line.decode().strip()))
+                thisqueue.put(convertpyarkline(line.decode().strip()))
             if argsdebug or argstrace:
                 await redis.delete('mergelog')
         except:
@@ -262,9 +267,9 @@ async def asyncputqueue(data, client, single):
         if client['server'] == 'ALL' or client['server'] == data["record"]["extra"]['hostname']:
             if client['debug'] or client['trace'] or client['extend']:
                 msgapp = f' \u001b[38;5;109m{data["record"]["module"]}:{data["record"]["function"]}:{data["record"]["line"]}'
-                client["queue"].put(convertdt2(data["text"].strip()) + msgapp)
+                client["queue"].put(convertpyarkline(data["text"].strip()) + msgapp)
             else:
-                client["queue"].put(convertdt2(data["text"].strip()))
+                client["queue"].put(convertpyarkline(data["text"].strip()))
 
 
 @log.catch
