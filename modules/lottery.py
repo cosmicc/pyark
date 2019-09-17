@@ -66,6 +66,11 @@ async def asyncgetlotteryplayers():
     return lottoinfo
 
 
+def getlotteryplayers(fmt):
+    linfo = dbquery("SELECT playername FROM lotteryplayers", fmt=fmt)
+    return linfo
+
+
 async def asynctotallotterydeposits(steamid):
     lottoinfo = await db.fetchone(f"SELECT points, givetake FROM lotterydeposits where steamid = '{steamid}'")
     tps = 0
