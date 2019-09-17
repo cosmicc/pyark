@@ -765,7 +765,7 @@ async def asyncprocesscmdline(minst, eline):
 
             elif incmd.startswith('!'):
                 steamid = await asyncgetsteamid(whoasked)
-                log.warning(f'Invalid command request from [{whoasked.title()}] on [{minst.title()}]')
+                log.warning(f'Invalid command request [{incmd}] from [{whoasked.title()}] on [{minst.title()}]')
                 message = "Invalid command. Try !help"
                 await asyncserverchatto(inst, steamid, message)
 
