@@ -23,8 +23,8 @@ async def servers_status():
     instances = await globalvar.getlist('allinstances')
     statuslist = ()
     for inst in instances:
-        if instancevar.getint(inst, 'islistening') == 1:
-            if instancestate.check(inst, 'restartwaiting'):
+        if await instancevar.getint(inst, 'islistening') == 1:
+            if await instancestate.check(inst, 'restartwaiting'):
                 status = 'restarting'
             else:
                 status = 'online'
