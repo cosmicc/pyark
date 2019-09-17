@@ -41,6 +41,9 @@ brotlipy = "*"
 gunicorn = "*"
 bcrypt = "*"
 gevent-websocket = "*"
+gevent = "*"
+hypercorn = "*"
+fastapi = "*"
 
 [requires]
 python_version = "3.7"
