@@ -62,14 +62,15 @@ async def addredisloghistory(rlog, max, line):
 
 @log.catch
 def convertdt(line):
-    ptime = line[:19]
-    pline = line[19:]
+    pre = line.split('m', 1)[0]
+    ptime = line.split('m', 1)[1][:19]
+    pline = line.split('m', 1)[1][19:]
     print(ptime)
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
     print(dt)
     dts = dt.strftime("%a %I:%M %p")
     print(dts)
-    return f'{dts}{pline}'
+    return f'{pre}{dts}{pline}'
 
 
 async def altcallback(filename, lines):
