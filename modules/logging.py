@@ -43,7 +43,7 @@ simplelogformat = '{time:YYYY-MM-DD HH:mm:ss.SSS} | {extra[hostname]: <5} | {mes
 
 gamelogformat = '<level>{message}</level>'
 
-chatlogformat = '{time:YYYY-MM-DD HH:mm:ss} | {message}'
+chatlogformat = '{time:YYYY-MM-DD HH:mm:ss} |{message}'
 
 longlogformat = '<level>{time:YYYY-MM-DD HH:mm:ss.SSS}</level><fg 248>|</fg 248><level>{extra[hostname]: >5}</level> <fg 248>|</fg 248> <level>{level: <7}</level> <fg 248>|</fg 248> <level>{message: <72}</level> <fg 243>|</fg 243> <fg 109>{name}:{function}:{line}</fg 109>'
 
