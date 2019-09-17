@@ -175,6 +175,7 @@ async def asyncstillneedsrestart(inst):
 
 @log.catch
 async def installconfigs(inst):
+    eventext = await asyncgetcurrenteventext()
     config = configparser.RawConfigParser()
     config.optionxform = str
     config.read(globvars.gusini_baseconfig_file)
@@ -189,7 +190,7 @@ async def installconfigs(inst):
         log.debug(f'No custom config found for {inst}')
 
     if await asynciseventtime():
-        globvars.gusini_event_file = sharedpath / 'config/GameUserSettings-{eventext.strip()}.ini'
+        globvars.gusini_event_file = sharedpath / f'config/GameUserSettings-{eventext.strip()}.ini'
         if globvars.gusini_event_file.exists():
             log.debug(f'event GUS ini file exists for {inst}')
             for each in globvars.gusini_event_file.read_text().split('\n'):
