@@ -9,7 +9,6 @@ db = asyncDB()
 
 @app.on_event("startup")
 async def startup():
-    db = asyncDB()
     await db.connect(min=1, max=5, timeout=60)
 
 
