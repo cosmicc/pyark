@@ -117,7 +117,6 @@ async def getsteambans(steamid, playername, session):
 
 @log.catch
 async def asyncsteamapifetcher(session):
-    log.debug('SteamAPI fetcher is starting')
     players = await db.fetchall(f"SELECT steamid, playername, steamrefreshtime FROM players WHERE refreshsteam = True")
     if players:
         log.trace(f'Found {len(players)} players for steamapi to process {players}')
@@ -145,7 +144,7 @@ async def asyncsteamapifetcher(session):
 
 @log.catch
 async def asyncauctionapifetcher(session):
-    players = db.fetchall(f"SELECT steamid, playername, auctionrefreshtime FROM players WHERE refreshauctions = True OR online = True")
+    players = await db.fetchall(f"SELECT steamid, playername, auctionrefreshtime FROM players WHERE refreshauctions = True OR online = True")
     if players:
         log.trace(f'Found {len(players)} players for auctionapi to process {players}')
         for player in players:
