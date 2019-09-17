@@ -66,7 +66,7 @@ def convertdt(line):
     ptime = line.split('m', 1)[1][:19]
     pline = line.split('m', 1)[1][19:]
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
-    dts = dt.strftime("%a %I:%M %p")
+    dts = dt.strftime("%a %I:%M%p ")
     buildline = f'{pre}m{dts}{pline}'
     print(repr(buildline))
     return buildline
@@ -150,7 +150,7 @@ async def asynclogclient(reader, writer):
 
     log.debug(f'Client [{addr}] requested {linerequest} lines')
     if argslogtype == 'game':
-        getlines = 50
+        getlines = int(await redis.zcard('glhistory'))
         startlines = getlines - int(linerequest)
         loglines = await redis.zrange('glhistory', startlines, getlines)
         log.debug(f'gamelines history retrived: {len(loglines)}')
@@ -158,24 +158,25 @@ async def asynclogclient(reader, writer):
             thisqueue.put(line.decode().strip())
 
     elif argslogtype == 'chat':
-        getlines = 50
-        startlines = getlines - int(linerequest)
-        loglines = await redis.zrange('clhistory', startlines, getlines)
-        log.debug(f'chatlines history retrived: {len(loglines)}')
-        for line in loglines:
-            thisqueue.put(line.decode().strip())
+        getlines = await redis.zcard('clhistory')
+        if getlines is not None:
+            startlines = int(getlines) - int(linerequest)
+            loglines = await redis.zrange('clhistory', startlines, getlines)
+            log.debug(f'chatlines history retrived: {len(loglines)}')
+            for line in loglines:
+                thisqueue.put(line.decode().strip())
 
     elif argslogtype == 'pyark':
         try:
             if argsdebug or argstrace:
                 await redis.zunionstore('mergelog', ['pyarklog', 'pyarkdebuglog'])
                 getlog = 'mergelog'
-                getlines = 200
+                getlines = await redis.zcard('mergelog')
             else:
                 getlog = 'pyarklog'
-                getlines = 100
-            startlines = getlines - int(linerequest)
-            loglines = await redis.zrange(getlog, startlines, getlines)
+                getlines = await redis.zcard('pyarklog')
+            startlines = int(getlines) - int(linerequest)
+            loglines = await redis.zrange(getlog, startlines, int(getlines))
             log.debug(f'Loglines history retrived: {len(loglines)}')
             for line in loglines:
                 thisqueue.put(line.decode().strip())
