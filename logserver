@@ -90,7 +90,7 @@ def convertdt3(line):
     ptime = line[:19]
     pline = line[19:]
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
-    dts = dt.strftime("%a %I:%M%p ")
+    dts = dt.strftime("%a %I:%M:%S %p ")
     return f'{dts}{pline}'
 
 
@@ -188,7 +188,7 @@ async def asynclogclient(reader, writer):
             loglines = await redis.zrange('clhistory', startlines, getlines)
             log.debug(f'chatlines history retrived: {len(loglines)}')
             for line in loglines:
-                thisqueue.put(convertdt(line.decode().strip()))
+                thisqueue.put(convertdt3(line.decode().strip()))
 
     elif argslogtype == 'pyark':
         try:
