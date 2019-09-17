@@ -34,3 +34,5 @@ def register_extensions(app):
             DebugToolbarExtension(app)
         except ImportError:
             pass
+
+app = create_app('config.BaseConfig')

@@ -19,9 +19,13 @@ processlock.lock()
 
 nice(12)
 
+app = create_app('config.BaseConfig')
+
+"""
 if args.debug:
     app = create_app('config.DevelopmentConfig')
     socketio.run(app, host=webserver_ip, port=51501)
 else:
     app = create_app('config.BaseConfig')
     socketio.run(app, host=webserver_ip, port=webserver_port)
+"""
