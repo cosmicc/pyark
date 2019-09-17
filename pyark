@@ -3,7 +3,6 @@ import argparse
 import asyncio
 import logging
 import signal
-import threading
 import warnings
 from os import nice
 
@@ -14,13 +13,12 @@ from loguru import logger as log
 
 import globvars
 import modules.logging
-from modules.apihelper import arkservernet_thread, auctionapi_thread, steamapi_thread
+from modules.apihelper import asyncarkserverdatafetcher, asyncauctionapifetcher, asyncsteamapifetcher
 from modules.arkupdater import asynccheckbackup, asynccheckmaint, asynccheckrestart, asynccheckupdates, asynccheckwipe
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynceventwatcher
 from modules.cmdlistener import cmdscheck
 from modules.configreader import hstname, instances, is_arkupdater, loglevel
-from modules.dbhelper import dbquery, dbupdate
 from modules.gamelogger import asyncprocessgamelog
 from modules.gchatrelay import asyncgchatrelay
 from modules.instances import statuscheck
@@ -30,7 +28,6 @@ from modules.processlock import PLock
 from modules.redis import Redis, instancestate, instancevar, globalvar
 from modules.servertools import asyncserverexec, processinststats, processserverstats
 from modules.statcollector import asyncstatcollector
-from modules.timehelper import Secs
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -72,7 +69,6 @@ def signal_handler(signal, frame):
     global main_stop_event
     log.log('EXIT', f'Termination signal [{signals[signal]}] recieved. Exiting.')
     main_stop_event = True
-    stop_event.set()
 
 
 signal.signal(signal.SIGTERM, signal_handler)  # Graceful Shutdown
@@ -112,12 +108,6 @@ async def restartpyark():
     await asyncserverexec(['systemctl', 'restart', 'pyark'], nice=0)
 
 
-def checkthreads():
-    for thread in threads:
-        if not thread.is_alive():
-            log.critical(f'!!!! CRITICAL ERROR! thread {thread.name} has crashed!!')
-
-
 async def checkrediscommands(pubsub):
     response = await pubsub.get_message(timeout=0.01)
     if response is not None:
@@ -135,7 +125,7 @@ async def asyncmain():
     main_stop_event = False
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
-    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60, 'statcollector': 300, 'eventwatch': 60}
+    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60, 'statcollector': 300, 'eventwatch': 60, 'steamapi': 10, 'auctionapi': 60, 'arkserversapi': 600}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     await Redis.connect(__name__)
@@ -143,16 +133,23 @@ async def asyncmain():
     await db.connect(process=__name__)
     pubsub = redis.pubsub()
     await pubsub.subscribe([f'{hstname.lower()}-commands'])
-    for inst in instances:
-        await pubsub.subscribe([f'{inst}-commands'])
-        await instancestate.set(inst, 'pyark')
-        await instancevar.mset(inst, {'server': hstname, 'missedrunning': 0, 'missedlistening': 0, 'missedonline': 0})
+    checklist = await globalvar.getlist('allinstances')
+    if len(instances) > 0:
+        if not any(x in instances for x in checklist):
+            log.critical(f'Instance does not exist in the database!')
+            exit(1)
+        for inst in instances:
+            log.trace(f'deleting global chat buffer for {inst}')
+            await db.update(f"DELETE FROM globalbuffer WHERE server = '{inst}'")
+            await pubsub.subscribe([f'{inst}-commands'])
+            await instancestate.set(inst, 'pyark')
+            await instancevar.mset(inst, {'server': hstname, 'missedrunning': 0, 'missedlistening': 0, 'missedonline': 0})
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
     tasktimer = asyncloop.time()
     if len(instances) == 0:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
-        globvars.timer = {'lottocheck': starttime, 'eventwatch': starttime}
+        globvars.timer = {'lottocheck': starttime, 'eventwatch': starttime, 'steamapi': starttime, 'auctionapi': starttime, 'arkserversapi': starttime}
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
                 asynclooptime = asyncloop.time()
@@ -176,6 +173,26 @@ async def asyncmain():
                 if not globvars.gamelogger:
                     asyncio.create_task(asyncprocessgamelog())
 
+                if asynclooptime - globvars.timer['steamapi'] > globvars.delay['steamapi']:
+                    asyncio.create_task(asyncsteamapifetcher(session))
+                    if asynclooptime - globvars.timer['steamapi'] > globvars.delay['steamapi'] + 2:
+                        log.error(f'steamapi was delayed {asynclooptime - globvars.timer["steamapi"] - globvars.delay["steamapi"]}')
+                    globvars.timer.update({'steamapi': asyncloop.time()})
+
+                if asynclooptime - globvars.timer['auctionapi'] > globvars.delay['auctionapi']:
+                    asyncio.create_task(asyncauctionapifetcher(session))
+                    if asynclooptime - globvars.timer['auctionapi'] > globvars.delay['auctionapi'] + 2:
+                        log.error(f'auctionapi was delayed {asynclooptime - globvars.timer["auctionapi"] - globvars.delay["auctionapi"]}')
+                    globvars.timer.update({'auctionapi': asyncloop.time()})
+
+                if asynclooptime - globvars.timer['arkserversapi'] > globvars.delay['arkserversapi']:
+                    asyncio.create_task(asyncarkserverdatafetcher(session))
+                    if asynclooptime - globvars.timer['arkserversapi'] > globvars.delay['arkserversapi'] + 2:
+                        log.error(f'arkserversapi was delayed {asynclooptime - globvars.timer["arkserversapi"] - globvars.delay["arkserversapi"]}')
+                    globvars.timer.update({'arkserversapi': asyncloop.time()})
+
+                if not globvars.gamelogger:
+                    asyncio.create_task(asyncprocessgamelog())
                 await asyncio.sleep(0.1)
 
     else:
@@ -266,41 +283,12 @@ async def asyncmain():
 @log.catch
 def main():
     log.debug(f'Pyark is sarting on {hstname.upper()}')
-    global checkgit
-    global stop_event
-    global threads
-    checkgit = 0
-    threads = []
-    stop_event = threading.Event()
-    checklist = dbquery("SELECT name FROM instances", fmt='list', single=True)
-    if len(instances) > 0:
-        if not any(x in instances for x in checklist):
-            log.critical(f'Instance does not exist in the database!')
-            exit(1)
-        for inst in instances:
-            log.trace(f'deleting global chat buffer for {inst}')
-            dbupdate(f"DELETE FROM globalbuffer WHERE server = '{inst}'")
-    elif len(instances) == 0:
-        thread = threading.Thread(name='arkservernet', target=arkservernet_thread, args=(Secs['15min'], stop_event), daemon=False)
-        threads.append(thread)
-        thread = threading.Thread(name='steamapi', target=steamapi_thread, args=(5, stop_event), daemon=False)
-        threads.append(thread)
-        thread = threading.Thread(name='auctionapi', target=auctionapi_thread, args=(5, stop_event), daemon=False)
-        threads.append(thread)
-    log.debug(f'Starting {len(threads)} threads')
-    for thread in threads:
-        thread.start()
-    log.debug('All threads have started')
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     if args.trace:
         warnings.simplefilter('always', ResourceWarning)
         asyncio.run(asyncmain(), debug=True)  # Async branch to main loop (debug)
     else:
         asyncio.run(asyncmain())  # Async branch to main loop
-    if len(threads) > 0:
-        log.debug(f'Waiting for {len(threads)} threads and tasks to exit...')
-        for thread in threads:
-            thread.join
     processlock.unlock()
     log.debug('Pyark Finished.')
     exit(0)
