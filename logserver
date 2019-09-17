@@ -67,7 +67,7 @@ def convertdt(line):
     ptime = line.split('m', 1)[1][:19]
     pline = line.split('m', 1)[1][19:]
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
-    dts = dt.strftime("%a %I:%M%p ")
+    dts = dt.strftime("%a %I:%M:%S %p ")
     return f'{pre}m{dts}{pline}'
 
 
@@ -88,7 +88,7 @@ def convertdt3(line):
     pline = line[19:]
     print(ptime)
     dt = estconvert(datetime.strptime(ptime, '%Y-%m-%d %H:%M:%S'))
-    dts = dt.strftime("%a %I:%M:%S %p ")
+    dts = dt.strftime("%a %I:%M:%S %p")
     return f'{dts}{pline}'
 
 
