@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta, pytz
+from datetime import datetime, timedelta
+import pytz
 from math import trunc
 
 tzfix = timedelta(hours=4)
