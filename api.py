@@ -128,17 +128,42 @@ async def servers_vars(response: Response, servername=None):
         return {'message': 'you must specify a server name'}
 
 
-@app.get('/logs/game', status_code=200)
+@app.get('/logs/pyark', status_code=200)
 async def logs_pyark(response: Response, lines=1):
+    getlines = await redis.zcard('pyarklog')
+    if int(lines) > int(getlines):
+        lines = int(getlines)
+        startlines = int(getlines) - int(lines)
+        loglines = await redis.zrange('pyarklog', startlines, int(getlines))
+        return {'chat_log': stripansi(loglines)}
+    else:
+        return {'chat_log': None}
+
+
+@app.get('/logs/game', status_code=200)
+async def logs_game(response: Response, lines=1):
     getlines = await redis.zcard('glhistory')
     if getlines is not None:
         if int(lines) > int(getlines):
             lines = int(getlines)
         startlines = int(getlines) - int(lines)
-        lines = await redis.zrange('glhistory', startlines, int(getlines))
-        return {'game_log': stripansi(lines)}
+        loglines = await redis.zrange('glhistory', startlines, int(getlines))
+        return {'game_log': stripansi(loglines)}
     else:
         return {'game_log': None}
+
+
+@app.get('/logs/chat', status_code=200)
+async def logs_chat(response: Response, lines=1):
+    getlines = await redis.zcard('clhistory')
+    if getlines is not None:
+        if int(lines) > int(getlines):
+            lines = int(getlines)
+        startlines = int(getlines) - int(lines)
+        loglines = await redis.zrange('clhistory', startlines, int(getlines))
+        return {'chat_log': stripansi(loglines)}
+    else:
+        return {'chat_log': None}
 
 
 @app.get("/")
