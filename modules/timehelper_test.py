@@ -47,10 +47,11 @@ def test_epochto():
     assert type(timehelper.epochto(datetime.now().timestamp(), 'string', est=True)) is str
 
 
-def test_playedTime():
+def test_elapsedSeconds():
     assert timehelper.playedTime(480) == '8 minutes'
-    assert timehelper.playedTime(3600) == '1 hour'
-    assert timehelper.playedTime(5280) == '1 hour, 28 minutes'
+    assert timehelper.playedTime('3600') == '1 hour'
+    assert timehelper.playedTime('3,600') == '1 hour'
+    assert timehelper.playedTime(5280.1023) == '1 hour, 28 minutes'
     assert timehelper.playedTime(863254) == '9 days, 23 hours'
 
 

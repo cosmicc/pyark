@@ -18,8 +18,7 @@ intervals = (
 
 
 def truncate_float(number, digits) -> float:
-    """Summary:
-        Truncate a float to a specified number of digits
+    """Truncate a float to a specified number of digits
 
     Args:
         number (float): Description: Number to truncate
@@ -29,9 +28,9 @@ def truncate_float(number, digits) -> float:
         FLOAT
     """
     if not isinstance(number, float):
-        raise TypeError('Number value must be type float')
+        raise TypeError(f'Number value must be type float, not {type(number)}')
     if not isinstance(digits, int):
-        raise TypeError('Digits value must be type int')
+        raise TypeError(f'Digits value must be type int, not {type(digits)}')
     stepper = 10.0 ** abs(digits)
     return trunc(stepper * number) / stepper
 
@@ -52,11 +51,10 @@ def estconvert(utc_dt):
 class newdatetimeto:
     def _checkinputs(dt):
         if not isinstance(dt, datetime):
-            raise TypeError('Input must be of type datetime')
+            raise TypeError(f'Input must be of type datetime not {type(dt)}')
 
     def epoch(dt):
-        """Summary:
-            Convert datetime object to epoch
+        """Convert datetime object to epoch
 
         Args:
             dt (datetime): Description: Datetime object to convert
@@ -68,8 +66,7 @@ class newdatetimeto:
         return dt.timestamp()
 
     def string(dt):
-        """Summary:
-            Convert datetime object to string representation
+        """Convert datetime object to string representation
 
         Args:
             dt (datetime): Description: Datetime object to convet
@@ -82,7 +79,7 @@ class newdatetimeto:
 
 
 def datetimeto(dt, fmt, est=False):
-    """Summary:
+    """Convert datetime object
 
     Args:
         dt (TYPE): Description:
@@ -102,7 +99,7 @@ def datetimeto(dt, fmt, est=False):
 
 
 def Now(fmt='epoch', est=False):
-    """Summary:
+    """Return current time
 
     Args:
         fmt (str, [Optional]): Description:
@@ -157,8 +154,7 @@ def wcstamp():
 
 
 def elapsedTime(start_time, stop_time, nowifmin=True):
-    """Summary:
-        Convert 2 epochs to elapsed time string
+    """Convert 2 epochs to elapsed time string representation
 
     Args:
         start_time (string, int, float): Description: Start time
@@ -169,9 +165,9 @@ def elapsedTime(start_time, stop_time, nowifmin=True):
         STRING: Description: e.g. '1 Hour, 47 Minutes'
     """
     if not isinstance(start_time, (str, int, float)):
-        raise TypeError('Start time is wrong type')
+        raise TypeError(f'Start time is wrong type {type(start_time)}')
     if not isinstance(stop_time, (str, int, float)):
-        raise TypeError('End time is wrong type')
+        raise TypeError(f'End time is wrong type {type(stop_time)}')
     result = []
     if start_time > stop_time:
         seconds = int(start_time) - int(stop_time)
@@ -196,9 +192,17 @@ def elapsedTime(start_time, stop_time, nowifmin=True):
 
 
 def elapsedSeconds(seconds):
+    """Convert seconds to elapsed time string representation
+
+    Args:
+        seconds (sting, int, float): Description: Number of seconds to convert
+
+    Returns:
+        STRING: Description: e.g. '1 Hour, 47 Minutes'
+    """
     result = []
-    if not isinstance(seconds, int) and not isinstance(seconds, float):
-        raise TypeError
+    if not isinstance(seconds, (int, float, str)):
+        raise TypeError(f'Seconds is wrong type {type(seconds)}')
     seconds = int(seconds)
     if seconds < Secs['hour']:
         granularity = 1
