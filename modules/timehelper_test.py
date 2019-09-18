@@ -48,9 +48,16 @@ def test_epochto():
 
 
 def test_elapsedSeconds():
+    assert timehelper.elapsedSeconds(480) == '8 minutes'
+    assert timehelper.elapsedSeconds('3600') == '1 hour'
+    assert timehelper.elapsedSeconds('3,600') == '1 hour'
+    assert timehelper.elapsedSeconds(5280.1023) == '1 hour, 28 minutes'
+    assert timehelper.elapsedSeconds(863254) == '9 days, 23 hours'
+
+
+def test_playedTime():
     assert timehelper.playedTime(480) == '8 minutes'
     assert timehelper.playedTime('3600') == '1 hour'
-    assert timehelper.playedTime('3,600') == '1 hour'
     assert timehelper.playedTime(5280.1023) == '1 hour, 28 minutes'
     assert timehelper.playedTime(863254) == '9 days, 23 hours'
 
