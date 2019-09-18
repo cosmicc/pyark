@@ -2,7 +2,7 @@ from functools import wraps
 
 from fastapi import FastAPI
 from modules.asyncdb import asyncDB
-from modules.redis import globalvar, instancestate, instancevar
+from modules.redis import redis, globalvar, instancestate, instancevar
 from starlette.responses import Response
 
 app = FastAPI(openapi_prefix="/api")
@@ -124,6 +124,18 @@ async def servers_vars(response: Response, servername=None):
     else:
         response.status_code = 400
         return {'message': 'you must specify a server name'}
+
+
+@app.get('/logs/game', status_code=200)
+async def logs_pyark(response: Response, lines=1):
+    getlines = await redis.zcard('glhistory')
+    if getlines is not None:
+        if int(lines) > int(getlines):
+            lines = int(getlines)
+        startlines = int(getlines) - int(lines)
+        return {'game_log': await redis.zrange('glhistory', startlines, int(getlines))}
+    else:
+        return {'game_log': None}
 
 
 @app.get("/")
