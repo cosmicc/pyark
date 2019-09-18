@@ -43,17 +43,17 @@ async def players_info(steamid=None, playername=None):
     if steamid:
         player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
         if player:
-            return player, 200
+            return {'player_info': player}
         else:
-            return {'message': 'steamid does not exist'}, 400
+            return {'message': 'steamid does not exist'}
     elif playername:
         player = await db.fetchone(f"SELECT * FROM players WHERE playername = '{playername}'")
         if player:
-            return player, 200
+            return {'player_info': player}
         else:
-            return {'message': 'playername does not exist'}, 400
+            return {'message': 'playername does not exist'}
     else:
-        return {'message': 'you must specify a steamid or playermame'}, 400
+        return {'message': 'you must specify a steamid or playermame'}
 
 
 @app.route('/servers/info')
@@ -61,18 +61,13 @@ async def servers_info(servername=None):
     instances = await globalvar.getlist('allinstances')
     if servername is not None:
         if servername in instances:
-            return await db.fetchone(f"SELECT * FROM instances WHERE name = '{servername}'"), 200
+            return {'server_info': await db.fetchone(f"SELECT * FROM instances WHERE name = '{servername}'")}
         else:
-            return {'message': 'invalid server name'}, 400
+            return {'message': 'invalid server name'}
     else:
-        return {'message': 'you must specify a server name'}, 400
+        return {'message': 'you must specify a server name'}
 
 
 @app.get("/")
 def read_root():
     return {"try": "/docs"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
