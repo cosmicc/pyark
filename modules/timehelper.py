@@ -19,6 +19,7 @@ intervals = (
 
 def truncate_float(number, digits) -> float:
     """Summary:
+        Truncate a float to a specified number of digits
 
     Args:
         number (float): Description: Number to truncate
@@ -35,16 +36,39 @@ def truncate_float(number, digits) -> float:
     return trunc(stepper * number) / stepper
 
 
+def estconvert(utc_dt):
+    """Summary:
+
+    Args:
+        utc_dt (TYPE): Description:
+
+    Returns:
+        TYPE: Description:
+    """
+    ndt = utc_dt.replace(tzinfo=pytz.UTC)
+    return ndt.astimezone(pytz.timezone("America/Detroit"))
+
+
 class datetimeto:
-    def checkinputs(dt):
+    def _checkinputs(dt):
         if not isinstance(dt, datetime):
             raise TypeError('Input must be of type datetime')
 
     def epoch(dt):
-        datetimeto.checkinputs(dt)
+        """Summary:
+            Convert datetime object to epoch
+
+        Args:
+            dt (datetime): Description: Datetime object to convert
+
+        Returns:
+            float: Description:
+        """
+        datetimeto._checkinputs(dt)
         return dt.timestamp()
 
-    # def string(dt):
+    def string(dt):
+        datetimeto._checkinputs(dt)
 
 
 def olddatetimeto(dt, fmt, est=False):
@@ -88,11 +112,6 @@ def epochto(epoch, fmt, est=False):
             return datetimeto(datetime.fromtimestamp(int(epoch)), 'string', est=True)
         else:
             return datetimeto(datetime.fromtimestamp(int(epoch)), 'string')
-
-
-def estconvert(utc_dt):
-    ndt = utc_dt.replace(tzinfo=pytz.UTC)
-    return ndt.astimezone(pytz.timezone("America/Detroit"))
 
 
 def estshift(otime):
