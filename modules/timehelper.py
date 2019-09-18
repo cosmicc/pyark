@@ -1,3 +1,4 @@
+
 from datetime import datetime, timedelta
 import pytz
 from math import trunc
@@ -17,6 +18,15 @@ intervals = (
 
 
 def truncate(number, digits) -> float:
+    """Summary:
+
+    Args:
+        number (float): Description: Number to truncate
+        digits (int): Description: Number of decimal places to return
+
+    Returns:
+        float:
+    """
     stepper = 10.0 ** digits
     return trunc(stepper * number) / stepper
 

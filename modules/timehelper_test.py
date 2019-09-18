@@ -6,6 +6,13 @@ import modules.timehelper as timehelper
 sys.path.append('/home/ark/pyark')
 
 
+def truncate_test():
+    assert type(timehelper.truncate(12.23456)) is float
+    assert timehelper.truncate(12.34567) == 12.34
+    assert timehelper.truncate(12.3) == 12.30
+    assert timehelper.truncate(12) == 12.00
+
+
 def test_datetimeto():
     assert type(timehelper.datetimeto(datetime.now(), 'string')) is str
     assert type(timehelper.datetimeto(datetime.now(), 'string', est=True)) is str
