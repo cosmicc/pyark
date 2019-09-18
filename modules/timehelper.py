@@ -108,7 +108,7 @@ def elapsedTime(start_time, stop_time, nowifmin=True):
 
 def elapsedSeconds(seconds):
     result = []
-    if not isinstance(seconds, int) or not isinstance(seconds, float):
+    if not isinstance(seconds, int) and not isinstance(seconds, float):
         raise TypeError
     seconds = int(seconds)
     if seconds < Secs['hour']:
