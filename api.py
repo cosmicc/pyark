@@ -40,16 +40,16 @@ async def serverchat(chatline):
     cmdremove = len(who) + 1
     msg = chatline[cmdremove:].strip()
     if (cmd == '@' and who == 'all') or (cmd == '#' and who == 'all'):
-        await asyncserverchat(msg, inst='ALL', whosent='Admin', private=False, broadcast=False)
+        await asyncserverchat(msg, inst='ALL', whosent='Admin', private=False, broadcast=False, db=db)
     elif cmd == '#':
-        await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False)
+        await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False, db=db)
     elif cmd == '@':
         if who in await globalvar.getlist('allinstances'):
-            await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False)
+            await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False, db=db)
         else:
-            await asyncserverchat(msg, inst='ALL', whosent=who, private=True, broadcast=False)
+            await asyncserverchat(msg, inst='ALL', whosent=who, private=True, broadcast=False, db=db)
     elif cmd == '!':
-        await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=True)
+        await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=True, db=db)
 
 
 @app.on_event("startup")
