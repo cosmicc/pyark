@@ -57,6 +57,7 @@ def GameThread(sid, namespace):
             if msg is not None:
                 log.trace(f'Sending logline to: {sid}')
                 socketio.emit('gameline', {'line': msg}, namespace=namespace, room=sid)
+                sleep(.01)
             else:
                 sleep(.3)
     log.debug(f'Closing down game log watch for {sid}')
@@ -75,6 +76,7 @@ def ChatThread(sid, namespace):
             if msg is not None:
                 log.trace(f'Sending logline to: {sid}')
                 socketio.emit('chatline', {'line': msg}, namespace=namespace, room=sid)
+                sleep(.01)
             else:
                 sleep(.3)
     log.debug(f'Closing down chat log watch for {sid}')
@@ -93,6 +95,7 @@ def LogThread(sid, namespace):
             if msg is not None:
                 log.trace(f'Sending logline to: {sid}')
                 socketio.emit('logline', {'line': msg}, namespace=namespace, room=sid)
+                sleep(.01)
             else:
                 sleep(.3)
     log.debug(f'Closing down pyark log watch for {sid}')
@@ -111,6 +114,7 @@ def DebugLogThread(sid, namespace):
             if msg is not None:
                 log.trace(f'Sending logline to: {sid}')
                 socketio.emit('logline', {'line': msg}, namespace=namespace, room=sid)
+                sleep(.01)
             else:
                 sleep(.3)
     log.debug(f'Closing down debug pyark log watch for {sid}')
