@@ -56,7 +56,7 @@ async def players_info(steamid=None, playername=None):
         return {'message': 'you must specify a steamid or playermame'}
 
 
-@app.route('/servers/info')
+@app.get('/servers/info')
 async def servers_info(servername=None):
     instances = await globalvar.getlist('allinstances')
     if servername is not None:
