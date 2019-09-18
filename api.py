@@ -133,11 +133,12 @@ async def logs_pyark(response: Response, lines=1):
     getlines = await redis.zcard('pyarklog')
     if int(lines) > int(getlines):
         lines = int(getlines)
-        startlines = int(getlines) - int(lines)
-        loglines = await redis.zrange('pyarklog', startlines, int(getlines))
-        return {'chat_log': stripansi(loglines)}
+    startlines = int(getlines) - int(lines)
+    loglines = await redis.zrange('pyarklog', startlines, int(getlines))
+    if loglines:
+        return {'pyark_log': stripansi(loglines)}
     else:
-        return {'chat_log': None}
+        return {'pyark_log': None}
 
 
 @app.get('/logs/game', status_code=200)
