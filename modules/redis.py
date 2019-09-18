@@ -288,3 +288,12 @@ class instancestate:
             state {string} -- Instance state
         """
         return await redis.sismember(f'{instance}-states', state)
+
+    async def getlist(instance):
+        """List of instance states
+
+        Arguments:
+            instance {string} -- Instance name
+        """
+        return await redis.smembers(f'{instance}-states')
+
