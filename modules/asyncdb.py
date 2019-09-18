@@ -1,10 +1,8 @@
 import asyncio
-from datetime import datetime
-
 import asyncpg
 from loguru import logger as log
-
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
+from modules.timehelper import Now
 
 
 class asyncDB:
@@ -24,15 +22,18 @@ class asyncDB:
         self.max = max
         self.timeout = timeout
         self.connecting = True
-        try:
-            self.cpool = await asyncpg.create_pool(min_size=self.min, max_size=self.max, max_inactive_connection_lifetime=float(self.timeout), database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
-        except:
-            log.critical('Error connecting to database server.. waiting to reconnect')
-            await asyncio.sleep(5)
-            await self.connect()
+        if self.pool is None:
+            try:
+                self.cpool = await asyncpg.create_pool(min_size=self.min, max_size=self.max, max_inactive_connection_lifetime=float(self.timeout), database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+            except:
+                log.critical('Error connecting to database server.. waiting to reconnect')
+                await asyncio.sleep(5)
+                await self.connect()
+            else:
+                log.debug(f'Database connection pool initilized for [{self.process}] (min:{self.min}, max:{self.max}, timeout:{self.timeout})')
+                self.connecting = False
         else:
-            log.debug(f'Database connection pool initilized for [{self.process}] (min:{self.min}, max:{self.max}, timeout:{self.timeout})')
-            self.connecting = False
+            log.debug(f'Reusing existing connection pool')
         # self.player_by_id = self.dbconn.prepare("""SELECT * FROM players WHERE steamid = '$1'""")
 
     async def close(self):
@@ -140,7 +141,7 @@ class asyncDB:
         return await self._execute(query, db)
 
     async def statsupdate(self, inst, value):
-        await self.update(f"INSERT INTO {inst.lower()}_stats (date, value) VALUES ('{datetime.now().replace(microsecond=0)}', {value})")
+        await self.update(f"INSERT INTO {inst.lower()}_stats (date, value) VALUES ('{Now().replace(microsecond=0)}', {value})")
 
 
 DB = asyncDB()
