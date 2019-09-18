@@ -9,15 +9,15 @@ sys.path.append('/home/ark/pyark')
 
 def test_truncate_float():
     with pytest.raises(TypeError):
-        timehelper.truncate('12.3531', 0)
-        timehelper.truncate(12.3531, 1.4)
-    assert type(timehelper.truncate(12.23456, 2)) is float
-    assert timehelper.truncate(12.34567, 2) == 12.34
-    assert timehelper.truncate(12.3, 1) == 12.3
-    assert timehelper.truncate(12, 0) == 12
-    assert timehelper.truncate(12.3, 5) == 12.3
-    assert timehelper.truncate(12.386, -5) == 12.3
-    assert timehelper.truncate(12.3531, 0) == 12
+        timehelper.truncate_float('12.3531', 0)
+        timehelper.truncate_float(12.3531, 1.4)
+    assert type(timehelper.truncate_float(12.23456, 2)) is float
+    assert timehelper.truncate_float(12.34567, 2) == 12.34
+    assert timehelper.truncate_float(12.3, 1) == 12.3
+    assert timehelper.truncate_float(12, 0) == 12
+    assert timehelper.truncate_float(12.3, 5) == 12.3
+    assert timehelper.truncate_float(12.386, -5) == 12.3
+    assert timehelper.truncate_float(12.3531, 0) == 12
 
 
 def test_datetimeto():
