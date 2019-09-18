@@ -9,7 +9,7 @@
 </script>
 <script>
     $(document).ready(function(){
-        var socket = io.connect('http://' + document.domain + ':' + location.port + '/logstream');
+        var socket = io.connect('http://' + document.domain + ':' + location.port + {{ ns }});
         $('textarea').empty()
             socket.on('logline', function(msg) {
             $('#log').append(msg.line + '<br>');
@@ -28,8 +28,8 @@
             if (e.which == 13) {
                 var lc = $('#localchat').val();
                 $('#localchat').val("");
-                $.post("/api/serverchat", 
-                    { chatline: lc }, 
+                $.post("/api/serverchat",
+                    { chatline: lc },
                     function(data, status) {
                         console.log(`${data} msg sent ${status}`)
                     });
@@ -39,7 +39,7 @@
 
 {% if current_user.has_role('admin') %}
 <body>
-<div id="vtop" class="vtop">    
+<div id="vtop" class="vtop">
     <div id="toplevel" class="toplevel">
         <div id="dashboard" class="dashboard">
         <div id="newcounts" class="newcounts">ND {{ ui_getnewplayercount(86400) }}<br>NW {{ ui_getnewplayercount(604800) }}<br>HR {{ ui_gethitnruns(604800) }}</div>
@@ -73,7 +73,7 @@
                 {% endif %}
                 {% endif %}
                 {% endfor %}
-            </div>    
+            </div>
         <div id="lottoevents" class="lottoevents">
             {% if ui_isinlottery() %}
             <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; text-decoration: none;"><button class="lbutton has-background-success" style="color: #FFFFFF">{{ ui_getlotteryplayers(fmt='count') }}</button></a>
@@ -96,6 +96,6 @@
        <div class="chatinput"> <input id="localchat" class="input" type="text" placeholder="@all"></div>
        </div>
     </div>
-</div>    
+</div>
 </body>
 {% endif %}

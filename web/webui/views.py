@@ -44,7 +44,7 @@ class ExtendedRegisterForm(RegisterForm):
     timezone = StringField('Time Zone')
 
 
-def GameThread(sid):
+def GameThread(sid, namespace):
     log.debug(f'Starting game log watch for {sid}')
     gamewatch = LogClient(30, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'game', 'ALL', 1)
     gamewatch.connect()
@@ -59,7 +59,7 @@ def GameThread(sid):
             msg = gamewatch.getline()
             if msg is not None and msg != 'None':
                 log.trace(f'Sending gameline to: {sid}')
-                socketio.emit('gameline', {'line': msg}, namespace='/logstream', room=sid)
+                socketio.emit('gameline', {'line': msg}, namespace=namespace, room=sid)
         except:
             log.exception('ERROR!!')
         finally:
@@ -67,7 +67,7 @@ def GameThread(sid):
     log.debug(f'Closing down game log watch for {sid}')
 
 
-def ChatThread(sid):
+def ChatThread(sid, namespace):
     log.debug(f'Starting chat log watch for {sid}')
     chatwatch = LogClient(20, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'chat', 'ALL', 1)
     chatwatch.connect()
@@ -82,13 +82,13 @@ def ChatThread(sid):
             msg = chatwatch.getline()
             if msg is not None and msg != 'None':
                 log.trace(f'Sending chatline to: {sid}')
-                socketio.emit('chatline', {'line': msg}, namespace='/logstream', room=sid)
+                socketio.emit('chatline', {'line': msg}, namespace=namespace, room=sid)
         except:
             log.exception('ERROR!!')
     log.debug(f'Closing down chat log watch for {sid}')
 
 
-def LogThread(sid):
+def LogThread(sid, namespace):
     log.debug(f'Starting pyark log watch for {sid}')
     logwatch = LogClient(80, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
     logwatch.connect()
@@ -103,13 +103,13 @@ def LogThread(sid):
             msg = logwatch.getline()
             if msg is not None:
                 log.trace(f'Sending logline to: {sid}')
-                socketio.emit('logline', {'line': msg}, namespace='/logstream', room=sid)
+                socketio.emit('logline', {'line': msg}, namespace=namespace, room=sid)
         except:
             log.exception('ERROR!!')
     log.debug(f'Closing down pyark log watch for {sid}')
 
 
-def DebugLogThread(sid):
+def DebugLogThread(sid, namespace):
     log.debug(f'Starting pyark debug log watch for {sid}')
     logwatch = LogClient(80, 1, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
     logwatch.connect()
@@ -124,7 +124,7 @@ def DebugLogThread(sid):
             msg = logwatch.getline()
             if msg is not None:
                 log.trace(f'Sending logline to: {sid}')
-                socketio.emit('logline', {'line': msg}, namespace='/logstream', room=sid)
+                socketio.emit('logline', {'line': msg}, namespace=namespace, room=sid)
         except:
             log.exception('ERROR!!')
     log.debug(f'Closing down debug pyark log watch for {sid}')
@@ -155,14 +155,32 @@ def processlogline(line):
 
 
 @log.catch
-@socketio.on('connect', namespace='/logstream')
+@socketio.on('connect', namespace='/debugstream')
 def connect():
+    socketio.start_background_task(target=ChatThread, sid=request.sid, namespace='/debugstream')
+    socketio.start_background_task(target=GameThread, sid=request.sid, namespace='/debugstream')
+    socketio.start_background_task(target=DebugLogThread, sid=request.sid, namespace='/debugstream')
+    log.debug(f'Logstream started for: {request.sid}')
+
+
+@log.catch
+@socketio.on('connect', namespace='/logstream')
+def connect2():
+    socketio.start_background_task(target=ChatThread, sid=request.sid, namespace='/logstream')
+    socketio.start_background_task(target=GameThread, sid=request.sid, namespace='/logstream')
+    socketio.start_background_task(target=LogThread, sid=request.sid, namespace='/logstream')
     log.debug(f'Logstream started for: {request.sid}')
 
 
 @log.catch
 @socketio.on('disconnect', namespace='/logstream')
 def disconnect():
+    log.debug(f'Logstream ended for: {request.sid}')
+
+
+@log.catch
+@socketio.on('disconnect', namespace='/debugstream')
+def disconnect2():
     log.debug(f'Logstream ended for: {request.sid}')
 
 
@@ -969,19 +987,13 @@ def _chatlog(instance):
 @webui.route('/pyarklog')
 @login_required
 def _pyarklog():
-    socketio.start_background_task(target=LogThread, sid=request.sid, namespace='/logstream')
-    socketio.start_background_task(target=ChatThread, sid=request.sid, namespace='/logstream')
-    socketio.start_background_task(target=GameThread, sid=request.sid, namespace='/logstream')
-    return render_template('pyarklog.html', instances=instancelist())
+    return render_template('pyarklog.html', instances=instancelist(), ns='/logstream')
 
 
 @webui.route('/pyarkdebuglog')
 @login_required
 def _pyarkdebuglog():
-    socketio.start_background_task(target=ChatThread, sid=request.sid, namespace='/logstream')
-    socketio.start_background_task(target=GameThread, sid=request.sid, namespace='/logstream')
-    socketio.start_background_task(target=DebugLogThread, sid=request.sid, namespace='/logstream')
-    return render_template('pyarklog.html', instances=instancelist())
+    return render_template('pyarklog.html', instances=instancelist(), ns='/debugstream')
 
 
 @webui.context_processor
