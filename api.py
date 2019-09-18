@@ -1,11 +1,11 @@
 from functools import wraps
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Form
 from modules.asyncdb import asyncDB
-from modules.redis import redis, globalvar, instancestate, instancevar
-from starlette.responses import Response
+from modules.instances import asyncserverchat
+from modules.redis import globalvar, instancestate, instancevar, redis
 from modules.servertools import stripansi
-
+from starlette.responses import Response
 
 app = FastAPI(openapi_prefix="/api")
 
@@ -34,6 +34,24 @@ async def token_required(f):
 '''
 
 
+async def serverchat(chatline):
+    cmd = chatline.split(' ')[0][:1].strip()
+    who = chatline.split(' ')[0][1:].strip().lower()
+    cmdremove = len(who) + 1
+    msg = chatline[cmdremove:].strip()
+    if (cmd == '@' and who == 'all') or (cmd == '#' and who == 'all'):
+        await asyncserverchat(msg, inst='ALL', whosent='Admin', private=False, broadcast=False)
+    elif cmd == '#':
+        await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False)
+    elif cmd == '@':
+        if who in await globalvar.getlist('allinstances'):
+            await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False)
+        else:
+            await asyncserverchat(msg, inst='ALL', whosent=who, private=True, broadcast=False)
+    elif cmd == '!':
+        await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=True)
+
+
 @app.on_event("startup")
 async def startup():
     await db.connect(min=1, max=5, timeout=60)
@@ -42,6 +60,12 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await db.close()
+
+
+@app.post('/serverchat')
+async def server_chat(chatline: str = Form(...)):
+    await serverchat(chatline)
+    return chatline
 
 
 @app.get('/servers/status')
