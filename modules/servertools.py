@@ -10,7 +10,7 @@ from loguru import logger as log
 import globvars
 from modules.asyncdb import DB as db
 from modules.redis import instancevar
-from modules.timehelper import Now, elapsedTime
+from modules.timehelper import Now, elapsedTime, elapsedSeconds
 
 
 def stripansi(stripstr):
@@ -178,7 +178,7 @@ def issharedmounted():
 
 def getuptime(elapsed=False):
     if elapsed:
-        return elapsedTime(float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1]))
+        return elapsedSeconds(float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1]))
     else:
         return float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1])
 

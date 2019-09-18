@@ -106,6 +106,25 @@ def elapsedTime(start_time, stop_time, nowifmin=True):
         return ', '.join(result[:granularity])
 
 
+def elapsedSeconds(seconds):
+    result = []
+    if not isinstance(seconds, int) or not isinstance(seconds, float):
+        raise TypeError
+    seconds = int(seconds)
+    if seconds < Secs['hour']:
+        granularity = 1
+    else:
+        granularity = 2
+    for name, count in intervals:
+        value = seconds // count
+        if value:
+            seconds -= value * count
+            if value == 1:
+                name = name.rstrip('s')
+            result.append("{} {}".format(int(value), name))
+    return ', '.join(result[:granularity])
+
+
 def joinedTime(seconds):
     result = []
     seconds = int(seconds)
