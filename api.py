@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from modules.asyncdb import asyncDB
 from modules.redis import redis, globalvar, instancestate, instancevar
 from starlette.responses import Response
+from modules.servertools import stripansi
+
 
 app = FastAPI(openapi_prefix="/api")
 
@@ -133,7 +135,7 @@ async def logs_pyark(response: Response, lines=1):
         if int(lines) > int(getlines):
             lines = int(getlines)
         startlines = int(getlines) - int(lines)
-        return {'game_log': await redis.zrange('glhistory', startlines, int(getlines))}
+        return {'game_log': stripansi(await redis.zrange('glhistory', startlines, int(getlines)))}
     else:
         return {'game_log': None}
 
