@@ -64,7 +64,7 @@ async def players_online():
 
 
 @app.get("/players/info", status_code=200)
-async def players_info(steamid=None, playername=None, response: Response):
+async def players_info(response: Response, steamid=None, playername=None):
     if steamid:
         player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
         if player:
@@ -85,7 +85,7 @@ async def players_info(steamid=None, playername=None, response: Response):
 
 
 @app.get('/servers/info', status_code=200)
-async def servers_info(servername=None, response: Response):
+async def servers_info(response: Response, servername=None):
     instances = await globalvar.getlist('allinstances')
     if servername is not None:
         if servername in instances:
