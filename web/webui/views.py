@@ -164,7 +164,6 @@ def connect():
 @socketio.on('disconnect', namespace='/logstream')
 def disconnect():
     log.debug(f'Logstream ended for: {request.sid}')
-    logthreads.remove(request.sid)
 
 
 @webui.context_processor
