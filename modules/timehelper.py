@@ -64,7 +64,7 @@ class newdatetimeto:
         Returns:
             FLOAT: Description: Epoch value of datetime object
         """
-        datetimeto._checkinputs(dt)
+        newdatetimeto._checkinputs(dt)
         return dt.timestamp()
 
     def string(dt):
@@ -77,7 +77,7 @@ class newdatetimeto:
         Returns:
             STRING: Description: '%a, %b %d, %Y %I:%M %p'
         """
-        datetimeto._checkinputs(dt)
+        newdatetimeto._checkinputs(dt)
         return dt.strftime('%a, %b %d, %Y %I:%M %p')
 
 
