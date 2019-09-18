@@ -56,13 +56,13 @@ async def asyncgchatrelay(instances):
                     await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')
                 elif not chatline['private'] and not chatline['broadcast']:
                     await asyncserverchat(chatline['server'], f'Admin: {chatline["message"]}')
-                    log.log('CHAT', f'{chatline["server"]} | ADMIN | {chatline["message"]}')
+                    log.log('CHAT', f'{chatline["server"].upper():>8}| ADMIN: {chatline["message"]}')
                     await asyncwritechatlog(chatline['server'], 'ADMIN', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
                     await asyncwritechat(chatline['server'], 'Admin', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
                     await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')
                 elif chatline['broadcast'] and not chatline['private']:
                     await asyncserverbcast(chatline['server'], chatline["message"])
-                    log.log('CHAT', f'{chatline["server"]} | BROADCAST | {chatline["message"]}')
+                    log.log('CHAT', f'{chatline["server"].upper():>8}| BROADCAST: {chatline["message"]}')
                     await asyncwritechatlog(chatline['server'], 'BROADCAST', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
                     await asyncwritechat(chatline['server'], 'Broadcast', chatline['message'], Now(fmt='dt').strftime('%m-%d %I:%M%p'))
                     await db.update(f'DELETE FROM globalbuffer WHERE id = {chatline["id"]}')
