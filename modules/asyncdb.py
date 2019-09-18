@@ -18,7 +18,7 @@ class asyncDB:
         self.cpool = None
         self.connecting = False
 
-    async def connect(self, process=__file__, min=3, max=10, timeout=300):
+    async def connect(self, process=__file__, min=2, max=10, timeout=300):
         self.process = process
         self.min = min
         self.max = max
