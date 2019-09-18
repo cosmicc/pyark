@@ -38,9 +38,17 @@ async def players_online():
     return await db.fetchone(f"SELECT COUNT(*) FROM players WHERE online = True")
 
 
+@app.get("/players/info")
+async def players_info(steamid=None, playername=None):
+    if steamid:
+        return await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
+    elif playername:
+        return await db.fetchone(f"SELECT * FROM players WHERE playername = '{playername}'")
+
+
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"try": "/docs"}
 
 
 @app.get("/items/{item_id}")
