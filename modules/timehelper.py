@@ -82,6 +82,16 @@ class newdatetimeto:
 
 
 def datetimeto(dt, fmt, est=False):
+    """Summary:
+
+    Args:
+        dt (TYPE): Description:
+        fmt (TYPE): Description:
+        est (bool, [Optional]): Description:
+
+    Returns:
+        TYPE: Description:
+    """
     if fmt == 'epoch':
         return int(dt.timestamp())
     elif fmt == 'string':
@@ -92,6 +102,15 @@ def datetimeto(dt, fmt, est=False):
 
 
 def Now(fmt='epoch', est=False):
+    """Summary:
+
+    Args:
+        fmt (str, [Optional]): Description:
+        est (bool, [Optional]): Description:
+
+    Returns:
+        TYPE: Description:
+    """
     if fmt == 'dt':
         if est:
             return estshift(datetime.now())
@@ -138,6 +157,21 @@ def wcstamp():
 
 
 def elapsedTime(start_time, stop_time, nowifmin=True):
+    """Summary:
+        Convert 2 epochs to elapsed time string
+
+    Args:
+        start_time (string, int, float): Description: Start time
+        stop_time (string, int, float): Description:  End time
+        nowifmin (bool, [Optional]): Description: If less then 1 minute return 'Now'
+
+    Returns:
+        STRING: Description: e.g. '1 Hour, 47 Minutes'
+    """
+    if not isinstance(start_time, (str, int, float)):
+        raise TypeError('Start time is wrong type')
+    if not isinstance(stop_time, (str, int, float)):
+        raise TypeError('End time is wrong type')
     result = []
     if start_time > stop_time:
         seconds = int(start_time) - int(stop_time)

@@ -55,9 +55,13 @@ def test_playedTime():
 
 
 def test_elapsedTime():
+    with pytest.raises(TypeError):
+        timehelper.elapsedTime([1, 3])
+        timehelper.elapsedTime((1, 3))
     assert timehelper.elapsedTime(1541300681, 1541300689) == 'now'
     assert timehelper.elapsedTime(1541300681, 1541300689, nowifmin=False) == '8 seconds'
-    assert timehelper.elapsedTime(1541300689, 1541300681, nowifmin=False) == '8 seconds'
+    assert timehelper.elapsedTime('1541300689', '1541300681', nowifmin=False) == '8 seconds'
+    assert timehelper.elapsedTime(1541300681.012124, 1541300689.523465, nowifmin=False) == '8 seconds'
     assert timehelper.elapsedTime(1541288689, 1541300681) == '3 hours, 19 minutes'
 
 
