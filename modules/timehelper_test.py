@@ -2,15 +2,22 @@ import sys
 from datetime import datetime
 
 import modules.timehelper as timehelper
+import pytest
 
 sys.path.append('/home/ark/pyark')
 
 
-def test_truncate():
-    assert type(timehelper.truncate(12.23456)) is float
-    assert timehelper.truncate(12.34567) == 12.34
-    assert timehelper.truncate(12.3) == 12.30
-    assert timehelper.truncate(12) == 12.00
+def test_truncate_float():
+    with pytest.raises(TypeError):
+        timehelper.truncate('12.3531', 0)
+        timehelper.truncate(12.3531, 1.4)
+    assert type(timehelper.truncate(12.23456, 2)) is float
+    assert timehelper.truncate(12.34567, 2) == 12.34
+    assert timehelper.truncate(12.3, 1) == 12.3
+    assert timehelper.truncate(12, 0) == 12
+    assert timehelper.truncate(12.3, 5) == 12.3
+    assert timehelper.truncate(12.386, -5) == 12.3
+    assert timehelper.truncate(12.3531, 0) == 12
 
 
 def test_datetimeto():

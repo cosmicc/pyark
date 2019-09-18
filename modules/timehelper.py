@@ -17,7 +17,7 @@ intervals = (
     ('seconds', 1),)
 
 
-def truncate(number, digits) -> float:
+def truncate_float(number, digits) -> float:
     """Summary:
 
     Args:
@@ -25,7 +25,7 @@ def truncate(number, digits) -> float:
         digits (int): Description: Number of decimal places to return
 
     Returns:
-        float:
+        float
     """
     stepper = 10.0 ** digits
     return trunc(stepper * number) / stepper
