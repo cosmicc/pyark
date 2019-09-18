@@ -19,9 +19,11 @@ def stripansi(stripstr):
     if isinstance(stripstr, list):
         newlist = []
         for line in stripstr:
+            print(line)
             if isinstance(line, bytes):
                 line = line.decode()
             newlist.append(ansi_escape.sub('', line).strip())
+            print(newlist)
         return newlist
     else:
         return(ansi_escape.sub('', stripstr).strip())
