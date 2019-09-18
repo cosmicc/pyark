@@ -1,7 +1,7 @@
-body { background-color: #242424; color: #AAAAAA; font-family: 'Source Code Pro', monospace; overflow: auto; } 
+body { background-color: #242424; color: #AAAAAA; font-family: 'Source Code Pro', monospace; overflow: auto; }
 html { background-color: #242424; }
 html, body, #vtop { margin: 0; padding: 0; height: 100%; width: 100%; }
-.has-background-danger { background-color: #f51907 } 
+.has-background-danger { background-color: #f51907 }
 .has-background-warning { background-color: #fec802 }
 .has-background-info { background-color: #268198 }
 .has-background-success { background-color: #047617 }
@@ -51,8 +51,8 @@ html, body, #vtop { margin: 0; padding: 0; height: 100%; width: 100%; }
 .inv32 { background-color: #00aa00; }
 .ansi33 { color: #BBBB00; }
 .inv33 { background-color: #aa5500; }
-.ansi34 { color: #0000aa; }
-.inv34 { background-color: #0000aa; }
+.ansi34 { color: #0022dd; }
+.inv34 { background-color: #0022dd; }
 .ansi35 { color: #E850A8; }
 .inv35 { background-color: #E850A8; }
 .ansi36 { color: #00aaaa; }
