@@ -1,4 +1,5 @@
 import pytest
+from loguru import logger as log
 
 
 async def test_connection(cursor):
