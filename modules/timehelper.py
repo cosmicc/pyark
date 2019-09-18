@@ -203,6 +203,8 @@ def elapsedSeconds(seconds):
     result = []
     if not isinstance(seconds, (int, float, str)):
         raise TypeError(f'Seconds is wrong type {type(seconds)}')
+    if isinstance(seconds, str):
+        seconds.replace(',', '')
     seconds = int(seconds)
     if seconds < Secs['hour']:
         granularity = 1
