@@ -1,10 +1,10 @@
 import sys
 
 import psycopg2
-
 import pytest
-from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
+from loguru import logger as log
 from modules.asyncdb import asyncDB
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 
 sys.path.append('/home/ark/pyark')
 
