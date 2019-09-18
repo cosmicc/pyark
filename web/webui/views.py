@@ -62,6 +62,8 @@ def GameThread(sid):
                 socketio.emit('gameline', {'line': msg}, namespace='/logstream', room=sid)
         except:
             log.exception('ERROR!!')
+        finally:
+            socketio.sleep(.03)
     log.debug(f'Closing down game log watch for {sid}')
 
 
@@ -108,7 +110,7 @@ def LogThread(sid):
 
 
 def DebugLogThread(sid):
-    log.debug(f'Starting pyark log watch for {sid}')
+    log.debug(f'Starting pyark debug log watch for {sid}')
     logwatch = LogClient(80, 1, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
     logwatch.connect()
     while True:
@@ -125,8 +127,6 @@ def DebugLogThread(sid):
                 socketio.emit('logline', {'line': msg}, namespace='/logstream', room=sid)
         except:
             log.exception('ERROR!!')
-        finally:
-            socketio.sleep(.03)
     log.debug(f'Closing down debug pyark log watch for {sid}')
 
 
@@ -158,12 +158,6 @@ def processlogline(line):
 @socketio.on('connect', namespace='/logstream')
 def connect():
     log.debug(f'Logstream started for: {request.sid}')
-    logthreads.append(request.sid)
-    socketio.start_background_task(target=LogThread, sid=request.sid)
-    # socketio.sleep(.1)
-    socketio.start_background_task(target=ChatThread, sid=request.sid)
-    # socketio.sleep(.1)
-    socketio.start_background_task(target=GameThread, sid=request.sid)
 
 
 @log.catch
@@ -976,12 +970,18 @@ def _chatlog(instance):
 @webui.route('/pyarklog')
 @login_required
 def _pyarklog():
+    socketio.start_background_task(target=LogThread, sid=request.sid, namespace='/logstream')
+    socketio.start_background_task(target=ChatThread, sid=request.sid, namespace='/logstream')
+    socketio.start_background_task(target=GameThread, sid=request.sid, namespace='/logstream')
     return render_template('pyarklog.html', instances=instancelist())
 
 
 @webui.route('/pyarkdebuglog')
 @login_required
-def _pyarklog2():
+def _pyarkdebuglog():
+    socketio.start_background_task(target=ChatThread, sid=request.sid, namespace='/logstream')
+    socketio.start_background_task(target=GameThread, sid=request.sid, namespace='/logstream')
+    socketio.start_background_task(target=DebugLogThread, sid=request.sid, namespace='/logstream')
     return render_template('pyarklog.html', instances=instancelist())
 
 
