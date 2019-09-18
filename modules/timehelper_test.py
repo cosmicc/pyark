@@ -6,7 +6,7 @@ import modules.timehelper as timehelper
 sys.path.append('/home/ark/pyark')
 
 
-def truncate_test():
+def test_truncate():
     assert type(timehelper.truncate(12.23456)) is float
     assert timehelper.truncate(12.34567) == 12.34
     assert timehelper.truncate(12.3) == 12.30
