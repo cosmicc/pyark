@@ -65,6 +65,5 @@ def test_db_getvalue():
     assert type(dbhelper.db_getvalue('name', 'instances', fmt='dict', fetch='one')) is dict
 
 
-
 def test_statsage():
     assert dbhelper.dbquery("SELECT date FROM ragnarok ORDER BY DATE DESC LIMIT 1", db='statsdb', fetch='one')[0] > datetime.now().timestamp() - 3600
