@@ -135,7 +135,8 @@ async def logs_pyark(response: Response, lines=1):
         if int(lines) > int(getlines):
             lines = int(getlines)
         startlines = int(getlines) - int(lines)
-        return {'game_log': stripansi(await redis.zrange('glhistory', startlines, int(getlines)))}
+        lines = await redis.zrange('glhistory', startlines, int(getlines))
+        return {'game_log': stripansi(lines)}
     else:
         return {'game_log': None}
 
