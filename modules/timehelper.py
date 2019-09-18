@@ -195,7 +195,7 @@ def elapsedSeconds(seconds):
     """Convert seconds to elapsed time string representation
 
     Args:
-        seconds (sting, int, float): Description: Number of seconds to convert
+        seconds (string, int, float): Description: Number of seconds to convert
 
     Returns:
         STRING: Description: e.g. '1 Hour, 47 Minutes'
@@ -204,7 +204,7 @@ def elapsedSeconds(seconds):
     if not isinstance(seconds, (int, float, str)):
         raise TypeError(f'Seconds is wrong type {type(seconds)}')
     if isinstance(seconds, str):
-        seconds.replace(',', '')
+        seconds = seconds.replace(',', '')
     seconds = int(seconds)
     if seconds < Secs['hour']:
         granularity = 1
