@@ -62,13 +62,14 @@ class datetimeto:
             dt (datetime): Description: Datetime object to convert
 
         Returns:
-            float: Description:
+            float: Description: Epoch value of datetime object
         """
         datetimeto._checkinputs(dt)
         return dt.timestamp()
 
     def string(dt):
         datetimeto._checkinputs(dt)
+        return dt.strftime('%a, %b %d, %Y %I:%M %p')
 
 
 def olddatetimeto(dt, fmt, est=False):
