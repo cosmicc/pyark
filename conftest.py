@@ -11,7 +11,7 @@ sys.path.append('/home/ark/pyark')
 db = asyncDB()
 
 
-@pytest.fixture(score="module")
+@pytest.fixture(scope="module")
 async def asyncdb():
     await db.connect(min=1, max=1, timeout=30)
     conn = await db._aquire()
