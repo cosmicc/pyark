@@ -980,8 +980,9 @@ def _chatlog(instance):
 
 @webui.route('/pyarklog')
 @login_required
-def _pyarklog(debug=0):
-    if debug == 1:
+def _pyarklog():
+    debug = request.args.get('debug')
+    if debug:
         ns = '/debugstream'
     else:
         ns = '/logstream'
