@@ -36,8 +36,18 @@ def truncate_float(number, digits) -> float:
 
 
 class datetimeto:
-    def epoch(dt):
+    def __init__(self, dt):
+        if not isinstance(dt, datetime):
+            raise TypeError('Input must be of type datetime')
+
+    def checkinputs(self, dt):
+        if not isinstance(dt, datetime):
+            raise TypeError('Input must be of type datetime')
+
+    def epoch(self, dt):
         return dt.timestamp()
+
+    # def string(dt):
 
 
 def olddatetimeto(dt, fmt, est=False):
