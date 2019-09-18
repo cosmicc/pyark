@@ -16,7 +16,7 @@ def test_truncate_float():
     assert timehelper.truncate_float(12.3, 1) == 12.3
     assert timehelper.truncate_float(12, 0) == 12
     assert timehelper.truncate_float(12.3, 5) == 12.3
-    assert timehelper.truncate_float(12.386, -5) == 12.3
+    assert timehelper.truncate_float(12.386, -5) == 12.386
     assert timehelper.truncate_float(12.3531, 0) == 12
 
 

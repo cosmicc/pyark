@@ -27,7 +27,7 @@ def truncate_float(number, digits) -> float:
     Returns:
         float
     """
-    stepper = 10.0 ** digits
+    stepper = 10.0 ** abs(digits)
     return trunc(stepper * number) / stepper
 
 
