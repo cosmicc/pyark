@@ -26,7 +26,7 @@ def truncate_float(number, digits) -> float:
         digits (int): Description: Number of decimal places to return
 
     Returns:
-        float
+        FLOAT
     """
     if not isinstance(number, float):
         raise TypeError('Number value must be type float')
@@ -49,7 +49,7 @@ def estconvert(utc_dt):
     return ndt.astimezone(pytz.timezone("America/Detroit"))
 
 
-class datetimeto:
+class newdatetimeto:
     def _checkinputs(dt):
         if not isinstance(dt, datetime):
             raise TypeError('Input must be of type datetime')
@@ -62,17 +62,26 @@ class datetimeto:
             dt (datetime): Description: Datetime object to convert
 
         Returns:
-            float: Description: Epoch value of datetime object
+            FLOAT: Description: Epoch value of datetime object
         """
         datetimeto._checkinputs(dt)
         return dt.timestamp()
 
     def string(dt):
+        """Summary:
+            Convert datetime object to string representation
+
+        Args:
+            dt (datetime): Description: Datetime object to convet
+
+        Returns:
+            STRING: Description: '%a, %b %d, %Y %I:%M %p'
+        """
         datetimeto._checkinputs(dt)
         return dt.strftime('%a, %b %d, %Y %I:%M %p')
 
 
-def olddatetimeto(dt, fmt, est=False):
+def datetimeto(dt, fmt, est=False):
     if fmt == 'epoch':
         return int(dt.timestamp())
     elif fmt == 'string':

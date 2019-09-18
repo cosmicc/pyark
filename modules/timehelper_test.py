@@ -20,15 +20,15 @@ def test_truncate_float():
     assert timehelper.truncate_float(12.3531, 0) == 12
 
 
-def test_datetimeto():
+def test_newdatetimeto():
     with pytest.raises(TypeError):
-        timehelper.datetimeto.epoch(1)
-        timehelper.datetimeto.epoch('12.3')
-        timehelper.datetimeto.epoch(12.3)
-    assert type(timehelper.datetimeto.string(datetime.now())) is str
-    assert type(timehelper.datetimeto.string(datetime.now())) is not None
-    assert type(timehelper.datetimeto.epoch(datetime.now())) is float
-    assert type(timehelper.datetimeto.epoch(datetime.now())) is not None
+        timehelper.newdatetimeto.epoch(1)
+        timehelper.newdatetimeto.epoch('12.3')
+        timehelper.newdatetimeto.epoch(12.3)
+    assert type(timehelper.newdatetimeto.string(datetime.now())) is str
+    assert type(timehelper.newdatetimeto.string(datetime.now())) is not None
+    assert type(timehelper.newdatetimeto.epoch(datetime.now())) is float
+    assert type(timehelper.newdatetimeto.epoch(datetime.now())) is not None
 
 
 def test_Now():
