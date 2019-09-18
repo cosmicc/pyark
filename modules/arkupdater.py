@@ -363,7 +363,7 @@ async def asynccheckmaint(instances):
                     if eventreboot:
                         maintrest = f"{eventreboot}"
                         await asyncinstancerestart(inst, maintrest)
-                    elif Now() - int(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst):
+                    elif Now() - int(lstsv) > Secs['3day'] or await asyncgetcfgver(inst) < await asyncgetpendingcfgver(inst) or serverneedsrestart():
                         maintrest = "maintenance restart"
                         await asyncinstancerestart(inst, maintrest)
                     else:

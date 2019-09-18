@@ -1,12 +1,13 @@
-import asyncio
 from functools import partial
 
+import asyncio
+import redis as _Redis
 from loguru import logger as log
-
 from modules.asyncdb import DB as db
+from modules.configreader import redis_host, redis_port
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
-from modules.redis import instancestate, instancevar
+from modules.redis import instancestate, instancevar, globalvar
 from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, filterline
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now
@@ -14,11 +15,7 @@ from modules.timehelper import Now
 
 @log.catch
 async def asyncgetinstancelist():
-    namelist = []
-    names = await db.fetchall("SELECT * FROM instances")
-    for name in names:
-        namelist.append(name['name'])
-    return namelist
+    return await globalvar.getlist('allinstances')
 
 
 @log.catch
@@ -202,9 +199,10 @@ def isinstancerunning(inst):
         return False
 
 
-def isinstanceup(inst):
-    dbdata = dbquery("SELECT isup FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    if dbdata[0] == 1:
+def isinstanceonline(inst):
+    redis = _Redis.Redis(host=redis_host, port=redis_port, db=0)
+    online = redis.hget(inst, 'isonline')
+    if online == 1:
         return True
     else:
         return False
