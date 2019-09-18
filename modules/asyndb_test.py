@@ -3,5 +3,5 @@ from loguru import logger as log
 
 
 async def test_connection(cursor):
-    rs = cursor.execute('SELECT id FROM messages').fetchval()
-    assert len(rs) == 0
+    rs = cursor.execute('SELECT id FROM messages')
+    assert len(rs) == 1
