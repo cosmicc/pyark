@@ -119,7 +119,7 @@ async def servers_vars(response: Response, servername=None):
     instances = await globalvar.getlist('allinstances')
     if servername is not None:
         if servername in instances:
-            return {'server_states': await instancevar.getall(servername)}
+            return {'server_vars': await instancevar.getall(servername)}
         else:
             response.status_code = 400
             return {'message': 'invalid server name'}

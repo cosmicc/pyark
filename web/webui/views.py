@@ -62,8 +62,6 @@ def GameThread(sid):
                 socketio.emit('gameline', {'line': msg}, namespace='/logstream', room=sid)
         except:
             log.exception('ERROR!!')
-        finally:
-            socketio.sleep(.03)
     log.debug(f'Closing down game log watch for {sid}')
 
 
@@ -85,8 +83,6 @@ def ChatThread(sid):
                 socketio.emit('chatline', {'line': msg}, namespace='/logstream', room=sid)
         except:
             log.exception('ERROR!!')
-        finally:
-            socketio.sleep(.03)
     log.debug(f'Closing down chat log watch for {sid}')
 
 
@@ -108,9 +104,30 @@ def LogThread(sid):
                 socketio.emit('logline', {'line': msg}, namespace='/logstream', room=sid)
         except:
             log.exception('ERROR!!')
+    log.debug(f'Closing down pyark log watch for {sid}')
+
+
+def DebugLogThread(sid):
+    log.debug(f'Starting pyark log watch for {sid}')
+    logwatch = LogClient(80, 1, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
+    logwatch.connect()
+    while True:
+        stillrun = False
+        for each in logthreads:
+            if each == sid:
+                stillrun = True
+        if not stillrun:
+            break
+        try:
+            msg = logwatch.getline()
+            if msg is not None:
+                log.trace(f'Sending logline to: {sid}')
+                socketio.emit('logline', {'line': msg}, namespace='/logstream', room=sid)
+        except:
+            log.exception('ERROR!!')
         finally:
             socketio.sleep(.03)
-    log.debug(f'Closing down pyark log watch for {sid}')
+    log.debug(f'Closing down debug pyark log watch for {sid}')
 
 
 class LotteryForm(FlaskForm):
@@ -959,6 +976,12 @@ def _chatlog(instance):
 @webui.route('/pyarklog')
 @login_required
 def _pyarklog():
+    return render_template('pyarklog.html', instances=instancelist())
+
+
+@webui.route('/pyarkdebuglog')
+@login_required
+def _pyarklog2():
     return render_template('pyarklog.html', instances=instancelist())
 
 
