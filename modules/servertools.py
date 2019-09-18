@@ -177,11 +177,11 @@ def issharedmounted():
 
 
 def getuptime():
-    return int(globvars.server_uptime_file.read_text().split(' ')[1])
+    return int(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1])
 
 
 def getidlepercent():
-    uptimedata = globvars.server_uptime_file.read_text().split(' ')
+    uptimedata = globvars.server_uptime_file.read_text().strip('\n').split(' ')
     uptime = int(uptimedata[1])
     idletime = int(uptimedata[0])
     return (idletime / uptime) * 100
