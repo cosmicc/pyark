@@ -3,7 +3,7 @@ import sys
 import psycopg2
 
 import pytest
-from ..modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_statsdb, psql_user
+from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 
 sys.path.append('/home/ark/pyark')
 
@@ -15,7 +15,7 @@ def conn():
     conn.close()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def cursor(conn):
     cursor = conn.cursor()
     yield cursor
