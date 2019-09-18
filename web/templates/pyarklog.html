@@ -9,7 +9,7 @@
 </script>
 <script>
     $(document).ready(function(){
-        var ns = '/logstream';
+        var ns = '{{ ns }}';
         var socket = io.connect('http://' + document.domain + ':' + location.port + ns);
         $('textarea').empty()
             socket.on('logline', function(msg) {
