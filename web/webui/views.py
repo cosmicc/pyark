@@ -1,20 +1,17 @@
 import json
 from datetime import date, datetime, time, timedelta
 from itertools import chain, zip_longest
+from time import sleep
 
 import pandas as pd
 import psycopg2
 import pytz
 from flask import Blueprint, Response, flash, redirect, render_template, request, url_for
-from flask_security import (RegisterForm, SQLAlchemyUserDatastore, current_user,
-                            login_required, logout_user, roles_required)
+from flask_security import (RegisterForm, SQLAlchemyUserDatastore, current_user, login_required, logout_user,
+                            roles_required)
 from flask_security.utils import hash_password
 from flask_wtf import FlaskForm
 from loguru import logger as log
-from pycountry import countries
-from wtforms import IntegerField, StringField
-from wtforms.validators import InputRequired, Length
-
 from modules.clusterevents import getcurrenteventtitle, getcurrenteventtitleabv, iseventtime
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 from modules.dbhelper import dbquery, dbupdate
@@ -28,6 +25,9 @@ from modules.players import (banunbanplayer, getactiveplayers, getbannedplayers,
                              getsteamnameplayers, isplayerbanned, isplayerold, isplayeronline, kickplayer)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, joinedTime, playedTime
 from modules.tribes import getplayertribes, gettribe, gettribes
+from pycountry import countries
+from wtforms import IntegerField, StringField
+from wtforms.validators import InputRequired, Length
 
 from .. import socketio
 from ..database import db
@@ -48,22 +48,16 @@ def GameThread(sid, namespace):
     log.debug(f'Starting game log watch for {sid}')
     gamewatch = LogClient(30, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'game', 'ALL', 1)
     gamewatch.connect()
-    while True:
-        stillrun = False
-        for each in logthreads:
-            if each == sid:
-                stillrun = True
-        if not stillrun:
-            break
-        try:
+    stillrun = True
+    while stillrun:
+        if sid not in logthreads:
+            stillrun = False
+        else:
             msg = gamewatch.getline()
-            if msg is not None and msg != 'None':
-                log.trace(f'Sending gameline to: {sid}')
+            if msg is not None:
+                log.trace(f'Sending logline to: {sid}')
                 socketio.emit('gameline', {'line': msg}, namespace=namespace, room=sid)
-        except:
-            log.exception('ERROR!!')
-        finally:
-            socketio.sleep(.03)
+            sleep(.3)
     log.debug(f'Closing down game log watch for {sid}')
 
 
@@ -71,20 +65,16 @@ def ChatThread(sid, namespace):
     log.debug(f'Starting chat log watch for {sid}')
     chatwatch = LogClient(20, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'chat', 'ALL', 1)
     chatwatch.connect()
-    while True:
-        stillrun = False
-        for each in logthreads:
-            if each == sid:
-                stillrun = True
-        if not stillrun:
-            break
-        try:
+    stillrun = True
+    while stillrun:
+        if sid not in logthreads:
+            stillrun = False
+        else:
             msg = chatwatch.getline()
-            if msg is not None and msg != 'None':
-                log.trace(f'Sending chatline to: {sid}')
+            if msg is not None:
+                log.trace(f'Sending logline to: {sid}')
                 socketio.emit('chatline', {'line': msg}, namespace=namespace, room=sid)
-        except:
-            log.exception('ERROR!!')
+            sleep(.3)
     log.debug(f'Closing down chat log watch for {sid}')
 
 
@@ -92,20 +82,16 @@ def LogThread(sid, namespace):
     log.debug(f'Starting pyark log watch for {sid} {namespace}')
     logwatch = LogClient(80, 0, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
     logwatch.connect()
-    while True:
-        stillrun = False
-        for each in logthreads:
-            if each == sid:
-                stillrun = True
-        if not stillrun:
-            break
-        try:
+    stillrun = True
+    while stillrun:
+        if sid not in logthreads:
+            stillrun = False
+        else:
             msg = logwatch.getline()
             if msg is not None:
                 log.trace(f'Sending logline to: {sid}')
                 socketio.emit('logline', {'line': msg}, namespace=namespace, room=sid)
-        except:
-            log.exception('ERROR!!')
+            sleep(.3)
     log.debug(f'Closing down pyark log watch for {sid}')
 
 
@@ -113,20 +99,16 @@ def DebugLogThread(sid, namespace):
     log.debug(f'Starting pyark debug log watch for {sid}')
     logwatch = LogClient(80, 1, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
     logwatch.connect()
-    while True:
-        stillrun = False
-        for each in logthreads:
-            if each == sid:
-                stillrun = True
-        if not stillrun:
-            break
-        try:
+    stillrun = True
+    while stillrun:
+        if sid not in logthreads:
+            stillrun = False
+        else:
             msg = logwatch.getline()
             if msg is not None:
                 log.trace(f'Sending logline to: {sid}')
                 socketio.emit('logline', {'line': msg}, namespace=namespace, room=sid)
-        except:
-            log.exception('ERROR!!')
+            sleep(.3)
     log.debug(f'Closing down debug pyark log watch for {sid}')
 
 
@@ -160,6 +142,7 @@ def connect():
     socketio.start_background_task(target=ChatThread, sid=request.sid, namespace='/debugstream')
     socketio.start_background_task(target=GameThread, sid=request.sid, namespace='/debugstream')
     socketio.start_background_task(target=DebugLogThread, sid=request.sid, namespace='/debugstream')
+    logthreads.append(request.sid)
     log.debug(f'Logstream started for: {request.sid}')
 
 
@@ -169,18 +152,21 @@ def connect2():
     socketio.start_background_task(target=ChatThread, sid=request.sid, namespace='/logstream')
     socketio.start_background_task(target=GameThread, sid=request.sid, namespace='/logstream')
     socketio.start_background_task(target=LogThread, sid=request.sid, namespace='/logstream')
+    logthreads.append(request.sid)
     log.debug(f'Logstream started for: {request.sid}')
 
 
 @log.catch
 @socketio.on('disconnect', namespace='/logstream')
 def disconnect():
+    logthreads.remove(request.sid)
     log.debug(f'Logstream ended for: {request.sid}')
 
 
 @log.catch
 @socketio.on('disconnect', namespace='/debugstream')
 def disconnect2():
+    logthreads.remove(request.sid)
     log.debug(f'Logstream ended for: {request.sid}')
 
 
