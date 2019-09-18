@@ -98,6 +98,20 @@ async def servers_info(response: Response, servername=None):
         return {'message': 'you must specify a server name'}
 
 
+@app.get('/servers/states', status_code=200)
+async def servers_states(response: Response, servername=None):
+    instances = await globalvar.getlist('allinstances')
+    if servername is not None:
+        if servername in instances:
+            return {'server_states': await instancestate.getlist(servername)}
+        else:
+            response.status_code = 400
+            return {'message': 'invalid server name'}
+    else:
+        response.status_code = 400
+        return {'message': 'you must specify a server name'}
+
+
 @app.get("/")
 def read_root():
     return {"try": "/docs"}
