@@ -236,7 +236,7 @@ class instancevar:
         Arguments:
             instance {string} -- Instance Name
         """
-        return (await redis.hgetall(f'{instance}')).decode()
+        return (await redis.hgetall(f'{instance}'))
 
     async def inc(instance, key):
         """Increment instance variable
