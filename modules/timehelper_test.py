@@ -51,7 +51,7 @@ def test_playedTime():
     assert timehelper.playedTime(480) == '8 minutes'
     assert timehelper.playedTime(3600) == '1 hour'
     assert timehelper.playedTime(5280) == '1 hour, 28 minutes'
-    assert timehelper.playedTime(863254) == '1 week, 2 days'
+    assert timehelper.playedTime(863254) == '9 days, 23 hours'
 
 
 def test_elapsedTime():
