@@ -41,9 +41,31 @@ async def players_online():
 @app.get("/players/info")
 async def players_info(steamid=None, playername=None):
     if steamid:
-        return await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
+        player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
+        if player:
+            return player, 200
+        else:
+            return {'message': 'steamid does not exist'}, 400
     elif playername:
-        return await db.fetchone(f"SELECT * FROM players WHERE playername = '{playername}'")
+        player = await db.fetchone(f"SELECT * FROM players WHERE playername = '{playername}'")
+        if player:
+            return player, 200
+        else:
+            return {'message': 'playername does not exist'}, 400
+    else:
+        return {'message': 'you must specify a steamid or playermame'}, 400
+
+
+@app.route('/servers/info')
+async def servers_info(servername=None):
+    instances = await globalvar.getlist('allinstances')
+    if servername is not None:
+        if servername in instances:
+            return await db.fetchone(f"SELECT * FROM instances WHERE name = '{servername}'"), 200
+        else:
+            return {'message': 'invalid server name'}, 400
+    else:
+        return {'message': 'you must specify a server name'}, 400
 
 
 @app.get("/")
