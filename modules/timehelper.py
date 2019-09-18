@@ -27,11 +27,26 @@ def truncate_float(number, digits) -> float:
     Returns:
         float
     """
+    if not isinstance(number, float):
+        raise TypeError('Number value must be type float')
+    if not isinstance(digits, int):
+        raise TypeError('Digits value must be type int')
     stepper = 10.0 ** abs(digits)
     return trunc(stepper * number) / stepper
 
 
-def datetimeto(dt, fmt, est=False):
+class datetimeto:
+    def __init__(self, dt, convert_est=False):
+        self.dt = dt
+        self.convert_est = convert_est
+        if not isinstance(self.dt, datetime):
+            raise TypeError
+
+    def epoch(self):
+        return int(self.dt.timestamp())
+
+
+def olddatetimeto(dt, fmt, est=False):
     if fmt == 'epoch':
         return int(dt.timestamp())
     elif fmt == 'string':
