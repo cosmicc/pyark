@@ -1,7 +1,6 @@
 import asyncio
 import subprocess
 from functools import partial
-from os.path import isfile
 from re import compile as rcompile
 from re import sub
 
@@ -169,16 +168,23 @@ def removerichtext(text):
     return sub('<.*?>', '', text)
 
 
-@log.catch
 def serverneedsrestart():
-    if isfile('/run/reboot-required'):
-        return True
-    else:
-        return False
+    return globvars.server_needsrestart_file.is_file()
 
 
 def issharedmounted():
     return globvars.sharepath.is_mount()
+
+
+def getuptime():
+    return int(globvars.server_uptime_file.read_text().split(' ')[1])
+
+
+def getidlepercent():
+    uptimedata = globvars.server_uptime_file.read_text().split(' ')
+    uptime = int(uptimedata[1])
+    idletime = int(uptimedata[0])
+    return (idletime / uptime) * 100
 
 
 def float_trunc_1dec(num):
