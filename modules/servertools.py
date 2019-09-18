@@ -16,7 +16,13 @@ from modules.timehelper import Now, elapsedTime
 
 def stripansi(stripstr):
     ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-    return(ansi_escape.sub('', stripstr).strip())
+    if isinstance(stripstr, list):
+        newlist = []
+        for line in stripstr:
+            newlist.append(ansi_escape.sub('', line).strip())
+        return newlist
+    else:
+        return(ansi_escape.sub('', stripstr).strip())
 
 
 def filterline(stripstr):
