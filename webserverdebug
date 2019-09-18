@@ -1,0 +1,17 @@
+#!/usr/bin/env python3.7
+
+from os import nice
+
+from modules.configreader import webserver_ip, webserver_port
+from modules.processlock import PLock
+from web import create_app, socketio
+
+__name__ = 'webserverdebug'
+
+processlock = PLock()
+processlock.lock()
+
+nice(12)
+
+app = create_app('config.DevelopmentConfig')
+socketio.run(app, host=webserver_ip, port=51501)
