@@ -10,7 +10,7 @@ from loguru import logger as log
 import globvars
 from modules.asyncdb import DB as db
 from modules.redis import instancevar
-from modules.timehelper import Now, elapsedTime, elapsedSeconds
+from modules.timehelper import Now, elapsedTime, elapsedSeconds, truncate_float
 
 
 def removerichtext(text):
@@ -186,15 +186,6 @@ def getidlepercent():
     return (idletime / uptime) * 100
 
 
-def float_trunc_1dec(num):
-    try:
-        tnum = num // 0.1 / 10
-    except:
-        return False
-    else:
-        return tnum
-
-
 async def getinstpid(inst):
     try:
         return globvars.instpidfiles[inst].read_text()
@@ -222,10 +213,15 @@ async def getcpuload():
     load1 = (rawcpuload[0] / numcores) * 100
     load5 = (rawcpuload[1] / numcores) * 100
     load15 = (rawcpuload[2] / numcores) * 100
-    return (numcores, float_trunc_1dec(cpufreq), float_trunc_1dec(load1), float_trunc_1dec(load5), float_trunc_1dec(load15))
+    return (numcores, truncate_float(cpufreq), truncate_float(load1), truncate_float(load5), truncate_float(load15))
 
 
 async def getservermem():
+    """Return tuple of memory statistics
+
+    Returns:
+        TUPLE: Description: (memfree, memavailable, swapused)
+    """
     process = await asyncserverexec(['free', '-m'], nice=19, wait=True)
     lines = process['stdout'].decode().split('\n')
     memvalues = lines[1].strip().split()
