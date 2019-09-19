@@ -11,15 +11,7 @@ from modules.players import asyncnewplayer
 from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd, instancevar
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now, elapsedTime, playedTime
-from modules.redis import globalvar
-
-
-async def asyncstopsleep(sleeptime, stop_event):
-    for ntime in range(sleeptime):
-        if stop_event.is_set():
-            log.debug('Online monitor thread has ended')
-            exit(0)
-        asyncio.sleep(1)
+from modules.redis import globalvar, instancestate
 
 
 @log.catch
@@ -238,9 +230,11 @@ async def onlineexecute(inst):
         await cmd_done
     finally:
         transport.close()
+        await instancestate.unset(inst, 'playercheck')
 
 
 async def onlinecheck(instances):
     for inst in instances:
-        if await instancevar.getbool(inst, 'islistening'):
+        if await instancevar.getbool(inst, 'islistening') and not await instancestate.check(inst, 'playercheck'):
+            await instancestate.set(inst, 'playercheck')
             asyncio.create_task(onlineexecute(inst))

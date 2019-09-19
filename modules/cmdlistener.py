@@ -786,9 +786,11 @@ async def cmdsexecute(inst):
         await cmd_done
     finally:
         transport.close()
+        await instancestate.unset(inst, 'cmdlisten')
 
 
 async def cmdscheck(instances):
     for inst in instances:
-        if await instancevar.getbool(inst, 'islistening'):
+        if await instancevar.getbool(inst, 'islistening') and not await instancestate.check(inst, 'cmdlisten'):
+            await instancestate.set(inst, 'cmdlisten')
             asyncio.create_task(cmdsexecute(inst))
