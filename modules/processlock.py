@@ -36,7 +36,7 @@ class PLock:
         try:
             self.lockhandle = open(self.lockfile, 'w')
             fcntl.lockf(self.lockhandle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except IOError:
+        except (IOError, BlockingIOError):
             log.exception(f'IOError locking file {self.lockfile}. exiting.')
             return False
         except:

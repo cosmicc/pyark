@@ -103,7 +103,7 @@ def LogThread(sid, namespace):
 
 def DebugLogThread(sid, namespace):
     log.debug(f'Starting pyark debug log watch for {sid}')
-    logwatch = LogClient(80, 1, 0, 0, 0, 1, 0, 1, 1, 0, 'pyark', 'ALL', 1)
+    logwatch = LogClient(80, 1, 0, 0, 0, 1, 0, 1, 1, 1, 'pyark', 'ALL', 1)
     logwatch.connect()
     stillrun = True
     while stillrun:
