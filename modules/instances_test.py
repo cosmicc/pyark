@@ -19,3 +19,12 @@ async def test_asyncgetinstancelist():
     assert type(await modules.instances.asyncgetinstancelist()) is tuple
     assert await modules.instances.asyncgetinstancelist() is not None
     assert len(await modules.instances.asyncgetinstancelist()) == 5
+
+
+async def test_asyncisinstanceenabled():
+    with pytest.raises(TypeError):
+        await modules.instances.asyncisinstanceenabled(None)
+        await modules.instances.asyncisinstanceenabled(1)
+        await modules.instances.asyncisinstanceenabled(['island', 'ragnarok'])
+    assert await modules.instances.asyncisinstanceenabled('ragnarok') is True
+    assert type(await modules.instances.asyncisinstanceenabled('ragnarok')) is bool

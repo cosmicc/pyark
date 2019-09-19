@@ -161,8 +161,18 @@ async def statuscheck(instances):
         asyncio.create_task(statusexecute(inst))
 
 
-async def asyncisinstanceenabled(inst):
-    sen = await db.fetchone(f"SELECT enabled FROM instances WHERE name = '{inst}'")
+async def asyncisinstanceenabled(instance):
+    """Return if instance is enabled
+
+    Args:
+        instance (STRING): Description: Instance name to check
+
+    Returns:
+        BOOL:
+    """
+    if not isinstance(instance, str):
+        raise TypeError(f'Instance name must be type str, not {type(instance)}')
+    sen = await db.fetchone(f"SELECT enabled FROM instances WHERE name = '{instance}'")
     return sen[0]
 
 
