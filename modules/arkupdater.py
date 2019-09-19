@@ -1,20 +1,16 @@
 import random
-import shutil
 from datetime import time as dt
 from datetime import datetime
 from functools import partial
-from os import chown
 
 import asyncio
-import configparser
-import globvars
 from loguru import logger as log
 from modules.asyncdb import DB as db
-from modules.clusterevents import asyncgetcurrenteventext, asynciseventrebootday, asynciseventtime
-from modules.configreader import hstname, is_arkupdater, maint_hour, sharedpath
+from modules.clusterevents import asynciseventrebootday
+from modules.configreader import hstname, is_arkupdater, maint_hour
 from modules.discordbot import asyncwritediscord
-from modules.instances import (asyncgetlastrestart, asyncgetlastwipe, asyncglobalbuffer, asyncisinstanceenabled,
-                               asyncwipeit)
+from modules.instances import (asyncgetlastrestart, asyncgetlastwipe, asyncgetpendingcfgver, asyncglobalbuffer,
+                               asyncrestartinstnow, asyncsetrestartbit, asyncwipeit, checkdirs)
 from modules.players import asyncgetliveplayersonline, asyncgetplayersonline
 from modules.pushover import pushover
 from modules.redis import instancestate, instancevar
@@ -73,15 +69,6 @@ async def asyncwritechat(inst, whos, msg, tstamp):
         await db.update(f"INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('{inst}', '{whos}', '{msg}', '{tstamp}')")
 
 
-@log.catch
-def checkdirs(inst):
-    for path in globvars.arkmanager_paths:
-        if not path.exists():
-            log.error(f'Log directory {str(path)} does not exist! creating')
-            path.mkdir(mode=0o777, parents=True)
-            chown(str(path), 1001, 1005)
-
-
 async def asyncupdatetimer(inst, ctime):
     await db.update(f"UPDATE instances SET restartcountdown = '{ctime}' WHERE name = '{inst}'")
 
@@ -106,27 +93,6 @@ async def asyncgetlastmaint(svr):
 
 async def asyncsetlastmaint(svr):
     await db.update(f"UPDATE lastmaintenance SET lastmaint = '{Now(fmt='dtd')}' WHERE name = '{svr.upper()}'")
-
-
-async def asyncgetpendingcfgver(inst):
-    instdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    return int(instdata['cfgver'])
-
-
-async def asyncresetlastrestart(inst):
-    await db.update(f"UPDATE instances SET lastrestart = '{Now()}', needsrestart = 'False', cfgver = {await asyncgetpendingcfgver(inst)}, restartcountdown = 30 WHERE name = '{inst}'")
-
-
-async def asyncsetrestartbit(inst):
-    await db.update(f"UPDATE instances SET needsrestart = 'True' WHERE name = '{inst}'")
-
-
-async def asyncunsetstartbit(inst):
-    await db.update(f"UPDATE instances SET needsrestart = 'False' WHERE name = '{inst}'")
-
-
-async def asyncplayerrestartbit(inst):
-    await db.update(f"UPDATE players SET restartbit = 1 WHERE server = '{inst}'")
 
 
 async def asynccheckwipe(instances):
@@ -165,91 +131,6 @@ async def asyncstillneedsrestart(inst):
         return True
     else:
         return False
-
-
-@log.catch
-async def installconfigs(inst):
-    eventext = await asyncgetcurrenteventext()
-    config = configparser.RawConfigParser()
-    config.optionxform = str
-    config.read(globvars.gusini_baseconfig_file)
-    if globvars.gusini_customconfig_files[inst].exists():
-        log.debug(f'custom GUS ini file exists for {inst}')
-        gusbuildfile = globvars.gusini_customconfig_files[inst].read_text().split('\n')
-        for each in gusbuildfile:
-            a = each.split(',')
-            if len(a) == 3:
-                config.set(a[0], a[1], a[2])
-    else:
-        log.debug(f'No custom config found for {inst}')
-
-    if await asynciseventtime():
-        globvars.gusini_event_file = sharedpath / f'config/GameUserSettings-{eventext.strip()}.ini'
-        if globvars.gusini_event_file.exists():
-            log.debug(f'event GUS ini file exists for {inst}')
-            for each in globvars.gusini_event_file.read_text().split('\n'):
-                a = each.split(',')
-                if len(a) == 3:
-                    config.set(a[0], a[1], a[2])
-        else:
-            log.error('Cannot find Event GUS config file to merge in')
-
-    if globvars.gusini_tempconfig_file.exists():
-        globvars.gusini_tempconfig_file.unlink()
-
-    with open(str(globvars.gusini_tempconfig_file), 'w') as configfile:
-        config.write(configfile)
-
-    shutil.copy(globvars.gusini_tempconfig_file, globvars.gusini_final_file)
-    log.debug(f'{inst} {globvars.gusini_tempconfig_file} > {globvars.gusini_final_file}')
-    globvars.gusini_tempconfig_file.unlink()
-    if globvars.gameini_customconfig_files[inst].exists():
-        shutil.copy(globvars.gameini_customconfig_files[inst], globvars.gameini_final_file)
-        log.debug(f'{inst} {globvars.gameini_customconfig_files[inst]} > {globvars.gameini_final_file}')
-    else:
-        shutil.copy(globvars.gameini_baseconfig_file, globvars.gameini_final_file)
-        log.debug(f'{inst} {globvars.gameini_baseconfig_file} > {globvars.gameini_final_file}')
-    chown(str(globvars.gameini_final_file), 1001, 1005)
-    chown(str(globvars.gusini_final_file), 1001, 1005)
-    log.debug(f'Server {inst} built and updated config files')
-
-
-@log.catch
-async def asyncrestartinstnow(inst, startonly=False):
-    checkdirs(inst)
-    if not startonly:
-        await asyncwipeit(inst)
-        await asyncio.sleep(5)
-        await asyncserverexec(['arkmanager', 'stop', '--saveworld', f'@{inst}'], _wait=True)
-        log.log('UPDATE', f'Instance [{inst.title()}] has stopped, backing up world data...')
-        await db.update(f"UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '{inst}'")
-    await asyncserverexec(['arkmanager', 'backup', f'@{inst}'], _wait=True)
-    if not await asyncisinstanceenabled(inst):
-        log.log('UPDATE', f'Instance [{inst.title()}] remaining off because not enabled.')
-        await asyncunsetstartbit(inst)
-    elif serverneedsrestart() and inst != 'coliseum' and inst != 'crystal' and not startonly:
-        await db.update(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
-        log.log('MAINT', f'REBOOTING Server [{hstname.upper()}] for maintenance server reboot')
-        await instancestate.set(inst, 'restarting')
-        await instancestate.unset(inst, 'updating', 'updatewaiting', 'restartwaiting', 'cfgupdate', 'maintenance')
-        await instancevar.mset(inst, {'isrunning': 0, 'isonline': 0, 'islistening': 0})
-        await asyncserverexec(['reboot'])
-    else:
-        log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
-        await installconfigs(inst)
-        log.log('UPDATE', f'Instance [{inst.title()}] is updating from staging directory')
-        await asyncserverexec(['arkmanager', 'update', '--force', '--no-download', '--update-mods', '--no-autostart', f'@{inst}'], _wait=True)
-        await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
-        await asyncio.sleep(1)
-        await asyncserverexec(['arkmanager', 'start', f'@{inst}'], _wait=True)
-        log.log('UPDATE', f'Instance [{inst.title()}] is starting')
-        await instancestate.set(inst, 'restarting')
-        await instancestate.unset(inst, 'updating', 'updatewaiting', 'restartwaiting', 'cfgupdate', 'maintenance')
-        await instancevar.mset(inst, {'isrunning': 1, 'isonline': 0, 'islistening': 0})
-        await asyncresetlastrestart(inst)
-        await asyncunsetstartbit(inst)
-        await asyncplayerrestartbit(inst)
-        await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
 
 
 @log.catch

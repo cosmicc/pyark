@@ -777,7 +777,7 @@ async def asyncprocesscmdline(minst, eline):
 
 
 async def asyncfinishcmd(inst):
-    await instancestate.unset(inst, 'cmdlisten')
+    await instancestate.unset(inst, 'cmdcheck')
 
 
 async def cmdsexecute(inst):
@@ -794,6 +794,6 @@ async def cmdsexecute(inst):
 
 async def cmdscheck(instances):
     for inst in instances:
-        if await instancevar.getbool(inst, 'islistening') and not await instancestate.check(inst, 'cmdlisten'):
-            await instancestate.set(inst, 'cmdlisten')
+        if await instancevar.getbool(inst, 'islistening') and not await instancestate.check(inst, 'cmdcheck'):
+            await instancestate.set(inst, 'cmdcheck')
             asyncio.create_task(cmdsexecute(inst))
