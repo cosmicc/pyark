@@ -18,7 +18,7 @@ async def test_getcpuload():
     assert await modules.servertools.getcpuload() is not None
     assert len(await modules.servertools.getcpuload()) == 5
     results = await modules.servertools.getcpuload()
-    assert type(results[0]) is int and type(results[1]) is float and type(results[2]) is float and type(results[3]) is float and type(results[4]) is float and type(results[5]) is float
+    assert type(results[0]) is int and type(results[1]) is float and type(results[2]) is float and type(results[3]) is float and type(results[4]) is float
 
 
 """
