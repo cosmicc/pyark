@@ -1,6 +1,5 @@
 import sys
 
-from modules.asyncdb import DB as db
 import modules.instances
 import pytest
 
@@ -22,19 +21,21 @@ async def test_asyncgetinstancelist():
     assert len(await modules.instances.asyncgetinstancelist()) == 5
 
 
-async def test_asyncisinstanceenabled():
+@pytest.mark.asyncio
+async def test_asyncisinstanceenabled(db):
     with pytest.raises(TypeError):
-        await modules.instances.asyncisinstanceenabled(None, db)
-        await modules.instances.asyncisinstanceenabled(1, db)
-        await modules.instances.asyncisinstanceenabled(['island', 'ragnarok'], db)
+        await modules.instances.asyncisinstanceenabled(None)
+        await modules.instances.asyncisinstanceenabled(1)
+        await modules.instances.asyncisinstanceenabled(['island', 'ragnarok'])
     assert await modules.instances.asyncisinstanceenabled('ragnarok', db) is True
-    assert type(await modules.instances.asyncisinstanceenabled('ragnarok'), db) is bool
+    assert type(await modules.instances.asyncisinstanceenabled('ragnarok', db)) is bool
 
 
-async def test_asyncgetlastwipe():
+@pytest.mark.asyncio
+async def test_asyncgetlastwipe(db):
     with pytest.raises(TypeError):
-        await modules.instances.asyncgetlastwipe(None, db)
-        await modules.instances.asyncgetlastwipe(1, db)
-        await modules.instances.asyncgetlastwipe(['island', 'ragnarok'], db)
+        await modules.instances.asyncgetlastwipe(None)
+        await modules.instances.asyncgetlastwipe(1)
+        await modules.instances.asyncgetlastwipe(['island', 'ragnarok'])
     assert await modules.instances.asyncgetlastwipe('ragnarok', db) is not None
-    assert type(await modules.instances.asyncgetlastwipe('ragnarok'), db) is int
+    assert type(await modules.instances.asyncgetlastwipe('ragnarok', db)) is int
