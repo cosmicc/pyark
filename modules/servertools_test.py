@@ -47,6 +47,13 @@ async def test_getuptime():
     assert await modules.servertools.getuptime(elapsed=True) is not None
 
 
+async def test_gettotaldbconnections():
+    assert type(await modules.servertools.gettotaldbconnections()) is int
+    assert await modules.servertools.gettotaldbconnections() is not None
+    assert await modules.servertools.gettotaldbconnections() >= 0
+    assert await modules.servertools.gettotaldbconnections() < 80
+
+
 """
 def test_isinstanceonline():
     with pytest.raises(TypeError):

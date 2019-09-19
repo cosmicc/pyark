@@ -45,6 +45,11 @@ def asynctimeit(func):
 
 @log.catch
 async def gettotaldbconnections():
+    """Return total database connections on postgres server
+
+    Returns:
+        INT: Description:  Total connections
+    """
     return await db.fetchone(f'SELECT count(*) FROM pg_stat_activity;')
 
 
