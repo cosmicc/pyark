@@ -16,7 +16,7 @@ from modules.clusterevents import getcurrenteventtitle, getcurrenteventtitleabv,
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import (disableinstance, enableinstance, getlastcrash, getlog, instancelist, iscurrentconfig,
-                               isinrestart, isinstanceenabled, isinstanceup, restartinstance, serverchat)
+                               isinrestart, isinstanceenabled, isinstanceonline, restartinstance, serverchat)
 from modules.logclient import LogClient, loggerchat
 from modules.lottery import getlotteryendtime, getlotteryplayers, isinlottery
 from modules.messages import sendmessage, validatelastsent, validatenumsent
@@ -357,7 +357,7 @@ def database_processor9():
 @webui.context_processor
 def database_processor10():
     def ui_isinstanceup(inst):
-        return isinstanceup(inst)
+        return isinstanceonline(inst)
     return dict(ui_isinstanceup=ui_isinstanceup)
 
 

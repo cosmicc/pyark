@@ -15,7 +15,12 @@ from modules.timehelper import Now
 
 @log.catch
 async def asyncgetinstancelist():
-    return await globalvar.getlist('allinstances')
+    """Return a tuple of all instance names
+
+    Returns:
+        TUPLE: Description: Tuple of instance names
+    """
+    return await globalvar.gettuple('allinstances')
 
 
 @log.catch
@@ -199,7 +204,15 @@ def isinstancerunning(inst):
         return False
 
 
-def isinstanceup(instance):
+def isinstanceonline(instance):
+    """Return if an instance is online or not
+
+    Args:
+        instance (STRING): Description: Instance name to check
+
+    Returns:
+        BOOL:
+    """
     if not isinstance(instance, str):
         raise TypeError(f'Instance value must be type str, not {type(instance)}')
     redis = _Redis.Redis(host=redis_host, port=redis_port, db=0)

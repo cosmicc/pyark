@@ -118,6 +118,18 @@ class globalvar:
             resplist.append(inst.decode())
         return resplist
 
+    async def gettuple(key):
+        """Get a global variable as tuple
+
+        Arguments:
+            key {string} -- Key to get value from
+        """
+        reclist = await redis.smembers(key)
+        resplist = ()
+        for inst in reclist:
+            resplist = resplist + (inst.decode(),)
+        return resplist
+
     async def checklist(key, value):
         """Check a global list for a value
 
