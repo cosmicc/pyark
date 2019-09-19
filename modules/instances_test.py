@@ -11,4 +11,5 @@ def test_isinstanceup():
         modules.instances.isinstanceup(None)
         modules.instances.isinstanceup(1)
         modules.instances.isinstanceup(['island', 'ragnarok'])
-    assert modules.instances.isinstanceup('ragnarok') == '1'
+    assert modules.instances.isinstanceup('ragnarok') is True
+    assert type(modules.instances.isinstanceup('ragnarok')) is bool
