@@ -8,11 +8,11 @@ sys.path.append('/home/ark/pyark')
 
 def test_isinstanceonline():
     with pytest.raises(TypeError):
-        modules.instances.isinstanceup(None)
-        modules.instances.isinstanceup(1)
-        modules.instances.isinstanceup(['island', 'ragnarok'])
-    assert modules.instances.isinstanceup('ragnarok') is True
-    assert type(modules.instances.isinstanceup('ragnarok')) is bool
+        modules.instances.isinstanceonline(None)
+        modules.instances.isinstanceonline(1)
+        modules.instances.isinstanceonline(['island', 'ragnarok'])
+    assert modules.instances.isinstanceonline('ragnarok') is True
+    assert type(modules.instances.isinstanceonline('ragnarok')) is bool
 
 
 async def test_asyncgetinstancelist():
