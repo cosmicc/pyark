@@ -21,7 +21,7 @@ async def test_asyncgetinstancelist():
     assert len(await modules.instances.asyncgetinstancelist()) == 5
 
 
-async def test_asyncisinstanceenabled():
+async def test_asyncisinstanceenabled(db):
     with pytest.raises(TypeError):
         await modules.instances.asyncisinstanceenabled(None, db)
         await modules.instances.asyncisinstanceenabled(1, db)
@@ -30,7 +30,7 @@ async def test_asyncisinstanceenabled():
     assert type(await modules.instances.asyncisinstanceenabled('ragnarok'), db) is bool
 
 
-async def test_asyncgetlastwipe():
+async def test_asyncgetlastwipe(db):
     with pytest.raises(TypeError):
         await modules.instances.asyncgetlastwipe(None, db)
         await modules.instances.asyncgetlastwipe(1, db)
