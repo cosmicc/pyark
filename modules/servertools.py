@@ -197,9 +197,21 @@ async def getinstpid(inst):
 
 
 async def getopenfiles():
+    """Return current number of open files on server
+
+    Returns:
+        TUPLE (INT, INT): Description: (openfiles, filelimit)
+    """
     result = await asyncserverexec(['sysctl', 'fs.file-nr'], nice=19, wait=True)
     newresult = result['stdout'].decode('utf-8').strip().split(' ')[2].split('\t')
-    return (newresult[0], newresult[2])
+    if len(newresult) < 2:
+        log.error('Invalid open files retrieved from server')
+    try:
+        openfiles = int(newresult[0])
+        filelimit = int(newresult[2])
+    except ValueError:
+        log.error('Invalid open files retrieved from server')
+    return (openfiles, filelimit)
 
 
 async def getserveruptime():
@@ -222,7 +234,7 @@ async def getcpuload():
         load5 = (rawcpuload[1] / numcores) * 100
         load15 = (rawcpuload[2] / numcores) * 100
     except ValueError:
-        log.error('Invalid cpu statistics retrived from server')
+        log.error('Invalid cpu statistics retrieved from server')
 
     return (numcores, truncate_float(cpufreq, 1), truncate_float(load1, 1), truncate_float(load5, 1), truncate_float(load15, 1))
 
@@ -236,19 +248,19 @@ async def getservermem():
     process = await asyncserverexec(['free', '-m'], nice=19, wait=True)
     lines = process['stdout'].decode().split('\n')
     if len(lines) < 2:
-        log.error('Invalid memory statistics retrived from server')
+        log.error('Invalid memory statistics retrieved from server')
         return (0, 0, 0)
     memvalues = lines[1].strip().split()
     swapvalues = lines[2].strip().split()
     if len(memvalues) < 6 or len(swapvalues) < 2:
-        log.error('Invalid memory statistics retrived from server')
+        log.error('Invalid memory statistics retrieved from server')
         return (0, 0, 0)
     try:
         memfree = int(memvalues[3])
         memavailable = int(memvalues[6])
         swapused = int(swapvalues[2])
     except ValueError:
-        log.error('Invalid memory statistics retrived from server')
+        log.error('Invalid memory statistics retrieved from server')
         return (0, 0, 0)
     else:
         return (int(memfree), int(memavailable), int(swapused))
