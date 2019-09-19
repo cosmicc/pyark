@@ -296,7 +296,7 @@ async def asyncgetlastrestart(instance):
     return int(insts['lastrestart'])
 
 
-async def getlastrestartreason(instance):
+async def asyncgetlastrestartreason(instance):
     """Return instance last restart reason
 
     Args:
