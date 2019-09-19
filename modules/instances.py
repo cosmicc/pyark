@@ -161,7 +161,7 @@ async def statuscheck(instances):
         asyncio.create_task(statusexecute(inst))
 
 
-async def asyncisinstanceenabled(instance):
+async def asyncisinstanceenabled(instance, db=db):
     """Return if instance is enabled
 
     Args:
@@ -251,7 +251,7 @@ def homeablelist():
     return dbdata
 
 
-async def asyncgetlastwipe(instance):
+async def asyncgetlastwipe(instance, db=db):
     """Return instance last wild dino wipe epoch
 
     Args:
