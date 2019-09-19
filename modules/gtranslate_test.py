@@ -6,6 +6,7 @@ import modules.gtranslate
 sys.path.append('/home/ark/pyark')
 
 
+@pytest.mark.last
 def test_trans_to_eng():
     with pytest.raises(TypeError):
         assert type(modules.gtranslate.trans_to_eng(132))
@@ -14,6 +15,7 @@ def test_trans_to_eng():
     assert modules.gtranslate.trans_to_eng('hola') == 'Hello (Translated Spanish)'
 
 
+@pytest.mark.last
 def test_trans_from_eng():
     with pytest.raises(TypeError):
         assert type(modules.gtranslate.trans_from_eng(132, 543))
