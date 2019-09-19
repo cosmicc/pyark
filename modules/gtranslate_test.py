@@ -19,6 +19,6 @@ def test_trans_from_eng():
         assert type(modules.gtranslate.trans_from_eng(132, 543))
         assert type(modules.gtranslate.trans_from_eng(['Test', 'me']))
     assert type(modules.gtranslate.trans_from_eng('hola', 'spanish')) is str
-    assert modules.gtranslate.trans_from_eng('hello') == 'Hello (Translated Spanish)'
+    assert modules.gtranslate.trans_from_eng('hello') == 'hola (Translated English)'
 
 

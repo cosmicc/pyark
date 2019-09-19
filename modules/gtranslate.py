@@ -28,7 +28,6 @@ def trans_from_eng(text, lang):
         text = text + f' (Translated English)'
         trans = translator.translate(text, dest=nlang)
         result = {'language': iso639.get(part1=trans.src).name, 'iso639': trans.src, 'text': trans.text}
-        return result
+        return result['text']
     except:
-        result = {'language': 'English', 'iso639': 'en', 'text': text}
-        return result
+        return f'{text} (Not Translated)'
