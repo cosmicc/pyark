@@ -179,7 +179,7 @@ def getuptime(elapsed=False):
         return float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1])
 
 
-def getidlepercent():
+async def getidlepercent():
     """Return server idle time in percentage from uptime
 
     Returns:
