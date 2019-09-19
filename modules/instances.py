@@ -11,7 +11,7 @@ from modules.configreader import redis_host, redis_port, sharedpath, hstname
 from modules.dbhelper import dbquery, dbupdate
 from modules.players import getplayer
 from modules.redis import globalvar, instancestate, instancevar
-from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, filterline, asyncserverexec, serverneedsrestart, getserveruptime, asyncglobalbuffer
+from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, filterline, asyncserverexec, serverneedsrestart, getserveruptime
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now
 from modules.clusterevents import asyncgetcurrenteventext, asynciseventtime
@@ -454,7 +454,7 @@ async def asyncwriteglobal(instance, player, message, db=db):
         for inst in await asyncgetinstancelist():
             await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{inst.lower()}', '{player}', '{message}', '{Now()}')")
     else:
-        await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{inst.lower()}', '{player}', '{message}', '{Now()}')")
+        await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{instance.lower()}', '{player}', '{message}', '{Now()}')")
 
 
 def serverchat(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False):

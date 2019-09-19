@@ -12,13 +12,15 @@ sys.path.append('/home/ark/pyark')
 async def testdb():
     proc = await asyncio.create_subprocess_shell('createdb pyark_pytest; pg_dump pyark -s | psql pyark_pytest', stdout=asyncio.subprocess.PIPE, stderr=None)
     stdout, stderr = await proc.communicate()
-    print({'returncode': proc.returncode, 'stdout': stdout})
+    if proc.returncode != 0:
+        raise RuntimeError('Error creating pyark_pytest database')
     testdb = asyncDB(db='pyark_pytest')
     yield testdb
     await testdb.close()
     proc = await asyncio.create_subprocess_shell('dropdb pyark_pytest', stdout=asyncio.subprocess.PIPE, stderr=None)
     stdout, stderr = await proc.communicate()
-    print({'returncode': proc.returncode, 'stdout': stdout})
+    if proc.returncode != 0:
+        raise RuntimeError('Error deleting pyark_pytest database')
 
 
 @pytest.fixture()
