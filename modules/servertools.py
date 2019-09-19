@@ -50,7 +50,7 @@ async def gettotaldbconnections():
     Returns:
         INT: Description:  Total connections
     """
-    return await db.fetchone(f'SELECT count(*) FROM pg_stat_activity;')['count']
+    return await (db.fetchone(f'SELECT count(*) FROM pg_stat_activity;'))['count']
 
 
 @log.catch
