@@ -62,8 +62,8 @@ async def test_asyncgetlastrestart():
 
 async def test_asyncgetlastrestartreason():
     with pytest.raises(TypeError):
-        await modules.instances.asyncgetlastrestart(None)
-        await modules.instances.asyncgetlastrestart(1)
-        await modules.instances.asyncgetlastrestart(['island', 'ragnarok'])
-    assert type(await modules.instances.asyncgetlastrestart('ragnarok')) is str
-    assert len(await modules.instances.asyncgetlastrestart('ragnarok')) > 1
+        await modules.instances.asyncgetlastrestartreason(None)
+        await modules.instances.asyncgetlastrestartreason(1)
+        await modules.instances.asyncgetlastrestartreason(['island', 'ragnarok'])
+    assert type(await modules.instances.asyncgetlastrestartreason('ragnarok')) is str
+    assert len(await modules.instances.asyncgetlastrestartreason('ragnarok')) > 1
