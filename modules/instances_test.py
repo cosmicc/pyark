@@ -72,4 +72,5 @@ async def test_asyncgetlastrestartreason():
 async def test_asyncwriteglobal(testdb):
     assert await modules.instances.asyncwriteglobal('ragnarok', 'admin', 'hello', db=testdb) is True
     result = await testdb.fetchone("SELECT * FROM globalbuffer WHERE server = 'ragnarok'")
+    print(result)
     assert len(result) == 1
