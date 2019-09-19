@@ -6,13 +6,13 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_us
 
 sys.path.append('/home/ark/pyark')
 
-
+"""
 @pytest.fixture(scope="session")
 async def db():
     db = asyncDB()
     yield db
     await db.close()
-
+"""
 
 """
 @pytest.fixture()

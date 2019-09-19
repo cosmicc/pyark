@@ -30,7 +30,7 @@ async def test_asyncisinstanceenabled():
     assert type(await modules.instances.asyncisinstanceenabled('ragnarok')) is bool
 
 
-async def test_asyncgetlastwipe(db):
+async def test_asyncgetlastwipe():
     with pytest.raises(TypeError):
         await modules.instances.asyncgetlastwipe(None)
         await modules.instances.asyncgetlastwipe(1)
