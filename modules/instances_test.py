@@ -58,3 +58,12 @@ async def test_asyncgetlastrestart():
     assert await modules.instances.asyncgetlastrestart('ragnarok') is not None
     assert type(await modules.instances.asyncgetlastrestart('ragnarok')) is int
     assert await modules.instances.asyncgetlastrestart('ragnarok') > 100000
+
+
+async def test_asyncgetlastrestartreason():
+    with pytest.raises(TypeError):
+        await modules.instances.asyncgetlastrestart(None)
+        await modules.instances.asyncgetlastrestart(1)
+        await modules.instances.asyncgetlastrestart(['island', 'ragnarok'])
+    assert type(await modules.instances.asyncgetlastrestart('ragnarok')) is str
+    assert len(await modules.instances.asyncgetlastrestart('ragnarok')) > 1

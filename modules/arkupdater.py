@@ -114,11 +114,6 @@ async def asyncgetpendingcfgver(inst):
     return int(instdata['cfgver'])
 
 
-async def getlastrestart(inst):
-    dbdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    return dbdata['lastrestart']
-
-
 async def asyncresetlastrestart(inst):
     await db.update(f"UPDATE instances SET lastrestart = '{Now()}', needsrestart = 'False', cfgver = {await asyncgetpendingcfgver(inst)}, restartcountdown = 30 WHERE name = '{inst}'")
 

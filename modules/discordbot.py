@@ -15,7 +15,7 @@ from modules.clusterevents import asyncgetcurrenteventinfo, asyncgetlasteventinf
 from modules.configreader import (changelog_id, discordtoken, generalchat_id,
                                   hstname, infochat_id, maint_hour, serverchat_id)
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import getlastrestart, getlastrestartreason, getlastwipe, instancelist, writeglobal
+from modules.instances import asyncgetlastrestart, asyncgetlastrestartreason, asyncgetlastwipe, instancelist, writeglobal
 from modules.lottery import asyncgetlottowinnings, asyncisinlottery, asynctotallotterydeposits
 from modules.players import (getnewestplayers, getplayer, getplayerlastseen, getplayerlastserver, getplayersonlinenames,
                              getplayerstoday, gettopplayedplayers, isplayeradmin, setprimordialbit)
@@ -675,8 +675,8 @@ def pyarkbot():
         if args:
             instr = args.lower()
             if instr in instancelist():
-                lastrestartt = elapsedTime(Now(), getlastrestart(instr))
-                msg = f'**{instr.title()}** last restarted **{lastrestartt} ago** for a {getlastrestartreason(instr)}'
+                lastrestartt = elapsedTime(Now(), await asyncgetlastrestart(instr))
+                msg = f'**{instr.title()}** last restarted **{lastrestartt} ago** for a {await asyncgetlastrestartreason(instr)}'
                 embed = discord.Embed(description=msg, color=INFO_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=True)
             else:
@@ -686,8 +686,8 @@ def pyarkbot():
         else:
             msg = ''
             for each in instancelist():
-                lastwipet = elapsedTime(Now(), getlastrestart(each))
-                msg = msg + f'**{each.capitalize()}** last restarted **{lastwipet} ago** for a {getlastrestartreason(each)}\n'
+                lastwipet = elapsedTime(Now(), await asyncgetlastrestart(each))
+                msg = msg + f'**{each.capitalize()}** last restarted **{lastwipet} ago** for a {await asyncgetlastrestartreason(each)}\n'
             embed = discord.Embed(description=msg, color=INFO_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
@@ -697,7 +697,7 @@ def pyarkbot():
         if args:
             instr = args[0].lower()
             if instr in instancelist():
-                lastwipet = elapsedTime(Now(), getlastwipe(instr))
+                lastwipet = elapsedTime(Now(), await asyncgetlastwipe(instr))
                 msg = f'Last wild dino wipe for **{instr.capitalize()}** was **{lastwipet} ago**'
                 embed = discord.Embed(description=msg, color=INFO_COLOR)
                 await messagesend(ctx, embed, allowgeneral=False, reject=True)
@@ -708,7 +708,7 @@ def pyarkbot():
         else:
             msg = ''
             for each in instancelist():
-                lastwipet = elapsedTime(Now(), getlastwipe(each))
+                lastwipet = elapsedTime(Now(), await asyncgetlastwipe(each))
                 msg = msg + f'Last wild dino wipe for **{each.capitalize()}** was **{lastwipet} ago**\n'
             embed = discord.Embed(description=msg, color=INFO_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)

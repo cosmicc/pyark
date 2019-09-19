@@ -296,26 +296,18 @@ async def asyncgetlastrestart(instance):
     return int(insts['lastrestart'])
 
 
-def getlastwipe(inst):
-    dbdata = dbquery("SELECT lastdinowipe FROM instances WHERE name = '%s'" % (inst.lower(),), fmt='string', fetch='one')
+async def getlastrestartreason(instance):
+    """Return instance last restart reason
+
+    Args:
+        instance (STRING): Description: Instance name
+
+    Returns:
+        STRING
+    """
+    dbdata = await db.fetchone(f"SELECT restartreason FROM instances WHERE name = '{instance.lower()}'")
     if dbdata:
-        return int(dbdata)
-    else:
-        return None
-
-
-def getlastrestart(inst):
-    dbdata = dbquery("SELECT lastrestart FROM instances WHERE name = '%s'" % (inst.lower(),), fetch='one', single=True)
-    if dbdata:
-        return int(dbdata[0])
-    else:
-        return None
-
-
-def getlastrestartreason(inst):
-    dbdata = dbquery("SELECT restartreason FROM instances WHERE name = '%s'" % (inst.lower(),), fetch='one', single=True)
-    if dbdata:
-        return dbdata[0]
+        return dbdata['restartreason']
     else:
         return None
 
