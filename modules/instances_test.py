@@ -22,6 +22,7 @@ async def test_asyncgetinstancelist():
 
 
 async def test_asyncisinstanceenabled(db):
+    await db.connect(min=1, max=10, timeout=30)
     with pytest.raises(TypeError):
         await modules.instances.asyncisinstanceenabled(None, db)
         await modules.instances.asyncisinstanceenabled(1, db)
@@ -31,6 +32,7 @@ async def test_asyncisinstanceenabled(db):
 
 
 async def test_asyncgetlastwipe(db):
+    await db.connect(min=1, max=10, timeout=30)
     with pytest.raises(TypeError):
         await modules.instances.asyncgetlastwipe(None, db)
         await modules.instances.asyncgetlastwipe(1, db)
