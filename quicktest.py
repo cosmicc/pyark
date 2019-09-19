@@ -2,7 +2,7 @@
 
 def run():
     try:
-        1 / 0
+        a = 1 / 1
     except:
         print('except')
         return False
