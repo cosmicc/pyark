@@ -10,7 +10,7 @@ sys.path.append('/home/ark/pyark')
 db = asyncDB()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 async def asyncdb():
     await db.connect(min=1, max=10, timeout=30)
     conn = await db._aquire()
@@ -25,7 +25,7 @@ async def asyncdb_cursor(conn):
     await conn.rollback()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def conn():
     conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     yield conn
