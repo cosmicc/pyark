@@ -10,18 +10,13 @@ import globvars
 from modules.asyncdb import DB as db
 from modules.dbhelper import cleanstring
 from modules.gtranslate import trans_to_eng
-from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, asyncwipeit, homeablelist
+from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, asyncwipeit, asynchomeablelist, asyncwriteglobal
 from modules.lottery import asyncgetlastlotteryinfo
 from modules.players import asyncnewplayer
 from modules.redis import redis, instancestate, instancevar, globalvar
 from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, playedTime, wcstamp
-
-
-async def asyncwriteglobal(inst, whos, msg):
-    await db.update("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-                    (inst, whos, msg, Now()))
 
 
 async def asyncwritechat(inst, whos, msg, tstamp):
@@ -392,7 +387,7 @@ async def asynchomeserver(inst, whoasked, ext):
         player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
         if ext != '':
             tservers = []
-            tservers = homeablelist()
+            tservers = await asynchomeablelist()
             ext = ext.lower()
             if ext in tservers:
                 if ext != player['homeserver']:

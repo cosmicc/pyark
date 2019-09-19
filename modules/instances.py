@@ -206,14 +206,6 @@ def isinrestart(inst):
         return False
 
 
-def isinstancerunning(inst):
-    dbdata = dbquery("SELECT isrunning FROM instances WHERE name = '%s'" % (inst,), fetch='one')
-    if dbdata[0] == 1:
-        return True
-    else:
-        return False
-
-
 def isinstanceonline(instance):
     """Return if an instance is online or not
 
@@ -246,8 +238,8 @@ def instancelist():
     return dbdata
 
 
-def homeablelist():
-    dbdata = dbquery('SELECT name FROM instances WHERE homeable = true', fmt='list', single=True)
+async def asynchomeablelist():
+    dbdata = db.fetchall('SELECT name FROM instances WHERE homeable = true')
     return dbdata
 
 
@@ -323,21 +315,19 @@ def writechat(inst, whos, msg, tstamp):
                  (inst, whos, msg, tstamp))
 
 
-async def asyncwriteglobal(inst, whos, msg, db):
-    if inst.lower() == 'all' or inst.lower() == 'alert':
-        for instance in instancelist():
-            await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{instance.lower()}', '{whos}', '{msg}', '{Now()}')")
-    else:
-        await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{instance.lower()}', '{whos}', '{msg}', '{Now()}')")
+async def asyncwriteglobal(instance, player, message, db=db):
+    """Write to globalbuffer
 
-
-def writeglobal(inst, whos, msg):
-    if inst.lower() == 'all' or inst.lower() == 'alert':
-        for instance in instancelist():
-            dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-                     (instance.lower(), whos, msg, Now()))
+    Args:
+        instance (STRING): Description: Instance name
+        player (STRING): Description: Player name
+        message (STRING): Description: Meaage to send
+    """
+    if instance.lower() == 'all' or instance.lower() == 'alert':
+        for inst in await asyncgetinstancelist():
+            await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{inst.lower()}', '{player}', '{message}', '{Now()}')")
     else:
-        dbupdate("INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (instance.lower(), whos, msg, Now()))
+        await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{inst.lower()}', '{player}', '{message}', '{Now()}')")
 
 
 async def asyncserverchat(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False, db=db):

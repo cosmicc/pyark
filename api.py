@@ -1,4 +1,3 @@
-from functools import wraps
 
 from fastapi import FastAPI, Form
 from modules.asyncdb import asyncDB
@@ -34,24 +33,6 @@ async def token_required(f):
 '''
 
 
-async def serverchat(chatline):
-    cmd = chatline.split(' ')[0][:1].strip()
-    who = chatline.split(' ')[0][1:].strip().lower()
-    cmdremove = len(who) + 1
-    msg = chatline[cmdremove:].strip()
-    if (cmd == '@' and who == 'all') or (cmd == '#' and who == 'all'):
-        await asyncserverchat(msg, inst='ALL', whosent='Admin', private=False, broadcast=False, db=db)
-    elif cmd == '#':
-        await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False, db=db)
-    elif cmd == '@':
-        if who in await globalvar.getlist('allinstances'):
-            await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=False, db=db)
-        else:
-            await asyncserverchat(msg, inst='ALL', whosent=who, private=True, broadcast=False, db=db)
-    elif cmd == '!':
-        await asyncserverchat(msg, inst=who, whosent='Admin', private=False, broadcast=True, db=db)
-
-
 @app.on_event("startup")
 async def startup():
     await db.connect(min=1, max=5, timeout=60)
@@ -64,7 +45,7 @@ async def shutdown():
 
 @app.post('/serverchat')
 async def server_chat(chatline: str = Form(...)):
-    await serverchat(chatline)
+    await asyncserverchat(chatline)
     return chatline
 
 
