@@ -207,12 +207,23 @@ async def getserveruptime():
 
 
 async def getcpuload():
+    """Return tuple of cpu information
+
+    Returns:
+        TUPLE (INT, FLOAT, FLOAT, FLOAT, FLOAT): Description:
+        (numcores, cpufreq, 1minload, 5minload, 15minload)
+    """
     rawcpuload = psutil.getloadavg()
     numcores = psutil.cpu_count()
-    cpufreq = psutil.cpu_freq()[0] / 1000
-    load1 = (rawcpuload[0] / numcores) * 100
-    load5 = (rawcpuload[1] / numcores) * 100
-    load15 = (rawcpuload[2] / numcores) * 100
+    try:
+        numcores = int(numcores)
+        cpufreq = psutil.cpu_freq()[0] / 1000
+        load1 = (rawcpuload[0] / numcores) * 100
+        load5 = (rawcpuload[1] / numcores) * 100
+        load15 = (rawcpuload[2] / numcores) * 100
+    except ValueError:
+        log.error('Invalid cpu statistics retrived from server')
+
     return (numcores, truncate_float(cpufreq), truncate_float(load1), truncate_float(load5), truncate_float(load15))
 
 
