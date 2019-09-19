@@ -16,6 +16,6 @@ def test_isinstanceonline():
 
 
 async def test_asyncgetinstancelist():
-    assert type(modules.instances.asyncgetinstancelist()) is tuple
-    assert modules.instances.asyncgetinstancelist() is not None
-    assert len(modules.instances.asyncgetinstancelist()) == 5
+    assert type(await modules.instances.asyncgetinstancelist()) is tuple
+    assert await modules.instances.asyncgetinstancelist() is not None
+    assert len(await modules.instances.asyncgetinstancelist()) == 5
