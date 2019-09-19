@@ -14,3 +14,11 @@ def test_trans_to_eng():
     assert modules.gtranslate.trans_to_eng('hola') == 'Hello (Translated Spanish)'
 
 
+def test_trans_from_eng():
+    with pytest.raises(TypeError):
+        assert type(modules.gtranslate.trans_from_eng(132, 543))
+        assert type(modules.gtranslate.trans_from_eng(['Test', 'me']))
+    assert type(modules.gtranslate.trans_from_eng('hola')) is str
+    assert modules.gtranslate.trans_from_eng('hello') == 'Hello (Translated Spanish)'
+
+
