@@ -776,17 +776,20 @@ async def asyncprocesscmdline(minst, eline):
                 await asyncchatlinedetected(inst, chatdict)
 
 
+async def asyncfinishcmd(inst):
+    await instancestate.unset(inst, 'cmdlisten')
+
+
 async def cmdsexecute(inst):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
-    factory = partial(SubProtocol, cmd_done, inst, parsetask=asyncprocesscmdline)
+    factory = partial(SubProtocol, cmd_done, inst, parsetask=asyncprocesscmdline, finishtask=asyncfinishcmd)
     proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'rconcmd', 'getgamelog', f'@{inst}', stdin=None, stderr=None)
     try:
         transport, protocol = await proc
         await cmd_done
     finally:
         transport.close()
-        await instancestate.unset(inst, 'cmdlisten')
 
 
 async def cmdscheck(instances):

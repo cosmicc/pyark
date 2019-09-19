@@ -62,6 +62,7 @@ async def asyncwipeit(inst, dinos=True, eggs=False, mating=False, dams=False, be
 
 @log.catch
 async def asyncfinishstatus(inst):
+    await instancestate.unset(inst, 'statuscheck')
     log.trace('running statusline completion task')
     if await instancevar.getint(inst, 'missedrunning') >= 3:
         await instancevar.mset(inst, {'isrunning': 0, 'playersactive': 0, 'playersconnected': 0, 'isonline': 0, 'islistening': 0})
@@ -158,7 +159,9 @@ async def statusexecute(inst):
 
 async def statuscheck(instances):
     for inst in instances:
-        asyncio.create_task(statusexecute(inst))
+        if not await instancestate.check(inst, 'statuscheck'):
+            await instancestate.set(inst, 'statuscheck')
+            asyncio.create_task(statusexecute(inst))
 
 
 async def asyncisinstanceenabled(instance):

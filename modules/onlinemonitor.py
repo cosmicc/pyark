@@ -220,17 +220,20 @@ async def asyncprocessonline(inst, eline):
         await instancevar.set(inst, 'playersonline', players)
 
 
+async def asyncfinishonline(inst):
+    await instancestate.unset(inst, 'playercheck')
+
+
 async def onlineexecute(inst):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
-    factory = partial(SubProtocol, cmd_done, inst, parsetask=asyncprocessonline)
+    factory = partial(SubProtocol, cmd_done, inst, parsetask=asyncprocessonline, finishtask=asyncfinishonline)
     proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'rconcmd', 'listplayers', f'@{inst}', stdin=None, stderr=None)
     try:
         transport, protocol = await proc
         await cmd_done
     finally:
         transport.close()
-        await instancestate.unset(inst, 'playercheck')
 
 
 async def onlinecheck(instances):
