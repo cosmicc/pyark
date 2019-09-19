@@ -9,7 +9,7 @@ sys.path.append('/home/ark/pyark')
 
 
 @pytest.fixture(scope="session")
-async def asyncdb():
+async def db():
     db = asyncDB()
     await db.connect(min=1, max=10, timeout=30)
     yield db
