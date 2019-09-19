@@ -454,7 +454,7 @@ async def asyncwriteglobal(instance, player, message, db=db):
         for inst in await asyncgetinstancelist():
             await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{inst.lower()}', '{player}', '{message}', '{Now()}')")
     else:
-        await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{instance.lower()}', '{player}', '{message}', '{Now()}')")
+        return await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{instance.lower()}', '{player}', '{message}', '{Now()}')")
 
 
 def serverchat(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False):
