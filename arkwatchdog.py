@@ -38,12 +38,12 @@ def redislistener():
             elif response['data'].decode() == 'start':
                 subprocess.run(['systemctl', 'start', 'pyark'], shell=False, capture_output=False)
             elif response['data'].decode() == 'gitpull':
-                subprocess.run(['git', 'pull'], shell=True, cwd='/home/ark/pyark', capture_output=False)
+                subprocess.run(['git pull'], shell=True, cwd='/home/ark/pyark', capture_output=False)
             elif response['data'].decode() == 'pipsync':
-                subprocess.run(['pipenv', 'sync'], shell=True, cwd='/home/ark/pyark', capture_output=False)
-                subprocess.run(['pipenv', 'clean'], shell=True, cwd='/home/ark/pyark', capture_output=False)
+                subprocess.run(['pipenv sync'], shell=True, cwd='/home/ark/pyark', capture_output=False)
+                subprocess.run(['pipenv clean'], shell=True, cwd='/home/ark/pyark', capture_output=False)
             elif response['data'].decode() == 'restartwatchdog':
-                subprocess.run(['systemctl', 'restart', 'arkwatchdog'], shell=False, capture_output=False)
+                subprocess.run(['systemctl restart arkwatchdog'], shell=False, capture_output=False)
             elif response['data'].decode().startswith('loglevel'):
                 loglevel = response['data'].decode().split(':')[1]
                 config = configparser.RawConfigParser()
@@ -55,7 +55,7 @@ def redislistener():
                     with open(str(pyarkcfgfile), 'w') as configfile:
                         config.write(configfile)
                     sleep(1)
-                    subprocess.run(['systemctl', 'restart', 'pyark'], shell=False, capture_output=False)
+                    subprocess.run(['systemctl restart pyark'], shell=False, capture_output=False)
             elif response['data'].decode().startswith('setcfg'):
                 respsplit = response['data'].decode().split(':')
                 if len(respsplit) == 4:
