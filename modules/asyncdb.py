@@ -22,7 +22,7 @@ class asyncDB:
         self.max = max
         self.timeout = timeout
         self.connecting = True
-        if self.pool is None:
+        if self.cpool is None:
             try:
                 self.cpool = await asyncpg.create_pool(min_size=self.min, max_size=self.max, max_inactive_connection_lifetime=float(self.timeout), database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             except:
