@@ -202,7 +202,7 @@ def isinstancerunning(inst):
 def isinstanceup(inst):
     redis = _Redis.Redis(host=redis_host, port=redis_port, db=0)
     online = redis.hget(inst, 'isonline')
-    if online == 1:
+    if online == '1':
         return True
     else:
         return False
