@@ -251,9 +251,17 @@ def homeablelist():
     return dbdata
 
 
-async def asyncgetlastwipe(inst):
-    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
-    return int(insts['lastdinowipe'])
+async def asyncgetlastwipe(instance):
+    """Return instance last wild dino wipe epoch
+
+    Args:
+        instance (STRING): Description: Instance name
+
+    Returns:
+        INT
+    """
+    inst = await db.fetchone(f"SELECT * FROM instances WHERE name = '{instance}'")
+    return int(inst['lastdinowipe'])
 
 
 async def asyncgetlastvote(inst):

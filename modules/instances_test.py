@@ -28,3 +28,12 @@ async def test_asyncisinstanceenabled():
         await modules.instances.asyncisinstanceenabled(['island', 'ragnarok'])
     assert await modules.instances.asyncisinstanceenabled('ragnarok') is True
     assert type(await modules.instances.asyncisinstanceenabled('ragnarok')) is bool
+
+
+async def test_asyncgetlastwipe():
+    with pytest.raises(TypeError):
+        await modules.instances.asyncgetlastwipe(None)
+        await modules.instances.asyncgetlastwipe(1)
+        await modules.instances.asyncgetlastwipe(['island', 'ragnarok'])
+    assert await modules.instances.asyncgetlastwipe('ragnarok') is not None
+    assert type(await modules.instances.asyncgetlastwipe('ragnarok')) is int
