@@ -199,9 +199,12 @@ def isinstancerunning(inst):
         return False
 
 
-def isinstanceup(inst):
+def isinstanceup(instance):
+    if not isinstance(instance, str):
+        raise TypeError(f'Instance value must be type str, not {type(instance)}')
     redis = _Redis.Redis(host=redis_host, port=redis_port, db=0)
-    online = redis.hget(inst, 'isonline')
+    online = redis.hget(instance, 'isonline')
+
     if online == '1':
         return True
     else:
