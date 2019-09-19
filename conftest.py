@@ -6,23 +6,21 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_us
 
 sys.path.append('/home/ark/pyark')
 
-"""
-@pytest.fixture(scope="session")
-async def db():
-    db = asyncDB()
-    yield db
-    await db.close()
-"""
 
-"""
+@pytest.fixture(scope="session")
+async def testdb():
+    testdb = asyncDB(db='pyark_pytest')
+    yield testdb
+    await testdb.close()
+
+
 @pytest.fixture()
 async def asyncdb_cursor(conn):
     cursor = await conn.cursor()
     yield cursor
     await conn.rollback()
+
 """
-
-
 @pytest.fixture(scope='module')
 def conn():
     conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
@@ -35,3 +33,4 @@ def cursor(conn):
     cursor = conn.cursor()
     yield cursor
     conn.rollback()
+"""

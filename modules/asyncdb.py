@@ -6,10 +6,11 @@ from modules.timehelper import Now
 
 
 class asyncDB:
-    def __init__(self):
+    def __init__(self, db=psql_db):
         log.trace(f'Starting async db connection engine')
+        self.db = db
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
-        self.databases = ('pyark', 'py', 'stats', 'st', 'gamelog', 'gl')
+        self.databases = ('pyark', 'test', 'py', 'stats', 'st', 'gamelog', 'gl')
         self.dbpyark = ('pyark', 'py')
         self.dbstats = ('stats', 'st')
         self.dbgamelog = ('gamelog', 'gl')
@@ -24,7 +25,7 @@ class asyncDB:
         self.connecting = True
         if self.cpool is None:
             try:
-                self.cpool = await asyncpg.create_pool(min_size=self.min, max_size=self.max, max_inactive_connection_lifetime=float(self.timeout), database=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
+                self.cpool = await asyncpg.create_pool(min_size=self.min, max_size=self.max, max_inactive_connection_lifetime=float(self.timeout), database=self.db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
             except:
                 log.critical('Error connecting to database server.. waiting to reconnect')
                 await asyncio.sleep(5)
