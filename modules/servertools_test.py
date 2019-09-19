@@ -39,10 +39,10 @@ async def test_getidlepercent():
 
 async def test_getuptime():
     with pytest.raises(TypeError):
-        assert type(await modules.servertools.getopenfiles(elapsed=1))
-        assert type(await modules.servertools.getopenfiles(elapsed='True'))
+        assert type(await modules.servertools.getuptime(elapsed=1))
+        assert type(await modules.servertools.getuptime(elapsed='True'))
     assert type(await modules.servertools.getuptime()) is int
-    assert type(await modules.servertools.getopenfiles(elapsed=True)) is str
+    assert type(await modules.servertools.getuptime(elapsed=True)) is str
     assert await modules.servertools.getuptime() is not None
     assert await modules.servertools.getuptime(elapsed=True) is not None
 
