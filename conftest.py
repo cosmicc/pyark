@@ -8,7 +8,7 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_us
 sys.path.append('/home/ark/pyark')
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 async def db():
     db = asyncDB()
     await db.connect(min=1, max=10, timeout=30)
