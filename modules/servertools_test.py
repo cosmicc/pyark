@@ -28,6 +28,14 @@ async def test_getopenfiles():
     results = await modules.servertools.getopenfiles()
     assert type(results[0]) is int and type(results[1]) is int
 
+
+async def test_getidlepercent():
+    assert type(await modules.servertools.getidlepercent()) is float
+    assert await modules.servertools.getidlepercent() is not None
+    result = await modules.servertools.getidlepercent()
+    assert len(result.split('.')[1]) == 1
+
+
 """
 def test_isinstanceonline():
     with pytest.raises(TypeError):

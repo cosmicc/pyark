@@ -180,10 +180,18 @@ def getuptime(elapsed=False):
 
 
 def getidlepercent():
+    """Return server idle time in percentage from uptime
+
+    Returns:
+        FLOAT: Description: Idle time percentage
+    """
     uptimedata = globvars.server_uptime_file.read_text().strip('\n').split(' ')
-    uptime = float(uptimedata[1])
-    idletime = float(uptimedata[0])
-    return (idletime / uptime) * 100
+    try:
+        uptime = float(uptimedata[1])
+        idletime = float(uptimedata[0])
+    except (ValueError, IndexError):
+        log.error('Invalid idle time percent retrieved from server')
+    return truncate_float((idletime / uptime) * 100, 1)
 
 
 async def getinstpid(inst):
