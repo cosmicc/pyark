@@ -1,6 +1,6 @@
 import sys
 
-from modules.asyncdb import asyncDB
+from modules.asyncdb import DB as db
 import modules.instances
 import pytest
 
@@ -23,8 +23,6 @@ async def test_asyncgetinstancelist():
 
 
 async def test_asyncisinstanceenabled():
-    db = asyncDB()
-    await db.connect(min=1, max=10, timeout=30)
     with pytest.raises(TypeError):
         await modules.instances.asyncisinstanceenabled(None, db)
         await modules.instances.asyncisinstanceenabled(1, db)
@@ -34,8 +32,6 @@ async def test_asyncisinstanceenabled():
 
 
 async def test_asyncgetlastwipe():
-    db = asyncDB()
-    await db.connect(min=1, max=10, timeout=30)
     with pytest.raises(TypeError):
         await modules.instances.asyncgetlastwipe(None, db)
         await modules.instances.asyncgetlastwipe(1, db)

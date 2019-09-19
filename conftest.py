@@ -12,6 +12,7 @@ sys.path.append('/home/ark/pyark')
 async def db():
     db = asyncDB()
     yield db
+    await db.close()
 
 
 """
