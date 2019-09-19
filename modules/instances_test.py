@@ -1,9 +1,17 @@
 import sys
 
+import asyncio
 import modules.instances
 import pytest
 
 sys.path.append('/home/ark/pyark')
+
+
+@pytest.yield_fixture(scope="module")
+def event_loop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
 
 def test_isinstanceonline():
