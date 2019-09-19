@@ -10,6 +10,8 @@ async def test_getservermem():
     assert type(await modules.servertools.getservermem()) is tuple
     assert await modules.servertools.getservermem() is not None
     assert len(await modules.servertools.getservermem()) == 3
+    results = await modules.servertools.getservermem()
+    assert type(results[0]) is int and type(results[0]) is int and type(results[0]) is int
 
 
 """

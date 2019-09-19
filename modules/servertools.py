@@ -217,10 +217,10 @@ async def getcpuload():
 
 
 async def getservermem():
-    """Return tuple of memory statistics
+    """Return tuple of memory statistics in kilobytes
 
     Returns:
-        TUPLE: Description: (memfree, memavailable, swapused)
+        TUPLE (INT, INT, INT): Description: (memfree, memavailable, swapused)
     """
     process = await asyncserverexec(['free', '-m'], nice=19, wait=True)
     lines = process['stdout'].decode().split('\n')
