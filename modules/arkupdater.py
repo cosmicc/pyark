@@ -19,7 +19,7 @@ from modules.instances import asyncgetlastrestart, asyncgetlastwipe, asyncisinst
 from modules.players import asyncgetliveplayersonline, asyncgetplayersonline
 from modules.pushover import pushover
 from modules.redis import instancestate, instancevar
-from modules.servertools import (asyncserverbcast, asyncserverchat, asyncserverexec,
+from modules.servertools import (asyncserverbcast, asyncglobalbuffer, asyncserverexec,
                                  asyncservernotify, serverneedsrestart)
 from modules.timehelper import Now, Secs, wcstamp
 
@@ -363,7 +363,7 @@ async def asynccheckmaint(instances):
                         await asyncinstancerestart(inst, maintrest)
                     else:
                         message = 'Server maintenance has ended. No restart needed. If you had dinos mating right now you will need to turn it back on.'
-                        await asyncserverchat(inst, message)
+                        await asyncglobalbuffer(inst, message)
                 except:
                     log.exception(f'Error during {hstname} instance daily maintenance')
                 finally:

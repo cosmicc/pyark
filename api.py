@@ -1,7 +1,7 @@
 
 from fastapi import FastAPI, Form
 from modules.asyncdb import asyncDB
-from modules.instances import asyncserverchat
+from modules.instances import asyncglobalbuffer
 from modules.redis import globalvar, instancestate, instancevar, redis
 from modules.servertools import stripansi
 from starlette.responses import Response
@@ -45,7 +45,7 @@ async def shutdown():
 
 @app.post('/serverchat')
 async def server_chat(chatline: str = Form(...)):
-    await asyncserverchat(chatline)
+    await asyncglobalbuffer(chatline)
     return chatline
 
 

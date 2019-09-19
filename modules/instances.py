@@ -330,7 +330,7 @@ async def asyncwriteglobal(instance, player, message, db=db):
         await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{inst.lower()}', '{player}', '{message}', '{Now()}')")
 
 
-async def asyncserverchat(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False, db=db):
+async def asyncglobalbuffer(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False, db=db):
     await db.update("INSERT INTO globalbuffer (server,name,message,timestamp,private,broadcast) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (inst, whosent, msg, Now(), private, broadcast))
 
 

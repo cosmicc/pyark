@@ -21,16 +21,18 @@ def truncate_float(number, digits) -> float:
     """Truncate a float to a specified number of digits
 
     Args:
-        number (float): Description: Number to truncate
-        digits (int): Description: Number of decimal places to return
+        number (FLOAT, STRING): Description: Number to truncate
+        digits (INT): Description: Number of decimal places to return
 
     Returns:
         FLOAT
     """
-    if not isinstance(number, float):
-        raise TypeError(f'Number value must be type float, not {type(number)}')
+    if not isinstance(number, (float, str)):
+        raise TypeError(f'Number value must be type float or str, not {type(number)}')
     if not isinstance(digits, int):
         raise TypeError(f'Digits value must be type int, not {type(digits)}')
+    if isinstance(number, str):
+        number = float(number)
     stepper = 10.0 ** abs(digits)
     return trunc(stepper * number) / stepper
 

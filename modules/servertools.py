@@ -13,6 +13,10 @@ from modules.redis import instancevar
 from modules.timehelper import Now, elapsedTime, elapsedSeconds
 
 
+def removerichtext(text):
+    return sub('<.*?>', '', text)
+
+
 def stripansi(stripstr):
     ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     if isinstance(stripstr, list):
@@ -164,16 +168,8 @@ async def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
         asyncio.create_task(proc)
 
 
-def removerichtext(text):
-    return sub('<.*?>', '', text)
-
-
 def serverneedsrestart():
     return globvars.server_needsrestart_file.is_file()
-
-
-def issharedmounted():
-    return globvars.sharepath.is_mount()
 
 
 def getuptime(elapsed=False):

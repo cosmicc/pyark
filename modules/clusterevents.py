@@ -8,7 +8,7 @@ from modules.asyncdb import DB as db
 from modules.redis import globalvar
 from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import asyncserverchat
+from modules.instances import asyncglobalbuffer
 from modules.timehelper import Now
 
 
@@ -156,7 +156,7 @@ async def asyncstartserverevent(inst):
     eventinfo = await asyncgetcurrenteventinfo()
     log.log('EVENTS', f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
     msg = f"\n\n                      {eventinfo[4]} Event is Starting Soon!\n\n                        {eventinfo[5]}"
-    await asyncserverchat(msg, inst=inst, broadcast=True)
+    await asyncglobalbuffer(msg, inst=inst, broadcast=True)
 
 
 async def asyncstopserverevent(inst):
@@ -164,7 +164,7 @@ async def asyncstopserverevent(inst):
     log.log('EVENTS', f'Ending event on instance {inst.capitalize()}')
     eventinfo = await asyncgetlasteventinfo()
     msg = f"\n\n                      {eventinfo[4]} Event is Ending Soon!"
-    await asyncserverchat(msg, inst=inst, broadcast=True)
+    await asyncglobalbuffer(msg, inst=inst, broadcast=True)
 
 
 async def asynccheckifeventover():
