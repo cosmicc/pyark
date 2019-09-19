@@ -229,6 +229,7 @@ async def getservermem():
     memfree = memvalues[3]
     memavailable = memvalues[6]
     swapused = swapvalues[2]
+    print(f'{memfree} {memavailable} {swapused}')
     return (memfree, memavailable, swapused)
 
 
