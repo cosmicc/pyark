@@ -37,14 +37,14 @@ async def test_getidlepercent():
     assert len(str(result).split('.')[1]) == 1
 
 
-async def test_getuptime():
+async def test_getserveruptime():
     with pytest.raises(TypeError):
-        assert type(await modules.servertools.getuptime(elapsed=1))
-        assert type(await modules.servertools.getuptime(elapsed='True'))
-    assert type(await modules.servertools.getuptime()) is int
-    assert type(await modules.servertools.getuptime(elapsed=True)) is str
-    assert await modules.servertools.getuptime() is not None
-    assert await modules.servertools.getuptime(elapsed=True) is not None
+        assert type(await modules.servertools.getserveruptime(elapsed=1))
+        assert type(await modules.servertools.getserveruptime(elapsed='True'))
+    assert type(await modules.servertools.getserveruptime()) is int
+    assert type(await modules.servertools.getserveruptime(elapsed=True)) is str
+    assert await modules.servertools.getserveruptime() is not None
+    assert await modules.servertools.getserveruptime(elapsed=True) is not None
 
 
 async def test_gettotaldbconnections():

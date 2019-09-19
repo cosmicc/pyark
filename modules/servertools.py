@@ -10,7 +10,7 @@ from loguru import logger as log
 import globvars
 from modules.asyncdb import DB as db
 from modules.redis import instancevar
-from modules.timehelper import Now, elapsedTime, elapsedSeconds, truncate_float
+from modules.timehelper import elapsedSeconds, truncate_float
 
 
 def removerichtext(text):
@@ -45,7 +45,7 @@ def asynctimeit(func):
 
 @log.catch
 async def gettotaldbconnections():
-    """Return total database connections on postgres server
+    """Return total number of database connections on postgres server
 
     Returns:
         INT: Description:  Total connections
@@ -178,7 +178,7 @@ def serverneedsrestart():
     return globvars.server_needsrestart_file.is_file()
 
 
-async def getuptime(elapsed=False):
+async def getserveruptime(elapsed=False):
     """Return server uptime in seconds or elapsed time string
 
     Args:
@@ -237,10 +237,6 @@ async def getopenfiles():
     except ValueError:
         log.error('Invalid open files retrieved from server')
     return (openfiles, filelimit)
-
-
-async def getserveruptime():
-    return elapsedTime(Now(), psutil.boot_time())
 
 
 async def getcpuload():
