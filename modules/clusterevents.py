@@ -8,10 +8,10 @@ from modules.asyncdb import DB as db
 from modules.redis import globalvar
 from modules.configreader import maint_hour
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import asyncglobalbuffer
+from modules.servertools import asyncglobalbuffer
 from modules.timehelper import Now
 
-#
+
 async def asyncwritediscord(msg, mtype, tstamp):
     await db.update("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (mtype, 'ALERT', msg, tstamp))
 

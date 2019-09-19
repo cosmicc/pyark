@@ -10,7 +10,7 @@ from loguru import logger as log
 import globvars
 from modules.asyncdb import DB as db
 from modules.redis import instancevar
-from modules.timehelper import elapsedSeconds, truncate_float
+from modules.timehelper import elapsedSeconds, truncate_float, Now
 
 
 def removerichtext(text):
@@ -41,6 +41,10 @@ def asynctimeit(func):
         await func(*args, **kwargs)
         print(f'Execution times for [{func.__name__}]: Async: {asyncloop.time() - astart_time}')
     return wrapper
+
+
+async def asyncglobalbuffer(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False, db=db):
+    await db.update("INSERT INTO globalbuffer (server,name,message,timestamp,private,broadcast) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (inst, whosent, msg, Now(), private, broadcast))
 
 
 @log.catch
