@@ -305,6 +305,8 @@ async def asyncgetlastrestartreason(instance):
     Returns:
         STRING
     """
+    if not isinstance(instance, str):
+        raise TypeError(f'Instance value must be type str, not {type(instance)}')
     dbdata = await db.fetchone(f"SELECT restartreason FROM instances WHERE name = '{instance.lower()}'")
     if dbdata:
         return dbdata['restartreason']
