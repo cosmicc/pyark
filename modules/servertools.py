@@ -187,7 +187,7 @@ async def getuptime(elapsed=False):
     if elapsed:
         return elapsedSeconds(float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1]))
     else:
-        return int(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1])
+        return int(float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1]))
 
 
 async def getidlepercent():
