@@ -260,12 +260,14 @@ async def asyncgetlastwipe(instance):
     Returns:
         INT
     """
+    if not isinstance(instance, str):
+        raise TypeError(f'Instance value must be type str, not {type(instance)}')
     inst = await db.fetchone(f"SELECT * FROM instances WHERE name = '{instance}'")
     return int(inst['lastdinowipe'])
 
 
 async def asyncgetlastvote(instance):
-    """Return last wild wipe vote time epoch
+    """Return instance last wild wipe vote time epoch
 
     Args:
         instance (STRING): Description: Instance name
@@ -273,12 +275,24 @@ async def asyncgetlastvote(instance):
     Returns:
         INT
     """
+    if not isinstance(instance, str):
+        raise TypeError(f'Instance value must be type str, not {type(instance)}')
     insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{instance}'")
     return int(insts['lastvote'])
 
 
-async def asyncgetlastrestart(inst):
-    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+async def asyncgetlastrestart(instance):
+    """Return insatnce last restart time epoch
+
+    Args:
+        instance (STRING): Description:
+
+    Returns:
+        INT
+    """
+    if not isinstance(instance, str):
+        raise TypeError(f'Instance value must be type str, not {type(instance)}')
+    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{instance}'")
     return int(insts['lastrestart'])
 
 
