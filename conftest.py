@@ -1,5 +1,4 @@
 import sys
-import asyncio
 import psycopg2
 import pytest
 from modules.asyncdb import asyncDB
@@ -8,14 +7,7 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_us
 sys.path.append('/home/ark/pyark')
 
 
-@pytest.yield_fixture(scope="session")
-def event_loop():
-    loop = asyncio.get_running_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture()
+@pytest.fixture(scope="session")
 async def db():
     db = asyncDB()
     yield db
