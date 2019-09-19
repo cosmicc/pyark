@@ -33,7 +33,7 @@ async def test_getidlepercent():
     assert type(await modules.servertools.getidlepercent()) is float
     assert await modules.servertools.getidlepercent() is not None
     result = await modules.servertools.getidlepercent()
-    assert len(result.split('.')[1]) == 1
+    assert len(str(result).split('.')[1]) == 1
 
 
 """
