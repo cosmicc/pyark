@@ -1,5 +1,6 @@
 import sys
 
+import pytest
 import modules.servertools
 
 sys.path.append('/home/ark/pyark')
@@ -34,6 +35,16 @@ async def test_getidlepercent():
     assert await modules.servertools.getidlepercent() is not None
     result = await modules.servertools.getidlepercent()
     assert len(str(result).split('.')[1]) == 1
+
+
+async def test_getuptime():
+    with pytest.raises(TypeError):
+        assert type(await modules.servertools.getopenfiles(elapsed=1))
+        assert type(await modules.servertools.getopenfiles(elapsed='True'))
+    assert type(await modules.servertools.getuptime()) is int
+    assert type(await modules.servertools.getopenfiles(elapsed=True)) is str
+    assert await modules.servertools.getuptime() is not None
+    assert await modules.servertools.getuptime(elapsed=True) is not None
 
 
 """

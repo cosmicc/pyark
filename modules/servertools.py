@@ -172,11 +172,22 @@ def serverneedsrestart():
     return globvars.server_needsrestart_file.is_file()
 
 
-def getuptime(elapsed=False):
+async def getuptime(elapsed=False):
+    """Return server uptime in seconds or elapsed time string
+
+    Args:
+        elapsed (bool, [Optional]): Description: Return elapsed time string
+
+    Returns:
+        INT: Description:  Server uptime in seconds
+        [STRING]: Description:  Server uptime in elapsed time string representation
+    """
+    if not isinstance(elapsed, bool):
+        raise TypeError(f'Elapsed value must by type bool, not {type(elapsed)}')
     if elapsed:
         return elapsedSeconds(float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1]))
     else:
-        return float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1])
+        return int(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1])
 
 
 async def getidlepercent():
