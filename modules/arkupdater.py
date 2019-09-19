@@ -9,12 +9,12 @@ from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventrebootday
 from modules.configreader import hstname, is_arkupdater, maint_hour
 from modules.discordbot import asyncwritediscord
-from modules.instances import (asyncgetlastrestart, asyncgetlastwipe, asyncgetpendingcfgver, asyncglobalbuffer,
+from modules.instances import (asyncgetlastrestart, asyncgetlastwipe, asyncgetpendingcfgver,
                                asyncrestartinstnow, asyncsetrestartbit, asyncwipeit, checkdirs)
 from modules.players import asyncgetliveplayersonline, asyncgetplayersonline
 from modules.pushover import pushover
 from modules.redis import instancestate, instancevar
-from modules.servertools import asyncserverbcast, asyncserverexec, asyncservernotify, serverneedsrestart
+from modules.servertools import asyncserverbcast, asyncserverexec, asyncservernotify, serverneedsrestart, asyncglobalbuffer
 from modules.timehelper import Now, Secs, wcstamp
 from timebetween import is_time_between
 
