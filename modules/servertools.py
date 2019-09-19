@@ -224,13 +224,23 @@ async def getservermem():
     """
     process = await asyncserverexec(['free', '-m'], nice=19, wait=True)
     lines = process['stdout'].decode().split('\n')
+    if len(lines) < 2:
+        log.error('Invalid memory statistics retrived from server')
+        return (0, 0, 0)
     memvalues = lines[1].strip().split()
     swapvalues = lines[2].strip().split()
-    memfree = memvalues[3]
-    memavailable = memvalues[6]
-    swapused = swapvalues[2]
-    print(f'{memfree} {memavailable} {swapused}')
-    return (memfree, memavailable, swapused)
+    if len(memvalues) < 6 or len(swapvalues) < 2:
+        log.error('Invalid memory statistics retrived from server')
+        return (0, 0, 0)
+    try:
+        memfree = int(memvalues[3])
+        memavailable = int(memvalues[6])
+        swapused = int(swapvalues[2])
+    except ValueError:
+        log.error('Invalid memory statistics retrived from server')
+        return (0, 0, 0)
+    else:
+        return (int(memfree), int(memavailable), int(swapused))
 
 
 async def _procstats(inst):
