@@ -16,4 +16,4 @@ def run():
     return True
 
 
-run()
+print(run())
