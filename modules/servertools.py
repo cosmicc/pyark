@@ -224,7 +224,7 @@ async def getcpuload():
     except ValueError:
         log.error('Invalid cpu statistics retrived from server')
 
-    return (numcores, truncate_float(cpufreq), truncate_float(load1), truncate_float(load5), truncate_float(load15))
+    return (numcores, truncate_float(cpufreq, 1), truncate_float(load1, 1), truncate_float(load5, 1), truncate_float(load15, 1))
 
 
 async def getservermem():
