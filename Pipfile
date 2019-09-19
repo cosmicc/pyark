@@ -5,8 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
-pytest-asyncio = "*"
 pytest-aiohttp = "*"
+pytest-ordering = "*"
 
 [packages]
 flask = "*"
@@ -48,6 +48,7 @@ gevent = "*"
 hypercorn = "*"
 fastapi = "*"
 python-multipart = "*"
+alt-pytest-asyncio = "*"
 
 [requires]
 python_version = "3.7"
