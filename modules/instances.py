@@ -161,7 +161,7 @@ async def statuscheck(instances):
         asyncio.create_task(statusexecute(inst))
 
 
-async def asyncisinstanceenabled(instance, db=db):
+async def asyncisinstanceenabled(instance):
     """Return if instance is enabled
 
     Args:
@@ -251,8 +251,8 @@ def homeablelist():
     return dbdata
 
 
-async def asyncgetlastwipe(instance, db=db):
-    """Return instance last wild dino wipe epoch
+async def asyncgetlastwipe(instance):
+    """Return instance last wild dino wipe time epoch
 
     Args:
         instance (STRING): Description: Instance name
@@ -264,8 +264,16 @@ async def asyncgetlastwipe(instance, db=db):
     return int(inst['lastdinowipe'])
 
 
-async def asyncgetlastvote(inst):
-    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+async def asyncgetlastvote(instance):
+    """Return last wild wipe vote time epoch
+
+    Args:
+        instance (STRING): Description: Instance name
+
+    Returns:
+        INT
+    """
+    insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{instance}'")
     return int(insts['lastvote'])
 
 

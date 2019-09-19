@@ -37,3 +37,14 @@ async def test_asyncgetlastwipe():
         await modules.instances.asyncgetlastwipe(['island', 'ragnarok'])
     assert await modules.instances.asyncgetlastwipe('ragnarok') is not None
     assert type(await modules.instances.asyncgetlastwipe('ragnarok')) is int
+    assert type(await modules.instances.asyncgetlastwipe('ragnarok')) > 100000
+
+
+async def test_asyncgetlastvote():
+    with pytest.raises(TypeError):
+        await modules.instances.asyncgetlastvote(None)
+        await modules.instances.asyncgetlastvote(1)
+        await modules.instances.asyncgetlastvote(['island', 'ragnarok'])
+    assert await modules.instances.asyncgetlastvote('ragnarok') is not None
+    assert type(await modules.instances.asyncgetlastvote('ragnarok')) is int
+    assert type(await modules.instances.asyncgetlastwipe('ragnarok')) > 100000
