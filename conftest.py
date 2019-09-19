@@ -2,7 +2,6 @@ import sys
 
 import psycopg2
 import pytest
-from loguru import logger as log
 from modules.asyncdb import asyncDB
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 
@@ -13,7 +12,7 @@ db = asyncDB()
 
 @pytest.fixture(scope="module")
 async def asyncdb():
-    await db.connect(min=1, max=1, timeout=30)
+    await db.connect(min=1, max=10, timeout=30)
     conn = await db._aquire()
     yield conn
     await db._release(conn)
