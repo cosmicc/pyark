@@ -8,8 +8,8 @@ from web import create_app, socketio
 
 __name__ = 'webserverdebug'
 
-processlock = PLock()
-processlock.lock()
+#processlock = PLock()
+#processlock.lock()
 
 nice(12)
 
