@@ -4,50 +4,50 @@
 }
 
 #tooplate_wrapper {
-	width: 780px;
+	width: 1024px;
 	margin: 0 auto;
 	background: url(../images/tooplate_body.jpg) top center no-repeat
 }
 
 #tooplate_header {
-	width: 780px;
+	width: 1024px;
 	height: 100px;
 	margin-bottom: 50px;
 }
 
-#site_title { 
-	float: left; 
-	width: 190px; 
-	height: 35px; 
-	margin-top: 72px; 
+#site_title {
+	float: center;
+	width: 190px;
+	height: 35px;
+	margin-top: 72px;
 }
 
-#site_title h1 { 
-	margin: 0; 
-	padding: 0; 
+#site_title h1 {
+	margin: 0;
+	padding: 0;
 }
 
-#site_title h1 a { 
-	display: block; 
-	width: 190px; 
-	height: 35px; 
-	color: #fff; 
-	text-indent: -10000px; 
-	background: url(../images/tooplate_logo.png) no-repeat; 
+#site_title h1 a {
+	display: block;
+	width: 190px;
+	height: 35px;
+	color: #fff;
+	text-indent: -10000px;
+	background: url(../images/tooplate_logo.png) no-repeat;
 }
 
 #menu {
-	float: right;
+	float: center;
 	width: 560px;
 	height: 40px;
-	margin-top: 70px;
+	margin-top: 20px;
 	background: url(../images/tooplate_menu.png) no-repeat
 }
 
 #content {
 	clear: both;
 	width: 780px;
-	height: 470px;	
+	height: 470px;
 	margin-bottom: 40px;
 	background: url(../images/tooplate_content_bg.png)
 }
@@ -70,7 +70,7 @@
 	padding: 0 40px;
 }
 
-#footer_left { 
+#footer_left {
 	float: left;
 	width: 250px;
 	text-align: left
@@ -84,7 +84,7 @@
 	float: right;
 	height: 85px;
 	padding: 0;
-	
+
 }
 
 #social_box a {
