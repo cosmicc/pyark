@@ -545,7 +545,6 @@ def deconstructchatline(line):
         log.trace(f'Got time from chat: {chattime}')
         log.trace(f'Got chat from chat: {chatline}')
         return {'name': chatname, 'time': chattime, 'line': chatline}
-        return chatname
     except:
         log.exception(f'Deconstruct chatline Error: {line}')
 
