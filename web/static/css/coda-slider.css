@@ -16,7 +16,6 @@
 }
 
 #site_title {
-	float: middle;
 	width: 190px;
 	height: 35px;
 	margin-top: 20px;
@@ -32,7 +31,8 @@
 	width: 190px;
 	height: 35px;
 	color: #fff;
-	text-indent: -10000px;
+	right-margin: auto;
+    left-margin: auto;
 	background: url(../images/tooplate_logo.png) no-repeat;
 }
 
@@ -40,7 +40,7 @@
 	float: middle;
 	width: 560px;
 	height: 30px;
-	margin-top: 20px;
+	margin-top: 10px;
 	background: url(../images/tooplate_menu.png) no-repeat
 }
 
