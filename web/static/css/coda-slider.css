@@ -9,17 +9,15 @@
 }
 
 #tooplate_header {
-	width: 1024px;
+	width: 900px;
 	height: 80px;
 	margin-bottom: 10px;
 }
 
 #site_title {
-    display: block;
 	width: 190px;
 	height: 35px;
-	margin-top: 0px;
-    padding-top: 10px;
+	margin-top: 10px;
     margin-right: auto;
     margin-left: auto;
     background: url(../images/tooplate_logo.png) no-repeat;
