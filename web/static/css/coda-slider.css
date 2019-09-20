@@ -11,9 +11,7 @@
 
 #tooplate_header {
 	width: 1024px;
-	height: 100px;
-    right-margin: auto;
-    left-margin: auto;
+	height: 80px;
 	margin-bottom: 10px;
 }
 
@@ -29,6 +27,8 @@
 	width: 560px;
 	height: 30px;
 	margin-top: 10px;
+    margin-right: auto;
+    margin-left: auto;
 	background: url(../images/tooplate_menu.png) no-repeat
 }
 
