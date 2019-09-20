@@ -1,5 +1,7 @@
 import sys
 from datetime import datetime
+from hypothesis import given, assume
+from hypothesis.strategies import integers
 
 import modules.timehelper as timehelper
 import pytest
@@ -7,6 +9,7 @@ import pytest
 sys.path.append('/home/ark/pyark')
 
 
+@given(integers())
 def test_truncate_float():
     with pytest.raises(TypeError):
         timehelper.truncate_float(12.3531, 1.4)
