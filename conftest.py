@@ -2,6 +2,7 @@ import sys
 import asyncio
 import psycopg2
 import pytest
+import aiohttp
 from modules.asyncdb import asyncDB
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 
