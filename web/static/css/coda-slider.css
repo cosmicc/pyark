@@ -52,7 +52,7 @@
 
 #footer {
 	clear: both;
-	width: 1000px;
+	width: 900px;
 	padding: 0 40px;
 }
 
@@ -81,7 +81,7 @@
 
 .scroll {
     height: 600px;
-    width: 1000px;
+    width: 900px;
     overflow: auto;
     /* overflow-x: hidden; */
     position: relative;
@@ -90,7 +90,7 @@
 
 .scrollContainer div.panel {
     height: 350px;
-    width: 1000px;
+    width: 900px;
 	padding: 10px;
 	overflow: hidden;
 }
