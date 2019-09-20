@@ -8,5 +8,5 @@ sys.path.append('/home/ark/pyark')
 
 
 @pytest.mark.last
-def test_asyncsteamapifetcher(testsession):
+async def test_asyncsteamapifetcher(testsession):
     assert await modules.apihelper.asyncsteamapifetcher(testsession) is True
