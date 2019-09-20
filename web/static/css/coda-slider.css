@@ -11,13 +11,13 @@
 #tooplate_header {
 	width: 900px;
 	height: 80px;
+    padding-top: 20px;
 	margin-bottom: 10px;
 }
 
 #site_title {
 	width: 190px;
 	height: 35px;
-	margin-top: 10px;
     margin-right: auto;
     margin-left: auto;
     background: url(../images/tooplate_logo.png) no-repeat;
