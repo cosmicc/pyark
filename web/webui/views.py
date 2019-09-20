@@ -684,6 +684,11 @@ def manifest():
 #    db.session.rollback()
 #    return render_template('error/500.html', title='Server Error'), 500
 
+@webui.route('/newlanding')
+def dashboard():
+    return render_template('landing.html')
+
+
 
 @webui.route('/', methods=['POST', 'GET'])
 @login_required

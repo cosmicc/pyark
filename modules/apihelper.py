@@ -38,7 +38,7 @@ async def asyncfetchauctiondata(session, steamid, playername):
         else:
             return False
     except:
-        log.exception('error')
+        log.error(f'error fetching auction information for [{playername}]')
 
 
 @log.catch
