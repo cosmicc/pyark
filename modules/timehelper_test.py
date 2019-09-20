@@ -10,7 +10,7 @@ sys.path.append('/home/ark/pyark')
 
 
 @given(a=floats(), b=integers())
-def test_truncate_float():
+def test_truncate_float(a, b):
     timehelper.truncate_float(a, b)
 
     """
