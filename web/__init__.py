@@ -21,7 +21,6 @@ def create_app(config_object):
 
 def register_blueprints(app):
     from .webui.views import webui
-    from .api.views import webapi
     app.register_blueprint(webui, url_prefix='/')
 
 
