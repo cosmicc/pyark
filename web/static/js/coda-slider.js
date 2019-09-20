@@ -6,7 +6,7 @@ $(document).ready(function () {
 
     // if false, we'll float all the panels left and fix the width
     // of the container
-    var horizontal = false;
+    var horizontal = true;
 
     // float the panels left if we're going horizontal
     if (horizontal) {
