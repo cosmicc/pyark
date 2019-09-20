@@ -12,3 +12,5 @@ async def index():
 async def ws():
     while True:
         await websocket.send('hello')
+
+app.run()
