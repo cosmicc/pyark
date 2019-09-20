@@ -152,7 +152,7 @@ async def asynccurrentserverevent(inst):
 
 
 async def asyncstartserverevent(inst):
-    await db.update(f"UPDATE instances SET inevent = '{await asyncgetcurrenteventext()}' WHERE name = '{inst}")
+    await db.update(f"UPDATE instances SET inevent = '{await asyncgetcurrenteventext()}' WHERE name = '{inst}'")
     eventinfo = await asyncgetcurrenteventinfo()
     log.log('EVENTS', f'Starting {eventinfo[4]} Event on instance {inst.capitalize()}')
     msg = f"\n\n                      {eventinfo[4]} Event is Starting Soon!\n\n                        {eventinfo[5]}"
