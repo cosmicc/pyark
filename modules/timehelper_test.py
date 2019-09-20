@@ -9,7 +9,7 @@ import pytest
 sys.path.append('/home/ark/pyark')
 
 
-@given(floats(), integers())
+@given(a=floats(), b=integers())
 def test_truncate_float():
     with pytest.raises(TypeError):
         timehelper.truncate_float(12.3531, 1.4)
