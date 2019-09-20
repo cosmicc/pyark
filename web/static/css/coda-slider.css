@@ -4,7 +4,6 @@
 }
 
 #tooplate_wrapper {
-	width: 1024px;
 	margin: 0 auto;
 	background: url(../images/tooplate_body.jpg) top center no-repeat
 }
@@ -119,7 +118,7 @@ ul.navigation a {
 	display: block;
 	width: 110px;
 	height: 32px;
-	padding: 3px 2px 0 0;
+	padding: 5px 2px 0 0;
 	color: #f6bf34;
 	font-size: 14px;
 	font-weight: 700;
