@@ -32,8 +32,9 @@
 
 #content {
 	clear: both;
+    align-items: center;
 	width: 780px;
-	height: 6470px;
+	height: 470px;
 	margin-bottom: 20px;
 	background: url(../images/tooplate_content_bg.png)
 }
