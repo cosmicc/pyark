@@ -23,6 +23,12 @@ async def testdb():
         raise RuntimeError('Error deleting pyark_pytest database')
 
 
+@pytest.fixture(scope="session")
+async def testsession():
+    async with aiohttp.ClientSession() as session:
+        yield session
+
+
 @pytest.fixture()
 async def asyncdb_cursor(conn):
     cursor = await conn.cursor()

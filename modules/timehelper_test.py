@@ -9,11 +9,7 @@ import pytest
 sys.path.append('/home/ark/pyark')
 
 
-@given(a=floats(), b=integers())
 def test_truncate_float(a, b):
-    timehelper.truncate_float(a, b)
-
-    """
     with pytest.raises(TypeError):
         timehelper.truncate_float(12.3531, 1.4)
         timehelper.truncate_float(12, 0)
@@ -27,7 +23,6 @@ def test_truncate_float(a, b):
     assert timehelper.truncate_float(12.3, 5) == 12.3
     assert timehelper.truncate_float(12.386, -5) == 12.386
     assert timehelper.truncate_float(12.3531, 0) == 12
-"""
 
 
 def test_newdatetimeto():
