@@ -11,6 +11,8 @@
 #tooplate_header {
 	width: 900px;
 	height: 80px;
+    margin-right: auto;
+    margin-left: auto;
     padding-top: 20px;
 	margin-bottom: 10px;
 }
