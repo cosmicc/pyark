@@ -684,13 +684,13 @@ def manifest():
 #    db.session.rollback()
 #    return render_template('error/500.html', title='Server Error'), 500
 
-
+'''
 @webui.route('/')
 def landing():
     return render_template('landing.html')
+'''
 
-
-@webui.route('/old', methods=['POST', 'GET'])
+@webui.route('/', methods=['POST', 'GET'])
 @login_required
 def dashboard():
     if request.method == 'POST':
