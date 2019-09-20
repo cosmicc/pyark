@@ -12,6 +12,8 @@
 #tooplate_header {
 	width: 1024px;
 	height: 100px;
+    right-margin: auto;
+    left-margin: auto;
 	margin-bottom: 10px;
 }
 
@@ -55,7 +57,7 @@
 
 #footer {
 	clear: both;
-	width: 900px;
+	width: 800px;
 	padding: 0 40px;
 }
 
