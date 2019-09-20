@@ -98,7 +98,7 @@ async def getsteaminfo(steamid, playername, session):
         return False
     else:
         log.debug(f'Updated steam API player information for [{playername}] ({steamid})')
-        return player["personaname"]
+        return True
 
 
 @log.catch
