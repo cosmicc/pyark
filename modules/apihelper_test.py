@@ -15,3 +15,8 @@ async def test_getsteaminfo(testsession):
 @pytest.mark.last
 async def test_getsteambans(testsession):
     assert await modules.apihelper.getsteambans('76561198408657294', 'admin', testsession) is True
+
+
+@pytest.mark.last
+async def test_asyncfetchauctiondata(testsession):
+    assert await modules.apihelper.asyncfetchauctiondata(testsession, '76561198408657294', 'admin') == (0, 0, 0)
