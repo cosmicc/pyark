@@ -13,4 +13,4 @@ async def ws():
     while True:
         await websocket.send('hello')
 
-app.run()
+app.run(host='172.31.250.115')
