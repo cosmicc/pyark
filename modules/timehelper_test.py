@@ -9,13 +9,14 @@ import pytest
 sys.path.append('/home/ark/pyark')
 
 
-@given(integers())
+@given(integers(), integers())
 def test_truncate_float():
     with pytest.raises(TypeError):
         timehelper.truncate_float(12.3531, 1.4)
         timehelper.truncate_float(12, 0)
     with pytest.raises(ValueError):
         timehelper.truncate_float('12a3531', 1)
+    assert timehelper.truncate_float(a, b)
     assert timehelper.truncate_float('12.3531', 1) == 12.3
     assert type(timehelper.truncate_float(12.23456, 2)) is float
     assert timehelper.truncate_float(12.34567, 2) == 12.34

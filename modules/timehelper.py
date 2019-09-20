@@ -17,7 +17,7 @@ intervals = (
     ('seconds', 1),)
 
 
-def truncate_float(number, digits) -> float:
+def truncate_float(number: float, digits: int) -> float:
     """Truncate a float to a specified number of digits
 
     Args:
