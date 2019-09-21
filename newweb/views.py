@@ -1,9 +1,9 @@
-from quart import websocket, redirect, render_template, url_for, Blueprint
+from quart import Quart, websocket, redirect, render_template, url_for
 from modules.asyncdb import asyncDB
 from modules.redis import RedisClass
 
 
-webapp = Blueprint('galaxycluster', __name__)
+webapp = Quart(__name__)
 
 
 @webapp.before_serving
