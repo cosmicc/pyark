@@ -1,3 +1,3 @@
-from views import webapp
+from .views import webapp
 
 app = webapp
