@@ -1,6 +1,6 @@
 from quart import Quart, websocket, redirect, render_template, url_for
-from modules.asyncdb import asyncDB
-from modules.redis import RedisClass
+from ..modules.asyncdb import asyncDB
+from ..modules.redis import RedisClass
 
 app = Quart(__name__)
 
