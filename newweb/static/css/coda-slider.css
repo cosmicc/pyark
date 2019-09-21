@@ -89,6 +89,13 @@
 	width: 270px; height: 50px;
 }
 
+.discord a {
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    width: 270px; height: 50px;
+}
+
 .scroll {
     height: 500px;
     width: 900px;
