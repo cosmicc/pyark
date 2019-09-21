@@ -1,9 +1,8 @@
 
 from fastapi import FastAPI, Form
 from modules.asyncdb import asyncDB
-from modules.instances import asyncglobalbuffer
 from modules.redis import globalvar, instancestate, instancevar, redis
-from modules.servertools import stripansi
+from modules.servertools import stripansi, asyncglobalbuffer
 from starlette.responses import Response
 
 app = FastAPI(openapi_prefix="/api")
