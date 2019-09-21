@@ -70,9 +70,9 @@ em { color: #f3c331; }
 	text-decoration: none;
 }
 
-.col_380 { width: 380px; }
+.col_380 { width: 480px; }
 .col_320 { width: 320px; }
-.col_270 { width: 270px; }
+.col_270 { width: 300px; }
 
 .service_list {
 	margin: 0 0 0 15px;
