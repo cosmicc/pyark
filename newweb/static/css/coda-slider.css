@@ -59,6 +59,8 @@
 
 #footer {
 	clear: both;
+    margin-left: auto;
+    margin-right: auto;
 	width: 800px;
 	padding: 0 40px;
 }
