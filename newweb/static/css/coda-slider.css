@@ -82,11 +82,10 @@
 
 }
 
-#social_box a {
-	display: inline-block;
+#discord {
 	margin-left: auto;
     margin-right: auto;
-	width: 150px; height: 40px;
+	width: 270px; height: 50px;
 }
 
 .scroll {
