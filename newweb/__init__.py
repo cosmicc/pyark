@@ -10,7 +10,7 @@ def create_app(config_object):
 
 
 def register_blueprints(app):
-    Blueprint(webapp, url_prefix='/')
+    Blueprint(webapp, __name__, url_prefix='/')
 
 
 app = create_app('config.BaseConfig')
