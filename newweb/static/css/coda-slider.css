@@ -84,7 +84,8 @@
 
 #social_box a {
 	display: inline-block;
-	margin-left: 0px;
+	margin-left: auto;
+    margin-right: auto;
 	width: 150px; height: 40px;
 }
 
