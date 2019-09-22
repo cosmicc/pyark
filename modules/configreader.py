@@ -21,16 +21,16 @@ hstname: str = gethostname().upper()
 
 # General
 loglevel: str = config.get('general', 'loglevel')
-sharedpath = Path(config.get('general', 'sharedpath'))
-arkrootpath = Path(config.get('general', 'arkrootpath'))
-jsonpath = Path(config.get('general', 'jsonlogpath'))
-pylogpath = Path(config.get('general', 'pyarklogpath'))
-pyarkfile = Path(config.get('general', 'pyarklogfile'))
+sharedpath: Path = Path(config.get('general', 'sharedpath'))
+arkrootpath: Path = Path(config.get('general', 'arkrootpath'))
+jsonpath: Path = Path(config.get('general', 'jsonlogpath'))
+pylogpath: Path = Path(config.get('general', 'pyarklogpath'))
+pyarkfile: Path = Path(config.get('general', 'pyarklogfile'))
 
-adminfile = Path(config.get('general', 'adminlogfile'))
-pointsfile = Path(config.get('general', 'pointslogfile'))
-crashfile = Path(config.get('general', 'crashlogfile'))
-errorfile = Path(config.get('general', 'errorlogfile'))
+adminfile: Path = Path(config.get('general', 'adminlogfile'))
+pointsfile: Path = Path(config.get('general', 'pointslogfile'))
+crashfile: Path = Path(config.get('general', 'crashlogfile'))
+errorfile: Path = Path(config.get('general', 'errorlogfile'))
 chatfile: Path = Path(config.get('general', 'chatlogfile'))
 
 maint_hour: int = int(config.get('general', 'maint_hour'))
@@ -81,13 +81,13 @@ instances: tuple = ()
 for each in range(numinstances):
     instances = instances + (config.get(f'instance{each}', 'name'),)
 
-jsonlogfile = jsonpath / f'{hstname.lower()}_log.json'
-jsondebugfile = jsonpath / f'{hstname.lower()}_debug.json'
-pyarklogfile = pylogpath / pyarkfile
-pointslogfile = pylogpath / pointsfile
-crashlogfile = pylogpath / crashfile
-errorlogfile = pylogpath / errorfile
-pointslogfile = pylogpath / pointsfile
-adminlogfile = pylogpath / adminfile
-chatlogfile = pylogpath / chatfile
-gamelogfile = pylogpath / 'game.log'
+jsonlogfile: Path = jsonpath / f'{hstname.lower()}_log.json'
+jsondebugfile: Path = jsonpath / f'{hstname.lower()}_debug.json'
+pyarklogfile: Path = pylogpath / pyarkfile
+pointslogfile: Path = pylogpath / pointsfile
+crashlogfile: Path = pylogpath / crashfile
+errorlogfile: Path = pylogpath / errorfile
+pointslogfile: Path = pylogpath / pointsfile
+adminlogfile: Path = pylogpath / adminfile
+chatlogfile: Path = pylogpath / chatfile
+gamelogfile: Path = pylogpath / 'game.log'
