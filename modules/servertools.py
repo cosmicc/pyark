@@ -1,16 +1,16 @@
-import asyncio
 import subprocess
 from functools import partial
 from re import compile as rcompile
 from re import sub
 
+import asyncio
+import globvars
 import psutil
 from loguru import logger as log
-
-import globvars
 from modules.asyncdb import DB as db
 from modules.redis import instancevar
-from modules.timehelper import elapsedSeconds, truncate_float, Now
+from modules.timehelper import Now, elapsedSeconds, truncate_float
+from typing import Union
 
 
 def removerichtext(text):
@@ -215,7 +215,7 @@ async def getidlepercent():
     return truncate_float((idletime / uptime) * 100, 1)
 
 
-async def getinstpid(inst):
+async def getinstpid(inst: str) -> Union[str, None]:
     try:
         return globvars.instpidfiles[inst].read_text()
     except FileNotFoundError:

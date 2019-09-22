@@ -87,7 +87,6 @@ pyarklogfile: Path = pylogpath / pyarkfile
 pointslogfile: Path = pylogpath / pointsfile
 crashlogfile: Path = pylogpath / crashfile
 errorlogfile: Path = pylogpath / errorfile
-pointslogfile: Path = pylogpath / pointsfile
 adminlogfile: Path = pylogpath / adminfile
 chatlogfile: Path = pylogpath / chatfile
 gamelogfile: Path = pylogpath / 'game.log'
