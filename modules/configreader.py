@@ -74,9 +74,9 @@ webserver_port = config.get('webserver', 'port')
 secsalt = config.get('webserver', 'security_salt')
 testing_seckey = config.get('webserver', 'debug_testkey')
 
-numinstances = int(config.get('general', 'instances'))
+numinstances: int = int(config.get('general', 'instances'))
 
-instances = ()
+instances: tuple = ()
 
 for each in range(numinstances):
     instances = instances + (config.get(f'instance{each}', 'name'),)
