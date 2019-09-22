@@ -12,7 +12,7 @@ from modules.dbhelper import cleanstring
 from modules.gtranslate import trans_to_eng
 from modules.instances import asyncgetinstancelist, asyncgetlastrestart, asyncgetlastwipe, asyncwipeit, asynchomeablelist, asyncwriteglobal
 from modules.lottery import asyncgetlastlotteryinfo
-from modules.players import asyncnewplayer
+from modules.players import asyncnewplayer, asyncgetsteamid
 from modules.redis import redis, instancestate, instancevar, globalvar
 from modules.servertools import asyncserverbcast, asyncserverchat, asyncserverchatto, asyncserverscriptcmd
 from modules.subprotocol import SubProtocol
@@ -45,17 +45,8 @@ async def asyncwritechatlog(inst, whos, msg, tstamp):
     # await f.close()
 
 
-async def asyncgetsteamid(whoasked):
-    player = await db.fetchone(f"SELECT * FROM players WHERE (playername = '{whoasked.lower()}') or (alias = '{whoasked.lower()}')")
-    if player is None:
-        log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
-        return None
-    else:
-        return player['steamid']
-
-
 @log.catch
-async def asyncresptimeleft(inst, whoasked):
+async def asyncresptimeleft(inst: str, whoasked: str):
     insts = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
     if insts['needsrestart'] == 'True':
         message = f'{inst.title()} is restarting in {insts["restartcountdown"]} minutes'

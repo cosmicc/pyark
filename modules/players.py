@@ -31,6 +31,23 @@ def writechat(inst, whos, msg, tstamp):
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
+async def asyncgetsteamid(playername: str) -> str:
+    """Get player SteamID from playername
+
+    Args:
+        playername (str): Description:  Name of player to lookup
+
+    Returns:
+        str: Description: SteamID of player
+    """
+    player = await db.fetchone(f"SELECT * FROM players WHERE (playername = '{playername.lower()}') or (alias = '{playername.lower()}')")
+    if player is None:
+        log.critical(f'Player lookup failed! possible renamed player: {playername}')
+        return None
+    else:
+        return player['steamid']
+
+
 @log.catch
 async def asyncisplayeronline(steamid):
     player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")

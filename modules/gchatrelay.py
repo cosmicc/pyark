@@ -7,15 +7,6 @@ from modules.timehelper import Now
 # globalbuffer (chat TO servers)
 
 
-async def asyncgetsteamid(whoasked):
-    player = await db.fetchone(f"SELECT * FROM players WHERE (playername = '{whoasked.lower()}') or (alias = '{whoasked.lower()}')")
-    if player is None:
-        log.critical(f'Player lookup failed! possible renamed player: {whoasked}')
-        return None
-    else:
-        return player['steamid']
-
-
 async def asyncwritechat(inst, whos, msg, tstamp):
     isindb = False
     if whos != 'ALERT':
