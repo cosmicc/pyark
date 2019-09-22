@@ -6,11 +6,11 @@ configfile = '/home/ark/pyark.cfg'
 
 
 class ExtConfigParser(ConfigParser):
-    def getlist(self, section, option):
+    def getlist(self, section: str, option: str) -> list:
         value = self.get(section, option)
         return list(filter(None, (x.strip() for x in value.split(','))))
 
-    def getlistint(self, section, option):
+    def getlistint(self, section: str, option: str) -> list:
         return [int(x) for x in self.getlist(section, option)]
 
 
