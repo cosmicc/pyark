@@ -129,7 +129,7 @@ class globalvar():
             key {string} -- Key to get value from
         """
         reclist = await redis.smembers(key)
-        resplist = ()
+        resplist: tuple = ()
         for inst in reclist:
             resplist = resplist + (inst.decode(),)
         return resplist
