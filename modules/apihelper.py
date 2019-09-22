@@ -14,7 +14,7 @@ async def asyncarkserverdatafetcher(session):
     for inst in instances:
         svrifo = await db.fetchone(f"SELECT * from instances WHERE name = '{inst}'")
         try:
-            url = f'https://ark-servers.net/api/?object=servers&element=detail&key={svrifo[8]}'
+            url = f'https://ark-servers.net/api/?object=servers&element=detail&key={svrifo["arkservernet"]}'
             adata = await asyncfetchurldata(session, url)
         except:
             log.error(f'Error fetching ArkServers data from web')
