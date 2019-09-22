@@ -13,8 +13,8 @@ votertable = List[str]  # populated voter table for wild wipe votes
 votestarttime: float = time()
 isvoting: bool = False  # is a vote taking place
 lastvoter: int = 0
-welcomes: set = []  # list of steamid of running new player welcomes
-greetings: set = []  # list of steamid or running returning player greets
+welcomes: set = set()  # list of steamid of running new player welcomes
+greetings: set = set()  # list of steamid or running returning player greets
 
 delay = Dict[str, int]  # Delay times for each task
 timer = Dict[str, float]  # timers for each task
