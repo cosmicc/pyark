@@ -52,7 +52,7 @@ Redis = RedisClass()
 redis = Redis.redis
 
 
-class globalvar:
+class globalvar():
     @staticmethod
     async def set(key, value: str):
         """Set a global variable
