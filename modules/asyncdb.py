@@ -3,10 +3,11 @@ import asyncpg
 from loguru import logger as log
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 from modules.timehelper import Now
+from typing import Union, Any
 
 
 class asyncDB:
-    def __init__(self, db=psql_db):
+    def __init__(self, db: str=psql_db):
         log.trace(f'Starting async db connection engine')
         self.db = db
         self.querytypes = ('tuple', 'dict', 'count', 'list', 'record')
@@ -17,12 +18,12 @@ class asyncDB:
         self.cpool = None
         self.connecting = False
 
-    async def connect(self, process=__file__, min=2, max=10, timeout=300):
+    async def connect(self, process: str=__file__, min: int=2, max: int=10, timeout: int=300):
         self.process = process
-        self.min = min
-        self.max = max
-        self.timeout = timeout
-        self.connecting = True
+        self.min: int = min
+        self.max: int = max
+        self.timeout: int = timeout
+        self.connecting: bool = True
         if self.cpool is None:
             try:
                 self.cpool = await asyncpg.create_pool(min_size=self.min, max_size=self.max, max_inactive_connection_lifetime=float(self.timeout), database=self.db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
@@ -69,7 +70,7 @@ class asyncDB:
         else:
             return True
 
-    async def testvars(self, query, result, db):
+    async def testvars(self, query: str, result: str, db: str):
         if not isinstance(query, str):
             raise TypeError('Query is not type string')
         if db not in self.databases:
@@ -77,15 +78,15 @@ class asyncDB:
         if result not in self.querytypes:
             raise ValueError(f'Invalid result type [{result}]')
 
-    async def fetchall(self, query, result='record', db='pyark'):
+    async def fetchall(self, query: str, result: str='record', db: str='pyark') -> Any:
         await self.testvars(query, result, db)
         return await self._query(query, 'all', result, db)
 
-    async def fetchone(self, query, result='record', db='pyark'):
+    async def fetchone(self, query: str, result: str='record', db: str='pyark') -> Any:
         await self.testvars(query, result, db)
         return await self._query(query, 'one', result, db)
 
-    async def _query(self, query, fetch, fmt, db):
+    async def _query(self, query: str, fetch: str, fmt: str, db: str) -> Any:
         try:
             con = await self._aquire()
             if fetch == 'one':
@@ -115,7 +116,7 @@ class asyncDB:
         else:
             return None
 
-    async def _execute(self, query, db):
+    async def _execute(self, query: str, db: str) -> bool:
         con = await self._aquire()
         if db in self.dbgamelog:
             sql = "INSERT INTO gamelog (instance, loglevel, logline) VALUES ($1, $2, $3)"
@@ -137,7 +138,7 @@ class asyncDB:
             finally:
                 await self._release(con)
 
-    async def update(self, query, db='pyark'):
+    async def update(self, query: str, db: str='pyark') -> Any:
         if db not in self.databases:
             raise ValueError(f'Invalid database [{db}]')
         # if (db not in self.dbgamelog and not isinstance(query, str)) or (db in self.dbgamelog and not isinstance(query, list)):
@@ -145,7 +146,7 @@ class asyncDB:
         # log.trace(f'Executing DB [{db}] update {query}')
         return await self._execute(query, db)
 
-    async def statsupdate(self, inst, value):
+    async def statsupdate(self, inst: str, value: int):
         await self.update(f"INSERT INTO {inst.lower()}_stats (date, value) VALUES ('{Now().replace(microsecond=0)}', {value})")
 
 
