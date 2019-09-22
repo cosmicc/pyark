@@ -67,7 +67,10 @@ async def asyncfetchurldata(session, url):
     async with session.get(url) as response:
         html = await response.text()
         log.trace(f'fetch data retrieved {html}')
-        return json.loads(html)
+        try:
+            return json.loads(html)
+        except json.decoder.JSONDecodeError:
+            log.error(f'fetchurldata error [{html}]')
 
 
 @log.catch
