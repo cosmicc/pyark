@@ -3,7 +3,7 @@ import asyncpg
 from loguru import logger as log
 from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user
 from modules.timehelper import Now
-from typing import Union, Any
+from typing import Any
 
 
 class asyncDB:
@@ -16,7 +16,7 @@ class asyncDB:
         self.dbstats = ('stats', 'st')
         self.dbgamelog = ('gamelog', 'gl')
         self.cpool = None
-        self.connecting = False
+        self.connecting: bool = False
 
     async def connect(self, process: str=__file__, min: int=2, max: int=10, timeout: int=300):
         self.process = process
