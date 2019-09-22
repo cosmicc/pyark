@@ -8,17 +8,17 @@ from modules.configreader import redis_db, redis_host, redis_port
 
 class RedisClass:
 
-    def __init__(self, host=redis_host, port=redis_port, db=redis_db, max_idle_time=30, idle_check_interval=.1):
+    def __init__(self, host: str =redis_host, port: int=redis_port, db: str=redis_db, max_idle_time: int=30, idle_check_interval: float=.1):
         self.db = db
-        self.max_idle_time = max_idle_time
-        self.idle_check_interval = idle_check_interval
-        self.host = host
-        self.port = port
-        self.verified = False
+        self.max_idle_time: int = max_idle_time
+        self.idle_check_interval: float = idle_check_interval
+        self.host: str = host
+        self.port: int = port
+        self.verified: bool = False
         self.pool = aredis.ConnectionPool(host=self.host, port=self.port, db=self.db)
         self.redis = aredis.StrictRedis(connection_pool=self.pool)
 
-    async def connect(self, hostname):
+    async def connect(self, hostname: str):
         while len(self.pool._available_connections) == 0 or not self.verified:
             self.hostname = hostname
             try:
@@ -57,7 +57,7 @@ class globalvar:
     def __init__():
         pass
 
-    async def set(key, value):
+    async def set(key, value: str):
         """Set a global variable
 
         Arguments:
@@ -66,7 +66,7 @@ class globalvar:
         """
         await redis.set(key, value)
 
-    async def remove(key):
+    async def remove(key: str):
         """Remove a global variable
 
         Arguments:
@@ -74,7 +74,7 @@ class globalvar:
         """
         await redis.delete(key)
 
-    async def getstring(key):
+    async def getstring(key: str) -> str:
         """Get a global variable as a string
 
         Arguments:
@@ -82,7 +82,7 @@ class globalvar:
         """
         return (await redis.get(key)).decode()
 
-    async def getint(key):
+    async def getint(key: str) -> int:
         """Get a global variable as int
 
         Arguments:
@@ -90,7 +90,7 @@ class globalvar:
         """
         return int((await redis.get(key)).decode())
 
-    async def getfloat(key):
+    async def getfloat(key: str) -> float:
         """Get a global variable as float
 
         Arguments:
@@ -98,7 +98,7 @@ class globalvar:
         """
         return float((await redis.get(key)).decode())
 
-    async def getbool(key):
+    async def getbool(key: str) -> bool:
         """Get a global variable as bool
 
         Arguments:
@@ -106,7 +106,7 @@ class globalvar:
         """
         return bool((await redis.get(key)).decode())
 
-    async def getlist(key):
+    async def getlist(key: str) -> list:
         """Get a global variable as list
 
         Arguments:
@@ -118,7 +118,7 @@ class globalvar:
             resplist.append(inst.decode())
         return resplist
 
-    async def gettuple(key):
+    async def gettuple(key: str) -> tuple:
         """Get a global variable as tuple
 
         Arguments:
@@ -130,7 +130,7 @@ class globalvar:
             resplist = resplist + (inst.decode(),)
         return resplist
 
-    async def checklist(key, value):
+    async def checklist(key: str, value: str) -> bool:
         """Check a global list for a value
 
         Arguments:
@@ -139,7 +139,7 @@ class globalvar:
         """
         return await redis.sismember(key, value)
 
-    async def addlist(key, value):
+    async def addlist(key: str, value: str) -> int:
         """Add a value to a global list
 
         Arguments:
@@ -148,7 +148,7 @@ class globalvar:
         """
         return await redis.sadd(key, value)
 
-    async def remlist(key, value):
+    async def remlist(key: str, value: str) -> int:
         """Remove a value from a global list
 
         Arguments:
@@ -157,7 +157,7 @@ class globalvar:
         """
         return await redis.srem(key, value)
 
-    async def inc(instance, key):
+    async def inc(instance: str, key: str):
         """Increment a global variable
 
         Arguments:
@@ -165,7 +165,7 @@ class globalvar:
         """
         await redis.incr(key)
 
-    async def dec(instance, key):
+    async def dec(instance: str, key: str):
         """Decrement a global variable
 
         Arguments:
@@ -178,7 +178,7 @@ class instancevar:
     def __init__():
         pass
 
-    async def set(instance, key, value):
+    async def set(instance: str, key: str, value: str):
         """Set an instance variable
 
         Arguments:
@@ -188,7 +188,7 @@ class instancevar:
         """
         await redis.hset(f'{instance}', key, value)
 
-    async def mset(instance, kvdict):
+    async def mset(instance: str, kvdict: dict):
         """Set multiple instance variable
 
         Arguments:
@@ -197,7 +197,7 @@ class instancevar:
         """
         await redis.hmset(f'{instance}', kvdict)
 
-    async def remove(instance, key):
+    async def remove(instance: str, key: str):
         """Remove an instance variable
 
         Arguments:
@@ -206,7 +206,7 @@ class instancevar:
         """
         await redis.hdel(f'{instance}', key)
 
-    async def getstring(instance, key):
+    async def getstring(instance: str, key: str) -> str:
         """Get an instance variable as string
 
         Arguments:
@@ -215,7 +215,7 @@ class instancevar:
         """
         return (await redis.hget(f'{instance}', key)).decode()
 
-    async def getint(instance, key):
+    async def getint(instance: str, key: str) -> int:
         """Get an instance variable as int
 
         Arguments:
@@ -224,7 +224,7 @@ class instancevar:
         """
         return int((await redis.hget(f'{instance}', key)).decode())
 
-    async def getbool(instance, key):
+    async def getbool(instance: str, key: str) -> bool:
         """Get an instance variable as bool
 
         Arguments:
@@ -233,7 +233,7 @@ class instancevar:
         """
         return bool((await redis.hget(f'{instance}', key)).decode())
 
-    async def getfloat(instance, key):
+    async def getfloat(instance: str, key: str) -> float:
         """Get an instance variable as float
 
         Arguments:
@@ -242,7 +242,7 @@ class instancevar:
         """
         return float((await redis.hget(f'{instance}', key)).decode())
 
-    async def getall(instance):
+    async def getall(instance: str) -> dict:
         """Get all instance variables
 
         Arguments:
@@ -250,7 +250,7 @@ class instancevar:
         """
         return (await redis.hgetall(f'{instance}'))
 
-    async def inc(instance, key):
+    async def inc(instance: str, key: str):
         """Increment instance variable
 
         Arguments:
@@ -259,7 +259,7 @@ class instancevar:
         """
         await redis.hincrby(f'{instance}', key, 1)
 
-    async def dec(instance, key):
+    async def dec(instance: str, key: str):
         """Decrement instance variable
 
         Arguments:
@@ -268,7 +268,7 @@ class instancevar:
         """
         await redis.hincrby(f'{instance}', key, -1)
 
-    async def check(instance, key):
+    async def check(instance: str, key: str) -> bool:
         """Check if instance variable exists
 
         Arguments:
@@ -282,7 +282,7 @@ class instancestate:
     def __init__():
         pass
 
-    async def set(instance, *args):
+    async def set(instance: str, *args: str):
         """Set an instance state
 
         Arguments:
@@ -291,7 +291,7 @@ class instancestate:
         """
         await redis.sadd(f'{instance}-states', *args)
 
-    async def unset(instance, *args):
+    async def unset(instance: str, *args: str):
         """Unset an instance state
 
         Arguments:
@@ -300,7 +300,7 @@ class instancestate:
         """
         await redis.srem(f'{instance}-states', *args)
 
-    async def check(instance, state):
+    async def check(instance: str, state) -> bool:
         """Check an instance state
 
         Arguments:
@@ -309,7 +309,7 @@ class instancestate:
         """
         return await redis.sismember(f'{instance}-states', state)
 
-    async def getlist(instance):
+    async def getlist(instance: str) -> list:
         """List of instance states
 
         Arguments:
