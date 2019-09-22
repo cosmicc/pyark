@@ -1,10 +1,10 @@
 from pathlib import Path
 from time import time
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from modules.configreader import arkrootpath, instances, sharedpath
 
-instpids = Dict[str, Union[int, None]]  # Instance pids
+instpids = Dict[str, int]  # Instance pids
 instpidfiles: dict = {}  # Instance pid files from arkmanager
 
 gamelogger = False  # if the gamelogger is running or not
@@ -36,4 +36,4 @@ for inst in instances:
     gusini_customconfig_files.update({inst: sharedpath / f'config/GameUserSettings-{inst.lower()}.ini'})
     gameini_customconfig_files.update({inst: sharedpath / f'config/Game-{inst.lower()}.ini'})
     instpidfiles.update({inst: Path(f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid')})
-    instpids.update({inst: None})
+    instpids.update({inst: 0})
