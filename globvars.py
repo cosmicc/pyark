@@ -5,7 +5,7 @@ from typing import Dict, List, Set
 from modules.configreader import arkrootpath, instances, sharedpath
 
 instpids = Dict[str, int]  # Instance pids
-instpidfiles = Dict[str, Path]  # Instance pid files from arkmanager
+instpidfiles: dict = {}  # Instance pid files from arkmanager
 
 gamelogger = False  # if the gamelogger is running or not
 
@@ -22,8 +22,8 @@ timer = Dict[str, float]  # timers for each task
 atinstances: tuple = ('@island', '@ragnarok', '@valguero', '@crystal', '@coliseum')
 
 arkmanager_paths: list = []
-gameini_customconfig_files = Dict[str, Path]
-gusini_customconfig_files = Dict[str, Path]
+gameini_customconfig_files: dict = {}
+gusini_customconfig_files: dict = {}
 server_needsrestart_file: Path = Path('/run/reboot-required')
 server_uptime_file: Path = Path('/proc/uptime')
 gameini_final_file: Path = arkrootpath / 'ShooterGame/Saved/Config/LinuxServer/Game.ini'
