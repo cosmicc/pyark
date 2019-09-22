@@ -16,9 +16,9 @@ from modules.configreader import hstname, redis_host, redis_port
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true', help='verbose output (debug)')
 
-pyarkpidfile = Path('/run/pyark.pid')
-pyarklockfile = Path('/run/pyark.lock')
-pyarkcfgfile = Path('/home/ark/pyark.cfg')
+pyarkpidfile: Path = Path('/run/pyark.pid')
+pyarklockfile: Path = Path('/run/pyark.lock')
+pyarkcfgfile: Path = Path('/home/ark/pyark.cfg')
 
 args = parser.parse_args()
 
