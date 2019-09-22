@@ -8,7 +8,7 @@ from modules.configreader import redis_db, redis_host, redis_port
 
 class RedisClass:
 
-    def __init__(self, host: str =redis_host, port: str=redis_port, db: str=redis_db, max_idle_time: int=30, idle_check_interval: float=.1):
+    def __init__(self, host: str =redis_host, port: int=redis_port, db: str=redis_db, max_idle_time: int=30, idle_check_interval: float=.1):
         self.db = db
         self.max_idle_time: int = max_idle_time
         self.idle_check_interval: float = idle_check_interval
