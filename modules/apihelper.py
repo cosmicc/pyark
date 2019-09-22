@@ -17,7 +17,7 @@ async def asyncarkserverdatafetcher(session):
             url = f'https://ark-servers.net/api/?object=servers&element=detail&key={svrifo["arkservernet"]}'
             adata = await asyncfetchurldata(session, url)
         except:
-            log.error(f'Error fetching ArkServers data from web')
+            log.error(f'Error fetching ArkServers data from web: {adata}')
         else:
             log.trace(f'Updated ArkServerNet API information for [{inst}]')
             if adata is not None:
