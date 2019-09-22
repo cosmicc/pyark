@@ -1,10 +1,10 @@
 from pathlib import Path
 from time import time
-from typing import Dict, List, Set
+from typing import Dict, List, Union
 
 from modules.configreader import arkrootpath, instances, sharedpath
 
-instpids = Dict[str, int]  # Instance pids
+instpids = Dict[str, Union[int, None]]  # Instance pids
 instpidfiles: dict = {}  # Instance pid files from arkmanager
 
 gamelogger = False  # if the gamelogger is running or not
