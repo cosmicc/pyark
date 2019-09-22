@@ -7,7 +7,6 @@ from modules.configreader import redis_db, redis_host, redis_port
 
 
 class RedisClass:
-
     def __init__(self, host: str =redis_host, port: int=redis_port, db: str=redis_db, max_idle_time: int=30, idle_check_interval: float=.1):
         self.db = db
         self.max_idle_time: int = max_idle_time
@@ -54,9 +53,6 @@ redis = Redis.redis
 
 
 class globalvar:
-    def __init__():
-        pass
-
     async def set(key, value: str):
         """Set a global variable
 
@@ -175,9 +171,6 @@ class globalvar:
 
 
 class instancevar:
-    def __init__():
-        pass
-
     async def set(instance: str, key: str, value: str):
         """Set an instance variable
 
@@ -279,9 +272,6 @@ class instancevar:
 
 
 class instancestate:
-    def __init__():
-        pass
-
     async def set(instance: str, *args: str):
         """Set an instance state
 
