@@ -125,6 +125,8 @@ class asyncDB:
             except:
                 log.exception(f'Exception in db stat update {query}')
                 return False
+            else:
+                return True
             finally:
                 await self._release(con)
         else:
