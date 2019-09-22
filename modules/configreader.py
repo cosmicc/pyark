@@ -2,7 +2,7 @@ from configparser import ConfigParser
 from socket import gethostname
 from pathlib import Path
 
-configfile = '/home/ark/pyark.cfg'
+configfile: str = '/home/ark/pyark.cfg'
 
 
 class ExtConfigParser(ConfigParser):
@@ -17,10 +17,10 @@ class ExtConfigParser(ConfigParser):
 config = ExtConfigParser()
 config.read(configfile)
 
-hstname = gethostname().upper()
+hstname: str = gethostname().upper()
 
 # General
-loglevel = config.get('general', 'loglevel')
+loglevel: str = config.get('general', 'loglevel')
 sharedpath = Path(config.get('general', 'sharedpath'))
 arkrootpath = Path(config.get('general', 'arkrootpath'))
 jsonpath = Path(config.get('general', 'jsonlogpath'))
@@ -31,48 +31,48 @@ adminfile = Path(config.get('general', 'adminlogfile'))
 pointsfile = Path(config.get('general', 'pointslogfile'))
 crashfile = Path(config.get('general', 'crashlogfile'))
 errorfile = Path(config.get('general', 'errorlogfile'))
-chatfile = Path(config.get('general', 'chatlogfile'))
+chatfile: Path = Path(config.get('general', 'chatlogfile'))
 
-maint_hour = config.get('general', 'maint_hour')
+maint_hour: int = int(config.get('general', 'maint_hour'))
 
-is_arkupdater = config.get('general', 'is_arkupdater')
+is_arkupdater: bool = bool(config.get('general', 'is_arkupdater'))
 
 # SteamAPI
-steamapikey = config.get('steam', 'steamapikey')
+steamapikey: str = config.get('steam', 'steamapikey')
 
 # RestAPI
-apilogfile = config.get('restapi', 'logfile')
+apilogfile: str = config.get('restapi', 'logfile')
 
 # Postgresql
-psql_host = config.get('postgresql', 'host')
-psql_port = config.get('postgresql', 'port')
-psql_user = config.get('postgresql', 'user')
-psql_pw = config.get('postgresql', 'password')
-psql_db = config.get('postgresql', 'db')
+psql_host: str = config.get('postgresql', 'host')
+psql_port: int = int(config.get('postgresql', 'port'))
+psql_user: str = config.get('postgresql', 'user')
+psql_pw: str = config.get('postgresql', 'password')
+psql_db: str = config.get('postgresql', 'db')
 
 # Redis
-redis_host = config.get('redis', 'host')
-redis_port = config.get('redis', 'port')
-redis_pw = config.get('redis', 'password')
-redis_db = config.get('redis', 'db')
+redis_host: str = config.get('redis', 'host')
+redis_port: int = int(config.get('redis', 'port'))
+redis_pw: str = config.get('redis', 'password')
+redis_db: str = config.get('redis', 'db')
 
 # Discord
-generalchat_id = config.get('discord', 'general_channel')
-serverchat_id = config.get('discord', 'serverchat_channel')
-infochat_id = config.get('discord', 'info_channel')
-changelog_id = config.get('discord', 'changelog_channel')
-discordtoken = config.get('discord', 'token')
+generalchat_id: str = config.get('discord', 'general_channel')
+serverchat_id: str = config.get('discord', 'serverchat_channel')
+infochat_id: str = config.get('discord', 'info_channel')
+changelog_id: str = config.get('discord', 'changelog_channel')
+discordtoken: str = config.get('discord', 'token')
 
 # Pushover
-po_userkey = config.get('pushover', 'userkey')
-po_appkey = config.get('pushover', 'appkey')
+po_userkey: str = config.get('pushover', 'userkey')
+po_appkey: str = config.get('pushover', 'appkey')
 
 # Webserver
-webserver_enabled = config.get('webserver', 'enabled')
-webserver_ip = config.get('webserver', 'ip')
-webserver_port = config.get('webserver', 'port')
-secsalt = config.get('webserver', 'security_salt')
-testing_seckey = config.get('webserver', 'debug_testkey')
+webserver_enabled: bool = bool(config.get('webserver', 'enabled'))
+webserver_ip: str = config.get('webserver', 'ip')
+webserver_port: int = int(config.get('webserver', 'port'))
+secsalt: str = config.get('webserver', 'security_salt')
+testing_seckey: str = config.get('webserver', 'debug_testkey')
 
 numinstances: int = int(config.get('general', 'instances'))
 
