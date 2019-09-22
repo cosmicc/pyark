@@ -183,7 +183,7 @@ class globalvar():
         await redis.decr(key)
 
 
-class instancevar:
+class instancevar():
     @staticmethod
     async def set(instance: str, key: str, value: str):
         """Set an instance variable
@@ -295,7 +295,7 @@ class instancevar:
         return await redis.hexists(f'{instance}', key)
 
 
-class instancestate:
+class instancestate():
     @staticmethod
     async def set(instance: str, *args: str):
         """Set an instance state
