@@ -2,6 +2,7 @@ import asyncio
 
 import aredis
 from loguru import logger as log
+from typing import Union
 
 from modules.configreader import redis_db, redis_host, redis_port
 
@@ -185,7 +186,7 @@ class globalvar():
 
 class instancevar():
     @staticmethod
-    async def set(instance: str, key: str, value: str):
+    async def set(instance: str, key: str, value: Union[str, int]):
         """Set an instance variable
 
         Arguments:
