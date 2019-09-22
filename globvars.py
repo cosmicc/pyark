@@ -21,7 +21,7 @@ timer = Dict[str, float]  # timers for each task
 
 atinstances: tuple = ('@island', '@ragnarok', '@valguero', '@crystal', '@coliseum')
 
-arkmanager_paths = Path[Path]
+arkmanager_paths = List[Path]
 gameini_customconfig_files = Dict[str, Path]
 gusini_customconfig_files = Dict[str, Path]
 server_needsrestart_file: Path = Path('/run/reboot-required')
