@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from modules.configreader import arkrootpath, instances, sharedpath
 
-instpids = Dict[int, str]  # Instance pids
+instpids: dict = Dict[int, str]  # Instance pids
 instpidfiles: dict = {}  # Instance pid files from arkmanager
 
 gamelogger = False  # if the gamelogger is running or not
