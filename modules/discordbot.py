@@ -576,7 +576,7 @@ def pyarkbot():
     @commands.check(logcommand)
     async def _winners(ctx):
         last5 = await db.fetchall("SELECT * FROM lotteryinfo WHERE completed = True AND winner != 'None' ORDER BY id DESC LIMIT 5")
-        top5 = await db.fetchall("SELECT * FROM players ORDER BY lottowins DESC, lotterywinnings DESC LIMIT 5")
+        top5 = await db.fetchall("SELECT * FROM players ORDER BY lotterywinnings DESC, lottowins DESC LIMIT 5")
         msg2 = 'Last 5 Lottery Winners:'
         msg = ''
         try:
