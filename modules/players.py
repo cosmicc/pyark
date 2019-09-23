@@ -235,12 +235,12 @@ async def asyncgetplayersonline(instance: str, fmt: str='count'):
     elif fmt == 'string':
         players = []
         for player in iter(dbdata):
-            players.append(dbdata[player]['playername'])
+            players.append(player['playername'])
         return ', '.join(players)
     elif fmt == 'list':
         players = []
         for player in iter(dbdata):
-            players.append(dbdata[player]['playername'])
+            players.append(player['playername'])
         return players
 
 
