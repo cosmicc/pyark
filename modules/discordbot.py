@@ -17,7 +17,7 @@ from modules.configreader import (changelog_id, discordtoken, generalchat_id,
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import asyncgetlastrestart, asyncgetlastrestartreason, asyncgetlastwipe, asyncgetinstancelist, asyncwriteglobal
 from modules.lottery import asyncgetlottowinnings, asyncisinlottery, asynctotallotterydeposits
-from modules.players import (getnewestplayers, asyncgetplayerinfo, asyncgetplayerlastseen, getplayerlastserver, getplayersonlinenames,
+from modules.players import (getnewestplayers, asyncgetplayerinfo, asyncgetplayerlastseen, asyncgetplayerlastserver, asyncgetplayersonline,
                              getplayerstoday, gettopplayedplayers, asyncisplayeradmin, setprimordialbit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
 
@@ -749,12 +749,12 @@ def pyarkbot():
     async def _who(ctx):
         tcnt = 0
         for each in await asyncgetinstancelist():
-            pcnt = getplayersonlinenames(each, fmt='count')
+            pcnt = await asyncgetplayersonline(each, fmt='count')
             tcnt = tcnt + pcnt
         embed = discord.Embed(title=f" **{tcnt}**  total players currently online in the cluster", color=INFO_COLOR)
         for each in await asyncgetinstancelist():
-            pcnt = getplayersonlinenames(each, fmt='count')
-            plist = getplayersonlinenames(each, fmt='string', case='title')
+            pcnt = await asyncgetplayersonline(each, fmt='count')
+            plist = await asyncgetplayersonline(each, fmt='string')
             if pcnt != 0:
                 embed.add_field(name=f"{each.capitalize().strip()} has  **{pcnt}**  players online:", value=f"{plist}", inline=False)
             else:
