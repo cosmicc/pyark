@@ -56,7 +56,7 @@ def getlotteryplayers(fmt):
     return linfo
 
 
-async def asynctotallotterydeposits(steamid: str[17]):
+async def asynctotallotterydeposits(steamid: str):
     lottoinfo = await db.fetchone(f"SELECT points, givetake FROM lotterydeposits where steamid = '{steamid}'")
     tps = 0
     if lottoinfo is not None:
