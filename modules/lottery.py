@@ -41,19 +41,14 @@ async def asyncgetlastlotteryinfo():
     return await db.fetchone(f"SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc")
 
 
-async def asyncgetlottowinnings(pname):
+async def asyncgetlottowinnings(pname: str) -> (int, int):
     pwins = await db.fetchall(f"SELECT payout FROM lotteryinfo WHERE winner = '{pname}'")
     totpoints = 0
     twins = 0
-    for weach in pwins:
+    for weach in iter(pwins):
         totpoints = totpoints + int(weach[0])
         twins += 1
     return twins, totpoints
-
-
-async def asyncgetlotteryplayers():
-    lottoinfo = await db.fetchall("SELECT playername FROM lotteryplayers")
-    return lottoinfo
 
 
 def getlotteryplayers(fmt):
@@ -61,7 +56,7 @@ def getlotteryplayers(fmt):
     return linfo
 
 
-async def asynctotallotterydeposits(steamid):
+async def asynctotallotterydeposits(steamid: str[17]):
     lottoinfo = await db.fetchone(f"SELECT points, givetake FROM lotterydeposits where steamid = '{steamid}'")
     tps = 0
     if lottoinfo is not None:
