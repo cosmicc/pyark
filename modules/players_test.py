@@ -9,6 +9,7 @@ sys.path.append('/home/ark/pyark')
 
 async def test_asyncgetplayerinfo():
     assert type(await modules.players.asyncgetplayerinfo(steamid='76561198408657294')) is Record
+    assert type(await modules.players.asyncgetplayerinfo(steamid='11111101011650101')) is None
     player = await modules.players.asyncgetplayerinfo(steamid='76561198408657294')
     assert player['playername'] == 'admin'
     assert type(await modules.players.asyncgetplayerinfo(playername='Admin')) is Record
