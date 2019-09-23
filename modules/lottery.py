@@ -22,7 +22,7 @@ def isinlottery():
         return False
 
 
-async def asyncisinlottery():
+async def asyncisinlottery() -> bool:
     linfo = await db.fetchone("SELECT * FROM lotteryinfo WHERE completed = False")
     if linfo:
         return True
@@ -30,7 +30,7 @@ async def asyncisinlottery():
         return False
 
 
-async def asyncwritediscord(msg, tstamp, server='generalchat', name='ALERT'):
+async def asyncwritediscord(msg: str, tstamp: str, server: str='generalchat', name: str='ALERT') -> None:
     await db.update(f"INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('{server}', '{name}', '{msg}', '{tstamp}')")
 
 
