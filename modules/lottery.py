@@ -33,8 +33,8 @@ async def getlottowinnings(pname: str) -> (int, int):
     pwins = await db.fetchall(f"SELECT payout FROM lotteryinfo WHERE winner = '{pname}'")
     totpoints = 0
     twins = 0
-    for weach in pwins:
-        totpoints = totpoints + int(weach[0])
+    for each in pwins:
+        totpoints = totpoints + int(each['payout'])
         twins += 1
     return twins, totpoints
 
