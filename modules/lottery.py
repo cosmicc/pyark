@@ -29,19 +29,6 @@ async def asyncisinlottery():
         return False
 
 
-async def getlottowinnings(pname: str) -> (int, int):
-    pwins = await db.fetchall(f"SELECT payout FROM lotteryinfo WHERE winner = '{pname.lower()}'")
-    if pwins:
-        totpoints = 0
-        twins = 0
-        for each in pwins:
-            totpoints = totpoints + int(each['payout'])
-            twins += 1
-        return twins, totpoints
-    else:
-        return 0, 0
-
-
 async def asyncwritediscord(msg, tstamp, server='generalchat', name='ALERT'):
     await db.update(f"INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('{server}', '{name}', '{msg}', '{tstamp}')")
 
@@ -55,7 +42,7 @@ async def asyncgetlastlotteryinfo():
 
 
 async def asyncgetlottowinnings(pname):
-    pwins = await db.fetchone(f"SELECT payout FROM lotteryinfo WHERE winner = '{pname}'")
+    pwins = await db.fetchall(f"SELECT payout FROM lotteryinfo WHERE winner = '{pname}'")
     totpoints = 0
     twins = 0
     for weach in pwins:
