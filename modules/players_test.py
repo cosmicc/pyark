@@ -24,5 +24,4 @@ async def test_asyncgetplayersonline():
     assert type(await modules.players.asyncgetplayersonline('ragnarok', fmt='count')) is int
     assert type(await modules.players.asyncgetplayersonline('ragnarok', fmt='string')) is str
     assert type(await modules.players.asyncgetplayersonline('ragnarok', fmt='list')) is list
-    assert await modules.players.asyncgetplayersonline('ragnarok', fmt='count') == 0
-    assert await modules.players.asyncgetplayersonline('ragnarok', fmt='string') == ''
+    print(await modules.players.asyncgetplayersonline('valguero', fmt='string'))
