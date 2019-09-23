@@ -2,6 +2,7 @@ from datetime import time as dt
 from datetime import datetime, timedelta
 from random import choice
 
+from asyncpg import Record
 import asyncio
 from loguru import logger as log
 from modules.asyncdb import DB as db
@@ -37,7 +38,7 @@ async def asyncwriteglobal(inst, whos, msg):
     await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{inst}', '{whos}', '{msg}', '{Now()}')")
 
 
-async def asyncgetlastlotteryinfo():
+async def asyncgetlastlotteryinfo() -> Record:
     return await db.fetchone(f"SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc")
 
 
