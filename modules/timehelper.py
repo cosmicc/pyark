@@ -168,8 +168,8 @@ def elapsedTime(start_time, stop_time, nowifmin=True):
     """
     if not isinstance(start_time, (str, int, float)):
         raise TypeError(f'Start time is wrong type {type(start_time)}')
-    if not isinstance(stop_time, (str, int, float)):
-        raise TypeError(f'End time is wrong type {type(stop_time)}')
+    #if not isinstance(stop_time, (str, int, float)):
+    #    raise TypeError(f'End time is wrong type {type(stop_time)}')
     result = []
     if start_time > stop_time:
         seconds = int(start_time) - int(stop_time)

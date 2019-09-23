@@ -3,10 +3,39 @@ import asyncio
 from loguru import logger as log
 
 import globvars
+from asyncpg import Record
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.servertools import asyncserverchat, asyncserverchatto
 from modules.timehelper import Now, Secs, wcstamp
+from typing import Optional, Dict
+
+
+async def asyncgetplayerinfo(steamid: Optional[str]=None, playername: Optional[str]=None, discordid: Optional[str]=None, steamname: Optional[str]=None) -> Record:
+    """Return player info
+
+    Args:
+        steamid (Optional[str], [Optional]): Description: Player SteamID
+        playername (Optional[str], [Optional]): Description: Player In-Game name
+        discordid (Optional[str], [Optional]): Description: Player DiscordID
+        steamname (Optional[str], [Optional]): Description: Player Steam Name
+
+    Returns:
+        Record: Description: Player information Asyncpg record
+
+    Raises:
+        ValueError: Description: No criteria given to search with
+    """
+    if steamid:
+        return await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
+    elif discordid:
+        return await db.fetchone(f"SELECT * FROM players WHERE discordid = '{discordid}'")
+    elif steamname:
+        return await db.fetchone(f"SELECT * FROM players WHERE steamname = '{steamname}'")
+    elif playername:
+        return await db.fetchone(f"SELECT * FROM players WHERE (playername = '{playername.lower()}') or (alias = '{playername.lower()}')")
+    else:
+        raise ValueError('All player search criteria were None')
 
 
 async def asyncwritechat(inst, whos, msg, tstamp):
@@ -31,7 +60,7 @@ def writechat(inst, whos, msg, tstamp):
         dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" % (inst, whos, msg, tstamp))
 
 
-async def asyncgetsteamid(playername: str) -> str:
+async def asyncgetsteamid(playername: str) -> Optional[str]:
     """Get player SteamID from playername
 
     Args:
@@ -49,7 +78,15 @@ async def asyncgetsteamid(playername: str) -> str:
 
 
 @log.catch
-async def asyncisplayeronline(steamid):
+async def asyncisplayeronline(steamid: str) -> bool:
+    """Return if player is currently online
+
+    Args:
+        steamid (str): Description: SteamID of player
+
+    Returns:
+        bool:
+    """
     player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
     if player['online']:
         return True
@@ -87,8 +124,8 @@ async def asyncnewplayer(steamid: str, playername: str, inst: str):
         log.debug(f'welcome message already running for [{playername}]')
 
 
-async def asyncgetliveplayersonline(inst):
-    dbdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{inst}'")
+async def asyncgetliveplayersonline(instance: str) -> Dict[str, int]:
+    dbdata = await db.fetchone(f"SELECT * FROM instances WHERE name = '{instance}'")
     return {'connectingplayers': dbdata['connectingplayers'], 'activeplayers': dbdata['activeplayers']}
 
 
