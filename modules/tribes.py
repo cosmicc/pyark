@@ -21,9 +21,9 @@ async def asyncputplayerintribe(tribeid, playername):
                 await db.update(f"UPDATE tribes SET players = ARRAY{tribeidb[1]} WHERE tribeid = '{tribeidb[0]}'")
                 log.log('PLAYER', f'Adding [{playername}] as additional player to tribe database [{tribeidb[2]}]')
         else:
-            log.error(f'error1 putting player [{playername}] {steamid} in tribe [{tribeid}]')
+            log.error(f'error1 putting player [{playername}] {steamid[0]} in tribe [{tribeidb[1]}]')
     else:
-        log.error(f'error2 putting player [{playername}] {steamid} in tribe [{tribeid}]')
+        log.error(f'error2 putting player [{playername}] {steamid[0]} in tribe [{tribeidb[1]}]')
 
 
 @log.catch
