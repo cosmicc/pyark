@@ -29,9 +29,9 @@ async def asyncgetplayerinfo(steamid: Optional[str]=None, playername: Optional[s
     if steamid:
         return await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
     elif discordid:
-        return await db.fetchone(f"SELECT * FROM players WHERE discordid = '{discordid}'")
+        return await db.fetchone(f"SELECT * FROM players WHERE discordid ILIKE '{discordid}'")
     elif steamname:
-        return await db.fetchone(f"SELECT * FROM players WHERE steamname = '{steamname}'")
+        return await db.fetchone(f"SELECT * FROM players WHERE steamname ILIKE '{steamname}'")
     elif playername:
         return await db.fetchone(f"SELECT * FROM players WHERE (playername = '{playername.lower()}') or (alias = '{playername.lower()}')")
     else:

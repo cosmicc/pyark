@@ -13,11 +13,11 @@ from modules.timehelper import Now, elapsedSeconds, truncate_float
 from typing import Union
 
 
-def removerichtext(text):
+def removerichtext(text: str) -> str:
     return sub('<.*?>', '', text)
 
 
-def stripansi(stripstr):
+def stripansi(stripstr: Union[str, list]) -> Union[str, list]:
     ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     if isinstance(stripstr, list):
         newlist = []
@@ -30,7 +30,7 @@ def stripansi(stripstr):
         return(ansi_escape.sub('', stripstr).strip())
 
 
-def filterline(stripstr):
+def filterline(stripstr: str) -> str:
     return(stripansi(stripstr).replace('\n', '').replace('\r', '').replace('"', '').strip())
 
 
@@ -43,7 +43,7 @@ def asynctimeit(func):
     return wrapper
 
 
-async def asyncglobalbuffer(msg, inst='ALERT', whosent='ALERT', private=False, broadcast=False, db=db):
+async def asyncglobalbuffer(msg: str, inst: str='ALERT', whosent: str='ALERT', private: bool=False, broadcast: bool=False, db=db):
     await db.update("INSERT INTO globalbuffer (server,name,message,timestamp,private,broadcast) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (inst, whosent, msg, Now(), private, broadcast))
 
 

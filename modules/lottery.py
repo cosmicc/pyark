@@ -23,7 +23,17 @@ def isinlottery():
         return False
 
 
+def getlotteryplayers(fmt):
+    linfo = dbquery("SELECT playername FROM lotteryplayers", fmt=fmt)
+    return linfo
+
+
 async def asyncisinlottery() -> bool:
+    """Return if a lottery is currently running
+
+    Returns:
+        bool:
+    """
     linfo = await db.fetchone("SELECT * FROM lotteryinfo WHERE completed = False")
     if linfo:
         return True
@@ -32,10 +42,18 @@ async def asyncisinlottery() -> bool:
 
 
 async def asyncwritediscord(msg: str, tstamp: str, server: str='generalchat', name: str='ALERT') -> None:
+    """Write to discord
+
+    Args:
+        msg (str): Description:
+        tstamp (str): Description:
+        server (str, [Optional]): Description:
+        name (str, [Optional]): Description:
+    """
     await db.update(f"INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('{server}', '{name}', '{msg}', '{tstamp}')")
 
 
-async def asyncwriteglobal(inst, whos, msg):
+async def asyncwriteglobal(inst: str, whos: str, msg: str) -> None:
     await db.update(f"INSERT INTO globalbuffer (server,name,message,timestamp) VALUES ('{inst}', '{whos}', '{msg}', '{Now()}')")
 
 
@@ -44,6 +62,14 @@ async def asyncgetlastlotteryinfo() -> Record:
 
 
 async def asyncgetlottowinnings(pname: str) -> Tuple[int, int]:
+    """Return lottery winnings for player
+
+    Args:
+        pname (str): Description:
+
+    Returns:
+        Tuple[int, int]: Description:
+    """
     pwins = await db.fetchall(f"SELECT payout FROM lotteryinfo WHERE winner = '{pname}'")
     totpoints = 0
     twins = 0
@@ -53,12 +79,7 @@ async def asyncgetlottowinnings(pname: str) -> Tuple[int, int]:
     return twins, totpoints
 
 
-def getlotteryplayers(fmt):
-    linfo = dbquery("SELECT playername FROM lotteryplayers", fmt=fmt)
-    return linfo
-
-
-async def asynctotallotterydeposits(steamid: str):
+async def asynctotallotterydeposits(steamid: str) -> int:
     lottoinfo = await db.fetchone(f"SELECT points, givetake FROM lotterydeposits where steamid = '{steamid}'")
     tps = 0
     if lottoinfo is not None:
@@ -70,9 +91,9 @@ async def asynctotallotterydeposits(steamid: str):
     return tps
 
 
-async def getlotteryendtime():
+async def getlotteryendtime() -> datetime:
     lottoinfo = await db.fetchone(f"SELECT startdate, days from lotteryinfo WHERE completed = False")
-    return estshift(lottoinfo[0] + timedelta(days=lottoinfo[1]))
+    return estshift(lottoinfo['startdate'] + timedelta(days=lottoinfo['days']))
 
 
 async def asyncdeterminewinner(lottoinfo):
