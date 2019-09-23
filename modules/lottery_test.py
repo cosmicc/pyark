@@ -8,4 +8,4 @@ sys.path.append('/home/ark/pyark')
 
 
 def test_asyncgetlastlotteryinfo():
-    assert type(modules.lottery.asyncgetlastlotteryinfo('admin')) is Record
+    assert type(await modules.lottery.asyncgetlastlotteryinfo()) is Record
