@@ -214,7 +214,7 @@ async def asyncgetplayerlastseen(steamid: Optional[str]=None, playername: Option
         return None
 
 
-async def asyncgetplayerlastserver(steamid: Optional[str]=None, playername: Optional[str]) -> Optional[str]:
+async def asyncgetplayerlastserver(steamid: Optional[str]=None, playername: Optional[str]=None) -> Optional[str]:
     if playername:
         dbdata = await db.fetchone(f"SELECT server FROM players WHERE playername = '{playername.lower()}'")
     elif steamid:
@@ -244,12 +244,12 @@ async def asyncgetplayersonline(instance: str, fmt: str='count'):
         return players
 
 
-def getplayersonlinenames(instance: str, fmt: Optional[str]=''):
+def getplayersonlinenames(inst: str, fmt: Optional[str]=''):
     if inst == 'all' or inst == 'ALL':
         dbdata = dbquery("SELECT playername FROM players WHERE online = True ORDER BY lastseen DESC")
     else:
         dbdata = dbquery("SELECT playername FROM players WHERE online = True AND server = '%s' ORDER BY lastseen DESC" % (inst.lower(),))
-    return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
+    return formatdbdata(dbdata, 'players', qtype=fmt, single=True)
 
 
 def isplayeronline(playername='', steamid=''):
