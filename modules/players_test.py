@@ -18,4 +18,4 @@ async def test_asyncgetplayerinfo():
     assert type(await modules.players.asyncgetplayerinfo(steamname='Galaxy-Cluster')) is Record
     player = await modules.players.asyncgetplayerinfo(steamname='Galaxy-Cluster')
     assert player['playername'] == 'admin'
-    assert await modules.players.asyncgetplayerinfo(steamname='galaxy-cluster') is Record
+    assert type(await modules.players.asyncgetplayerinfo(steamname='galaxy-cluster')) is Record
