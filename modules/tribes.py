@@ -23,7 +23,7 @@ async def asyncputplayerintribe(tribeid, playername):
         else:
             log.error(f'error1 putting player [{playername}] {steamid[0]} in tribe [{tribeidb[1]}]')
     else:
-        log.error(f'error2 putting player [{playername}] {steamid[0]} in tribe [{tribeidb[1]}]')
+        log.debug(f'error2 putting player [{playername}] steamid: {steamid} in tribe id [{tribeid}]')
 
 
 @log.catch

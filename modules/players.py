@@ -58,10 +58,10 @@ async def asyncisplayeronline(steamid):
 
 
 @log.catch
-async def asyncnewplayer(steamid, playername, inst):
+async def asyncnewplayer(steamid: str, playername: str, inst: str):
     if steamid not in globvars.welcomes:
         globvars.welcomes.add(steamid)
-        added = await db.update(f"INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated, refreshauctions, refreshsteam, homemovepoints) VALUES ('{steamid}', '{playername}', '{Now()}', '{inst}', '0', '0', '{Now()}', '1', '', '', '0', '0', '0', '0', '0', '{inst}', '0', '{Now()}', '0', 'True', 'True', '0', '0', False, True, 0)")
+        added = await db.update(f"INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated, refreshauctions, refreshsteam, homemovepoints, lotterywinnings) VALUES ('{steamid}', '{playername}', '{Now()}', '{inst}', '0', '0', '{Now()}', '1', '', '', '0', '0', '0', '0', '0', '{inst}', '0', '{Now()}', '0', 'True', 'True', '0', '0', False, True, 0, 0)")
         if added:
             log.log('NEW', f'Player [{playername.title()}] on [{inst.title()}] was not found. Adding new player!')
             log.debug(f'Sending welcome message to [{playername.title()}] on [{inst.title()}]')
