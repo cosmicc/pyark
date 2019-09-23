@@ -524,49 +524,52 @@ def pyarkbot():
     @commands.check(logcommand)
     @commands.check(is_linked)
     async def _myinfo(ctx):
-        whofor = str(ctx.message.author).lower()
-        kuser = getplayer(discordid=whofor)
-        log.debug(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
-        ptime = playedTime(int(kuser[4]))
-        ptr = elapsedTime(Now(), int(kuser[2]))
-        lpts = await asynctotallotterydeposits(kuser[0])
-        xferpoints = kuser[5] + kuser[16] + lpts
-        xfertable = await db.fetchall(f"""SELECT * FROM transferpoints WHERE steamid = '{kuser[0]}'""")
-        for each in xfertable:
-            xferpoints = xferpoints + int(each['points'])
-        msg = f'Last played **{ptr} ago** on server ***{kuser[3].capitalize()}***\n'
-        msg = msg + f'Your current reward points: **{xferpoints}** (on your home server)\n'
-        msg = msg + f'Your home server is: **{kuser[15].capitalize()}**\nYour total play time is: **{ptime}**\n'
-        msg = msg + f'You have **{kuser[10]}** current auctions: **{kuser[11]}** Items & **{kuser[12]}** Dinos\n'
-        tpwins, twpoints = await asyncgetlottowinnings(kuser[1])
-        msg = msg + f'Total Lotterys Won: **{tpwins}**  Total Lottery Points Won: **{twpoints}** Points\n'
-        woodtime = 1296000
-        stonetime = 1987200
-        metaldinotime = 2624400
-        etime = Now() - int(kuser[2])
-        wdate = epochto(int(kuser[2]) + woodtime, 'string', est=True)
-        sdate = epochto(int(kuser[2]) + stonetime, 'string', est=True)
-        mdate = epochto(int(kuser[2]) + metaldinotime, 'string', est=True)
-        if woodtime > etime:
-            woodt = f'Your Wood Structures Expire: {wdate} EST - **{elapsedTime(woodtime, etime)}** Left'
-        elif etime < Secs['hour']:
-            woodt = f'Your Wood Structures Expire: 15 Days Left'
-        else:
-            woodt = '**Your Wood Structures may have Expired!**'
-        if stonetime > etime:
-            stonet = f'Your Stone Structures Expire: {sdate} EST - **{elapsedTime(stonetime, etime)}** Left'
-        elif etime < Secs['hour']:
-            stonet = f'Your Stone Structures Expire: **23 Days** Left'
-        else:
-            stonet = '**Your Stone Structures may have Expired!**'
-        if metaldinotime > etime:
-            metalt = f'Your Metal & Dinos Expire: {mdate} EST - **{elapsedTime(metaldinotime, etime)}** Left'
-        elif etime < Secs['hour']:
-            metalt = f'Your Metal & Dinos Expire: **30 Days** Left'
-        else:
-            metalt = '**Your Metal Structures & Dinos may have Expired!**'
-        msg = msg + f'{woodt}\n{stonet}\n{metalt}'
-        embed = discord.Embed(title=f'Player information for **{kuser[1].capitalize()}**:', description=msg, color=SUCCESS_COLOR)
+        try:
+            whofor = str(ctx.message.author).lower()
+            kuser = getplayer(discordid=whofor)
+            log.debug(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
+            ptime = playedTime(int(kuser[4]))
+            ptr = elapsedTime(Now(), int(kuser[2]))
+            lpts = await asynctotallotterydeposits(kuser[0])
+            xferpoints = kuser[5] + kuser[16] + lpts
+            xfertable = await db.fetchall(f"""SELECT * FROM transferpoints WHERE steamid = '{kuser[0]}'""")
+            for each in xfertable:
+                xferpoints = xferpoints + int(each['points'])
+            msg = f'Last played **{ptr} ago** on server ***{kuser[3].capitalize()}***\n'
+            msg = msg + f'Your current reward points: **{xferpoints}** (on your home server)\n'
+            msg = msg + f'Your home server is: **{kuser[15].capitalize()}**\nYour total play time is: **{ptime}**\n'
+            msg = msg + f'You have **{kuser[10]}** current auctions: **{kuser[11]}** Items & **{kuser[12]}** Dinos\n'
+            tpwins, twpoints = await asyncgetlottowinnings(kuser[1])
+            msg = msg + f'Total Lotterys Won: **{tpwins}**  Total Lottery Points Won: **{twpoints}** Points\n'
+            woodtime = 1296000
+            stonetime = 1987200
+            metaldinotime = 2624400
+            etime = Now() - int(kuser[2])
+            wdate = epochto(int(kuser[2]) + woodtime, 'string', est=True)
+            sdate = epochto(int(kuser[2]) + stonetime, 'string', est=True)
+            mdate = epochto(int(kuser[2]) + metaldinotime, 'string', est=True)
+            if woodtime > etime:
+                woodt = f'Your Wood Structures Expire: {wdate} EST - **{elapsedTime(woodtime, etime)}** Left'
+            elif etime < Secs['hour']:
+                woodt = f'Your Wood Structures Expire: 15 Days Left'
+            else:
+                woodt = '**Your Wood Structures may have Expired!**'
+            if stonetime > etime:
+                stonet = f'Your Stone Structures Expire: {sdate} EST - **{elapsedTime(stonetime, etime)}** Left'
+            elif etime < Secs['hour']:
+                stonet = f'Your Stone Structures Expire: **23 Days** Left'
+            else:
+                stonet = '**Your Stone Structures may have Expired!**'
+            if metaldinotime > etime:
+                metalt = f'Your Metal & Dinos Expire: {mdate} EST - **{elapsedTime(metaldinotime, etime)}** Left'
+            elif etime < Secs['hour']:
+                metalt = f'Your Metal & Dinos Expire: **30 Days** Left'
+            else:
+                metalt = '**Your Metal Structures & Dinos may have Expired!**'
+            msg = msg + f'{woodt}\n{stonet}\n{metalt}'
+            embed = discord.Embed(title=f'Player information for **{kuser[1].capitalize()}**:', description=msg, color=SUCCESS_COLOR)
+        except:
+            log.exception(f'myinfo failed')
         await messagesend(ctx, embed, allowgeneral=False, reject=False)
 
     @client.command(name='winners', aliases=['lottowinners', 'lastlotto'])
