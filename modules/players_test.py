@@ -8,7 +8,6 @@ sys.path.append('/home/ark/pyark')
 
 async def test_asyncgetplayerinfo():
     assert type(await modules.players.asyncgetplayerinfo(steamid='76561198408657294')) is Record
-    assert type(await modules.players.asyncgetplayerinfo(steamid='11111101011650101')) is None
     player = await modules.players.asyncgetplayerinfo(steamid='76561198408657294')
     assert player['playername'] == 'admin'
     assert type(await modules.players.asyncgetplayerinfo(playername='Admin')) is Record
@@ -22,8 +21,8 @@ async def test_asyncgetplayerinfo():
 
 
 async def test_asyncgetplayersonline():
-    assert type(await modules.players.asyncgetplayerinfo('ragnarok', fmt='count')) is int
-    assert type(await modules.players.asyncgetplayerinfo('ragnarok', fmt='string')) is str
-    assert type(await modules.players.asyncgetplayerinfo('ragnarok', fmt='list')) is list
-    assert await modules.players.asyncgetplayerinfo('ragnarok', fmt='count') == 0
-    assert await modules.players.asyncgetplayerinfo('ragnarok', fmt='string') == ''
+    assert type(await modules.players.asyncgetplayersonline('ragnarok', fmt='count')) is int
+    assert type(await modules.players.asyncgetplayersonline('ragnarok', fmt='string')) is str
+    assert type(await modules.players.asyncgetplayersonline('ragnarok', fmt='list')) is list
+    assert await modules.players.asyncgetplayersonline('ragnarok', fmt='count') == 0
+    assert await modules.players.asyncgetplayersonline('ragnarok', fmt='string') == ''
