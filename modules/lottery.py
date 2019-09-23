@@ -12,6 +12,7 @@ from modules.timehelper import Now, datetimeto, elapsedTime, estshift
 from numpy import argmax
 from numpy.random import randint, seed, shuffle
 from timebetween import is_time_between
+from typing import Tuple
 
 
 def isinlottery():
@@ -42,7 +43,7 @@ async def asyncgetlastlotteryinfo() -> Record:
     return await db.fetchone(f"SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id desc")
 
 
-async def asyncgetlottowinnings(pname: str) -> (int, int):
+async def asyncgetlottowinnings(pname: str) -> Tuple(int, int):
     pwins = await db.fetchall(f"SELECT payout FROM lotteryinfo WHERE winner = '{pname}'")
     totpoints = 0
     twins = 0
