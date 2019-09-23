@@ -17,8 +17,8 @@ from modules.configreader import (changelog_id, discordtoken, generalchat_id,
 from modules.dbhelper import dbquery, dbupdate
 from modules.instances import asyncgetlastrestart, asyncgetlastrestartreason, asyncgetlastwipe, asyncgetinstancelist, asyncwriteglobal
 from modules.lottery import asyncgetlottowinnings, asyncisinlottery, asynctotallotterydeposits
-from modules.players import (getnewestplayers, getplayer, getplayerlastseen, getplayerlastserver, getplayersonlinenames,
-                             getplayerstoday, gettopplayedplayers, isplayeradmin, setprimordialbit)
+from modules.players import (getnewestplayers, asyncgetplayerinfo, asyncgetplayerlastseen, getplayerlastserver, getplayersonlinenames,
+                             getplayerstoday, gettopplayedplayers, asyncisplayeradmin, setprimordialbit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
 
 __name__ = 'discordbot'
@@ -314,7 +314,7 @@ def pyarkbot():
     def is_admin(ctx):
         player = dbquery("SELECT steamid from players WHERE discordid = '%s'" % (str(ctx.message.author).lower(),), fetch='one')
         if player is not None:
-            if isplayeradmin(player[0]):
+            if await asyncisplayeradmin(player[0]):
                 return True
             else:
                 return False
@@ -501,7 +501,7 @@ def pyarkbot():
         msg = ''
         for each in lsplayer:
             nom += 1
-            lsplay = getplayer(playername=each)
+            lsplay = await asyncgetplayerinfo(playername=each)
             lspago = playedTime(lsplay[4])
             msg = msg + f'#{nom} **{lsplay[1].title()}** from **{lsplay[15].capitalize()}** total play time **{lspago}**\n'
         embed = discord.Embed(title='Top 10 highest play time in the cluster:', description=msg, color=INFO_COLOR)
@@ -514,7 +514,7 @@ def pyarkbot():
         msg2 = 'Last 5 Newest Players to the cluster:'
         msg = ''
         for each in newlist:
-            lsplayer = getplayer(playername=each)
+            lsplayer = await asyncgetplayerinfo(playername=each)
             lspago = elapsedTime(Now(), lsplayer[6], nowifmin=False)
             msg = msg + f'**{lsplayer[1].title()}** joined ***{lsplayer[3].capitalize()}***  -  {lspago} ago\n'
         embed = discord.Embed(title=msg2, description=msg, color=INFO_COLOR)
@@ -526,7 +526,7 @@ def pyarkbot():
     async def _myinfo(ctx):
         try:
             whofor = str(ctx.message.author).lower()
-            kuser = getplayer(discordid=whofor)
+            kuser = await asyncgetplayerinfo(discordid=whofor)
             log.debug(f'myinfo request from {whofor} passed, showing info for player {kuser[1]}')
             ptime = playedTime(int(kuser[4]))
             ptr = elapsedTime(Now(), int(kuser[2]))
@@ -600,7 +600,7 @@ def pyarkbot():
     @commands.check(logcommand)
     async def _decay(ctx):
         whofor = str(ctx.message.author).lower()
-        kuser = getplayer(discordid=whofor)
+        kuser = await asyncgetplayerinfo(discordid=whofor)
         msg2 = 'Galaxy Cluster Structure & Dino expire times:'
         msg = 'Dinos: **30 Days**, Tek: **38 Days**, Metal: **40 Days**, Stone: **30 Days**, Wood: **23 Days**\n'
         msg = msg + f'Thatch: **9.5 Days**, Greenhouse: **9.5 Days** (Use MetalGlass for **40 Day** Greenhouse).\n\n'
@@ -811,7 +811,7 @@ def pyarkbot():
     @commands.check(is_linked)
     async def _kickme(ctx):
         whofor = str(ctx.message.author).lower()
-        kuser = getplayer(discordid=whofor)
+        kuser = await asyncgetplayerinfo(discordid=whofor)
         if Now() - float(kuser[2]) > 300:
             log.info(f'kickme request from {whofor} denied, not connected to a server')
             msg = f'**{kuser[1].capitalize()}** is not connected to any servers in the cluster'
@@ -869,14 +869,14 @@ def pyarkbot():
     @commands.check(logcommand)
     async def _lastseen(ctx, *, arg):
         seenname = arg.lower()
-        flast = getplayerlastseen(playername=seenname)
+        flast = await asyncgetplayerlastseen(playername=seenname)
         if not flast:
             msg = f'No player was found with name **{seenname}**'
             embed = discord.Embed(description=msg, color=FAIL_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
         else:
             plasttime = elapsedTime(Now(), flast)
-            srv = getplayerlastserver(playername=seenname)
+            srv = await asyncgetplayerlastserver(playername=seenname)
             if plasttime != 'now':
                 msg = f'**{seenname.title()}** was last seen **{plasttime} ago** on ***{srv.capitalize()}***'
                 embed = discord.Embed(description=msg, color=INFO_COLOR)
@@ -898,7 +898,7 @@ def pyarkbot():
     @commands.check(is_linked)
     async def _myhome(ctx, *args):
         whofor = str(ctx.message.author).lower()
-        kuser = getplayer(discordid=whofor)
+        kuser = await asyncgetplayerinfo(discordid=whofor)
         if kuser:
             if args:
                 log.log('PLAYER', f'home server change request for {kuser[1]}')

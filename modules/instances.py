@@ -9,7 +9,6 @@ from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.configreader import redis_host, redis_port, sharedpath, hstname
 from modules.dbhelper import dbquery, dbupdate
-from modules.players import getplayer
 from modules.redis import globalvar, instancestate, instancevar
 from modules.servertools import asyncserverrconcmd, asyncserverscriptcmd, filterline, asyncserverexec, serverneedsrestart, getserveruptime
 from modules.subprotocol import SubProtocol
@@ -431,15 +430,6 @@ async def asyncgetlastrestartreason(instance):
         return dbdata['restartreason']
     else:
         return None
-
-
-def writechat(inst, whos, msg, tstamp):
-    isindb = False
-    if whos != 'ALERT' or whos != '*Admin':
-        isindb = getplayer(whos)
-    if whos == "ALERT" or isindb or whos == '*Admin':
-        dbupdate("INSERT INTO chatbuffer (server,name,message,timestamp) VALUES ('%s', '%s', '%s', '%s')" %
-                 (inst, whos, msg, tstamp))
 
 
 async def asyncwriteglobal(instance, player, message, db=db):

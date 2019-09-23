@@ -2,7 +2,7 @@ import asyncio
 import globvars
 from loguru import logger as log
 from modules.asyncdb import DB as db
-from modules.players import isplayeradmin
+from modules.players import asyncisplayeradmin
 from modules.redis import redis
 from modules.servertools import removerichtext
 from modules.timehelper import Now
@@ -107,7 +107,7 @@ async def _processgameline(inst, ptype, line):
         steamid = linesplit[2].strip()[9:].strip(')')
         pname = linesplit[0].split('PlayerName: ')[1]
         cmd = linesplit[0].split('AdminCmd: ')[1].split(' (PlayerName:')[0].upper()
-        if not isplayeradmin(steamid):
+        if not await asyncisplayeradmin(steamid):
             clog.warning(f'{logheader}Admin command [{cmd}] executed by NON-ADMIN [{pname.title()}] !')
             await db.update("INSERT INTO kicklist (instance,steamid) VALUES ('%s','%s')" % (inst, steamid))
             await db.update("UPDATE players SET banned = 'true' WHERE steamid = '%s')" % (steamid, ))

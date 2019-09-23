@@ -2,7 +2,6 @@ import sys
 
 from asyncpg import Record
 import modules.players
-import pytest
 
 sys.path.append('/home/ark/pyark')
 
@@ -20,3 +19,11 @@ async def test_asyncgetplayerinfo():
     player = await modules.players.asyncgetplayerinfo(steamname='Galaxy-Cluster')
     assert player['playername'] == 'admin'
     assert type(await modules.players.asyncgetplayerinfo(steamname='galaxy-cluster')) is Record
+
+
+async def test_asyncgetplayersonline():
+    assert type(await modules.players.asyncgetplayerinfo(instance='coliseum', fmt='count')) is int
+    assert type(await modules.players.asyncgetplayerinfo(instance='coliseum', fmt='string')) is str
+    assert type(await modules.players.asyncgetplayerinfo(instance='coliseum', fmt='list')) is list
+    assert await modules.players.asyncgetplayerinfo(instance='coliseum', fmt='count') == 0
+    assert await modules.players.asyncgetplayerinfo(instance='coliseum', fmt='string') == ''
