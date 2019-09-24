@@ -716,17 +716,17 @@ def pyarkbot():
             embed = discord.Embed(description=msg, color=INFO_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
-    @client.command(name='timeleft', aliases=['time'])
+    @client.command(name='timeleft', aliases=['time', 'restart'])
     @commands.check(logcommand)
     async def _timeleft(ctx, *args):
         if args:
             instr = args[0].lower()
             if instr in await asyncgetinstancelist():
-                srest = await db.fetchone(f"SELECT needsrestart, restartcountdown FROM instances where name = '{instr}'")
-                if srest[0][0] == 'False':
+                restdata = await db.fetchone(f"SELECT needsrestart, restartcountdown FROM instances where name = '{instr}'")
+                if restdata['needsrestart'] == 'False':
                     msg = f'Server **{instr.title()}** is not currently in a restart countdown'
                 else:
-                    msg = f'Server **{instr.title()}** has **{srest[0][1]}** minutes left until restart'
+                    msg = f'Server **{instr.title()}** has **{restdata["restartcountdown"]}** minutes left until restart'
                 embed = discord.Embed(description=msg, color=INFO_COLOR)
                 await messagesend(ctx, embed, allowgeneral=True, reject=True)
             else:
