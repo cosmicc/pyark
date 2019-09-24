@@ -1,24 +1,25 @@
-import asyncio
 import signal
-from concurrent.futures._base import CancelledError
-from datetime import datetime
 from datetime import time as dt
-from datetime import timedelta
+from datetime import datetime, timedelta
 from os import _exit, getpid
 
+import asyncio
 import discord
+from concurrent.futures._base import CancelledError
 from discord.ext import commands
 from loguru import logger as log
-
 from modules.asyncdb import DB as db
-from modules.clusterevents import asyncgetcurrenteventinfo, asyncgetlasteventinfo, asyncgetnexteventinfo, asynciseventtime
-from modules.configreader import (changelog_id, discordtoken, generalchat_id,
-                                  hstname, infochat_id, maint_hour, serverchat_id)
+from modules.clusterevents import (asyncgetcurrenteventinfo, asyncgetlasteventinfo, asyncgetnexteventinfo,
+                                   asynciseventtime)
+from modules.configreader import (changelog_id, discordtoken, generalchat_id, hstname, infochat_id, maint_hour,
+                                  serverchat_id)
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import asyncgetlastrestart, asyncgetlastrestartreason, asyncgetlastwipe, asyncgetinstancelist, asyncwriteglobal
+from modules.instances import (asyncgetinstancelist, asyncgetlastrestart, asyncgetlastrestartreason, asyncgetlastwipe,
+                               asyncwriteglobal)
 from modules.lottery import asyncgetlottowinnings, asyncisinlottery, asynctotallotterydeposits
-from modules.players import (getnewestplayers, asyncgetplayerinfo, asyncgetplayerlastseen, asyncgetplayerlastserver, asyncgetplayersonline,
-                             getplayerstoday, gettopplayedplayers, asyncisplayeradmin, setprimordialbit)
+from modules.players import (asyncgetnewestplayers, asyncgetplayerinfo, asyncgetplayerlastseen,
+                             asyncgetplayerlastserver, asyncgetplayersonline, asyncgettopplayedplayers,
+                             asyncisplayeradmin, getplayerstoday, setprimordialbit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
 
 __name__ = 'discordbot'
@@ -483,12 +484,12 @@ def pyarkbot():
     async def _primordial(ctx):
         pplayer = await db.fetchone(f"SELECT * from players WHERE discordid = '{str(ctx.message.author).lower()}'")
         if int(pplayer[14]) == 1:
-            setprimordialbit(pplayer[0], 0)
+            await setprimordialbit(pplayer[0], 0)
             msg = f'Your primordial server restart warning is now OFF'
             embed = discord.Embed(description=msg, color=SUCCESS_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
         else:
-            setprimordialbit(pplayer[0], 1)
+            await setprimordialbit(pplayer[0], 1)
             msg = f'Your primordial server restart warning is now ON'
             embed = discord.Embed(description=msg, color=SUCCESS_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
@@ -496,7 +497,7 @@ def pyarkbot():
     @client.command(name='topplayed', aliases=['topplayers', 'topplaytime'])
     @commands.check(logcommand)
     async def _topplayed(ctx):
-        lsplayer = gettopplayedplayers('all', last=10)
+        lsplayer = await asyncgettopplayedplayers('all', last=10)
         nom = 0
         msg = ''
         for each in lsplayer:
@@ -510,7 +511,7 @@ def pyarkbot():
     @client.command(name='newest', aliases=['newplayers', 'lastnew'])
     @commands.check(logcommand)
     async def _newest(ctx):
-        newlist = getnewestplayers('all', last=5)
+        newlist = await asyncgetnewestplayers('all', last=5)
         msg2 = 'Last 5 Newest Players to the cluster:'
         msg = ''
         for each in newlist:
@@ -794,12 +795,12 @@ def pyarkbot():
     async def _today(ctx):
         tcnt = 0
         for each in await asyncgetinstancelist():
-            pcnt = getplayerstoday(each, fmt='count')
+            pcnt = await getplayerstoday(each, fmt='count')
             tcnt = tcnt + pcnt
         embed = discord.Embed(title=f" **{tcnt}**  total players online in the last 24 hours", color=INFO_COLOR)
         for each in await asyncgetinstancelist():
-            pcnt = getplayerstoday(each, fmt='count')
-            plist = getplayerstoday(each, fmt='string')
+            pcnt = await getplayerstoday(each, fmt='count')
+            plist = await getplayerstoday(each, fmt='string')
             if pcnt != 0:
                 embed.add_field(name=f'{each.capitalize()} has had  **{pcnt}**  players today:', value=f'{plist}', inline=False)
             else:

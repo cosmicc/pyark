@@ -8,7 +8,7 @@ from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.servertools import asyncserverchat, asyncserverchatto
 from modules.timehelper import Now, Secs, wcstamp
-from typing import Optional, Dict
+from typing import Optional, Union, Dict
 
 
 def getbannedplayers():
@@ -70,6 +70,69 @@ def getplayersonline(inst, fmt='list', case='normal'):
     else:
         dbdata = dbquery("SELECT * FROM players WHERE online = True AND server = '%s' ORDER BY lastseen DESC" % (inst.lower(),))
     return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
+
+
+def isplayeronline(playername='', steamid=''):
+    if steamid != '':
+        dbdata = dbquery("SELECT playername FROM players WHERE steamid = '%s' AND online = True" % (steamid,), fetch='one')
+    elif playername != '':
+        dbdata = dbquery("SELECT playername FROM players WHERE playername = '%s' AND online = True" % (playername,), fetch='one')
+    if dbdata:
+        return True
+    else:
+        return False
+
+
+def kickplayer(instance, steamid):
+    dbupdate("INSERT INTO kicklist (instance,steamid) VALUES ('%s','%s')" % (instance, steamid))
+
+
+def isplayerold(playername='', steamid=''):
+    if steamid != '':
+        dbdata = dbquery("SELECT playername FROM players WHERE steamid = '%s' AND lastseen > '%s'" % (steamid, Now() - Secs['month']), fetch='one')
+    elif playername != '':
+        dbdata = dbquery("SELECT playername FROM players WHERE playername = '%s' AND lastseen > '%s'" % (playername, Now() - Secs['month']), fetch='one')
+    if dbdata:
+        return False
+    else:
+        return True
+
+
+def getlastplayersonline(inst, fmt='list', last=5, case='normal'):
+    if inst == 'all':
+        dbdata = dbquery("SELECT * FROM players WHERE online = False ORDER BY lastseen DESC LIMIT %s" % (last,))
+    else:
+        dbdata = dbquery("SELECT * FROM players WHERE server = '%s' AND online = False ORDER BY lastseen DESC LIMIT %s" % (inst.lower(), last))
+    return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
+
+
+def isplayerbanned(steamid='', playername=''):
+    if steamid == '':
+        isbanned = dbquery("SELECT * FROM players WHERE banned != '' AND playername = '%s'" % (playername.lower(),), fetch='one')
+    else:
+        isbanned = dbquery("SELECT * FROM players WHERE banned != '' AND steamid = '%s'" % (steamid,), fetch='one')
+    if isbanned:
+        return True
+    else:
+        return False
+
+
+def banunbanplayer(steamid, ban=False):
+    if ban:
+        try:
+            dbupdate("UPDATE players SET banned = True WHERE steamid = '%s'" % (steamid,))
+            dbupdate("DELETE FROM messages WHERE from_player = '%s' or to_player = '%s'" % (steamid, steamid))
+            dbupdate("UPDATE web_users SET active = False WHERE steamid = '%s'" % (steamid,))
+        except:
+            return False
+        return True
+    else:
+        try:
+            dbupdate("UPDATE players SET banned = NULL WHERE steamid = '%s'" % (steamid,))
+            dbupdate("UPDATE web_users SET active = True WHERE steamid = '%s'" % (steamid,))
+        except:
+            return False
+        return True
 
 
 async def asyncgetplayerinfo(steamid: Optional[str]=None, playername: Optional[str]=None, discordid: Optional[str]=None, steamname: Optional[str]=None) -> Record:
@@ -225,7 +288,7 @@ async def asyncgetplayerlastserver(steamid: Optional[str]=None, playername: Opti
         return None
 
 
-async def asyncgetplayersonline(instance: str, fmt: str='count'):
+async def asyncgetplayersonline(instance: str, fmt: str='count') -> Union[str, list, int]:
     if instance.lower() == 'all':
         dbdata = await db.fetchall(f"SELECT playername FROM players WHERE online = True ORDER BY lastseen DESC")
     else:
@@ -244,106 +307,58 @@ async def asyncgetplayersonline(instance: str, fmt: str='count'):
         return players
 
 
-def getplayersonlinenames(inst: str, fmt: Optional[str]=''):
-    if inst == 'all' or inst == 'ALL':
-        dbdata = dbquery("SELECT playername FROM players WHERE online = True ORDER BY lastseen DESC")
+async def setprimordialbit(steamid: str, pbit: int) -> None:
+    await db.update(f"UPDATE players SET primordialbit = '{pbit}' WHERE steamid = '{steamid}'")
+
+
+async def getplayerstoday(instance: str, fmt: str='string') -> Union[str, list, int]:
+    if instance.lower() == 'all':
+        dbdata = await db.fetchall(f"SELECT playername FROM players WHERE lastseen > {Now() - Secs['1day']} ORDER BY lastseen DESC")
     else:
-        dbdata = dbquery("SELECT playername FROM players WHERE online = True AND server = '%s' ORDER BY lastseen DESC" % (inst.lower(),))
-    return formatdbdata(dbdata, 'players', qtype=fmt, single=True)
+        dbdata = await db.fetchall(f"SELECT playername FROM players WHERE server = '{instance.lower()}' AND lastseen > {Now() - Secs['1day']} ORDER BY lastseen DESC")
+    if fmt == 'count':
+        return len(dbdata)
+    elif fmt == 'string':
+        players = []
+        for player in iter(dbdata):
+            players.append(player['playername'].title())
+        return ', '.join(players)
+    elif fmt == 'list':
+        players = []
+        for player in iter(dbdata):
+            players.append(player['playername'].title())
+        return players
 
 
-def isplayeronline(playername='', steamid=''):
-    if steamid != '':
-        dbdata = dbquery("SELECT playername FROM players WHERE steamid = '%s' AND online = True" % (steamid,), fetch='one')
-    elif playername != '':
-        dbdata = dbquery("SELECT playername FROM players WHERE playername = '%s' AND online = True" % (playername,), fetch='one')
-    if dbdata:
-        return True
+async def asyncgetnewestplayers(instance: str, fmt: str='list', last: int=5) -> Union[str, list]:
+    if instance.lower() == 'all':
+        dbdata = await db.fetchall(f"SELECT playername from players ORDER BY firstseen DESC LIMIT {last}")
     else:
-        return False
+        dbdata = await db.fetchall(f"SELECT playername from players WHERE homeserver = '{instance}' ORDER BY firstseen DESC LIMIT {last}")
+    if fmt == 'string':
+        players = []
+        for player in iter(dbdata):
+            players.append(player['playername'].title())
+        return ', '.join(players)
+    elif fmt == 'list':
+        players = []
+        for player in iter(dbdata):
+            players.append(player['playername'].title())
+        return players
 
 
-def setprimordialbit(steamid, pbit):
-    dbupdate("UPDATE players SET primordialbit = '%s' WHERE steamid = '%s'" % (pbit, steamid))
-
-
-def kickplayer(instance, steamid):
-    dbupdate("INSERT INTO kicklist (instance,steamid) VALUES ('%s','%s')" % (instance, steamid))
-
-
-def isplayerold(playername='', steamid=''):
-    if steamid != '':
-        dbdata = dbquery("SELECT playername FROM players WHERE steamid = '%s' AND lastseen > '%s'" % (steamid, Now() - Secs['month']), fetch='one')
-    elif playername != '':
-        dbdata = dbquery("SELECT playername FROM players WHERE playername = '%s' AND lastseen > '%s'" % (playername, Now() - Secs['month']), fetch='one')
-    if dbdata:
-        return False
+async def asyncgettopplayedplayers(instance: str, fmt: str='list', last: int=5) -> Union[str, list]:
+    if instance.lower() == 'all':
+        dbdata = await db.fetchall(f"SELECT playername from players ORDER BY playedtime DESC LIMIT {last}")
     else:
-        return True
-
-
-def getlastplayersonline(inst, fmt='list', last=5, case='normal'):
-    if inst == 'all':
-        dbdata = dbquery("SELECT * FROM players WHERE online = False ORDER BY lastseen DESC LIMIT %s" % (last,))
-    else:
-        dbdata = dbquery("SELECT * FROM players WHERE server = '%s' AND online = False ORDER BY lastseen DESC LIMIT %s" % (inst.lower(), last))
-    return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
-
-
-def getplayerstoday(inst, fmt='list', case='normal'):
-    if inst == 'all':
-        dbdata = dbquery("SELECT playername FROM players WHERE lastseen > %s ORDER BY lastseen DESC" % (Now() - Secs['1day']))
-    else:
-        dbdata = dbquery("SELECT playername FROM players WHERE server = '%s' AND lastseen > %s ORDER BY lastseen DESC" % (inst.lower(), Now() - Secs['1day']))
-    return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
-
-
-def isplayerlinked(discordid='', steamid=''):
-    islinked = dbquery("SELECT * FROM players WHERE discordid = '%s'" % (discordid.lower(),))
-    if islinked:
-        return True
-
-
-def isplayerbanned(steamid='', playername=''):
-    if steamid == '':
-        isbanned = dbquery("SELECT * FROM players WHERE banned != '' AND playername = '%s'" % (playername.lower(),), fetch='one')
-    else:
-        isbanned = dbquery("SELECT * FROM players WHERE banned != '' AND steamid = '%s'" % (steamid,), fetch='one')
-    if isbanned:
-        return True
-    else:
-        return False
-
-
-def banunbanplayer(steamid, ban=False):
-    if ban:
-        try:
-            dbupdate("UPDATE players SET banned = True WHERE steamid = '%s'" % (steamid,))
-            dbupdate("DELETE FROM messages WHERE from_player = '%s' or to_player = '%s'" % (steamid, steamid))
-            dbupdate("UPDATE web_users SET active = False WHERE steamid = '%s'" % (steamid,))
-        except:
-            return False
-        return True
-    else:
-        try:
-            dbupdate("UPDATE players SET banned = NULL WHERE steamid = '%s'" % (steamid,))
-            dbupdate("UPDATE web_users SET active = True WHERE steamid = '%s'" % (steamid,))
-        except:
-            return False
-        return True
-
-
-def getnewestplayers(inst, fmt='list', case='normal', last=5):
-    if inst == 'all':
-        dbdata = dbquery("SELECT playername from players ORDER BY firstseen DESC LIMIT %s" % (last,))
-    else:
-        dbdata = dbquery("SELECT playername from players WHERE homeserver = '%s' ORDER BY firstseen DESC LIMIT %s" % (inst, last))
-    return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
-
-
-def gettopplayedplayers(inst, fmt='list', case='normal', last=5):
-    if inst == 'all':
-        dbdata = dbquery("SELECT playername from players ORDER BY playedtime DESC LIMIT %s" % (last,))
-    else:
-        dbdata = dbquery("SELECT playername from players WHERE homeserver = '%s' ORDER BY playedtime DESC LIMIT %s" % (inst, last))
-    return formatdbdata(dbdata, 'players', qtype=fmt, case=case, single=True)
+        dbdata = await db.fetchall(f"SELECT playername from players WHERE homeserver = '{instance}' ORDER BY playedtime DESC LIMIT {last}")
+    if fmt == 'string':
+        players = []
+        for player in iter(dbdata):
+            players.append(player['playername'].title())
+        return ', '.join(players)
+    elif fmt == 'list':
+        players = []
+        for player in iter(dbdata):
+            players.append(player['playername'].title())
+        return players
