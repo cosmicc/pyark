@@ -254,6 +254,18 @@ async def asyncgetnewplayers(atime):
     return await db.fetchall(f"SELECT steamid, playername FROM players WHERE banned = '' AND firstseen >= '{Now() - atime}' ORDER BY playername ASC")
 
 
+async def isplayeradmin(steamid: str) -> bool:
+    playerid = await db.fetchone(f"SELECT id FROM web_users WHERE steamid = '{steamid}'")
+    if playerid:
+        isadmin = await db.fetchone(f"SELECT role_id FROM roles_users WHERE user_id = '{playerid[0]}'")
+        if isadmin[0] == 1:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
 async def asyncisplayeradmin(steamid: str) -> bool:
     playerid = await db.fetchone(f"SELECT id FROM web_users WHERE steamid = '{steamid}'")
     if playerid:

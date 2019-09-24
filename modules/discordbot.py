@@ -18,7 +18,7 @@ from modules.dbhelper import dbquery, dbupdate
 from modules.instances import asyncgetlastrestart, asyncgetlastrestartreason, asyncgetlastwipe, asyncgetinstancelist, asyncwriteglobal
 from modules.lottery import asyncgetlottowinnings, asyncisinlottery, asynctotallotterydeposits
 from modules.players import (asyncgetnewestplayers, asyncgetplayerinfo, asyncgetplayerlastseen, asyncgetplayerlastserver, asyncgetplayersonline,
-                             getplayerstoday, asyncgettopplayedplayers, asyncisplayeradmin, setprimordialbit)
+                             getplayerstoday, asyncgettopplayedplayers, isplayeradmin, setprimordialbit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
 
 __name__ = 'discordbot'
@@ -314,7 +314,7 @@ def pyarkbot():
     def is_admin(ctx):
         player = dbquery("SELECT steamid from players WHERE discordid = '%s'" % (str(ctx.message.author).lower(),), fetch='one')
         if player is not None:
-            if await asyncisplayeradmin(player[0]):
+            if await isplayeradmin(player[0]):
                 return True
             else:
                 return False
