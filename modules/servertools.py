@@ -76,7 +76,7 @@ async def asyncserverrconcmd(instance, command, nice=5):
 
 
 @log.catch
-async def asyncserverscriptcmd(instance, command, nice=5):
+async def asyncserverscriptcmd(instance, command, wait=False, nice=5):
     """Send instance script command
 
     Arguments:
@@ -88,7 +88,12 @@ async def asyncserverscriptcmd(instance, command, nice=5):
     """
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{instance}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
-    asyncio.create_task(proc)
+    if wait:
+        stdout, stderr = await proc.communicate()
+        return stderr
+    else:
+        asyncio.create_task(proc)
+
     log.trace(f'cmd: {cmdstring}')
 
 

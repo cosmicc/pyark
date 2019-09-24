@@ -53,17 +53,17 @@ async def asynclottodeposits(player, inst):
             elif lotto['givetake'] == 0:
                 totallotto = totallotto - lotto['points']
         if totallotto > 0:
+            scmd = f'tcsar addarctotal {steamid} {int(totallotto)}'
+            await asyncserverscriptcmd(inst, scmd, wait=True)
             log.log('POINTS', f'{totallotto} lottery win points added to [{player[1].title()}]')
             msg = f'{lotto["points"]} reward points have been deposited into your account for lottery wins!'
             await asyncserverchatto(inst, steamid, msg)
-            scmd = f'tcsar addarctotal {steamid} {int(totallotto)}'
-            await asyncserverscriptcmd(inst, scmd)
         elif totallotto < 0:
             log.log('POINTS', f'{abs(totallotto)} lottery entry points removed from [{player[1].title()}]')
             msg = f'{abs(totallotto)} reward points have been withdrawn from your account for a lottery entries'
             await asyncserverchatto(inst, steamid, msg)
             scmd = f'tcsar setarctotal {steamid} {int(player["rewardpoints"]) - int(abs(totallotto))}'
-            await asyncserverscriptcmd(inst, scmd)
+            await asyncserverscriptcmd(inst, scmd, wait=True)
         await db.update(f"DELETE FROM lotterydeposits WHERE steamid = '{steamid}'")
 
 
