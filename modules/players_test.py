@@ -43,7 +43,7 @@ async def test_asyncgettopplayedplayers():
     assert type(await modules.players.asyncgettopplayedplayers('ragnarok', fmt='string')) is str
     assert type(await modules.players.asyncgettopplayedplayers('all', fmt='list')) is list
     assert type(await modules.players.asyncgettopplayedplayers('all', fmt='string')) is str
-    assert len(await modules.players.asyncgettopplayedplayers('all', fmt='string', last=10)) == 10
+    assert len(await modules.players.asyncgettopplayedplayers('all', fmt='list', last=10)) == 10
 
 
 async def test_asyncgetnewestplayers():
@@ -51,4 +51,4 @@ async def test_asyncgetnewestplayers():
     assert type(await modules.players.asyncgetnewestplayers('ragnarok', fmt='string')) is str
     assert type(await modules.players.asyncgetnewestplayers('all', fmt='list')) is list
     assert type(await modules.players.asyncgetnewestplayers('all', fmt='string')) is str
-    assert len(await modules.players.asyncgetnewestplayers('all', fmt='string', last=10)) == 10
+    assert len(await modules.players.asyncgetnewestplayers('all', fmt='list', last=10)) == 10
