@@ -735,7 +735,7 @@ def pyarkbot():
                 await messagesend(ctx, embed, allowgeneral=False, reject=True)
         else:
             msg = ''
-            restdata = await db.fetchall(f"SELECT needsrestart, restartcountdown, restartreason FROM instances")
+            restdata = await db.fetchall(f"SELECT name, needsrestart, restartcountdown, restartreason FROM instances")
             for instdata in iter(restdata):
                 if instdata['needsrestart'] == 'False':
                     msg = msg + f'Server **{instdata["name"].title()}** is not currently in a restart countdown\n'
