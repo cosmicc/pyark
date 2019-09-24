@@ -42,8 +42,7 @@ class LogWatcher(object):
         self.extensions = extensions
         self.tail_lines = tail_lines
         self.matching_file_names = matching_file_names
-        assert os.path.isdir(self.folder), "%s does not exists" \
-            % self.folder
+        assert os.path.isdir(self.folder), "%s does not exists" % self.folder
         assert callable(callback)
         self.update_files()
         # The first time we run the script we move all file markers at EOF.
