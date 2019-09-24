@@ -716,7 +716,7 @@ def pyarkbot():
             embed = discord.Embed(description=msg, color=INFO_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
 
-    @client.command(name='timeleft', aliases=['time'], 'restartleft')
+    @client.command(name='timeleft', aliases=['time', 'restartleft'])
     @commands.check(logcommand)
     async def _timeleft(ctx, *args):
         if args:
