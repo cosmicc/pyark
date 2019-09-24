@@ -722,11 +722,11 @@ def pyarkbot():
         if args:
             instr = args[0].lower()
             if instr in await asyncgetinstancelist():
-                restdata = await db.fetchone(f"SELECT needsrestart, restartcountdown FROM instances where name = '{instr}'")
+                restdata = await db.fetchone(f"SELECT needsrestart, restartcountdown, restartreason FROM instances where name = '{instr}'")
                 if restdata['needsrestart'] == 'False':
                     msg = f'Server **{instr.title()}** is not currently in a restart countdown'
                 else:
-                    msg = f'Server **{instr.title()}** has **{restdata["restartcountdown"]}** minutes left until restart'
+                    msg = f'Server **{instr.title()}** has **{restdata["restartcountdown"]}** minutes left until restarting for {restdata["restartreason"]}'
                 embed = discord.Embed(description=msg, color=INFO_COLOR)
                 await messagesend(ctx, embed, allowgeneral=True, reject=True)
             else:
@@ -735,12 +735,12 @@ def pyarkbot():
                 await messagesend(ctx, embed, allowgeneral=False, reject=True)
         else:
             msg = ''
-            for each in await asyncgetinstancelist():
-                srest = await db.fetchone(f"SELECT needsrestart, restartcountdown FROM instances where name = '{each}'")
-                if srest[0][0] == 'False':
-                    msg = msg + f'Server **{each.title()}** is not currently in a restart countdown\n'
+            restdata = await db.fetchall(f"SELECT needsrestart, restartcountdown, restartreason FROM instances")
+            for instdata in iter(restdata):
+                if instdata['needsrestart'] == 'False':
+                    msg = msg + f'Server **{instdata["name"].title()}** is not currently in a restart countdown\n'
                 else:
-                    msg = msg + f'Server **{each.title()}** has **{srest[1]}** minutes left until restart\n'
+                    msg = msg + f'Server **{instdata["name"].title()}** has **{instdata["restartcountdown"]}** minutes left until restarting for {instdata["restartreason"]}\n'
             embed = discord.Embed(description=msg, color=INFO_COLOR)
             await messagesend(ctx, embed, allowgeneral=True, reject=True)
 
