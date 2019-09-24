@@ -72,9 +72,9 @@ async def asyncrestartinstnow(inst, startonly=False):
     elif serverneedsrestart() and inst != 'coliseum' and inst != 'crystal' and not startonly:
         await db.update(f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'")
         log.log('MAINT', f'REBOOTING Server [{hstname.upper()}] for maintenance server reboot')
+        await instancevar.mset(inst, {'isrunning': 0, 'isonline': 0, 'islistening': 0})
         await instancestate.clear(inst)
         await instancestate.set(inst, 'restarting')
-        await instancevar.mset(inst, {'isrunning': 0, 'isonline': 0, 'islistening': 0})
         await asyncserverexec(['reboot'])
     else:
         log.log('UPDATE', f'Instance [{inst.title()}] has backed up world data, building config...')
@@ -85,9 +85,9 @@ async def asyncrestartinstnow(inst, startonly=False):
         await asyncio.sleep(1)
         await asyncserverexec(['arkmanager', 'start', f'@{inst}'], _wait=True)
         log.log('UPDATE', f'Instance [{inst.title()}] is starting')
+        await instancevar.mset(inst, {'isrunning': 1, 'isonline': 0, 'islistening': 0})
         await instancestate.clear(inst)
         await instancestate.set(inst, 'restarting')
-        await instancevar.mset(inst, {'isrunning': 1, 'isonline': 0, 'islistening': 0})
         await asyncresetlastrestart(inst)
         await asyncunsetstartbit(inst)
         await asyncplayerrestartbit(inst)
