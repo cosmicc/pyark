@@ -314,7 +314,7 @@ def pyarkbot():
     def is_admin(ctx):
         player = dbquery("SELECT steamid from players WHERE discordid = '%s'" % (str(ctx.message.author).lower(),), fetch='one')
         if player is not None:
-            if await isplayeradmin(player[0]):
+            if isplayeradmin(player[0]):
                 return True
             else:
                 return False
