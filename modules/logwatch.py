@@ -82,25 +82,19 @@ class LogWatcher(object):
         rotated filename is, and return it.
         """
         rotated_filename = self._check_rotated_filename_candidates(fname)
-        if rotated_filename and os.path.exists(rotated_filename):
-            if os.stat(rotated_filename).st_ino == old_file_inode:
-                return rotated_filename
+        # if rotated_filename and os.path.exists(rotated_filename):
+        #    if os.stat(rotated_filename).st_ino == old_file_inode:
+        #        return rotated_filename
 
-            # These logics are handling file shranks
-            # if the inode hasn't changed, then the file shrank; this is
-            # expected with copytruncate,
-            # otherwise print a warning
-            # if stat(self.filename).st_ino == self._offset_file_inode:
-            # if self.copytruncate:
-            # return rotated_filename
-            # else:
-            # sys.stderr.write(
-            #          "[pygtail] [WARN] file size of %s shrank, "
-            #          "and copytruncate support is "
-            #          "disabled (expected at least %d bytes, was %d bytes)"
-            # ".\n" %
-            # (self.filename, self._offset,
-            # stat(self.filename).st_size))
+        # These logics are handling file shranks
+        # if the inode hasn't changed, then the file shrank; this is
+        # expected with copytruncate,
+        # otherwise print a warning
+        if stat(self.filename).st_ino == self._offset_file_inode:
+            if self.copytruncate:
+                return rotated_filename
+            else:
+                log.warning("[pygtail] [WARN] file size of %s shrank, and copytruncate support is disabled (expected at least %d bytes, was %d bytes).\n" % (self.filename, self._offset, stat(self.filename).st_size))
 
         return None
 
