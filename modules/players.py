@@ -295,7 +295,7 @@ async def asyncgetplayerlastserver(steamid: Optional[str]=None, playername: Opti
     elif steamid:
         dbdata = await db.fetchone(f"SELECT lastseen FROM players WHERE steamid = '{steamid}'")
     if dbdata:
-        return dbdata
+        return dbdata['server']
     else:
         return None
 
