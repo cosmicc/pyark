@@ -336,3 +336,12 @@ class instancestate():
         """
         return await redis.smembers(f'{instance}-states')
 
+    @staticmethod
+    async def clear(instance: str) -> bool:
+        """Clear all instance states
+
+        Arguments:
+            instance {string} -- Instance name
+        """
+        await redis.delete(f'{instance}-states')
+        await redis.add(f'{instance}-states', 'pyark')
