@@ -6,6 +6,10 @@ from modules.redis import RedisClass
 webapp = Quart(__name__)
 
 
+async def getinstancedata():
+    return iter(await webapp.db.fetchall(f'SELECT * FROM instances'))
+
+
 @webapp.before_serving
 async def db_pool():
     webapp.db = asyncDB()
@@ -25,7 +29,7 @@ async def db_close():
 
 @webapp.route('/')
 async def index():
-    return await render_template('home.html')
+    return await render_template('home.html', instancedata=getinstancedata)
 
 
 @webapp.websocket('/ws')

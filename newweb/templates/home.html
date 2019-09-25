@@ -61,36 +61,7 @@ http://www.tooplate.com/view/2021-galaxy
                   <img src="{{ url_for('static', filename='images/discord.png') }}" alt="Discord" />
                   </div>
                   <h2>Server Status</h2>
-        <div id="servers" class="servers">
-                 {% for instance in instances %}
-                 {% if not ui_isinstanceup(instance) %}
-                 {% if ui_isinstanceenabled(instance) %}
-                 <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; "><button class="serverbutton has-background-danger" style="color: #FFFFFF">{{ instance.capitalize() }}</button></a>
-                 {% else %}
-<a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; "><button class="serverbutton has-background-danger" style="color: #FFFFFF; text-decoration: line-through;">{{ instance.capitalize() }}</button></a>
-                 {% endif %}
-                 {% elif ui_isinrestart(instance) %}
-                 {% if ui_isinstanceenabled(instance) %}
-                 <a href="/serverinfo/{{ instance }}" style="color: #000000; "><button class="serverbutton has-background-warning">{{ instance.capitalize() }}&nbsp;&nbsp;{{ ui_getplayersonline(instance, fmt='count') }}&nbsp;&nbsp;({{ ui_getrestartleft(instance) }})</button></a>
-                {% else %}
-                <a href="/serverinfo/{{ instance }}" style="color: #000000; "><button class="serverbutton has-background-warning" style="text-decoration: line-through;">{{ instance.capitalize() }}&nbsp;&nbsp;{{ ui_getplayersonline(instance, fmt='count') }}&nbsp;&nbsp;({{ ui_getrestartleft(instance) }})</button></a>
-
-                 {% endif %}
-                 {% elif not ui_iscurrentconfig(instance) %}
-                 {% if ui_isinstanceenabled(instance) %}
-                 <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; "><button class="serverbutton has-background-info" style="color: #FFFFFF">{{ instance.capitalize() }}&nbsp;&nbsp;{{ ui_getplayersonline(instance, 'count') }}</button></a>
-                {% else %}
- <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; "><button class="serverbutton has-background-info" style="color: #FFFFFF; text-decoration: line-through;">{{ instance.capitalize() }}&nbsp;&nbsp;{{ ui_getplayersonline(instance, 'count') }}</button></a>
-                {% endif %}
-                 {% else %}
-                 {% if ui_isinstanceenabled(instance) %}
-                 <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; "><button class="serverbutton has-background-success" style="color: #FFFFFF">{{ instance.capitalize() }}&nbsp;&nbsp;{{ ui_getplayersonline(instance, 'count') }}</button></a>
-                {% else %}
-                <a href="/serverinfo/{{ instance }}" style="color: #FFFFFF; "><button class="serverbutton has-background-success" style="color: #FFFFFF; text-decoration: line-through; ">{{ instance.capitalize() }}&nbsp;&nbsp;{{ ui_getplayersonline(instance, 'count') }}</button></a>
-                {% endif %}
-                {% endif %}
-                {% endfor %}
-            </div>
+                  {% await instancedata() %}
                 </div>
               </div>
               <!-- end of home -->
