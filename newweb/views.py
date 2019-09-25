@@ -17,7 +17,7 @@ def _gettimezones():
 async def _instancedata():
     async def instancedata():
         return await webapp.db.fetchall(f'SELECT * FROM instances')
-    return dict(instancedata=await iter(instancedata()))
+    return dict(instancedata=iter(await instancedata()))
 
 
 @webapp.before_serving
