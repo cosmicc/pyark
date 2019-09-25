@@ -144,7 +144,7 @@ async def asyncmain():
             log.trace(f'deleting global chat buffer for {inst}')
             await db.update(f"DELETE FROM globalbuffer WHERE server = '{inst}'")
             await pubsub.subscribe([f'{inst}-commands'])
-            await instancestate.set(inst, 'pyark')
+            await instancestate.clear(inst)
             await instancevar.mset(inst, {'server': hstname, 'missedrunning': 0, 'missedlistening': 0, 'missedonline': 0})
     asyncloop = asyncio.get_running_loop()
     starttime = asyncloop.time()
