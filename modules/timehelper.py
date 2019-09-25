@@ -186,7 +186,10 @@ def elapsedTime(start_time, stop_time, nowifmin=True, append=False):
     if tseconds < 60 and nowifmin:
         return 'now'
     else:
-        return ', '.join(result[:granularity]) + f' {append}'
+        if append:
+            return ', '.join(result[:granularity]) + f' {append}'
+        else:
+            return ', '.join(result[:granularity])
 
 
 def elapsedSeconds(seconds):
