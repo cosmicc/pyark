@@ -186,3 +186,7 @@ em { color: #f3c331; }
 
 #gallery_container .gb_rm { margin-right:0 }
 /* end of gallery */
+
+.servers { flex-wrap: nowrap; font-size: 12px; font-weight: normal; color: #FFFFFF; }
+
+.serverbutton { text-align: center; padding: 8px 0px; margin: 5px; display: inline-block; font-size: 16px; height: 35px; width: 140px; border: 1px solid #EEE; border-radius: 10px; }
