@@ -22,7 +22,11 @@ http://www.tooplate.com/view/2021-galaxy
 <script src="{{ url_for('static', filename='js/jquery.serialScroll-1.2.1.js') }}"></script>
 <script src="{{ url_for('static', filename='js/coda-slider.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery.easing.1.3.js') }}"></script>
-
+<script>
+    var pageLoader = setInterval(function(){
+            $("#dashboard").load(" #dashboard");
+        }, 30000);
+</script>
 </head>
 <body>
 
@@ -60,8 +64,10 @@ http://www.tooplate.com/view/2021-galaxy
                   <div class="discord">
                   <img src="{{ url_for('static', filename='images/discord.png') }}" alt="Discord" />
                   </div>
+                  <div class="servers">
                   <h2>Server Status</h2>
                   {{ getinstancedata }}
+                  </div>
                 </div>
               </div>
               <!-- end of home -->
