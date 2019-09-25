@@ -6,6 +6,14 @@ from modules.redis import RedisClass
 webapp = Quart(__name__)
 
 
+@webapp.context_processor
+def _gettimezones():
+    def ui_gettimezones():
+        pass
+    return dict(ui_gettimezones=ui_gettimezones)
+
+
+@webapp.context_processor
 async def getinstancedata():
     return iter(await webapp.db.fetchall(f'SELECT * FROM instances'))
 
