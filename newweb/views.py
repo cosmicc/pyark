@@ -14,10 +14,10 @@ def _gettimezones():
 
 
 @webapp.context_processor
-async def _getinstancedata():
-    async def getinstancedata():
-        return await webapp.redis.hget('ragnarok', 'playersonline')
-    return dict(getinstancedata=await getinstancedata())
+async def _instancedata():
+    async def instancedata():
+        return await webapp.db.fetchall(f'SELECT * FROM instances')
+    return dict(instancedata=await iter(instancedata()))
 
 
 @webapp.before_serving
