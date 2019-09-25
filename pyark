@@ -272,8 +272,7 @@ async def asyncmain():
                     tasktimer = asyncloop.time()
             await asyncio.sleep(.05)
     for inst in instances:
-        await instancestate.unset(inst, 'pyark')
-        await instancestate.unset(inst, 'restartwaiting')
+        await instancestate.clear(inst)
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
     log.debug(f'Waiting for {len(tasks)} async tasks to finish')
     await asyncio.gather(*tasks, return_exceptions=True)
