@@ -517,7 +517,7 @@ def pyarkbot():
             for each in newlist:
                 lsplayer = await asyncgetplayerinfo(steamid=each)
                 lspago = elapsedTime(Now(), lsplayer["lastseen"], nowifmin=False, append='ago')
-                msg = msg + f'**{lsplayer["name"].title()}** joined ***{lsplayer["server"].capitalize()}***  -  {lspago}\n'
+                msg = msg + f'**{lsplayer["playername"].title()}** joined ***{lsplayer["server"].capitalize()}***  -  {lspago}\n'
             embed = discord.Embed(title=msg2, description=msg, color=INFO_COLOR)
             await messagesend(ctx, embed, allowgeneral=False, reject=True)
         except:
