@@ -66,7 +66,9 @@ http://www.tooplate.com/view/2021-galaxy
                   </div>
                   <div id="serverstatus" class="serverstatus">
                   <h2>Server Status</h2>
-                  {{ instancedata }}
+                  {% for instance in instancedata %}
+                  {{ instance }}
+                  {% endfor %}
                   </div>
                 </div>
               </div>
