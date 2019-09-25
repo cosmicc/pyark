@@ -510,13 +510,13 @@ def pyarkbot():
     @client.command(name='newest', aliases=['newplayers', 'lastnew'])
     @commands.check(logcommand)
     async def _newest(ctx):
-        newlist = await asyncgetnewestplayers('all', last=5)
+        newlist = await asyncgetnewestplayers('all', fmt='list', last=5, steamid=True)
         msg2 = 'Last 5 Newest Players to the cluster:'
         msg = ''
         for each in newlist:
-            lsplayer = await asyncgetplayerinfo(playername=each)
-            lspago = elapsedTime(Now(), lsplayer[6], nowifmin=False)
-            msg = msg + f'**{lsplayer[1].title()}** joined ***{lsplayer[3].capitalize()}***  -  {lspago} ago\n'
+            lsplayer = await asyncgetplayerinfo(steamid=each)
+            lspago = elapsedTime(Now(), lsplayer["lastseen"], nowifmin=False, append='ago')
+            msg = msg + f'**{lsplayer["name"].title()}** joined ***{lsplayer["server"].capitalize()}***  -  {lspago}\n'
         embed = discord.Embed(title=msg2, description=msg, color=INFO_COLOR)
         await messagesend(ctx, embed, allowgeneral=False, reject=True)
 

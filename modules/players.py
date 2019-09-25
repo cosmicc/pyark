@@ -342,20 +342,24 @@ async def getplayerstoday(instance: str, fmt: str='string') -> Union[str, list, 
         return players
 
 
-async def asyncgetnewestplayers(instance: str, fmt: str='list', last: int=5) -> Union[str, list]:
-    if instance.lower() == 'all':
-        dbdata = await db.fetchall(f"SELECT playername from players ORDER BY firstseen DESC LIMIT {last}")
+async def asyncgetnewestplayers(instance: str, fmt: str='list', last: int=5, steamid: bool=False) -> Union[str, list]:
+    if steamid:
+        psel = 'steamid'
     else:
-        dbdata = await db.fetchall(f"SELECT playername from players WHERE homeserver = '{instance}' ORDER BY firstseen DESC LIMIT {last}")
+        psel = 'playername'
+    if instance.lower() == 'all':
+        dbdata = await db.fetchall(f"SELECT {psel} from players ORDER BY firstseen DESC LIMIT {last}")
+    else:
+        dbdata = await db.fetchall(f"SELECT {psel} from players WHERE homeserver = '{instance}' ORDER BY firstseen DESC LIMIT {last}")
     if fmt == 'string':
         players = []
         for player in iter(dbdata):
-            players.append(player['playername'].title())
+            players.append(player[0].title())
         return ', '.join(players)
     elif fmt == 'list':
         players = []
         for player in iter(dbdata):
-            players.append(player['playername'].title())
+            players.append(player[0].title())
         return players
 
 

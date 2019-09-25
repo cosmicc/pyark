@@ -155,7 +155,7 @@ def wcstamp():
     return a.strftime('%m-%d %I:%M%p')
 
 
-def elapsedTime(start_time, stop_time, nowifmin=True):
+def elapsedTime(start_time, stop_time, nowifmin=True, append=False):
     """Convert 2 epochs to elapsed time string representation
 
     Args:
@@ -186,7 +186,7 @@ def elapsedTime(start_time, stop_time, nowifmin=True):
     if tseconds < 60 and nowifmin:
         return 'now'
     else:
-        return ', '.join(result[:granularity])
+        return ', '.join(result[:granularity]) + f' {append}'
 
 
 def elapsedSeconds(seconds):
