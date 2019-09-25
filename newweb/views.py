@@ -13,11 +13,11 @@ def _gettimezones():
     return dict(ui_gettimezones=ui_gettimezones)
 
 
-@webapp.app.context_processor
+@webapp.context_processor
 def _getinstancedata():
     def getinstancedata():
-        return iter(webapp.db.fetchall(f'SELECT * FROM instances'))
-    return dict(getinstancedata=_getinstancedata)
+        return 'hi' #  iter(webapp.db.fetchall(f'SELECT * FROM instances'))
+    return dict(getinstancedata=getinstancedata)
 
 
 @webapp.before_serving
