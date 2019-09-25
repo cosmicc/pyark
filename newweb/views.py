@@ -16,7 +16,7 @@ def _gettimezones():
 @webapp.context_processor
 async def _instancedata():
     async def instancedata():
-        return await webapp.db.fetchall(f'SELECT * FROM instances')
+        return await webapp.db.fetchall(f'SELECT name, isup, needsrestart FROM instances')
     return dict(instancedata=iter(await instancedata()))
 
 
