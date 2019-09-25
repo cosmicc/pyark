@@ -14,7 +14,7 @@ def _gettimezones():
 
 
 @webapp.context_processor
-async def getinstancedata():
+def getinstancedata():
     async def _getinstancedata():
         return iter(await webapp.db.fetchall(f'SELECT * FROM instances'))
     return dict(getinstancedata=_getinstancedata)
