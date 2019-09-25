@@ -14,8 +14,10 @@ def _gettimezones():
 
 
 @webapp.context_processor
-async def getinstancedata():
-    return iter(await webapp.db.fetchall(f'SELECT * FROM instances'))
+async def _getinstancedata():
+    async def getinstancedata():
+        return iter(await webapp.db.fetchall(f'SELECT * FROM instances'))
+    return dict(getinstancedata=getinstancedata)
 
 
 @webapp.before_serving
@@ -37,7 +39,7 @@ async def db_close():
 
 @webapp.route('/')
 async def index():
-    return await render_template('home.html', instancedata=getinstancedata)
+    return await render_template('home.html')
 
 
 @webapp.websocket('/ws')
