@@ -98,7 +98,7 @@ def checkerrorlog(record):
 
 
 # Instance Json log
-log.add(sink=str(jsonlogfile), level=19, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat)
+log.add(sink=str(jsonlogfile), level=19, buffering=1, enqueue=True, backtrace=False, diagnose=False, serialize=True, colorize=True, format=shortlogformat, rotation="2h", retention="1 week", compression="tar.gz")
 
 # Instance Json debug log
 if loglevel == 'DEBUG' or loglevel == 'TRACE':
@@ -106,7 +106,7 @@ if loglevel == 'DEBUG' or loglevel == 'TRACE':
         lev = 10
     else:
         lev = 5
-    log.add(sink=str(jsondebugfile), level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=shortlogformat, delay=False, filter=checkdebuglog)
+    log.add(sink=str(jsondebugfile), level=lev, buffering=1, enqueue=True, backtrace=True, diagnose=True, serialize=True, colorize=True, format=shortlogformat, delay=False, filter=checkdebuglog, rotation="2h", retention="1 week", compression="tar.gz")
 
 # General combined log pyark.log
 log.add(sink=str(pyarklogfile), level=20, buffering=1, enqueue=True, backtrace=False, diagnose=False, colorize=True, format=longlogformat)
