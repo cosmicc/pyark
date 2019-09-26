@@ -61,29 +61,27 @@ http://www.tooplate.com/view/2021-galaxy
                   <p><a href="http://www.tooplate.com/view/2021-galaxy">Galaxy</a> is <a rel="nofollow" href="http://www.tooplate.com">free website template</a> for everyone. You may edit and apply this template for any purpose. Credits go to <a rel="nofollow" href="http://www.photovaco.com">Free Photos</a> for photos and <a rel="nofollow" href="http://jwloh.deviantart.com/art/Aquaticus-Social-91014249" target="_blank">jwloh</a> for Aquaticus.Social social icons and <a rel="nofollow" href="http://www.icojoy.com">icojoy.com</a> for icons. Nunc posuere tristique tempor.</p>
                 </div>
                 <div class="col_270 float_r">
-                  <div class="discord">
-                  <img src="{{ url_for('static', filename='images/discord.png') }}" alt="Discord" />
-                  </div>
+
                   <div id="serverstatus" class="serverstatus">
                   <h2>Server Status</h2>
                  {% for instance in instancedata %}
                  {% if not instance['isup'] %}
                  {% if instance['enabled'] %}
-                 <button class="serverbutton has-background-danger" style="color: #FFFFFF">{{ instance['name'].capitalize() }}</button>
+                 <button class="serverbutton downcolor" style="color: #FFFFFF">{{ instance['name'].capitalize() }}</button>
                  {% else %}
-                 <button class="serverbutton has-background-danger" style="color: #FFFFFF; text-decoration: line-through;">{{ instance['name'].capitalize() }}</button>
+                 <button class="serverbutton downcolor" style="color: #FFFFFF; text-decoration: line-through;">{{ instance['name'].capitalize() }}</button>
                  {% endif %}
                  {% elif instance['needsrestart'] == 'True' %}
                  {% if instance['enabled'] %}
-                 <button class="serverbutton has-background-warning">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{ instance['restartcountdown'] }})</button></a>
+                 <button class="serverbutton warningcolor">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{ instance['restartcountdown'] }})</button></a>
                 {% else %}
-                <button class="serverbutton has-background-warning" style="text-decoration: line-through;">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{ instance['restartcountdown'] }})</button>
+                <button class="serverbutton warningcolor" style="text-decoration: line-through;">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{ instance['restartcountdown'] }})</button>
                  {% endif %}
                  {% else %}
                  {% if instance['enabled'] %}
-                 <button class="serverbutton has-background-success" style="color: #FFFFFF">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
+                 <button class="serverbutton upcolor" style="color: #FFFFFF">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
                 {% else %}
-                <button class="serverbutton has-background-success" style="color: #FFFFFF; text-decoration: line-through; ">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
+                <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through; ">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
                 {% endif %}
                 {% endif %}
                 {% endfor %}
@@ -95,7 +93,9 @@ http://www.tooplate.com/view/2021-galaxy
               <div class="panel" id="about">
                 <div class="col_320 float_l">
                   <h1>About Us</h1>
-                  <img src="{{ url_for('static', filename='images/tooplate_image_02.jpg') }}" alt="Image 02" class="image_wrapper" />
+                  <div class="discord">
+                  <img src="{{ url_for('static', filename='images/discord.png') }}" alt="Discord" />
+                  </div>
                   <p><em>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse in lectus turpis. Vivamus cursus tortor quis leo ullamcorper auctor quis tincidunt metus. In non ipsum leo.</em></p>
                   <p>Vestibulum vitae lectus a leo commodo egestas. Sed et ligula mauris. Donec interdum iaculis eros, sed porttitor justo ornare ac. Suspendisse ultrices arcu auctor sapien <a href="#">malesuada dictum</a>. Maecenas varius blandit risus in varius. Donec eget arcu nisi.</p>
                 </div>
