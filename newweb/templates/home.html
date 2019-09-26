@@ -12,7 +12,7 @@ http://www.tooplate.com/view/2021-galaxy
 <title>Ark: Galaxy Cluster Servers</title>
 <meta name="keywords" content="" />
 <meta name="description" content="" />
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pyark.css?ver=1.1') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pyark.css?ver=1.2') }}"/>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/coda-slider.css') }}"/>
 
@@ -67,7 +67,7 @@ http://www.tooplate.com/view/2021-galaxy
                  {% for instance in instancedata %}
                  {% if not instance['isup'] %}
                  {% if instance['enabled'] %}
-                 <button class="serverbutton downcolor" style="color: #FFFFFF">{{ instance['name'].capitalize() }}</button>
+                 <button class="serverbutton downcolor" style="color: #FFFFFF"><h1>{{ instance['name'].capitalize() }}</h1><h2>Status: ONLINE</h2></button>
                  {% else %}
                  <button class="serverbutton downcolor" style="color: #FFFFFF; text-decoration: line-through;">{{ instance['name'].capitalize() }}</button>
                  {% endif %}
