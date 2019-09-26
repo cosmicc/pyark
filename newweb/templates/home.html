@@ -61,9 +61,8 @@ http://www.tooplate.com/view/2021-galaxy
                   <p><a href="http://www.tooplate.com/view/2021-galaxy">Galaxy</a> is <a rel="nofollow" href="http://www.tooplate.com">free website template</a> for everyone. You may edit and apply this template for any purpose. Credits go to <a rel="nofollow" href="http://www.photovaco.com">Free Photos</a> for photos and <a rel="nofollow" href="http://jwloh.deviantart.com/art/Aquaticus-Social-91014249" target="_blank">jwloh</a> for Aquaticus.Social social icons and <a rel="nofollow" href="http://www.icojoy.com">icojoy.com</a> for icons. Nunc posuere tristique tempor.</p>
                 </div>
                 <div class="col_270 float_r">
-
-                 Server Status
                  <div id="serverstatus" class="serverstatus">
+                 <span class="playersonline">Players Online: 8</span>
                  {% for instance in instancedata %}
                  {% if not instance['isup'] %}
                  {% if instance['enabled'] %}
@@ -79,7 +78,7 @@ http://www.tooplate.com/view/2021-galaxy
                  {% endif %}
                  {% else %}
                  {% if instance['enabled'] %}
-                 <button class="serverbutton upcolor"><span class="servername" style="color: #FFFFAF">{{instance['name'].capitalize()}}</span></br><span class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players: 3</span></button>
+                 <button class="serverbutton upcolor"><span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</span></br><span class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players: 3</span></button>
                 {% else %}
                 <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through; ">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
                 {% endif %}
