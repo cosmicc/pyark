@@ -67,7 +67,7 @@ http://www.tooplate.com/view/2021-galaxy
                  {% for instance in instancedata %}
                  {% if not instance['isup'] %}
                  {% if instance['enabled'] %}
-                 <button class="serverbutton downcolor" style="color: #FFFFFF">aaaaaaaaaaa<h1>{{ instance['name'].capitalize()}}</h1>aaaaaaaa</button>
+                 <button class="serverbutton downcolor" style="color: #FFFFFF">{{ instance['name'].capitalize()}}</button>
                  {% else %}
                  <button class="serverbutton downcolor" style="color: #FFFFFF; text-decoration: line-through;">{{ instance['name'].capitalize() }}</button>
                  {% endif %}
@@ -79,7 +79,7 @@ http://www.tooplate.com/view/2021-galaxy
                  {% endif %}
                  {% else %}
                  {% if instance['enabled'] %}
-                 <button class="serverbutton upcolor" style="color: #FFFFFF">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
+                 <button class="serverbutton upcolor" style="color: #FFFFFF"><h1>{{instance['name'].capitalize()}}</h1><h2>ONLINE</h2></button>
                 {% else %}
                 <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through; ">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
                 {% endif %}
