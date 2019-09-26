@@ -7,10 +7,10 @@ webapp = Quart(__name__)
 
 
 @webapp.context_processor
-async def _onlineplayers():
+async def _onlineplayers(instance):
     async def onlineplayers(instance):
         return (await webapp.redis.hget(instance, 'playersonline')).decode()
-    return dict(onlineplayers=await onlineplayers())
+    return dict(onlineplayers=await onlineplayers(instance))
 
 
 @webapp.context_processor
