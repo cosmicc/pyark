@@ -36,6 +36,11 @@ h6 { font-size: 10px; margin: 0 0 0px 0; padding: 0; font-color: #999999; }
 .float_l { float: left; }
 .float_r { float: right; }
 
+.downcolor { background-color: #f51907 }
+.warningcolor { background-color: #fec802 }
+.infocolor { background-color: #268198 }
+.upcolor { background-color: #047617 }
+
 .image_wrapper {
 	display: inline-block;
 	border: 1px solid #000000;
@@ -191,7 +196,3 @@ em { color: #f3c331; }
 
 .serverbutton { text-align: center; padding: 8px 0px; margin: 5px; display: inline-block; font-size: 16px; height: 40px; width: 200px; border: 1px solid #EEE; border-radius: 10px; }
 
-.has-background-danger { background-color: #f51907 }
-.has-background-warning { background-color: #fec802 }
-.has-background-info { background-color: #268198 }
-.has-background-success { background-color: #047617 }
