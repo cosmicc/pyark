@@ -66,9 +66,27 @@ http://www.tooplate.com/view/2021-galaxy
                   </div>
                   <div id="serverstatus" class="serverstatus">
                   <h2>Server Status</h2>
-                  {% for instance in instancedata %}
-                  {{ instance }}
-                  {% endfor %}
+                 {% for instance in instancedata %}
+                 {% if not instance['isup'] %}
+                 {% if instance['enabled'] %}
+                 <button class="serverbutton has-background-danger" style="color: #FFFFFF">{{ instance['name'].capitalize() }}</button>
+                 {% else %}
+                 <button class="serverbutton has-background-danger" style="color: #FFFFFF; text-decoration: line-through;">{{ instance['name'].capitalize() }}</button>
+                 {% endif %}
+                 {% elif instance['needsrestart'] %}
+                 {% if instance['enabled'] %}
+                 <button class="serverbutton has-background-warning">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{ instance['restartcountdown'] }})</button></a>
+                {% else %}
+                <button class="serverbutton has-background-warning" style="text-decoration: line-through;">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{ instance['restartcountdown'] }})</button>
+                 {% endif %}
+                 {% else %}
+                 {% if instance['enabled'] %}
+                 <button class="serverbutton has-background-success" style="color: #FFFFFF">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
+                {% else %}
+                <button class="serverbutton has-background-success" style="color: #FFFFFF; text-decoration: line-through; ">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
                   </div>
                 </div>
               </div>
