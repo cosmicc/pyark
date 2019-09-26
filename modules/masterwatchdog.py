@@ -7,7 +7,7 @@ async def pinghost(host: str) -> Optional[float]:
     return ping(host, unit='ms', timeout=2)
 
 
-async def checkhosts(instance):
+async def checkhosts():
     instances = await redis.smembers('allhostips')
     for instance in iter(instances):
         print(instance)
