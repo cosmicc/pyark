@@ -11,5 +11,5 @@ async def test_pinghost():
     assert await modules.masterwatchdog.pinghost('172.31.250.115') < 1
 
 
-async def test_checkhost():
-    assert await modules.masterwatchdog.checkhost() == 0
+async def test_checkhosts():
+    assert await modules.masterwatchdog.checkhosts() == 0
