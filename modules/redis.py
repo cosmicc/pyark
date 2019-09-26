@@ -344,4 +344,4 @@ class instancestate():
             instance {string} -- Instance name
         """
         await redis.delete(f'{instance}-states')
-        await redis.add(f'{instance}-states', 'pyark')
+        await redis.sadd(f'{instance}-states', 'pyark')

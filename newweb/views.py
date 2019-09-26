@@ -7,13 +7,6 @@ webapp = Quart(__name__)
 
 
 @webapp.context_processor
-async def _onlineplayers(instance):
-    async def onlineplayers(instance):
-        return (await webapp.redis.hget(instance, 'playersonline')).decode()
-    return dict(onlineplayers=await onlineplayers(instance))
-
-
-@webapp.context_processor
 async def _instancedata():
     async def instancedata():
         return await webapp.db.fetchall(f'SELECT name, isup, needsrestart, restartcountdown, enabled FROM instances ORDER BY name')
