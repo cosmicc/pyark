@@ -7,10 +7,10 @@ webapp = Quart(__name__)
 
 
 @webapp.context_processor
-def _gettimezones():
-    def ui_gettimezones():
-        pass
-    return dict(ui_gettimezones=ui_gettimezones)
+async def _onlineplayers():
+    async def onlineplayers(instance):
+        return (await webapp.redis.hget(instance, 'playersonline')).decode()
+    return dict(onlineplayers=await onlineplayers())
 
 
 @webapp.context_processor
