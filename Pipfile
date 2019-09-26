@@ -9,6 +9,7 @@ pytest-aiohttp = "*"
 pytest-ordering = "*"
 hypothesis = "*"
 tox = "*"
+mypy = "*"
 
 [packages]
 flask = "*"
@@ -52,6 +53,7 @@ fastapi = "*"
 python-multipart = "*"
 alt-pytest-asyncio = "*"
 quart = "*"
+ping3 = "*"
 
 [requires]
 python_version = "3.7"
