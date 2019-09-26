@@ -189,4 +189,9 @@ em { color: #f3c331; }
 
 .servers { flex-wrap: nowrap; font-size: 12px; font-weight: normal; color: #FFFFFF; }
 
-.serverbutton { text-align: center; padding: 8px 0px; margin: 5px; display: inline-block; font-size: 16px; height: 35px; width: 140px; border: 1px solid #EEE; border-radius: 10px; }
+.serverbutton { text-align: center; padding: 8px 0px; margin: 5px; display: inline-block; font-size: 16px; height: 40px; width: 200px; border: 1px solid #EEE; border-radius: 10px; }
+
+.has-background-danger { background-color: #f51907 }
+.has-background-warning { background-color: #fec802 }
+.has-background-info { background-color: #268198 }
+.has-background-success { background-color: #047617 }
