@@ -197,4 +197,4 @@ em { color: #f3c331; }
 .serverbutton { text-align: center; padding: 8px 0px; margin: 5px; display: inline-block; height: 40px; width: 200px; border: 1px solid #EEE; border-radius: 10px; }
 
 .serverbutton > h1 { font-size: 16px; }
-.serverbutton > h2 { font-size: 10px; }
+.serverbutton > p { font-size: 10px; }
