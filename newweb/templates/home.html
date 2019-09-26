@@ -73,7 +73,7 @@ http://www.tooplate.com/view/2021-galaxy
                  {% else %}
                  <button class="serverbutton has-background-danger" style="color: #FFFFFF; text-decoration: line-through;">{{ instance['name'].capitalize() }}</button>
                  {% endif %}
-                 {% elif instance['needsrestart'] %}
+                 {% elif instance['needsrestart'] == 'True' %}
                  {% if instance['enabled'] %}
                  <button class="serverbutton has-background-warning">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{ instance['restartcountdown'] }})</button></a>
                 {% else %}
