@@ -15,7 +15,7 @@ class RedisClass:
         self.host: str = host
         self.port: int = port
         self.verified: bool = False
-        self.pool = aredis.ConnectionPool(host=self.host, port=self.port, db=self.db, max_connections=100, max_idle_time=240)
+        self.pool = aredis.ConnectionPool(host=self.host, port=self.port, db=self.db, max_connections=20)
         self.redis = aredis.StrictRedis(connection_pool=self.pool)
 
     async def connect(self, hostname: str):
