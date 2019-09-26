@@ -184,19 +184,12 @@ async def asyncfinishstatus(inst):
     log.trace('running statusline completion task')
     if await instancevar.getint(inst, 'missedrunning') >= 2:
         await instancevar.mset(inst, {'isrunning': 0, 'playersactive': 0, 'playersconnected': 0, 'isonline': 0, 'islistening': 0})
-    else:
-        await instancevar.set(inst, 'isrunning', 1)
     if await instancevar.getint(inst, 'missedlistening') >= 3:
-        await instancevar.set(inst, 'islistening', 0)
-    else:
-        await instancevar.set(inst, 'islistening', 1)
+        await instancevar.mset(inst, {'islistening': 0, 'isonline': 0})
     if await instancevar.getint(inst, 'missedonline') >= 3:
         await instancevar.set(inst, 'isonline', 0)
-    else:
-        await instancevar.set(inst, 'isonline', 1)
-
-    if await instancevar.getint(inst, 'playersactive') > 0 or await instancevar.getint(inst, 'playersconnected') > 0:
-        await instancevar.mset(inst, {'isrunning': 1, 'islistening': 1, 'isonline': 1})
+    # if await instancevar.getint(inst, 'playersactive') > 0 or await instancevar.getint(inst, 'playersconnected') > 0:
+        # await instancevar.mset(inst, {'isrunning': 1, 'islistening': 1, 'isonline': 1})
     await db.update(f"""UPDATE instances SET serverpid = '{await instancevar.getint(inst, "arkpid")}', isup = '{await instancevar.getint(inst, "isonline")}', islistening = '{await instancevar.getint(inst, "islistening")}', isrunning = '{await instancevar.getint(inst, "isrunning")}' WHERE name = '{inst}'""")
     await db.update(f"""UPDATE instances SET hostname = '{await instancevar.getstring(inst, "arkname")}', steamlink = '{await instancevar.getstring(inst, "steamlink")}', arkserverslink = '{await instancevar.getstring(inst, "arkserverlink")}', connectingplayers = '{await instancevar.getint(inst, "playersconnected")}', activeplayers = '{await instancevar.getint(inst, "playersactive")}', arkbuild = '{await instancevar.getint(inst, "arkbuild")}', arkversion = '{await instancevar.getstring(inst, "arkversion")}' WHERE name = '{inst}'""")
     if await instancevar.getint(inst, 'missedrunning') >= 5 and await asyncisinstanceenabled(inst) and not await instancevar.check(inst, 'isrunning'):
