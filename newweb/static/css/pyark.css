@@ -194,7 +194,7 @@ em { color: #f3c331; }
 
 .servers { flex-wrap: nowrap; font-size: 12px; font-weight: normal; color: #FFFFFF; }
 
-.serverbutton { text-align: center; padding: 8px 0px; margin: 5px; display: inline-block; height: 40px; width: 200px; border: 1px solid #EEE; border-radius: 10px; }
+.serverbutton { text-align: center; padding: 8px 0px; margin: 0px; display: inline-block; height: 40px; width: 200px; border: 1px solid #EEE; border-radius: 10px; }
 
 .serverbutton > .servername { font-size: 16px; }
-.serverbutton > .serverstatus { font-size: 10px; }
+.serverbutton > .serverstatus { font-size: 11px; }
