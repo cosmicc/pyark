@@ -65,21 +65,10 @@
 	padding: 0 40px;
 }
 
-#footer_left {
-	float: left;
+#footer_center {
+	float: middle;
 	width: 250px;
-	text-align: left
-}
-
-#footer a {
-	color: #f6bf34;
-}
-
-#social_box {
-	float: right;
-	height: 85px;
-	padding: 0;
-
+	text-align: center
 }
 
 .discord {
