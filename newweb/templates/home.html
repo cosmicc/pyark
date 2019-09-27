@@ -64,12 +64,12 @@ http://www.tooplate.com/view/2021-galaxy
                   <br><br><br><br><br>
                   <a href="https://discord.gg/AtA9T3R"><img src="{{ url_for('static', filename='images/discord.png') }}" alt="Discord" /></a>
                 </div>
-                <div class="col_center">
+                <div class="col_center float_l">
                    <div class="onlineplayernames">
                     <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
                   </div>
                 </div>
-                <div class="col_right">
+                <div class="col_right float_l">
                  <div id="serverstatus" class="serverstatus">
                  <center><div class="statustitle"><h1>Server Status</h1></div>
                  {% for instance in instancedata %}
