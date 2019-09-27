@@ -54,7 +54,8 @@ http://www.tooplate.com/view/2021-galaxy
             <div class="scrollContainer">
 
               <div class="panel" id="home">
-                <div class="dashtitle"><center><h1>Ark: Survival Evolved Ultimate Extinction Core Galaxy Server Cluster</h1></center></div>
+                <div class="dashtitle"><center><h1>Ark: Survival Evolved Ultimate Extinction Core Galaxy Server Cluster</h1></center>
+                </div>
                 <div class="col_left float_l">
                     <div class="onlineplayernames">
                     <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
@@ -64,9 +65,10 @@ http://www.tooplate.com/view/2021-galaxy
                   <a href="https://discord.gg/AtA9T3R"><img src="{{ url_for('static', filename='images/discord.png') }}" alt="Discord" /></a>
                 </div>
                 <div class="col_center">
-                                    <div class="onlineplayernames">
+                   <div class="onlineplayernames">
                     <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
                   </div>
+                </div>
                 <div class="col_right">
                  <div id="serverstatus" class="serverstatus">
                  <center><div class="statustitle"><h1>Server Status</h1></div>
@@ -95,6 +97,7 @@ http://www.tooplate.com/view/2021-galaxy
                   <center><div class="events"><h3>Next Event: Evolution Weekend<br>in 1 Days, 4 Hours</h3></div></center>
                 </div>
               </div>
+            </div>
               <!-- end of home -->
 
               <div class="panel" id="about">
