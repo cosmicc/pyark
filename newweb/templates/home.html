@@ -63,7 +63,7 @@ http://www.tooplate.com/view/2021-galaxy
                 </div>
                 <div class="col_270 float_r">
                  <div id="serverstatus" class="serverstatus">
-                  <h2>Server Status</h2>
+                 <div class="statustitle"><h1>Server Status</h1></div>
                  {% for instance in instancedata %}
                  {% if not instance['isup'] %}
                  {% if instance['enabled'] %}
