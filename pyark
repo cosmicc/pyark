@@ -152,7 +152,7 @@ async def asyncmain():
     tasktimer = asyncloop.time()
     if len(instances) == 0:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
-        globvars.timer = {'lottocheck': starttime, 'eventwatch': starttime, 'steamapi': starttime, 'auctionapi': starttime, 'arkserversapi': starttime, 'checkhosts': starttime}
+        globvars.timer = {'lottocheck': starttime, 'eventwatch': starttime, 'steamapi': starttime - 60, 'auctionapi': starttime - 60, 'arkserversapi': starttime - 600, 'checkhosts': starttime - 60}
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
                 asynclooptime = asyncloop.time()

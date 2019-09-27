@@ -12,7 +12,7 @@ async def pinghost(host: str) -> Optional[float]:
 async def checkhosts():
     instances = await redis.smembers('allhostips')
     for instance in iter(instances):
-        resp = pinghost(instance.decode())
+        resp = await pinghost(instance.decode())
         if resp:
             log.debug(f'Ping response from {instance.decode()}: {truncate_float(resp, 2)}ms')
             if resp > 5:
