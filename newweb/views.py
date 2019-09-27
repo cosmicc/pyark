@@ -8,6 +8,13 @@ webapp = Quart(__name__)
 
 
 @webapp.context_processor
+async def _lastlottery():
+    async def lastlottery():
+        return await webapp.db.fetchone(f"SELECT * FROM lotteryinfo WHERE completed = True ORDER BY id DESC")
+    return dict(lastlottery=await lastlottery())
+
+
+@webapp.context_processor
 async def _otherplayercounts():
     async def otherplayercounts():
         wcount = await webapp.db.fetchone(f"""SELECT COUNT(*) FROM players WHERE banned = '' AND lastseen >= '{Now() - Secs["week"]}'""")
