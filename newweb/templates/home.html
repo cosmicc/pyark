@@ -56,15 +56,14 @@ http://www.tooplate.com/view/2021-galaxy
               <div class="panel" id="home">
                 <div class="col_380 float_l">
                   <center><h1>Ark: Survival Evolved Ultimate Extinction Core<br>Galaxy Server Cluster</h1></center>
-                  <a href="https://discord.gg/AtA9T3R"><img src="{{ url_for('static', filename='images/discord.png') }}" alt="Discord" class="image_wrapper" /></a>
-                  <p><em>Join us on Discord</em></p>
-                  <p><a href="http://www.tooplate.com/view/2021-galaxy">Galaxy</a> is <a rel="nofollow" href="http://www.tooplate.com">free website template</a> for everyone. You may edit and apply this template for any purpose. Credits go to <a rel="nofollow" href="http://www.photovaco.com">Free Photos</a> for photos and <a rel="nofollow" href="http://jwloh.deviantart.com/art/Aquaticus-Social-91014249" target="_blank">jwloh</a> for Aquaticus.Social social icons and <a rel="nofollow" href="http://www.icojoy.com">icojoy.com</a> for icons. Nunc posuere tristique tempor.</p>
+                    <div class="onlineplayernames">
+                    <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
+                  </div>
+                  <a href="https://discord.gg/AtA9T3R"><img src="{{ url_for('static', filename='images/discord.png') }}" alt="Discord" /></a>
                 </div>
                 <div class="col_270 float_r">
                  <div id="serverstatus" class="serverstatus">
-                <div class="onlineplayernames">
-                    <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
-                  </div>
+                  <h2>Server Status</h2>
                  {% for instance in instancedata %}
                  {% if not instance['isup'] %}
                  {% if instance['enabled'] %}
