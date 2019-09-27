@@ -22,7 +22,7 @@ async def _onlineplayers():
 @webapp.context_processor
 async def _instancedata():
     async def instancedata():
-        return await webapp.db.fetchall(f'SELECT name, isup, needsrestart, restartcountdown, enabled FROM instances ORDER BY name')
+        return await webapp.db.fetchall(f'SELECT name, isup, needsrestart, restartcountdown, enabled, activeplayers FROM instances ORDER BY name')
     return dict(instancedata=iter(await instancedata()))
 
 
