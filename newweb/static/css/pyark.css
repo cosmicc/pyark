@@ -199,10 +199,10 @@ em { color: #f3c331; }
 .serverbutton > .servername { font-size: 16px; }
 .serverbutton > .serverstatus { font-size: 12px; padding: 2px; }
 
-.playersonline { padding: 10px 15px; }
+.playersonline { padding: 10px 0px 10px 10px;  }
 
-.onlineplayernames { padding: 10px 5px; }
+.onlineplayernames { padding: 10px 0px 0px 10px; }
 
 .events { padding: 10px; }
 
-.statustitle { padding: 15px 10px 20px; }
+.statustitle { padding: 15px 0px 10px 20px; }
