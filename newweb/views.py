@@ -8,6 +8,15 @@ webapp = Quart(__name__)
 
 
 @webapp.context_processor
+async def _otherplayercounts():
+    async def otherplayercounts():
+        wcount = await webapp.db.fetchall(f"""SELECT COUNT(*) FROM players WHERE banned = '' AND lastseen >= '{Now() - Secs["1week"]}'""")
+        mcount = await webapp.db.fetchall(f"""SELECT COUNT(*) FROM players WHERE banned = '' AND lastseen >= '{Now() - Secs["1month"]}'""")
+        return {'week': wcount, 'month': mcount}
+    return dict(otherplayercounts=await otherplayercounts())
+
+
+@webapp.context_processor
 async def _dailyplayers():
     async def dailyplayers():
         pnames = await webapp.db.fetchall(f"""SELECT playername FROM players WHERE banned = '' AND lastseen >= '{Now() - Secs["1day"]}' ORDER BY lastseen DESC""")
