@@ -1,9 +1,23 @@
 from quart import Quart, websocket, redirect, render_template, url_for
 from modules.asyncdb import asyncDB
 from modules.redis import RedisClass
+from modules.timehelper import Now, Secs
 
 
 webapp = Quart(__name__)
+
+
+@webapp.context_processor
+async def _dailyplayers():
+    async def dailyplayers():
+        pnames = await webapp.db.fetchall(f"""SELECT playername FROM players WHERE banned = '' AND lastseen >= '{Now() - Secs["1day"]}' and ORDER BY lastseen DESC""")
+        playernamelist = []
+        for player in iter(pnames):
+            playernamelist.append(player['playername'].title())
+        playernames = ', '.join(playernamelist)
+        count = len(playernamelist)
+        return {'count': count, 'names': playernames}
+    return dict(dailyplayers=await dailyplayers())
 
 
 @webapp.context_processor
