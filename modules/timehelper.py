@@ -104,7 +104,7 @@ def Now(fmt='epoch', est=False):
     """Return current time
 
     Args:
-        fmt (str, [Optional]): Description:
+        fmt (str, [Optional]): Description: (dt, dtd, epoch, string)
         est (bool, [Optional]): Description:
 
     Returns:

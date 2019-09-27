@@ -9,7 +9,7 @@ webapp = Quart(__name__)
 @webapp.context_processor
 async def _onlineplayers():
     async def onlineplayers():
-        pnames = await webapp.db.fetchall(f'SELECT playername from players where online = True')
+        pnames = await webapp.db.fetchall(f'SELECT playername from players where online = True ORDER BY lastconnect DESC')
         playernamelist = []
         for player in iter(pnames):
             playernamelist.append(player['playername'].title())
