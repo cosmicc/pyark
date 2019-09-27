@@ -17,7 +17,7 @@ async def _currentlottery():
             lotterynames = await webapp.db.fetchall(f"SELECT playername FROM lotteryplayers ORDER BY TIMESTAMP ASC")
             resp = []
             for player in iter(lotterynames):
-                resp.append(player['playername'])
+                resp.append(player['playername'].title())
             return {'active': True, 'playercount': lottery['players'], 'payout': lottery['payout'], 'ends': 0, 'players': ", ".join(resp)}
     return dict(currentlottery=await currentlottery())
 
