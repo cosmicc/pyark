@@ -59,9 +59,12 @@ http://www.tooplate.com/view/2021-galaxy
                 </div>
                 <div class="col_left float_l">
                     <div id="lotteryinfo" class="lotteryinfo">
+                      {% if currentlottery['active'] %}
                       <h3>Current lottery at <span style="color: #FFFFFF"><b>{{ currentlottery['payout'] }}</b></span> Points with <span style="color: #FFFFFF"><b>{{ currentlottery['playercount'] }}</b></span> Players:</h3>
                       {{ currentlottery['players'] }}<br>
                       <h3>Lottery Ends in {{ currentlottery['ends'] }}<br>
+                      {% else %}
+                      <h3>Next lottery starts in<br>{{ currentlottery['ends'] }}</h3>
                     <br>
 
                     <h3>Last Lottery winner was: <span style="color: #FFFFFF"><b>{{ lastlottery['winner'].title() }}</b></span> with <b><span style="color: #FFFFFF">{{ lastlottery['payout'] }}</span></b> Points</h3>
