@@ -14,8 +14,8 @@ async def checkhosts():
     for instance in iter(instances):
         resp = await pinghost(instance.decode())
         if resp:
-            log.debug(f'Ping response from {instance.decode()}: {truncate_float(resp, 2)}ms')
-            if resp > 5:
-                log.warning(f'High internal ping times to [{instance.decode()}]')
+            log.trace(f'Ping response from {instance.decode()}: {truncate_float(resp, 2)}ms')
+            if resp > 1:
+                log.warning(f'High internal ping times to [{instance.decode()}] {truncate_float(resp, 2)}ms')
         else:
             log.warning(f'No reponse from host [{instance.decode()}]')
