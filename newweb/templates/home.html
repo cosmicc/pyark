@@ -62,7 +62,9 @@ http://www.tooplate.com/view/2021-galaxy
                 </div>
                 <div class="col_270 float_r">
                  <div id="serverstatus" class="serverstatus">
-                 <div class="playersonline"><h1>Server Status</h1></div>
+                <div class="onlineplayernames">
+                    <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
+                  </div>
                  {% for instance in instancedata %}
                  {% if not instance['isup'] %}
                  {% if instance['enabled'] %}
@@ -85,9 +87,7 @@ http://www.tooplate.com/view/2021-galaxy
                 {% endif %}
                 {% endfor %}
                   </div>
-                  <div class="onlineplayernames">
-                    <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
-                  </div>
+
                 </div>
               </div>
               <!-- end of home -->
