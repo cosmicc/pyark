@@ -65,6 +65,7 @@ http://www.tooplate.com/view/2021-galaxy
                       <h3>Lottery Ends in {{ currentlottery['ends'] }}<br>
                       {% else %}
                       <h3>Next lottery starts in<br>{{ currentlottery['ends'] }}</h3>
+                      {% endif %}
                     <br>
 
                     <h3>Last Lottery winner was: <span style="color: #FFFFFF"><b>{{ lastlottery['winner'].title() }}</b></span> with <b><span style="color: #FFFFFF">{{ lastlottery['payout'] }}</span></b> Points</h3>
