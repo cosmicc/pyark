@@ -201,4 +201,6 @@ em { color: #f3c331; }
 
 .playersonline { padding: 10px 15px; }
 
-.onlineplayernames { padding: 10px 0px; }
+.onlineplayernames { padding: 10px 5px; }
+
+.events { padding: 10px; }
