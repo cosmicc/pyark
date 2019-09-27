@@ -82,7 +82,7 @@ http://www.tooplate.com/view/2021-galaxy
                  {% endif %}
                  {% else %}
                  {% if instance['enabled'] %}
-                 <button class="serverbutton upcolor"><span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</span></br><span class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players: {{instance['activeplayers']}}</span></button>
+                 <a href="{{ instance['steamlink'] }}"><button class="serverbutton upcolor"><span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</span></br><span class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players: {{instance['activeplayers']}}</span></button></a>
                 {% else %}
                 <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through; ">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button>
                 {% endif %}
