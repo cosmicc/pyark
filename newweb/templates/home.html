@@ -62,8 +62,8 @@ http://www.tooplate.com/view/2021-galaxy
                   </div>
                   <br>
                   <h3>Last 7 lottery winners:</h3>
-                  {% for player in last7lotterys %}
-                  {{ last7lotterys['num'] }}. {{ last7lotterys['playername'].title }} won {{ last7lotterys['points'] }} Points
+                  {% for lottoplayer in last7lotterys %}
+                  {{ lottoplayer['num'] }}. {{ lottoplayer['playername'].title }} won {{ lottoplayer['points'] }} Points
                   {% endfor %}
                   <br>
                   <br>
