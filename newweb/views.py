@@ -1,4 +1,4 @@
-from quart import Quart, websocket, redirect, render_template, url_for
+from quart import Quart, websocket, render_template
 from modules.asyncdb import asyncDB
 from modules.redis import RedisClass
 from modules.timehelper import Now, Secs
@@ -10,7 +10,7 @@ webapp = Quart(__name__)
 @webapp.context_processor
 async def _last7lotterys():
     async def last7lotterys():
-        lotterys = await webapp.db.fetchall(f"SELECT winner, payout FROM lotteryinfo WHERE completed = True ORDER BY id DESC")
+        lotterys = await webapp.db.fetchall(f"SELECT winner, payout FROM lotteryinfo WHERE completed = True ORDER BY id DESC LIMIT 7")
         num = 0
         resp = []
         for lottery in iter(lotterys):
