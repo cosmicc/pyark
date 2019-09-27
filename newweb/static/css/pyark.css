@@ -78,7 +78,7 @@ em { color: #f3c331; }
 .dashtitle { width: 900px; margin-top: 5px; margin-bottom: 10px; }
 .col_left { width: 240px; margin-left: 50px}
 .col_center { width: 290px; }
-.col_right { width: 240px; margin-right: 100px; margin-left: 30px; }
+.col_right { width: 240px; padding-right: 100px; padding-left: 30px; }
 
 .service_list {
 	margin: 0 0 0 15px;
