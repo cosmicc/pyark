@@ -12,7 +12,7 @@ async def _otherplayercounts():
     async def otherplayercounts():
         wcount = await webapp.db.fetchall(f"""SELECT COUNT(*) FROM players WHERE banned = '' AND lastseen >= '{Now() - Secs["week"]}'""")
         mcount = await webapp.db.fetchall(f"""SELECT COUNT(*) FROM players WHERE banned = '' AND lastseen >= '{Now() - Secs["month"]}'""")
-        return {'week': wcount, 'month': mcount}
+        return {'week': wcount['count'], 'month': mcount['count']}
     return dict(otherplayercounts=await otherplayercounts())
 
 
