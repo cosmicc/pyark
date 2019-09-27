@@ -1,5 +1,5 @@
 from ping3 import ping
-from modules.redis import redis
+from modules.redis import redis, instancevar
 from typing import Optional
 from loguru import logger as log
 from modules.timehelper import truncate_float
@@ -19,3 +19,4 @@ async def checkhosts():
                 log.warning(f'High internal ping times to [{instance.decode()}] {truncate_float(resp, 2)}ms')
         else:
             log.warning(f'No reponse from host [{instance.decode()}]')
+            await instancevar.set('isonline', 0)

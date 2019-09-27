@@ -7,6 +7,19 @@ webapp = Quart(__name__)
 
 
 @webapp.context_processor
+async def _onlineplayers():
+    async def onlineplayers():
+        pnames = await webapp.db.fetchall(f'SELECT playername from players where online = True')
+        playernamelist = []
+        for player in iter(pnames):
+            playernamelist.append(player['playername'])
+        playernames = ', '.join(playernamelist)
+        count = len(playernames)
+        return {'count': count, 'names': playernames}
+    return dict(onlineplayers=await onlineplayers())
+
+
+@webapp.context_processor
 async def _instancedata():
     async def instancedata():
         return await webapp.db.fetchall(f'SELECT name, isup, needsrestart, restartcountdown, enabled FROM instances ORDER BY name')
