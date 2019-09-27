@@ -199,4 +199,6 @@ em { color: #f3c331; }
 .serverbutton > .servername { font-size: 16px; }
 .serverbutton > .serverstatus { font-size: 12px; padding: 2px; }
 
-.playersonline { font-size: 20px; padding: 5px 10px; color: #fadc0f;}
+.playersonline { padding: 5px 10px; }
+
+.onlineplayernames { padding: 5px 10px; }
