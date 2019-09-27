@@ -203,6 +203,6 @@ em { color: #f3c331; }
 
 .onlineplayernames { padding: 10px 0px 0px 10px; }
 
-.events { padding: 10px; }
+.events { padding: 0px; }
 
-.statustitle { padding: 15px 0px 10px 20px; }
+.statustitle { padding: 15px 0px 10px 0px; }
