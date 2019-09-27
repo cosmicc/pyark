@@ -8,6 +8,21 @@ webapp = Quart(__name__)
 
 
 @webapp.context_processor
+async def _currentlottery():
+    async def currentlottery():
+        lottery = await webapp.db.fetchone(f"SELECT * FROM lotteryinfo WHERE completed = False")
+        if not lottery:
+            return {'active': False, 'playercount': 0, 'payout': 0, 'ends': 0}
+        else:
+            lotterynames = await webapp.db.fetchall(f"SELECT playername FROM lotteryplayers ORDER BY TIMESTAMP ASC")
+            resp = []
+            for player in iter(lotterynames):
+                resp.append(player['playername'])
+            return {'active': True, 'playercount': lottery['players'], 'payout': lottery['payout'], 'ends': 0, 'players': ", ".join(resp)}
+    return dict(currentlottery=await currentlottery())
+
+
+@webapp.context_processor
 async def _last7lotterys():
     async def last7lotterys():
         lotterys = await webapp.db.fetchall(f"SELECT winner, payout FROM lotteryinfo WHERE completed = True ORDER BY id DESC LIMIT 7")

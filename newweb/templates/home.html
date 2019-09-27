@@ -58,6 +58,11 @@ http://www.tooplate.com/view/2021-galaxy
                 </div>
                 <div class="col_left float_l">
                     <div class="onlineplayernames">
+                      <h3>Current lottery at {{ currentlottery['payout'] }} Points with {{ currentlottery['playercount'] }} Players:
+                        {{ currentlottery['players'] }}<br>
+                        Lottery Ends in {{ currentlottery['ends'] }}<br>
+                        }
+
                     <h3>Last Lottery winner was: <span style="color: #FFFFFF"><b>{{ lastlottery['winner'].title() }}</b></span> with <b><span style="color: #FFFFFF">{{ lastlottery['payout'] }}</span></b> Points</h3>
                   </div>
                   <br>
@@ -103,8 +108,8 @@ http://www.tooplate.com/view/2021-galaxy
                   <div class="dailyplayers">
                     <h3><span style="color: #FFFFFF"><b>{{ dailyplayers['count'] }}</b></span> Players in last Day: </h3>{{ dailyplayers['names'] }}
                   </div>
-                    <h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['week'] }}</b></span> Players in last Week</h3>
-                    <h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['month'] }}</b></span> Players in last Month</h3>
+                    <br><h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['week'] }}</b></span> Players in last Week</h3>
+                    <br><h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['month'] }}</b></span> Players in last Month</h3>
                 </div>
               </div>
 
