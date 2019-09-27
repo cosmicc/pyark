@@ -58,9 +58,13 @@ http://www.tooplate.com/view/2021-galaxy
                 </div>
                 <div class="col_left float_l">
                     <div class="onlineplayernames">
-                    <h3>Last Lottery winner was: <span style="color: #FFFFFF"><b>{{ lastlottery['winner'].title() }}</b></span> with <span style="color: #FFFFFF">{{ lastlottery['payout'] }}</span> Points</h3>
+                    <h3>Last Lottery winner was: <span style="color: #FFFFFF"><b>{{ lastlottery['winner'].title() }}</b></span> with <b><span style="color: #FFFFFF">{{ lastlottery['payout'] }}</span></b> Points</h3>
                   </div>
                   <br>
+                  <h3>Last 7 lottery winners:</h3>
+                  {% for player in last7lotterys %}
+                  {{ last7lotterys['num'] }}. {{ last7lotterys['playername'].title }} won {{ last7lotterys['points'] }} Points
+                  {% endfor %}
                   <br>
                   <br>
                 </div>
