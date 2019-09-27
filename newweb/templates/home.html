@@ -54,18 +54,21 @@ http://www.tooplate.com/view/2021-galaxy
             <div class="scrollContainer">
 
               <div class="panel" id="home">
-                <div class="col_380 float_l">
-                  <center><h1>Ark: Survival Evolved Ultimate Extinction Core<br>Galaxy Server Cluster</h1></center>
+                <div class="dashtitle"><center><h1>Ark: Survival Evolved Ultimate Extinction Core<br>Galaxy Server Cluster</h1></center></div>
+                <div class="col_left float_l">
                     <div class="onlineplayernames">
                     <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
                   </div>
-                  <div class="onlineplayernames">
-                    <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
-                  </div>
+
                   <br><br><br><br><br>
                   <a href="https://discord.gg/AtA9T3R"><img src="{{ url_for('static', filename='images/discord.png') }}" alt="Discord" /></a>
                 </div>
-                <div class="col_270 float_r">
+                <div class="col_center float_c">
+                                    <div class="onlineplayernames">
+                    <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
+                  </div>
+                </div>
+                <div class="col_right float_r">
                  <div id="serverstatus" class="serverstatus">
                  <center><div class="statustitle"><h1>Server Status</h1></div>
                  {% for instance in instancedata %}

@@ -35,6 +35,7 @@ h6 { font-size: 10px; margin: 0 0 0px 0; padding: 0; font-color: #999999; }
 
 .float_l { float: left; }
 .float_r { float: right; }
+.float_c { float: center; }
 
 .downcolor { background-color: #f51907 }
 .warningcolor { background-color: #fec802 }
@@ -75,9 +76,10 @@ em { color: #f3c331; }
 	text-decoration: none;
 }
 
-.col_380 { width: 550px; padding-top: 15px }
-.col_320 { width: 320px; }
-.col_270 { width: 350px; }
+.dashtitle { width: 900px ; }
+.col_left { width: 300px; }
+.col_center { width: 300px; }
+.col_right { width: 300px; }
 
 .service_list {
 	margin: 0 0 0 15px;
