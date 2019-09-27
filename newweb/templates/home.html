@@ -63,7 +63,7 @@ http://www.tooplate.com/view/2021-galaxy
                 </div>
                 <div class="col_270 float_r">
                  <div id="serverstatus" class="serverstatus">
-                 <div class="statustitle"><h1>Server Status</h1></div>
+                 <center><div class="statustitle"><h1>Server Status</h1></div>
                  {% for instance in instancedata %}
                  {% if not instance['isup'] %}
                  {% if instance['enabled'] %}
@@ -87,7 +87,7 @@ http://www.tooplate.com/view/2021-galaxy
                 {% endfor %}
                   </div>
                   <div class="events"><h3>Next Event: Evolution Weekend<br>in 1 Days, 4 Hours</h3></div>
-                </div>
+                </div></center>
               </div>
               <!-- end of home -->
 
