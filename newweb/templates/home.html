@@ -137,18 +137,9 @@ http://www.tooplate.com/view/2021-galaxy
               <div class="panel" id="gallery">
                 <h1>Screenshot Gallery</h1>
                 <div id="gallery_container">
-                  <div class="gallery_box"> <a href="https://media.discordapp.net/attachments/554022795315511300/592293499655946240/20190623014459_1.jpg"><img src="https://media.discordapp.net/attachments/554022795315511300/592293499655946240/20190623014459_1.jpg?width=135height=80" alt="Image 01" /></a> </div>
-                  <div class="gallery_box"> <a href="#"><img src="images/gallery/image_02.jpg" alt="Image 02" /></a> </div>
-                  <div class="gallery_box"> <a href="#"><img src="images/gallery/image_03.jpg" alt="Image 03" /></a> </div>
-                  <div class="gallery_box gb_rm"> <a href="#"><img src="images/gallery/image_04.jpg" alt="Image 04" /></a> </div>
-                  <div class="gallery_box"> <a href="#"><img src="images/gallery/image_05.jpg" alt="Image 05" /></a> </div>
-                  <div class="gallery_box"> <a href="#"><img src="images/gallery/image_06.jpg" alt="Image 06" /></a> </div>
-                  <div class="gallery_box"> <a href="#"><img src="images/gallery/image_07.jpg" alt="Image 07" /></a> </div>
-                  <div class="gallery_box gb_rm"> <a href="#"><img src="images/gallery/image_08.jpg" alt="Image 08" /></a> </div>
-                  <div class="gallery_box"> <a href="#"><img src="images/gallery/image_09.jpg" alt="Image 09" /></a> </div>
-                  <div class="gallery_box"> <a href="#"><img src="images/gallery/image_10.jpg" alt="Image 10" /></a> </div>
-                  <div class="gallery_box"> <a href="#"><img src="images/gallery/image_11.jpg" alt="Image 11" /></a> </div>
-                  <div class="gallery_box gb_rm"> <a href="#"><img src="images/gallery/image_12.jpg" alt="Image 12" /></a> </div>
+                  {% for galleryimg in gallerylinks %}
+                  <div class="gallery_box"> <a href="{{ galleryimg['link'] }}" target="_blank"><img src="{{ galleryimg['link'] }}" alt="Gallery Image" /></a></div>
+                  {% endfor %}
                   <div class="cleaner"></div>
                 </div>
               </div>

@@ -26,6 +26,13 @@ async def _instancedata():
     return dict(instancedata=iter(await instancedata()))
 
 
+@webapp.context_processor
+async def _gallerylinks():
+    async def gallerylinks():
+        return iter(await webapp.db.fetchall(f'SELECT playername, link FROM gallerylinks ORDER BY id ASC'))
+    return dict(gallerylinks=iter(await gallerylinks()))
+
+
 @webapp.before_serving
 async def db_pool():
     webapp.db = asyncDB()
