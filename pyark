@@ -29,6 +29,7 @@ from modules.redis import Redis, instancestate, instancevar, globalvar
 from modules.servertools import asyncserverexec, processinststats, processserverstats
 from modules.statcollector import asyncstatcollector
 from modules.timehelper import Now
+from modules.masterwatchdog import checkhosts
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -127,7 +128,7 @@ async def asyncmain():
     main_stop_event = False
     asyncloop = asyncio.get_running_loop()
     asyncloop.set_exception_handler(async_exception_handler)
-    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60, 'statcollector': 300, 'eventwatch': 60, 'steamapi': 60, 'auctionapi': 60, 'arkserversapi': 600}
+    globvars.delay = {'serverstats': 60, 'statuscheck': 30, 'restartcheck': 30, 'backupcheck': 300, 'wipecheck': 60, 'updatecheck': 300, 'maintcheck': 300, 'kickcheck': 5, 'cmdcheck': 2, 'onlinecheck': 10, 'gchatrelay': 2, 'lottocheck': 60, 'statcollector': 300, 'eventwatch': 60, 'steamapi': 60, 'auctionapi': 60, 'arkserversapi': 600, 'checkhosts': 60}
     if hstname == 'SVR1':
         globvars.delay.update({'cmdcheck': 5})
     await Redis.connect(__name__)
@@ -151,10 +152,16 @@ async def asyncmain():
     tasktimer = asyncloop.time()
     if len(instances) == 0:
         log.debug(f'No ARK game instances found, running as [Master Bot]')
-        globvars.timer = {'lottocheck': starttime, 'eventwatch': starttime, 'steamapi': starttime, 'auctionapi': starttime, 'arkserversapi': starttime}
+        globvars.timer = {'lottocheck': starttime, 'eventwatch': starttime, 'steamapi': starttime, 'auctionapi': starttime, 'arkserversapi': starttime, 'checkhosts': starttime}
         async with aiohttp.ClientSession() as session:
             while not main_stop_event:
                 asynclooptime = asyncloop.time()
+                if asynclooptime - globvars.timer['checkhosts'] > globvars.delay['checkhosts']:
+                    asyncio.create_task(checkhosts())
+                if asynclooptime - globvars.timer['checkhosts'] > globvars.delay['checkhosts'] + 2:
+                    log.error(f'checkhosts was delayed {asynclooptime - globvars.timer["checkhosts"] - globvars.delay["checkhosts"]}')
+                globvars.timer.update({'checkhosts': asyncloop.time()})
+
                 if asynclooptime - globvars.timer['lottocheck'] > globvars.delay['lottocheck']:
                     asyncio.create_task(asynclotterywatcher())
                     if asynclooptime - globvars.timer['lottocheck'] > globvars.delay['lottocheck'] + 2:
