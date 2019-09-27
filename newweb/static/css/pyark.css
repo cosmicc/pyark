@@ -76,9 +76,9 @@ em { color: #f3c331; }
 }
 
 .dashtitle { width: 900px; margin-top: 5px; margin-bottom: 10px; }
-.col_left { width: 300px; margin-left: 10px}
-.col_center { width: 300px; }
-.col_right { width: 300px; margin-right: 10px }
+.col_left { width: 290px; margin-left: 10px}
+.col_center { width: 290px; }
+.col_right { width: 290px; margin-right: 10px }
 
 .service_list {
 	margin: 0 0 0 15px;
