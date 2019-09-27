@@ -12,9 +12,9 @@ async def _onlineplayers():
         pnames = await webapp.db.fetchall(f'SELECT playername from players where online = True')
         playernamelist = []
         for player in iter(pnames):
-            playernamelist.append(player['playername'])
+            playernamelist.append(player['playername'].title())
         playernames = ', '.join(playernamelist)
-        count = len(playernames)
+        count = len(playernamelist)
         return {'count': count, 'names': playernames}
     return dict(onlineplayers=await onlineplayers())
 
