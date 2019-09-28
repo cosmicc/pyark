@@ -41,8 +41,12 @@ http://www.tooplate.com/view/2021-galaxy
 <![CDATA[
     var pageLoader = setInterval(function(){
             $("#serverstatus").load(" #serverstatus");
-            $("#lotteryinfo").load(" #lotteryinfo");
+            $("#playerinfo").load(" #playerinfo");
         }, 30000);
+    var pageLoader = setInterval(function(){
+            $("#lotteryinfo").load(" #lotteryinfo");
+            $("#eventinfo").load(" #eventinfo");
+        }, 60000);
 ]]>
 </script>
 </head>
@@ -73,6 +77,7 @@ http://www.tooplate.com/view/2021-galaxy
 Cluster</h1>
 </center>
 </div>
+
 <div class="col_left float_l">
 <div id="lotteryinfo" class="lotteryinfo">
 {% if currentlottery['active'] %}
@@ -99,26 +104,26 @@ lastlottery['winner'].title() }}</span> with <span style=
 <h3>Last 7 lottery winners:</h3>
 {% for lottoplayer in last7lotterys %} {{ lottoplayer['num'] }}. {{
 lottoplayer['playername'].title() }} won {{ lottoplayer['points']
-}} Points<br>{% endfor %}</div>
+}} Points<br>{% endfor %}
 </div>
+</div>
+
 <div class="col_center float_l">
-<div id="serverstatus" class="serverstatus">
 <center>
-<div class="eventinfo">
-
-
+<div id="eventinfo" class="eventinfo">
 {% if eventinfo['active'] %}
 <h3><span style="color: #FFFFFF">{{ eventinfo['title'].title() }}</span> is Active</h3>
 <h4>Event ends in <span style="color: #FFFFFF">1 Days, 4 Hours</span></h4>
 {{ eventinfo['description'] }}
-
 {% else %}
 {{ eventinfo }}
 <h3>Next Event: Evolution Weekend<br />
 in 1 Days, 4 Hours</h3>
 {% endif %}
 </div>
+
 <div class="minispacer"></div>
+<div id="serverstatus" class="serverstatus">
 {% for instance in instancedata %}
 {% if not instance['isup'] %}
 {% if instance['enabled'] %}
@@ -154,7 +159,9 @@ instance['restartcountdown'] }})</button> {% else %} <button class="serverbutton
 </center>
 </div>
 </div>
+
 <div class="col_right float_l">
+<div id="playerinfo">
 <div class="onlineplayernames">
 <h3><span style="color: #FFFFFF"><b>{{ onlineplayers['count']
 }}</b></span> Online Players:</h3>
@@ -164,7 +171,8 @@ instance['restartcountdown'] }})</button> {% else %} <button class="serverbutton
 <div class="dailyplayers">
 <h3><span style="color: #FFFFFF">{{ dailyplayers['count']
 }}</span> Active Players Today:</h3>
-{{ dailyplayers['names'] }}</div>
+{{ dailyplayers['names'] }}
+</div>
 <div class="spacer"></div>
 <h3><span style="color: #FFFFFF">{{ otherplayercounts['week']
 }}</span> Active Players this Week</h3>
@@ -174,7 +182,9 @@ instance['restartcountdown'] }})</button> {% else %} <button class="serverbutton
 <div class="spacer"></div>
 <h3><span style="color: #FFFFFF">{{ newplayers['count']
 }}</span> New Players this week:</h3>
-{{ newplayers['names'] }}</div>
+{{ newplayers['names'] }}
+</div>
+</div>
 </div>
 <!-- end of home -->
 <div class="panel" id="about"><br />
