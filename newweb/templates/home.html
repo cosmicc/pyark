@@ -16,7 +16,7 @@ http://www.tooplate.com/view/2021-galaxy
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.13')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.14')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.0')}}" />
 <script src=
@@ -120,7 +120,7 @@ in 1 Days, 4 Hours</h3>
 </div>
 
 <div class="statustitle">
-<h4><span style="color: #7f7467">Server Status:</span></h4>
+<h5>Server Status:</h5>
 </div>
 {% for instance in instancedata %} {% if not instance['isup'] %} {%
 if instance['enabled'] %} <button class="serverbutton downcolor"
