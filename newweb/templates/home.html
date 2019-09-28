@@ -74,9 +74,10 @@ Cluster</h1>
 </center>
 </div>
 <div class="col_left float_l">
-<div id="lotteryinfo" class="lotteryinfo">{% if
-currentlottery['active'] %}
-<h3>Current Lottery Ends in <br><span style="color: #FFFFFF">{{ currentlottery['ends'] }}</span></h3>
+<div id="lotteryinfo" class="lotteryinfo">
+{% if currentlottery['active'] %}
+<h3>Current Lottery Ends in <br>{{ currentlottery['ends'] }}</h3>
+<div class="spacer"></div>
 <div class="spacer"></div>
 <h3>Lottery is at <span style="color: #FFFFFF">{{
 currentlottery['payout'] }}</span> Points with <span style=
