@@ -138,8 +138,8 @@ instance['restartcountdown'] }})</button> {% else %} <button class="serverbutton
 
 {% if instance['enabled'] %}
 <button class="serverbutton upcolor"><a href="{{instance['steamlink']}}">
-<span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</div><br />
-<span class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players:{{instance['activeplayers']}}</div>
+<span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</span><br />
+<span class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players:{{instance['activeplayers']}}</span>
 {% else %}
 <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through;">{{instance['name'].capitalize()}}&nbsp;&nbsp;{{ a }}</button>
 {% endif %}
