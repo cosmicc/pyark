@@ -42,7 +42,7 @@
             $("#eventupdate").load(" #eventupdate");
         }, 60000);
     var pageLoader = setInterval(function(){
-            $("#playerhistory").load(" #playerhistoryupdate");
+            $("#playerhistoryupdate").load(" #playerhistoryupdate");
         }, 600000);
     starttimer();
 </script>
@@ -76,7 +76,8 @@ Cluster</h1>
 </div>
 
 <div class="col_left float_l">
-<div id="lotteryinfo" class="lotteryinfo">
+<div class="lotteryinfo">
+<div id="lotteryupdate">
 {% if currentlottery['active'] %}
 <h3>Current Lottery Ends in <br><span style="color: #FFFFFF">{{ currentlottery['ends'] }}</span></h3>
 <div class="spacer"></div>
@@ -104,11 +105,12 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 }} Points<br>{% endfor %}
 </div>
 </div>
+</div>
 
 <div class="col_center float_l">
 <center>
 <div class="eventinfo">
-<div id="lotteryupdate">
+<div id="eventupdate">
 {% if eventinfo['active'] %}
 <h3><span style="color: #FFFFFF">{{ eventinfo['title'].title() }}</span> is Active</h3>
 <h4>Event ends in <span style="color: #FFFFFF">1 Days, 4 Hours</span></h4>
@@ -157,7 +159,7 @@ in 1 Days, 4 Hours</h3>
 <div class="spacer"></div>
 <div class="spacer"></div>
 <div class="dailyplayers">
-<div id = "playerhistoryupdate">
+<div id="playerhistoryupdate">
 <h3><span style="color: #FFFFFF">{{ dailyplayers['count']
 }}</span> Active players today:</h3>
 {{ dailyplayers['names'] }}
