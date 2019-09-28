@@ -8,6 +8,13 @@ sys.path.append("/home/ark/pyark")
 
 
 @pytest.mark.last
+async def test_asyncfetchclusterauctiondata(testsession):
+    assert (
+        await modules.apihelper.asyncfetchclusterauctiondata(testsession) == "hi"
+    )
+
+
+@pytest.mark.last
 async def test_getsteaminfo(testsession):
     assert (
         await modules.apihelper.getsteaminfo("76561198408657294", "admin", testsession)

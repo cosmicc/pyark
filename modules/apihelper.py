@@ -9,6 +9,18 @@ from modules.redis import globalvar
 from modules.timehelper import Now
 
 
+async def asyncfetchclusterauctiondata(session):
+    try:
+        url = f'https://linode.ghazlawl.com/ark/mods/auctionhouse/api/json/v1/auctions/?MarketID=GC75294'
+        adata = await asyncfetchurldata(session, url)
+    except:
+        log.error(f"Error fetching ArkServers data from web: {adata}")
+    else:
+        if adata is not None:
+            log.trace(f"Updated Clusterwide auction API information")
+            return adata
+
+
 async def asyncarkserverdatafetcher(session):
     instances = await globalvar.getlist("allinstances")
     for inst in instances:
