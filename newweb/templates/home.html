@@ -15,6 +15,9 @@
 "{{url_for('static',filename='js/jquery-1.2.6.js')}}">
 </script>
 <script src=
+"{{url_for('static',filename='js/pyark.js')}}">
+</script>
+<script src=
 "{{url_for('static',filename='js/jquery.scrollTo-1.3.3.js')}}">
 </script>
 <script src=
@@ -30,7 +33,6 @@
 "{{url_for('static',filename='js/jquery.easing.1.3.js')}}">
 </script>
 <script>
-<![CDATA[
     var pageLoader = setInterval(function(){
             $("#serverstatus").load(" #serverstatus");
             $("#playerinfo").load(" #playerinfo");
@@ -39,7 +41,7 @@
             $("#lotteryinfo").load(" #lotteryinfo");
             $("#eventinfo").load(" #eventinfo");
         }, 60000);
-]]>
+    starttimer();
 </script>
 </head>
 <body>
