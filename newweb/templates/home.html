@@ -16,7 +16,7 @@ http://www.tooplate.com/view/2021-galaxy
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.16')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.17')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.0')}}" />
 <script src=
@@ -118,7 +118,7 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 in 1 Days, 4 Hours</h3>
 {% endif %}
 </div>
-<div class="spacer"></div>
+<div class="minispacer"></div>
 {% for instance in instancedata %}
 {% if not instance['isup'] %}
 {% if instance['enabled'] %}

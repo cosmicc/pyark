@@ -211,6 +211,7 @@ em { color: #f3c331; }
 
 .discordlogo { padding: 15px 0px 0px 0px; }
 
-.spacer { height: 10px; width: 60pc; }
+.spacer { height: 10px; width: 0px; }
+.minispacer { height: 5px; width: 0px; }
 
-.spacer_50 { height: 50px; width: 60pc; }
+.spacer_50 { height: 50px; width: 0px; }
