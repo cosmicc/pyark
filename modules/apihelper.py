@@ -18,7 +18,7 @@ async def asyncfetchclusterauctiondata(session):
     else:
         if adata is not None:
             log.trace(f"Updated Clusterwide auction API information")
-            return adata['auctions']
+            return adata
 
 
 async def asyncarkserverdatafetcher(session):
