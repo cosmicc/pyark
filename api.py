@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, HTTPException
 from modules.asyncdb import asyncDB
 from modules.redis import globalvar, instancestate, instancevar, redis
 from modules.servertools import stripansi, asyncglobalbuffer
@@ -173,4 +173,4 @@ async def logs_chat(response: Response, lines=1):
 
 @app.get("/")
 def read_root():
-    return {"try": "/docs"}
+    raise HTTPException(status_code=444)
