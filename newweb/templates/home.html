@@ -119,9 +119,6 @@ in 1 Days, 4 Hours</h3>
 {% endif %}
 </div>
 
-<div class="statustitle">
-<h5>Server Status:</h5>
-</div>
 {% for instance in instancedata %} {% if not instance['isup'] %} {%
 if instance['enabled'] %} <button class="serverbutton downcolor"
 style="color: #FFFFFF">{{ instance['name'].capitalize()}}</button>
