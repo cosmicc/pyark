@@ -1,22 +1,16 @@
-import asyncio
 from functools import partial
 
-from loguru import logger as log
-
+import asyncio
 import globvars
+from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynciseventtime
 from modules.dbhelper import cleanstring
 from modules.players import asyncnewplayer
-from modules.servertools import (
-    asyncserverchatto,
-    asyncserverrconcmd,
-    asyncserverscriptcmd,
-    instancevar,
-)
+from modules.redis import globalvar, instancestate
+from modules.servertools import asyncserverchatto, asyncserverrconcmd, asyncserverscriptcmd, instancevar
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now, elapsedTime, playedTime
-from modules.redis import globalvar, instancestate
 
 
 @log.catch
@@ -276,10 +270,7 @@ async def asyncprocessonline(inst, eline):
             if len(rawline) > 1:
                 steamid = rawline[1].strip()
                 steamname = cleanstring(rawline[0].split(". ", 1)[1])
-                if (
-                    steamid not in globvars.greetings
-                    and steamid not in globvars.welcomes
-                ):
+                if (steamid not in globvars.greetings and steamid not in globvars.welcomes):
                     globvars.greetings.add(steamid)
                     asyncio.create_task(asyncplayergreet(steamid, steamname, inst))
                 else:
