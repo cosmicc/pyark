@@ -76,7 +76,7 @@ Cluster</h1>
 <div class="col_left float_l">
 <div id="lotteryinfo" class="lotteryinfo">{% if
 currentlottery['active'] %}
-<h3>LCurrent ottery Ends in {{ currentlottery['ends'] }}</h3>
+<h3>Current Lottery Ends in {{ currentlottery['ends'] }}</h3>
 <div class="spacer"></div>
 <h3>Lottery is at <span style="color: #FFFFFF"><b>{{
 currentlottery['payout'] }}</b></span> Points with <span style=
@@ -98,7 +98,7 @@ lastlottery['winner'].title() }}</b></span> with <b><span style=
 <h3>Last 7 lottery winners:</h3>
 {% for lottoplayer in last7lotterys %} {{ lottoplayer['num'] }}. {{
 lottoplayer['playername'].title() }} won {{ lottoplayer['points']
-}} Points {% endfor %}</div>
+}} Points {% endfor %}<br></div>
 </div>
 <div class="col_center float_l">
 <div id="serverstatus" class="serverstatus">
@@ -126,11 +126,11 @@ instance['restartcountdown'] }})</button> {% else %} <button class=
 "color: #FFFF87">{{instance['name'].capitalize()}}</span><br />
 <span class="serverstatus" style=
 "color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players:
-{{instance['activeplayers']}}</span></a> {% else %} <button class=
-"serverbutton upcolor" style=
-"color: #FFFFFF; text-decoration: line-through;">{{
-instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}</button> {%
-endif %} {% endif %} {% endfor %}</button></a></center>
+{{instance['activeplayers']}}</span></a> {% else %}
+<button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through;">{{instance['name'].capitalize()}}&nbsp;&nbsp;{{ a }}</button>
+{% endif %}
+{% endif %}
+{% endfor %}</button></a></center>
 </div>
 <center>
 <div class="events">

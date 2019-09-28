@@ -1,4 +1,5 @@
 from quart import Quart, websocket, render_template
+from datetime import timedelta
 from modules.asyncdb import asyncDB
 from modules.redis import RedisClass
 from modules.timehelper import Now, Secs
@@ -26,7 +27,7 @@ async def _currentlottery():
                 "active": True,
                 "playercount": lottery["players"],
                 "payout": lottery["payout"],
-                "ends": 0,
+                "ends": lottery["startdate"] + timedelta(hours=lottery["days"]),
                 "players": ", ".join(resp),
             }
 
