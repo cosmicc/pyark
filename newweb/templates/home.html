@@ -16,7 +16,7 @@ http://www.tooplate.com/view/2021-galaxy
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.17')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.18')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.0')}}" />
 <script src=
@@ -138,8 +138,8 @@ instance['restartcountdown'] }})</button> {% else %} <button class="serverbutton
 
 {% if instance['enabled'] %}
 <button class="serverbutton upcolor"><a href="{{instance['steamlink']}}">
-<span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</span><br />
-<span class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players:{{instance['activeplayers']}}</span>
+<span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}&nbsp;&nbsp;({{instance['activeplayers']}}/50)</span><br />
+<span class="serverstatus" style="color: #FFFFFF">ONLINE</span>
 {% else %}
 <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through;">{{instance['name'].capitalize()}}&nbsp;&nbsp;{{ a }}</button>
 {% endif %}
