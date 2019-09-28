@@ -16,9 +16,9 @@ http://www.tooplate.com/view/2021-galaxy
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <link rel="stylesheet" href=
-"{{ url_for('static', filename='css/pyark.css?ver=1.6') }}" />
+"{{ url_for('static', filename='css/pyark.css?ver=1.7') }}" />
 <link rel="stylesheet" href=
-"{{ url_for('static', filename='css/coda-slider.css') }}" />
+"{{ url_for('static', filename='css/coda-slider.css?ver=1.0') }}" />
 <script src=
 "{{%20url_for('static',%20filename='js/jquery-1.2.6.js')%20}}">
 </script>
@@ -76,13 +76,14 @@ Cluster</h1>
 <div class="col_left float_l">
 <div id="lotteryinfo" class="lotteryinfo">{% if
 currentlottery['active'] %}
-<h3>Current lottery at <span style="color: #FFFFFF"><b>{{
+<h3>LCurrent ottery Ends in {{ currentlottery['ends'] }}</h3>
+<div class="spacer"></div>
+<h3>Lottery is at <span style="color: #FFFFFF"><b>{{
 currentlottery['payout'] }}</b></span> Points with <span style=
 "color: #FFFFFF"><b>{{ currentlottery['playercount'] }}</b></span>
 Players:</h3>
 {{ currentlottery['players'] }}<br />
-<h3>Lottery Ends in {{ currentlottery['ends'] }}<br />
-{% else %}</h3>
+{% else %}
 <h2>Next lottery starts in<br />
 <span style="color: #FFFFFF"><b>{{ currentlottery['ends']
 }}</b></span></h2>
