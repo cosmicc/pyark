@@ -66,15 +66,16 @@ http://www.tooplate.com/view/2021-galaxy
                       {% else %}
                       <h2>Next lottery starts in<br><span style="color: #FFFFFF"><b>{{ currentlottery['ends'] }}</b></span></h2>
                       {% endif %}
-                    <br>
-
+                    <div class="spacer"> </div>
+                    <div class="spacer"> </div>
                     <h3>Last Lottery winner was: <span style="color: #FFFFFF"><b>{{ lastlottery['winner'].title() }}</b></span> with <b><span style="color: #FFFFFF">{{ lastlottery['payout'] }}</span></b> Points</h3>
-                  <br>
+                  <div class="spacer"> </div>
+                  <div class="spacer"> </div>
                   <h3>Last 7 lottery winners:</h3>
                   {% for lottoplayer in last7lotterys %}
-                  {{ lottoplayer['num'] }}. {{ lottoplayer['playername'].title() }} won {{ lottoplayer['points'] }} Points<br>
+                  {{ lottoplayer['num'] }}. {{ lottoplayer['playername'].title() }} won {{ lottoplayer['points'] }} Points
                   {% endfor %}
-                </div>
+                  </div>
                 </div>
                 <div class="col_center float_l">
                  <div id="serverstatus" class="serverstatus">
