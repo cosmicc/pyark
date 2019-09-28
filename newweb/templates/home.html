@@ -128,15 +128,49 @@ in 1 Days, 4 Hours</h3>
 <div class="serverstatus">
   <div id="serverupdate">
   {% for instance in instancedata %}
+
+  {% if instance['needrestart'] %}
+  <button class="serverbutton warningcolor">
   {% if instance['enabled'] %}
+  <span class="servername" style="color: #000000">{{instance['name'].capitalize()}}&nbsp;-&nbsp;{{instance['activeplayers']}}</span>
+  <br />
+  <span class="serverstatus" style="color: #000000">RESTARTING in {{ instance['restartcountdown']}} min</span>
+  {% else %}
+  <span class="servername" style="color: #000000; text-decoration: line-through; ">{{instance['name'].capitalize()}}&nbsp;-&nbsp;{{instance['activeplayers']}}</span>
+  <br />
+  <span class="serverstatus" style="color: #000000">RESTARTING in {{ instance['restartcountdown']}} min</span>
+  {% endif %}
+  </button>
+
+
+  {% elif instance['isup']}
   <button class="serverbutton upcolor">
+  {% if instance['enabled'] %}
   <span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}&nbsp;-&nbsp;{{instance['activeplayers']}}</span>
   <br />
   <span class="serverstatus" style="color: #FFFFFF">ONLINE</span>
-  </button>
   {% else %}
-  <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through;">{{instance['name'].capitalize()}}&nbsp;&nbsp;{{ a }}</button>
+  <span class="servername" style="color: #FFFF87; text-decoration: line-through; ">{{instance['name'].capitalize()}}&nbsp;-&nbsp;{{instance['activeplayers']}}</span>
+  <br />
+  <span class="serverstatus" style="color: #FFFFFF">ONLINE</span>
   {% endif %}
+  </button>
+
+  {% else %}
+  <button class="serverbutton downcolor">
+  {% if instance['enabled'] %}
+  <span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</span>
+  <br />
+  <span class="serverstatus" style="color: #FFFFFF">OFFLINE</span>
+  {% else %}
+  <span class="servername" style="color: #FFFF87; text-decoration: line-through; ">{{instance['name'].capitalize()}}</span>
+  <br />
+  <span class="serverstatus" style="color: #FFFFFF">OFFLINE</span>
+  {% endif %}
+  </button>
+
+  {% endif %}
+
   {% endfor %}
 </div>
 </div>
