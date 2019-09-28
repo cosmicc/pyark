@@ -15,7 +15,8 @@ async def test_asyncfetchclusterauctiondata(testsession):
     #)
     nd = await modules.apihelper.asyncfetchclusterauctiondata(testsession)
     pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(nd)
+    for each in nd:
+        pp.pprint(each)
 
 '''
 @pytest.mark.last
