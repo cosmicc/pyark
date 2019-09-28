@@ -43,7 +43,7 @@ async def _newplayers():
         resp = []
         for player in iter(nplayers):
             num = num + 1
-            resp.append(player)
+            resp.append(player['playername'])
         return {'count': num, 'names': ', '.join(resp)}
     return dict(newplayers=await newplayers())
 
