@@ -104,8 +104,11 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 <div class="col_center float_l">
 <div id="serverstatus" class="serverstatus">
 <center>
+<h3>Next Event: Evolution Weekend<br />
+in 1 Days, 4 Hours</h3>
+</div>
 <div class="statustitle">
-<h1>Server Status</h1>
+<h2>Server Status:</h2>
 </div>
 {% for instance in instancedata %} {% if not instance['isup'] %} {%
 if instance['enabled'] %} <button class="serverbutton downcolor"
@@ -134,14 +137,7 @@ instance['restartcountdown'] }})</button> {% else %} <button class=
 {% endfor %}</button></a></center>
 </div>
 <center>
-<div class="events">
-<h3>Next Event: Evolution Weekend<br />
-in 1 Days, 4 Hours</h3>
-</div>
-
 <a href="https://discord.gg/AtA9T3R"><img src="{{url_for('static',filename='images/discord_150.png')}}"></ ></a>
-
-
 </center>
 </div>
 <div class="col_right float_l">
