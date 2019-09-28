@@ -13,9 +13,11 @@ async def test_asyncfetchclusterauctiondata(testsession):
     # assert (
     #    type(await modules.apihelper.asyncfetchclusterauctiondata(testsession)) == dict
     #)
-    pprint(await modules.apihelper.asyncfetchclusterauctiondata(testsession))
+    nd = await modules.apihelper.asyncfetchclusterauctiondata(testsession)
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(nd)
 
-
+'''
 @pytest.mark.last
 async def test_getsteaminfo(testsession):
     assert (
@@ -40,3 +42,4 @@ async def test_asyncfetchauctiondata(testsession):
         )
         is None
     )
+'''
