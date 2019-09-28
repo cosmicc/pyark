@@ -198,8 +198,8 @@ em { color: #f3c331; }
 
 .serverbutton { text-align: center; padding: 0px 0px; margin: 5px; display: inline-block; height: 45px; width: 250px; border: 1px solid #EEE; border-radius: 12px; }
 
-.serverbutton > .servername { font-size: 18px; }
-.serverbutton > .serverstatus { font-size: 13px; padding: 2px; }
+.servername { font-size: 18px; }
+.serverstatus { font-size: 13px; padding: 2px; }
 
 .lotteryinfo { padding: 15px 0px 0px 0px;  }
 

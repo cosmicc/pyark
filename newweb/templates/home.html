@@ -16,7 +16,7 @@ http://www.tooplate.com/view/2021-galaxy
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.15')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.16')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.0')}}" />
 <script src=
@@ -118,7 +118,7 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 in 1 Days, 4 Hours</h3>
 {% endif %}
 </div>
-
+<div class="spacer"></div>
 {% for instance in instancedata %}
 {% if not instance['isup'] %}
 {% if instance['enabled'] %}
@@ -138,8 +138,8 @@ instance['restartcountdown'] }})</button> {% else %} <button class="serverbutton
 
 {% if instance['enabled'] %}
 <button class="serverbutton upcolor"><a href="{{instance['steamlink']}}">
-<div class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</div><br />
-<div class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players:{{instance['activeplayers']}}</div>
+<span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</div><br />
+<span class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players:{{instance['activeplayers']}}</div>
 {% else %}
 <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through;">{{instance['name'].capitalize()}}&nbsp;&nbsp;{{ a }}</button>
 {% endif %}
