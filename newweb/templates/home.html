@@ -76,7 +76,7 @@ Cluster</h1>
 <div class="col_left float_l">
 <div id="lotteryinfo" class="lotteryinfo">
 {% if currentlottery['active'] %}
-<h3>Current Lottery Ends in <br>{{ currentlottery['ends'] }}</h3>
+<h3>Current Lottery Ends in <br><span style="color: #FFFFFF">{{ currentlottery['ends'] }}</span></h3>
 <div class="spacer"></div>
 <div class="spacer"></div>
 <h3>Lottery is at <span style="color: #FFFFFF">{{
@@ -108,7 +108,7 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 <h3>Next Event: Evolution Weekend<br />
 in 1 Days, 4 Hours</h3>
 <div class="statustitle">
-<h4>Server Status:</h4>
+<h4><span style="color: #7f7467">Server Status:</span></h4>
 </div>
 {% for instance in instancedata %} {% if not instance['isup'] %} {%
 if instance['enabled'] %} <button class="serverbutton downcolor"
