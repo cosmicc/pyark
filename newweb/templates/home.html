@@ -34,13 +34,16 @@
 </script>
 <script>
     var pageLoader = setInterval(function(){
-            $("#serverstatus").load(" #serverstatus");
-            $("#playerinfo").load(" #playerinfo");
+            $("#serverupdate").load(" #serverupdate");
+            $("#playerupdate").load(" #playerupdate");
         }, 30000);
     var pageLoader = setInterval(function(){
-            $("#lotteryinfo").load(" #lotteryinfo");
-            $("#eventinfo").load(" #eventinfo");
+            $("#lotteryupdate").load(" #lotteryupdate");
+            $("#eventupdate").load(" #eventupdate");
         }, 60000);
+    var pageLoader = setInterval(function(){
+            $("#playerhistory").load(" #playerhistoryupdate");
+        }, 600000);
     starttimer();
 </script>
 </head>
@@ -104,7 +107,8 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 
 <div class="col_center float_l">
 <center>
-<div id="eventinfo" class="eventinfo">
+<div class="eventinfo">
+<div id="lotteryupdate">
 {% if eventinfo['active'] %}
 <h3><span style="color: #FFFFFF">{{ eventinfo['title'].title() }}</span> is Active</h3>
 <h4>Event ends in <span style="color: #FFFFFF">1 Days, 4 Hours</span></h4>
@@ -115,9 +119,12 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 in 1 Days, 4 Hours</h3>
 {% endif %}
 </div>
+</div>
+
 <div class="minispacer"></div>
 
-<div id="serverstatus" class="serverstatus">
+<div class="serverstatus">
+  <div id="serverupdate">
   {% for instance in instancedata %}
   {% if instance['enabled'] %}
   <button class="serverbutton upcolor">
@@ -130,6 +137,7 @@ in 1 Days, 4 Hours</h3>
   {% endif %}
   {% endfor %}
 </div>
+</div>
 
 <div class="discordlogo">
 <center>
@@ -139,18 +147,20 @@ in 1 Days, 4 Hours</h3>
 </div>
 
 <div class="col_right float_l">
-<div id="playerinfo">
 <div class="onlineplayernames">
+<div id="playerupdate">
 <h3><span style="color: #FFFFFF"><b>{{ onlineplayers['count']
 }}</b></span> Online Players:</h3>
-{{ onlineplayers['names'] }}</div>
+{{ onlineplayers['names'] }}
+</div>
+</div>
 <div class="spacer"></div>
 <div class="spacer"></div>
 <div class="dailyplayers">
+<div id = "playerhistoryupdate">
 <h3><span style="color: #FFFFFF">{{ dailyplayers['count']
 }}</span> Active players today:</h3>
 {{ dailyplayers['names'] }}
-</div>
 <div class="spacer"></div>
 <h3><span style="color: #FFFFFF">{{ otherplayercounts['week']
 }}</span> Active players this week</h3>
@@ -161,6 +171,7 @@ in 1 Days, 4 Hours</h3>
 <h3><span style="color: #FFFFFF">{{ newplayers['count']
 }}</span> New Players this week:</h3>
 {{ newplayers['names'] }}
+</div>
 </div>
 </div>
 </div>
