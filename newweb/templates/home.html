@@ -106,9 +106,19 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 <center>
 <div class="eventinfo">
 
+
+{% if eventinfo['active'] %}
+<h3>{{ eventinfo['title'].title() }} is Active</h3><br />
+{{ eventinfo['description'] }}</br>
+Ends in 1 Days, 4 Hours
+
+
+
+{% else %}
 {{ eventinfo }}
 <h3>Next Event: Evolution Weekend<br />
 in 1 Days, 4 Hours</h3>
+{% endif %}
 
 
 <div class="statustitle">
