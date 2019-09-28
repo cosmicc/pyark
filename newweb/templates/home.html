@@ -8,7 +8,7 @@
 <meta name="keywords" content="Ark, Galaxy, Game Server, Ark Server" />
 <meta name="description" content="Ark: Survival Evolved Ultimate Extinction Core Galaxy Server Cluster" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.22')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.23')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.0')}}" />
 <script src=
@@ -155,6 +155,21 @@ in 1 Days, 4 Hours</h3>
   <span class="serverstatus" style="color: #FFFFFF">ONLINE</span>
   {% endif %}
   </button>
+
+
+  {% elif instance['islistening'] %}
+  <button class="serverbutton offlinecolor">
+  {% if instance['enabled'] %}
+  <span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}&nbsp;-&nbsp;{{instance['activeplayers']}}</span>
+  <br />
+  <span class="serverstatus" style="color: #FFFFFF">STEAM OFFLINE</span>
+  {% else %}
+  <span class="servername" style="color: #FFFF87; text-decoration: line-through; ">{{instance['name'].capitalize()}}&nbsp;-&nbsp;{{instance['activeplayers']}}</span>
+  <br />
+  <span class="serverstatus" style="color: #FFFFFF">STEAM OFFLINE</span>
+  {% endif %}
+  </button>
+
 
   {% else %}
   <button class="serverbutton downcolor">

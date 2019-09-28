@@ -144,7 +144,7 @@ async def _onlineplayers():
 async def _instancedata():
     async def instancedata():
         return await webapp.db.fetchall(
-            f"SELECT name, isup, needsrestart, restartcountdown, enabled, steamlink, activeplayers FROM instances ORDER BY name DESC"
+            f"SELECT name, islistening, needsrestart, restartcountdown, enabled, steamlink, activeplayers FROM instances ORDER BY name DESC"
         )
 
     return dict(instancedata=iter(await instancedata()))
