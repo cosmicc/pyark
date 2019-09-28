@@ -16,12 +16,12 @@ main_stop_event = False
 logging.basicConfig(level=logging.DEBUG)
 console = logging.StreamHandler()
 console.setLevel(logging.DEBUG)
-logging.getLogger('').addHandler(console)
+logging.getLogger("").addHandler(console)
 
 
 def async_exception_handler(loop, context):
-    exception = context.get('exception')
-    message = context.get('message')
+    exception = context.get("exception")
+    message = context.get("message")
     try:
         raise exception
     except:
@@ -32,7 +32,7 @@ def async_exception_handler(loop, context):
 
 def signal_handler(signal, frame):
     global main_stop_event
-    log.info(f'Termination signal [{signal}] recieved. Exiting.')
+    log.info(f"Termination signal [{signal}] recieved. Exiting.")
     main_stop_event = True
 
 
@@ -54,7 +54,9 @@ async def statusexecute(inst):
     asyncloop = asyncio.get_running_loop()
     cmd_done = asyncio.Future(loop=asyncloop)
     factory = partial(SubProtocol, cmd_done, inst, parsetask=parse, finishtask=finish)
-    proc = asyncloop.subprocess_exec(factory, 'arkmanager', 'checkupdate', f'@{inst}', stdin=None, stderr=None)
+    proc = asyncloop.subprocess_exec(
+        factory, "arkmanager", "checkupdate", f"@{inst}", stdin=None, stderr=None
+    )
     try:
         transport, protocol = await proc
         await cmd_done
@@ -73,17 +75,17 @@ async def asyncmain():
     # while not main_stop_event:
     asyncio.create_task(runstatus(instances))
     while not main_stop_event:
-        print('.')
-        await asyncio.sleep(.1)
+        print(".")
+        await asyncio.sleep(0.1)
     tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    log.debug(f'Waiting for {len(tasks)} async tasks to finish')
+    log.debug(f"Waiting for {len(tasks)} async tasks to finish")
     await asyncio.gather(*tasks, return_exceptions=True)
-    log.debug('All async tasks have finished')
+    log.debug("All async tasks have finished")
 
 
 def main():
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    warnings.simplefilter('always', ResourceWarning)
+    warnings.simplefilter("always", ResourceWarning)
     asyncio.run(asyncmain(), debug=True)  # Async branch to main loop
 
 

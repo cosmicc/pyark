@@ -19,9 +19,9 @@ class LogWatcher(object):
     >>> l.loop()
     """
 
-    def __init__(self, folder, callback,
-                 matching_file_names=[],
-                 extensions=[], tail_lines=0):
+    def __init__(
+        self, folder, callback, matching_file_names=[], extensions=[], tail_lines=0
+    ):
         """Arguments:
         (str) @folder:
             the folder to watch
@@ -50,20 +50,17 @@ class LogWatcher(object):
         # In ascyn mode we will need to move to the last recorded offset
         for id, file in self.files_map.items():
             offset_file_name = self._get_offset_file(file.name)
-            if (os.path.exists(offset_file_name) and
-                    os.path.getsize(offset_file_name)):
+            if os.path.exists(offset_file_name) and os.path.getsize(offset_file_name):
                 offset_fh = open(offset_file_name, "r")
                 _file_inode, offset = [int(line.strip()) for line in offset_fh]
                 # file has been rotated, need to real all the left over
                 # from the rotated file before
                 if _file_inode != os.stat(file.name).st_ino:
-                    rotated_file_name = (
-                        self._determine_rotated_logfile(file.name,
-                                                        _file_inode)
+                    rotated_file_name = self._determine_rotated_logfile(
+                        file.name, _file_inode
                     )
                     if rotated_file_name:
-                        rotated_file_handle = open(
-                            rotated_file_name, "r")
+                        rotated_file_handle = open(rotated_file_name, "r")
                         rotated_file_handle.seek(offset)
                         self.readfile(rotated_file_handle)
                     offset = 0
@@ -93,7 +90,10 @@ class LogWatcher(object):
             if self.copytruncate:
                 return rotated_filename
             else:
-                log.warning("[pygtail] [WARN] file size of %s shrank, and copytruncate support is disabled (expected at least %d bytes, was %d bytes).\n" % (self.filename, self._offset, stat(self.filename).st_size))
+                log.warning(
+                    "[pygtail] [WARN] file size of %s shrank, and copytruncate support is disabled (expected at least %d bytes, was %d bytes).\n"
+                    % (self.filename, self._offset, stat(self.filename).st_size)
+                )
 
         return None
 
@@ -104,8 +104,11 @@ class LogWatcher(object):
         """
         # savelog(8)
         candidate = "%s.0" % fname
-        if (os.path.exists(candidate) and os.path.exists("%s.1.gz" % fname) and
-                (stat(candidate).st_mtime > stat("%s.1.gz" % fname).st_mtime)):
+        if (
+            os.path.exists(candidate)
+            and os.path.exists("%s.1.gz" % fname)
+            and (stat(candidate).st_mtime > stat("%s.1.gz" % fname).st_mtime)
+        ):
             return candidate
 
         # logrotate(8)
@@ -128,12 +131,16 @@ class LogWatcher(object):
             "-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].gz",
             # logrotate dateext rotation scheme - `dateformat -%Y%m%d-%s` +
             # with `delaycompress`
-            ("-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-"
-             "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]"),
+            (
+                "-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-"
+                "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]"
+            ),
             # logrotate dateext rotation scheme - `dateformat -%Y%m%d-%s` +
             # without `delaycompress`
-            ("-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-"
-             "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].gz"),
+            (
+                "-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-"
+                "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].gz"
+            ),
             # for TimedRotatingFileHandler
             ".[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]",
         )
@@ -172,11 +179,11 @@ class LogWatcher(object):
         """
         ls = os.listdir(self.folder)
         if self.extensions:
-            res = [x for x in ls if os.path.splitext(x)[1][1:]
-                   in self.extensions]
+            res = [x for x in ls if os.path.splitext(x)[1][1:] in self.extensions]
             if self.matching_file_names:
-                res = [x for x in res if os.path.basename(x) in
-                       self.matching_file_names]
+                res = [
+                    x for x in res if os.path.basename(x) in self.matching_file_names
+                ]
             return res
         else:
             return ls
@@ -185,7 +192,7 @@ class LogWatcher(object):
     def tail(fname, window):
         """Read last N lines from file fname."""
         try:
-            f = open(fname, 'r')
+            f = open(fname, "r")
         except IOError as err:
             if err.errno == errno.ENOENT:
                 return []
@@ -199,7 +206,7 @@ class LogWatcher(object):
             data = ""
             exit = False
             while not exit:
-                step = (block * BUFSIZ)
+                step = block * BUFSIZ
                 if abs(step) >= fsize:
                     f.seek(0)
                     exit = True
@@ -208,7 +215,7 @@ class LogWatcher(object):
                     f.seek(0, os.SEEK_END)
                     f.seek(f.tell() - step, os.SEEK_SET)
                 data = f.read().strip()
-                if data.count('\n') >= window:
+                if data.count("\n") >= window:
                     break
                 else:
                     block -= 1
@@ -260,7 +267,7 @@ class LogWatcher(object):
 
     def _get_offset_file(self, fname):
         base_fname = os.path.basename(fname)
-        return os.path.join('/tmp/%s.offset' % base_fname)
+        return os.path.join("/tmp/%s.offset" % base_fname)
 
     def readfile(self, file_h):
         current_p = file_h.tell()

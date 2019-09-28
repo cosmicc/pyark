@@ -3,7 +3,7 @@ import sys
 import pytest
 import modules.servertools
 
-sys.path.append('/home/ark/pyark')
+sys.path.append("/home/ark/pyark")
 
 
 async def test_getservermem():
@@ -11,7 +11,9 @@ async def test_getservermem():
     assert await modules.servertools.getservermem() is not None
     assert len(await modules.servertools.getservermem()) == 3
     results = await modules.servertools.getservermem()
-    assert type(results[0]) is int and type(results[1]) is int and type(results[2]) is int
+    assert (
+        type(results[0]) is int and type(results[1]) is int and type(results[2]) is int
+    )
 
 
 async def test_getcpuload():
@@ -19,7 +21,13 @@ async def test_getcpuload():
     assert await modules.servertools.getcpuload() is not None
     assert len(await modules.servertools.getcpuload()) == 5
     results = await modules.servertools.getcpuload()
-    assert type(results[0]) is int and type(results[1]) is float and type(results[2]) is float and type(results[3]) is float and type(results[4]) is float
+    assert (
+        type(results[0]) is int
+        and type(results[1]) is float
+        and type(results[2]) is float
+        and type(results[3]) is float
+        and type(results[4]) is float
+    )
 
 
 async def test_getopenfiles():
@@ -34,13 +42,13 @@ async def test_getidlepercent():
     assert type(await modules.servertools.getidlepercent()) is float
     assert await modules.servertools.getidlepercent() is not None
     result = await modules.servertools.getidlepercent()
-    assert len(str(result).split('.')[1]) == 1
+    assert len(str(result).split(".")[1]) == 1
 
 
 async def test_getserveruptime():
     with pytest.raises(TypeError):
         assert type(await modules.servertools.getserveruptime(elapsed=1))
-        assert type(await modules.servertools.getserveruptime(elapsed='True'))
+        assert type(await modules.servertools.getserveruptime(elapsed="True"))
     assert type(await modules.servertools.getserveruptime()) is int
     assert type(await modules.servertools.getserveruptime(elapsed=True)) is str
     assert await modules.servertools.getserveruptime() is not None

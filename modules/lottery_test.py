@@ -4,7 +4,7 @@ from asyncpg import Record
 import modules.lottery
 import pytest
 
-sys.path.append('/home/ark/pyark')
+sys.path.append("/home/ark/pyark")
 
 
 async def test_asyncgetlastlotteryinfo():

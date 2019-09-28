@@ -8,8 +8,15 @@ from loguru import logger as log
 
 from modules.configreader import po_appkey, po_userkey
 
-__all__ = ["init", "get_sounds", "Client", "MessageRequest",
-           "InitError", "RequestError", "UserError"]
+__all__ = [
+    "init",
+    "get_sounds",
+    "Client",
+    "MessageRequest",
+    "InitError",
+    "RequestError",
+    "UserError",
+]
 
 BASE_URL = "https://api.pushover.net/1/"
 MESSAGE_URL = BASE_URL + "messages.json"
@@ -53,8 +60,10 @@ class InitError(Exception):
     """
 
     def __str__(self):
-        return ("No api_token provided. Init the pushover module by "
-                "calling the init function")
+        return (
+            "No api_token provided. Init the pushover module by "
+            "calling the init function"
+        )
 
 
 class UserError(Exception):
@@ -117,9 +126,11 @@ class MessageRequest(Request):
         self.receipt = None
         if payload.get("priority", 0) == 2:
             self.receipt = self.answer["receipt"]
-        self.parameters = {"expired": "expires_at",
-                           "called_back": "called_back_at",
-                           "acknowledged": "acknowledged_at"}
+        self.parameters = {
+            "expired": "expires_at",
+            "called_back": "called_back_at",
+            "acknowledged": "acknowledged_at",
+        }
         for param, when in self.parameters.items():
             setattr(self, param, False)
             setattr(self, when, 0)
@@ -145,14 +156,18 @@ class MessageRequest(Request):
 
             print request.acknowledged_at, request.acknowledged_by
         """
-        if (self.receipt and not any(getattr(self, parameter)
-                                     for parameter in self.parameters)):
+        if self.receipt and not any(
+            getattr(self, parameter) for parameter in self.parameters
+        ):
             request = Request("get", RECEIPT_URL + self.receipt + ".json", {})
             for param, when in self.parameters.items():
                 setattr(self, param, bool(request.answer[param]))
                 setattr(self, when, request.answer[when])
-            for param in ["last_delivered_at", "acknowledged_by",
-                          "acknowledged_by_device"]:
+            for param in [
+                "last_delivered_at",
+                "acknowledged_by",
+                "acknowledged_by_device",
+            ]:
                 setattr(self, param, request.answer[param])
             return request
 
@@ -162,8 +177,9 @@ class MessageRequest(Request):
         value or is aknowledged by the client. Calling the :func:`cancel`
         function will cancel the notification early.
         """
-        if (self.receipt and not any(getattr(self, parameter)
-                                     for parameter in self.parameters)):
+        if self.receipt and not any(
+            getattr(self, parameter) for parameter in self.parameters
+        ):
             request = Request("post", RECEIPT_URL + self.receipt + "/cancel.json", {})
             return request
 
@@ -193,8 +209,14 @@ class Client:
     * ``profile``: section of the configuration file to import parameters from.
     """
 
-    def __init__(self, user_key=None, device=None, api_token=None,
-                 config_path="~/.pushoverrc", profile="Default"):
+    def __init__(
+        self,
+        user_key=None,
+        device=None,
+        api_token=None,
+        config_path="~/.pushoverrc",
+        profile="Default",
+    ):
         params = _get_config(profile, config_path, user_key, api_token, device)
         self.user_key = params["user_key"]
         if not self.user_key:
@@ -233,12 +255,22 @@ class Client:
 
         This method returns a :class:`MessageRequest` object.
         """
-        valid_keywords = ["title", "priority", "sound", "callback",
-                          "timestamp", "url", "url_title", "device",
-                          "retry", "expire", "html"]
+        valid_keywords = [
+            "title",
+            "priority",
+            "sound",
+            "callback",
+            "timestamp",
+            "url",
+            "url_title",
+            "device",
+            "retry",
+            "expire",
+            "html",
+        ]
 
         payload = {"message": message, "user": self.user_key}
-        files = {'attachment': attachment} if attachment else {}
+        files = {"attachment": attachment} if attachment else {}
         if self.device:
             payload["device"] = self.device
 
@@ -286,8 +318,13 @@ class Client:
         return GlanceRequest(payload)
 
 
-def _get_config(profile='Default', config_path='~/.pushoverrc',
-                user_key=None, api_token=None, device=None):
+def _get_config(
+    profile="Default",
+    config_path="~/.pushoverrc",
+    user_key=None,
+    api_token=None,
+    device=None,
+):
     config_path = os.path.expanduser(config_path)
     config = RawConfigParser()
     config.read(config_path)
@@ -311,44 +348,79 @@ def _get_config(profile='Default', config_path='~/.pushoverrc',
 
 
 def main():
-    parser = ArgumentParser(description="Send a message to pushover.",
-                            formatter_class=RawDescriptionHelpFormatter,
-                            epilog="""
-For more details and bug reports, see: https://github.com/Thibauth/python-pushover""")
+    parser = ArgumentParser(
+        description="Send a message to pushover.",
+        formatter_class=RawDescriptionHelpFormatter,
+        epilog="""
+For more details and bug reports, see: https://github.com/Thibauth/python-pushover""",
+    )
     parser.add_argument("--api-token", help="Pushover application token")
     parser.add_argument("--user-key", "-u", help="Pushover user key")
     parser.add_argument("message", help="message to send")
     parser.add_argument("--title", "-t", help="message title")
-    parser.add_argument("--priority", "-p", help="message priority (-1, 0, 1 or 2)", type=int)
-    parser.add_argument("--retry", "-r", help="how often (in seconds) the Pushover servers will \
-                        send the same notification to the user", type=int)
-    parser.add_argument("--expire", "-e", help="how many seconds your notification will continue \
-                        to be retried for (every retry seconds).", type=int)
+    parser.add_argument(
+        "--priority", "-p", help="message priority (-1, 0, 1 or 2)", type=int
+    )
+    parser.add_argument(
+        "--retry",
+        "-r",
+        help="how often (in seconds) the Pushover servers will \
+                        send the same notification to the user",
+        type=int,
+    )
+    parser.add_argument(
+        "--expire",
+        "-e",
+        help="how many seconds your notification will continue \
+                        to be retried for (every retry seconds).",
+        type=int,
+    )
     parser.add_argument("--url", help="additional url")
     parser.add_argument("--url-title", help="additional url title")
-    parser.add_argument("-c", "--config", help="configuration file\
-                        (default: ~/.pushoverrc)", default="~/.pushoverrc")
-    parser.add_argument("--profile", help="profile to read in the\
+    parser.add_argument(
+        "-c",
+        "--config",
+        help="configuration file\
+                        (default: ~/.pushoverrc)",
+        default="~/.pushoverrc",
+    )
+    parser.add_argument(
+        "--profile",
+        help="profile to read in the\
                         configuration file (default: Default)",
-                        default="Default")
-    parser.add_argument("--version", "-v", action="version",
-                        help="output version information and exit",
-                        version="""
+        default="Default",
+    )
+    parser.add_argument(
+        "--version",
+        "-v",
+        action="version",
+        help="output version information and exit",
+        version="""
 %(prog)s 0.4
 Copyright (C) 2013-2018 Thibaut Horel <thibaut.horel@gmail.com>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.""")
+There is NO WARRANTY, to the extent permitted by law.""",
+    )
 
     args = parser.parse_args()
-    if args.priority and args.priority == 2 and (args.retry is None or args.expire is None):
+    if (
+        args.priority
+        and args.priority == 2
+        and (args.retry is None or args.expire is None)
+    ):
         parser.error("priority of 2 requires expire and retry")
 
-    Client(args.user_key, None, args.api_token, args.config,
-           args.profile).send_message(args.message, title=args.title,
-                                      priority=args.priority, url=args.url,
-                                      url_title=args.url_title, timestamp=True,
-                                      retry=args.retry, expire=args.expire)
+    Client(args.user_key, None, args.api_token, args.config, args.profile).send_message(
+        args.message,
+        title=args.title,
+        priority=args.priority,
+        url=args.url,
+        url_title=args.url_title,
+        timestamp=True,
+        retry=args.retry,
+        expire=args.expire,
+    )
 
 
 def pushover(ptitle, message):
@@ -356,10 +428,10 @@ def pushover(ptitle, message):
         client = Client(po_userkey, api_token=po_appkey)
         client.send_message(message, title=ptitle)
     except Exception as e:
-        log.error('Pushover notification failed. Error: %s' % (e))
+        log.error("Pushover notification failed. Error: %s" % (e))
         return False
     else:
-        log.debug('Pushover notification sent. Title: {}'.format(ptitle))
+        log.debug("Pushover notification sent. Title: {}".format(ptitle))
         return True
 
 

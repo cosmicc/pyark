@@ -10,6 +10,7 @@ pytest-ordering = "*"
 hypothesis = "*"
 tox = "*"
 mypy = "*"
+black = "*"
 
 [packages]
 flask = "*"

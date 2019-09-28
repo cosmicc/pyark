@@ -6,7 +6,6 @@ from time import sleep
 
 
 class NonBlockingConsole(object):
-
     def __enter__(self):
         self.old_settings = termios.tcgetattr(sys.stdin)
         tty.setcbreak(sys.stdin.fileno())
@@ -25,7 +24,7 @@ with NonBlockingConsole() as nbc:
     i = 0
     while True:
         print(i)
-        sleep(.01)
+        sleep(0.01)
         i += 1
-        if nbc.get_data() == '\x1b':  # x1b is ESC
+        if nbc.get_data() == "\x1b":  # x1b is ESC
             break

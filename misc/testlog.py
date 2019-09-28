@@ -7,7 +7,12 @@ def callback(filename, lines):
         print(line)
 
 
-watcher = LogWatcher(os.path.dirname("/home/ark/shared/logs/pyark/json"), callback, ["log"], persistent_checkpoint=False)
+watcher = LogWatcher(
+    os.path.dirname("/home/ark/shared/logs/pyark/json"),
+    callback,
+    ["log"],
+    persistent_checkpoint=False,
+)
 
 
 watcher.loop()

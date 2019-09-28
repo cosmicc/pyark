@@ -14,24 +14,26 @@ from typing import Union
 
 
 def removerichtext(text: str) -> str:
-    return sub('<.*?>', '', text)
+    return sub("<.*?>", "", text)
 
 
 def stripansi(stripstr: Union[str, list]) -> Union[str, list]:
-    ansi_escape = rcompile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    ansi_escape = rcompile(r"\x1B\[[0-?]*[ -/]*[@-~]")
     if isinstance(stripstr, list):
         newlist = []
         for line in stripstr:
             if isinstance(line, bytes):
                 line = line.decode()
-            newlist.append(ansi_escape.sub('', line).strip())
+            newlist.append(ansi_escape.sub("", line).strip())
         return newlist
     else:
-        return(ansi_escape.sub('', stripstr).strip())
+        return ansi_escape.sub("", stripstr).strip()
 
 
 def filterline(stripstr: str) -> str:
-    return(stripansi(stripstr).replace('\n', '').replace('\r', '').replace('"', '').strip())
+    return (
+        stripansi(stripstr).replace("\n", "").replace("\r", "").replace('"', "").strip()
+    )
 
 
 def asynctimeit(func):
@@ -39,12 +41,25 @@ def asynctimeit(func):
         asyncloop = asyncio.get_running_loop()
         astart_time = asyncloop.time()
         await func(*args, **kwargs)
-        print(f'Execution times for [{func.__name__}]: Async: {asyncloop.time() - astart_time}')
+        print(
+            f"Execution times for [{func.__name__}]: Async: {asyncloop.time() - astart_time}"
+        )
+
     return wrapper
 
 
-async def asyncglobalbuffer(msg: str, inst: str='ALERT', whosent: str='ALERT', private: bool=False, broadcast: bool=False, db=db):
-    await db.update("INSERT INTO globalbuffer (server,name,message,timestamp,private,broadcast) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (inst, whosent, msg, Now(), private, broadcast))
+async def asyncglobalbuffer(
+    msg: str,
+    inst: str = "ALERT",
+    whosent: str = "ALERT",
+    private: bool = False,
+    broadcast: bool = False,
+    db=db,
+):
+    await db.update(
+        "INSERT INTO globalbuffer (server,name,message,timestamp,private,broadcast) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')"
+        % (inst, whosent, msg, Now(), private, broadcast)
+    )
 
 
 @log.catch
@@ -54,8 +69,8 @@ async def gettotaldbconnections():
     Returns:
         INT: Description:  Total connections
     """
-    data = await db.fetchone(f'SELECT count(*) FROM pg_stat_activity;')
-    return data['count']
+    data = await db.fetchone(f"SELECT count(*) FROM pg_stat_activity;")
+    return data["count"]
 
 
 @log.catch
@@ -72,7 +87,7 @@ async def asyncserverrconcmd(instance, command, nice=5):
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "{command}" @{instance}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.trace(f'cmd: {cmdstring}')
+    log.trace(f"cmd: {cmdstring}")
 
 
 @log.catch
@@ -89,14 +104,16 @@ async def asyncserverscriptcmd(instance, command, wait=False, nice=5):
     cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ScriptCommand {command}" @{instance}'
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     if wait:
-        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
+        proc = await asyncio.create_subprocess_shell(
+            cmdstring, stdout=None, stderr=None
+        )
         stdout, stderr = await proc.communicate()
         return stderr
     else:
         proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
         asyncio.create_task(proc)
 
-    log.trace(f'cmd: {cmdstring}')
+    log.trace(f"cmd: {cmdstring}")
 
 
 @log.catch
@@ -110,10 +127,12 @@ async def asyncserverchat(instance, message, nice=15):
     Keyword Arguments:
         nice {number} -- Nice process level (default: {5})
     """
-    cmdstring = f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{instance}'
+    cmdstring = (
+        f'/usr/bin/nice -n {nice} arkmanager rconcmd "ServerChat {message}" @{instance}'
+    )
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.trace(f'cmd: {cmdstring}')
+    log.trace(f"cmd: {cmdstring}")
 
 
 @log.catch
@@ -131,7 +150,7 @@ async def asyncserverchatto(instance, steamid, message, nice=15):
     cmdstring = f"""/usr/bin/nice -n {nice} arkmanager rconcmd 'ServerChatTo "{steamid}" {message}' @{instance}"""
     proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None)
     asyncio.create_task(proc)
-    log.trace(f'cmd: {cmdstring}')
+    log.trace(f"cmd: {cmdstring}")
 
 
 @log.catch
@@ -171,17 +190,23 @@ async def asyncserverexec(cmdlist, nice=19, wait=False, _wait=False):
         wait {bool} -- Wait and return response (default: {False})
         _wait {bool} -- Wait until ended (default: {False})
     """
-    fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
-    cmdstring = ' '.join(fullcmdlist)
+    fullcmdlist = ["/usr/bin/nice", "-n", str(nice)] + cmdlist
+    cmdstring = " ".join(fullcmdlist)
     if wait:
-        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None)
+        proc = await asyncio.create_subprocess_shell(
+            cmdstring, stdout=asyncio.subprocess.PIPE, stderr=None
+        )
         stdout, stderr = await proc.communicate()
-        return {'returncode': proc.returncode, 'stdout': stdout}
+        return {"returncode": proc.returncode, "stdout": stdout}
     elif _wait:
-        proc = await asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None, shell=True)
+        proc = await asyncio.create_subprocess_shell(
+            cmdstring, stdout=None, stderr=None, shell=True
+        )
         await proc.communicate()
     else:
-        proc = asyncio.create_subprocess_shell(cmdstring, stdout=None, stderr=None, shell=True)
+        proc = asyncio.create_subprocess_shell(
+            cmdstring, stdout=None, stderr=None, shell=True
+        )
         asyncio.create_task(proc)
 
 
@@ -200,11 +225,15 @@ async def getserveruptime(elapsed=False):
         [STRING]: Description:  Server uptime in elapsed time string representation
     """
     if not isinstance(elapsed, bool):
-        raise TypeError(f'Elapsed value must by type bool, not {type(elapsed)}')
+        raise TypeError(f"Elapsed value must by type bool, not {type(elapsed)}")
     if elapsed:
-        return elapsedSeconds(float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1]))
+        return elapsedSeconds(
+            float(globvars.server_uptime_file.read_text().strip("\n").split(" ")[1])
+        )
     else:
-        return int(float(globvars.server_uptime_file.read_text().strip('\n').split(' ')[1]))
+        return int(
+            float(globvars.server_uptime_file.read_text().strip("\n").split(" ")[1])
+        )
 
 
 async def getidlepercent():
@@ -213,12 +242,12 @@ async def getidlepercent():
     Returns:
         FLOAT: Description: Idle time percentage
     """
-    uptimedata = globvars.server_uptime_file.read_text().strip('\n').split(' ')
+    uptimedata = globvars.server_uptime_file.read_text().strip("\n").split(" ")
     try:
         uptime = float(uptimedata[1])
         idletime = float(uptimedata[0])
     except (ValueError, IndexError):
-        log.error('Invalid idle time percent retrieved from server')
+        log.error("Invalid idle time percent retrieved from server")
     return truncate_float((idletime / uptime) * 100, 1)
 
 
@@ -226,9 +255,9 @@ async def getinstpid(inst: str) -> Union[str, None]:
     try:
         return globvars.instpidfiles[inst].read_text()
     except FileNotFoundError:
-        await instancevar.set(inst, 'isrunning', 0)
-        await instancevar.set(inst, 'islistening', 0)
-        await instancevar.set(inst, 'isonline', 0)
+        await instancevar.set(inst, "isrunning", 0)
+        await instancevar.set(inst, "islistening", 0)
+        await instancevar.set(inst, "isonline", 0)
         return None
 
 
@@ -238,15 +267,15 @@ async def getopenfiles():
     Returns:
         TUPLE (INT, INT): Description: (openfiles, filelimit)
     """
-    result = await asyncserverexec(['sysctl', 'fs.file-nr'], nice=19, wait=True)
-    newresult = result['stdout'].decode('utf-8').strip().split(' ')[2].split('\t')
+    result = await asyncserverexec(["sysctl", "fs.file-nr"], nice=19, wait=True)
+    newresult = result["stdout"].decode("utf-8").strip().split(" ")[2].split("\t")
     if len(newresult) < 2:
-        log.error('Invalid open files retrieved from server')
+        log.error("Invalid open files retrieved from server")
     try:
         openfiles = int(newresult[0])
         filelimit = int(newresult[2])
     except ValueError:
-        log.error('Invalid open files retrieved from server')
+        log.error("Invalid open files retrieved from server")
     return (openfiles, filelimit)
 
 
@@ -266,9 +295,15 @@ async def getcpuload():
         load5 = (rawcpuload[1] / numcores) * 100
         load15 = (rawcpuload[2] / numcores) * 100
     except ValueError:
-        log.error('Invalid cpu statistics retrieved from server')
+        log.error("Invalid cpu statistics retrieved from server")
 
-    return (numcores, truncate_float(cpufreq, 1), truncate_float(load1, 1), truncate_float(load5, 1), truncate_float(load15, 1))
+    return (
+        numcores,
+        truncate_float(cpufreq, 1),
+        truncate_float(load1, 1),
+        truncate_float(load5, 1),
+        truncate_float(load15, 1),
+    )
 
 
 async def getservermem():
@@ -277,39 +312,45 @@ async def getservermem():
     Returns:
         TUPLE (INT, INT, INT): Description: (memfree, memavailable, swapused)
     """
-    process = await asyncserverexec(['free', '-m'], nice=19, wait=True)
-    lines = process['stdout'].decode().split('\n')
+    process = await asyncserverexec(["free", "-m"], nice=19, wait=True)
+    lines = process["stdout"].decode().split("\n")
     if len(lines) < 2:
-        log.error('Invalid memory statistics retrieved from server')
+        log.error("Invalid memory statistics retrieved from server")
         return (0, 0, 0)
     memvalues = lines[1].strip().split()
     swapvalues = lines[2].strip().split()
     if len(memvalues) < 6 or len(swapvalues) < 2:
-        log.error('Invalid memory statistics retrieved from server')
+        log.error("Invalid memory statistics retrieved from server")
         return (0, 0, 0)
     try:
         memfree = int(memvalues[3])
         memavailable = int(memvalues[6])
         swapused = int(swapvalues[2])
     except ValueError:
-        log.error('Invalid memory statistics retrieved from server')
+        log.error("Invalid memory statistics retrieved from server")
         return (0, 0, 0)
     else:
         return (int(memfree), int(memavailable), int(swapused))
 
 
 async def _procstats(inst):
-    log.trace(f'Running process instances stats for {inst}')
+    log.trace(f"Running process instances stats for {inst}")
     instpid = await getinstpid(inst)
     if instpid == "CHANGEME":  # CHANGE ME
         arkprocess = psutil.Process(int(instpid))
         loop = asyncio.get_running_loop()
-        arkcpu = await loop.run_in_executor(None, partial(arkprocess.cpu_percent, interval=5))
-        rawsts = await asyncserverexec(['ps', '-p', f'{instpid}', '-o', 'rss,vsz'], nice=19, wait=True)
-        instrss, instvsz = rawsts['stdout'].decode('utf-8').split('\n')[1].split(' ')
+        arkcpu = await loop.run_in_executor(
+            None, partial(arkprocess.cpu_percent, interval=5)
+        )
+        rawsts = await asyncserverexec(
+            ["ps", "-p", f"{instpid}", "-o", "rss,vsz"], nice=19, wait=True
+        )
+        instrss, instvsz = rawsts["stdout"].decode("utf-8").split("\n")[1].split(" ")
         instrss = int(instrss) / 1000000 // 0.01 / 100
         instvsz = int(instvsz) / 1000000 // 0.01 / 100
-        await db.update(f"UPDATE instances SET actmem = '{instrss}', totmem = '{instvsz}', serverpid = '{instpid}', arkcpu = '{arkcpu}' WHERE name = '{inst}'")
+        await db.update(
+            f"UPDATE instances SET actmem = '{instrss}', totmem = '{instvsz}', serverpid = '{instpid}', arkcpu = '{arkcpu}' WHERE name = '{inst}'"
+        )
 
 
 async def processinststats(instances):
@@ -319,13 +360,15 @@ async def processinststats(instances):
 
 
 async def processserverstats(instances):
-    log.trace('Running process server stats')
+    log.trace("Running process server stats")
     serveruptime = await getserveruptime()
     servermem = await getservermem()
     serverload = await getcpuload()
     openfiles = await getopenfiles()
     for inst in instances:
-        await db.update(f"UPDATE instances SET openfiles = '{openfiles[0]}', cpucores = '{serverload[0]}', cpufreq = '{serverload[1]}', cpuload1 = '{serverload[2]}', cpuload5 = '{serverload[3]}', cpuload15 = '{serverload[4]}', svrmemfree = '{servermem[0]}', svrmemavail = '{servermem[1]}', svrswapused = '{servermem[2]}', serveruptime = '{serveruptime}' WHERE name = '{inst}'")
+        await db.update(
+            f"UPDATE instances SET openfiles = '{openfiles[0]}', cpucores = '{serverload[0]}', cpufreq = '{serverload[1]}', cpuload1 = '{serverload[2]}', cpuload5 = '{serverload[3]}', cpuload15 = '{serverload[4]}', svrmemfree = '{servermem[0]}', svrmemavail = '{servermem[1]}', svrswapused = '{servermem[2]}', serveruptime = '{serveruptime}' WHERE name = '{inst}'"
+        )
 
 
 """
@@ -345,10 +388,17 @@ def serverexec(cmdlist, nice=10, null=False):
     if type(cmdlist) is not list:
         raise TypeError
     else:
-        fullcmdlist = ['/usr/bin/nice', '-n', str(nice)] + cmdlist
+        fullcmdlist = ["/usr/bin/nice", "-n", str(nice)] + cmdlist
     if null:
-        sproc = subprocess.run(fullcmdlist, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=False)
+        sproc = subprocess.run(
+            fullcmdlist,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            shell=False,
+        )
         return sproc.returncode
     else:
-        sproc = subprocess.run(fullcmdlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+        sproc = subprocess.run(
+            fullcmdlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
+        )
         return sproc

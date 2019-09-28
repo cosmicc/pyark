@@ -21,7 +21,8 @@ def create_app(config_object):
 
 def register_blueprints(app):
     from .webui.views import webui
-    app.register_blueprint(webui, url_prefix='/')
+
+    app.register_blueprint(webui, url_prefix="/")
 
 
 def register_extensions(app):
@@ -29,9 +30,10 @@ def register_extensions(app):
     if app.debug:
         try:
             from flask_debugtoolbar import DebugToolbarExtension
+
             DebugToolbarExtension(app)
         except ImportError:
             pass
 
 
-app = create_app('config.BaseConfig')
+app = create_app("config.BaseConfig")

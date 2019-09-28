@@ -19,21 +19,27 @@ greetings: set = set()  # list of steamid or running returning player greets
 delay = Dict[str, int]  # Delay times for each task
 timer = Dict[str, float]  # timers for each task
 
-atinstances: tuple = ('@island', '@ragnarok', '@valguero', '@crystal', '@coliseum')
+atinstances: tuple = ("@island", "@ragnarok", "@valguero", "@crystal", "@coliseum")
 
 arkmanager_paths: list = []
 gameini_customconfig_files: dict = {}
 gusini_customconfig_files: dict = {}
-server_needsrestart_file: Path = Path('/run/reboot-required')
-server_uptime_file: Path = Path('/proc/uptime')
-gameini_final_file: Path = arkrootpath / 'ShooterGame/Saved/Config/LinuxServer/Game.ini'
-gusini_final_file: Path = arkrootpath / 'ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini'
-gameini_baseconfig_file: Path = sharedpath / 'config/Game-base.ini'
-gusini_baseconfig_file: Path = sharedpath / 'config/GameUserSettings-base.ini'
-gusini_tempconfig_file: Path = sharedpath / 'config/GameUserSettings.tmp'
+server_needsrestart_file: Path = Path("/run/reboot-required")
+server_uptime_file: Path = Path("/proc/uptime")
+gameini_final_file: Path = arkrootpath / "ShooterGame/Saved/Config/LinuxServer/Game.ini"
+gusini_final_file: Path = arkrootpath / "ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
+gameini_baseconfig_file: Path = sharedpath / "config/Game-base.ini"
+gusini_baseconfig_file: Path = sharedpath / "config/GameUserSettings-base.ini"
+gusini_tempconfig_file: Path = sharedpath / "config/GameUserSettings.tmp"
 for inst in instances:
-    arkmanager_paths.append(sharedpath / f'logs/arkmanager/{inst}')
-    gusini_customconfig_files.update({inst: sharedpath / f'config/GameUserSettings-{inst.lower()}.ini'})
-    gameini_customconfig_files.update({inst: sharedpath / f'config/Game-{inst.lower()}.ini'})
-    instpidfiles.update({inst: Path(f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid')})
+    arkmanager_paths.append(sharedpath / f"logs/arkmanager/{inst}")
+    gusini_customconfig_files.update(
+        {inst: sharedpath / f"config/GameUserSettings-{inst.lower()}.ini"}
+    )
+    gameini_customconfig_files.update(
+        {inst: sharedpath / f"config/Game-{inst.lower()}.ini"}
+    )
+    instpidfiles.update(
+        {inst: Path(f"/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid")}
+    )
     instpids.update({inst: 0})

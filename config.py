@@ -1,6 +1,14 @@
 import os
 
-from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_user, secsalt, testing_seckey
+from modules.configreader import (
+    psql_db,
+    psql_host,
+    psql_port,
+    psql_pw,
+    psql_user,
+    secsalt,
+    testing_seckey,
+)
 
 
 class BaseConfig(object):
@@ -9,7 +17,9 @@ class BaseConfig(object):
     SQLALCHEMY_ECHO = False
     SWAGGER_UI_JSONEDITOR = True
     SECURITY_PASSWORD_SALT = secsalt
-    SQLALCHEMY_DATABASE_URI = f"postgresql://{psql_user}:{psql_pw}@{psql_host}:{psql_port}/{psql_db}"
+    SQLALCHEMY_DATABASE_URI = (
+        f"postgresql://{psql_user}:{psql_pw}@{psql_host}:{psql_port}/{psql_db}"
+    )
     SECURITY_TRACKABLE = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECURITY_REGISTERABLE = False

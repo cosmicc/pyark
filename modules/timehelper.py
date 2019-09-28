@@ -1,20 +1,45 @@
-
 from datetime import datetime, timedelta
 import pytz
 from math import trunc
 
 tzfix = timedelta(hours=4)
 
-Secs = {'minute': 60, '1min': 60, '2min': 120, '3min': 180, '4min': 240, '5min': 300, '10min': 600, '13min': 780, '15min': 900, '20min': 1200, '30min': 1800, 'halfhour': 1800, '60min': 3600, 'hour': 3600, '2hour': 7200, '4hour': 14400, '8hour': 28800, '12hour': 43200, 'day': 86400, '1day': 86400, '3day': 259200, 'week': 604800, 'month': 2592000, '3month': 7776000}
+Secs = {
+    "minute": 60,
+    "1min": 60,
+    "2min": 120,
+    "3min": 180,
+    "4min": 240,
+    "5min": 300,
+    "10min": 600,
+    "13min": 780,
+    "15min": 900,
+    "20min": 1200,
+    "30min": 1800,
+    "halfhour": 1800,
+    "60min": 3600,
+    "hour": 3600,
+    "2hour": 7200,
+    "4hour": 14400,
+    "8hour": 28800,
+    "12hour": 43200,
+    "day": 86400,
+    "1day": 86400,
+    "3day": 259200,
+    "week": 604800,
+    "month": 2592000,
+    "3month": 7776000,
+}
 
 intervals = (
-    ('years', 31536000),
-    ('months', 2592000),
+    ("years", 31536000),
+    ("months", 2592000),
     # ('weeks', 604800),  # 60 * 60 * 24 * 7
-    ('days', 86400),    # 60 * 60 * 24
-    ('hours', 3600),    # 60 * 60
-    ('minutes', 60),
-    ('seconds', 1),)
+    ("days", 86400),  # 60 * 60 * 24
+    ("hours", 3600),  # 60 * 60
+    ("minutes", 60),
+    ("seconds", 1),
+)
 
 
 def truncate_float(number: float, digits: int) -> float:
@@ -28,9 +53,9 @@ def truncate_float(number: float, digits: int) -> float:
         FLOAT
     """
     if not isinstance(number, (float, str)):
-        raise TypeError(f'Number value must be type float or str, not {type(number)}')
+        raise TypeError(f"Number value must be type float or str, not {type(number)}")
     if not isinstance(digits, int):
-        raise TypeError(f'Digits value must be type int, not {type(digits)}')
+        raise TypeError(f"Digits value must be type int, not {type(digits)}")
     if isinstance(number, str):
         number = float(number)
     stepper = 10.0 ** abs(digits)
@@ -53,7 +78,7 @@ def estconvert(utc_dt):
 class newdatetimeto:
     def _checkinputs(dt):
         if not isinstance(dt, datetime):
-            raise TypeError(f'Input must be of type datetime not {type(dt)}')
+            raise TypeError(f"Input must be of type datetime not {type(dt)}")
 
     def epoch(dt):
         """Convert datetime object to epoch
@@ -77,7 +102,7 @@ class newdatetimeto:
             STRING: Description: '%a, %b %d, %Y %I:%M %p'
         """
         newdatetimeto._checkinputs(dt)
-        return dt.strftime('%a, %b %d, %Y %I:%M %p')
+        return dt.strftime("%a, %b %d, %Y %I:%M %p")
 
 
 def datetimeto(dt, fmt, est=False):
@@ -91,16 +116,16 @@ def datetimeto(dt, fmt, est=False):
     Returns:
         TYPE: Description:
     """
-    if fmt == 'epoch':
+    if fmt == "epoch":
         return int(dt.timestamp())
-    elif fmt == 'string':
+    elif fmt == "string":
         if est:
-            return estshift(dt).strftime('%a, %b %d, %Y %I:%M %p')
+            return estshift(dt).strftime("%a, %b %d, %Y %I:%M %p")
         else:
-            return dt.strftime('%a, %b %d, %Y %I:%M %p')
+            return dt.strftime("%a, %b %d, %Y %I:%M %p")
 
 
-def Now(fmt='epoch', est=False):
+def Now(fmt="epoch", est=False):
     """Return current time
 
     Args:
@@ -110,36 +135,36 @@ def Now(fmt='epoch', est=False):
     Returns:
         TYPE: Description:
     """
-    if fmt == 'dt':
+    if fmt == "dt":
         if est:
             return estshift(datetime.now())
         else:
             return datetime.now()
-    elif fmt == 'dtd':
+    elif fmt == "dtd":
         if est:
             return estshift(datetime.now()).date()
         else:
             return datetime.now().date()
-    elif fmt == 'epoch':
+    elif fmt == "epoch":
         return int(datetime.now().timestamp())
-    elif fmt == 'string':
+    elif fmt == "string":
         if est:
-            return datetimeto(datetime.now(), 'string', est=True)
+            return datetimeto(datetime.now(), "string", est=True)
         else:
-            return datetimeto(datetime.now(), 'string')
+            return datetimeto(datetime.now(), "string")
 
 
 def epochto(epoch, fmt, est=False):
-    if fmt == 'dt':
+    if fmt == "dt":
         if est:
             return estshift(datetime.fromtimestamp(int(epoch)))
         else:
             return datetime.fromtimestamp(int(epoch))
-    elif fmt == 'string':
+    elif fmt == "string":
         if est:
-            return datetimeto(datetime.fromtimestamp(int(epoch)), 'string', est=True)
+            return datetimeto(datetime.fromtimestamp(int(epoch)), "string", est=True)
         else:
-            return datetimeto(datetime.fromtimestamp(int(epoch)), 'string')
+            return datetimeto(datetime.fromtimestamp(int(epoch)), "string")
 
 
 def estshift(otime):
@@ -152,7 +177,7 @@ def gmtshift(otime):
 
 def wcstamp():
     a = datetime.now() - tzfix
-    return a.strftime('%m-%d %I:%M%p')
+    return a.strftime("%m-%d %I:%M%p")
 
 
 def elapsedTime(start_time, stop_time, nowifmin=True, append=False):
@@ -172,7 +197,7 @@ def elapsedTime(start_time, stop_time, nowifmin=True, append=False):
     else:
         seconds = int(stop_time) - int(start_time)
     tseconds = seconds
-    if seconds > Secs['minute'] and seconds < Secs['hour']:
+    if seconds > Secs["minute"] and seconds < Secs["hour"]:
         granularity = 1
     else:
         granularity = 2
@@ -181,15 +206,15 @@ def elapsedTime(start_time, stop_time, nowifmin=True, append=False):
         if value:
             seconds -= value * count
             if value == 1:
-                name = name.rstrip('s')
+                name = name.rstrip("s")
             result.append("{} {}".format(int(value), name))
     if tseconds < 60 and nowifmin:
-        return 'now'
+        return "now"
     else:
         if append:
-            return ', '.join(result[:granularity]) + f' {append}'
+            return ", ".join(result[:granularity]) + f" {append}"
         else:
-            return ', '.join(result[:granularity])
+            return ", ".join(result[:granularity])
 
 
 def elapsedSeconds(seconds):
@@ -203,11 +228,11 @@ def elapsedSeconds(seconds):
     """
     result = []
     if not isinstance(seconds, (int, float, str)):
-        raise TypeError(f'Seconds is wrong type {type(seconds)}')
+        raise TypeError(f"Seconds is wrong type {type(seconds)}")
     if isinstance(seconds, str):
-        seconds = seconds.replace(',', '')
+        seconds = seconds.replace(",", "")
     seconds = int(seconds)
-    if seconds < Secs['hour']:
+    if seconds < Secs["hour"]:
         granularity = 1
     else:
         granularity = 2
@@ -216,15 +241,15 @@ def elapsedSeconds(seconds):
         if value:
             seconds -= value * count
             if value == 1:
-                name = name.rstrip('s')
+                name = name.rstrip("s")
             result.append("{} {}".format(int(value), name))
-    return ', '.join(result[:granularity])
+    return ", ".join(result[:granularity])
 
 
 def joinedTime(seconds):
     result = []
     seconds = int(seconds)
-    if seconds < Secs['hour']:
+    if seconds < Secs["hour"]:
         granularity = 1
     else:
         granularity = 2
@@ -233,15 +258,15 @@ def joinedTime(seconds):
         if value:
             seconds -= value * count
             if value == 1:
-                name = name.rstrip('s')
+                name = name.rstrip("s")
             result.append("{} {}".format(int(value), name))
-    return ', '.join(result[:granularity])
+    return ", ".join(result[:granularity])
 
 
 def playedTime(seconds):
     result = []
     seconds = int(seconds)
-    if seconds < Secs['hour']:
+    if seconds < Secs["hour"]:
         granularity = 1
     else:
         granularity = 2
@@ -250,6 +275,6 @@ def playedTime(seconds):
         if value:
             seconds -= value * count
             if value == 1:
-                name = name.rstrip('s')
+                name = name.rstrip("s")
             result.append("{} {}".format(int(value), name))
-    return ', '.join(result[:granularity])
+    return ", ".join(result[:granularity])

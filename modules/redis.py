@@ -8,14 +8,23 @@ from modules.configreader import redis_db, redis_host, redis_port
 
 
 class RedisClass:
-    def __init__(self, host: str =redis_host, port: int=redis_port, db: str=redis_db, max_idle_time: int=30, idle_check_interval: float=.1):
+    def __init__(
+        self,
+        host: str = redis_host,
+        port: int = redis_port,
+        db: str = redis_db,
+        max_idle_time: int = 30,
+        idle_check_interval: float = 0.1,
+    ):
         self.db = db
         self.max_idle_time: int = max_idle_time
         self.idle_check_interval: float = idle_check_interval
         self.host: str = host
         self.port: int = port
         self.verified: bool = False
-        self.pool = aredis.ConnectionPool(host=self.host, port=self.port, db=self.db, max_connections=20)
+        self.pool = aredis.ConnectionPool(
+            host=self.host, port=self.port, db=self.db, max_connections=20
+        )
         self.redis = aredis.StrictRedis(connection_pool=self.pool)
 
     async def connect(self, hostname: str):
@@ -25,13 +34,13 @@ class RedisClass:
                 await self.redis.ping()
             except:
                 self.verified = False
-                log.warning('Failed verifying connection to Redis server, retrying...')
+                log.warning("Failed verifying connection to Redis server, retrying...")
                 await asyncio.sleep(10)
                 await self.connect(hostname)
 
             else:
                 self.verified = True
-                log.debug(f'Connection verified to Redis server for [{self.hostname}]')
+                log.debug(f"Connection verified to Redis server for [{self.hostname}]")
 
     async def wakeup(self):
         while len(self.pool._available_connections) == 0 or not self.verified:
@@ -39,7 +48,7 @@ class RedisClass:
                 await self.redis.ping()
             except:
                 self.verified = False
-                log.warning('Failed verifying connection to Redis server, retrying...')
+                log.warning("Failed verifying connection to Redis server, retrying...")
                 await self.connect(self.hostname)
             else:
                 self.verified = True
@@ -53,7 +62,7 @@ Redis = RedisClass()
 redis = Redis.redis
 
 
-class globalvar():
+class globalvar:
     @staticmethod
     async def set(key, value: str):
         """Set a global variable
@@ -184,7 +193,7 @@ class globalvar():
         await redis.decr(key)
 
 
-class instancevar():
+class instancevar:
     @staticmethod
     async def set(instance: str, key: str, value: Union[str, int]):
         """Set an instance variable
@@ -194,7 +203,7 @@ class instancevar():
             key {string} -- Key to set value to
             value {int, string} -- Value to set to key
         """
-        await redis.hset(f'{instance}', key, value)
+        await redis.hset(f"{instance}", key, value)
 
     @staticmethod
     async def mset(instance: str, kvdict: dict):
@@ -204,7 +213,7 @@ class instancevar():
             instance {string} -- Instance Name
             kvdict {dict} -- Dict of key/values to set
         """
-        await redis.hmset(f'{instance}', kvdict)
+        await redis.hmset(f"{instance}", kvdict)
 
     @staticmethod
     async def remove(instance: str, key: str):
@@ -214,7 +223,7 @@ class instancevar():
             instance {string} -- Instance Name
             key {string} -- Key to remove
         """
-        await redis.hdel(f'{instance}', key)
+        await redis.hdel(f"{instance}", key)
 
     @staticmethod
     async def getstring(instance: str, key: str) -> str:
@@ -224,7 +233,7 @@ class instancevar():
             instance {string} -- Instance Name
             key {string} -- Key to get value from
         """
-        return (await redis.hget(f'{instance}', key)).decode()
+        return (await redis.hget(f"{instance}", key)).decode()
 
     @staticmethod
     async def getint(instance: str, key: str) -> int:
@@ -234,7 +243,7 @@ class instancevar():
             instance {string} -- Instance Name
             key {string} -- Key to get value from
         """
-        return int((await redis.hget(f'{instance}', key)).decode())
+        return int((await redis.hget(f"{instance}", key)).decode())
 
     @staticmethod
     async def getbool(instance: str, key: str) -> bool:
@@ -244,7 +253,7 @@ class instancevar():
             instance {string} -- Instance Name
             key {string} -- Key to get value from
         """
-        return bool((await redis.hget(f'{instance}', key)).decode())
+        return bool((await redis.hget(f"{instance}", key)).decode())
 
     @staticmethod
     async def getfloat(instance: str, key: str) -> float:
@@ -254,7 +263,7 @@ class instancevar():
             instance {string} -- Instance Name
             key {string} -- Key to get value from
         """
-        return float((await redis.hget(f'{instance}', key)).decode())
+        return float((await redis.hget(f"{instance}", key)).decode())
 
     @staticmethod
     async def getall(instance: str) -> dict:
@@ -263,7 +272,7 @@ class instancevar():
         Arguments:
             instance {string} -- Instance Name
         """
-        return (await redis.hgetall(f'{instance}'))
+        return await redis.hgetall(f"{instance}")
 
     @staticmethod
     async def inc(instance: str, key: str):
@@ -273,7 +282,7 @@ class instancevar():
             instance {string} -- Instance Name
             key {string} -- Key to increment value
         """
-        await redis.hincrby(f'{instance}', key, 1)
+        await redis.hincrby(f"{instance}", key, 1)
 
     @staticmethod
     async def dec(instance: str, key: str):
@@ -283,7 +292,7 @@ class instancevar():
             instance {string} -- Instance Name
             key {string} -- Key to decrement value
         """
-        await redis.hincrby(f'{instance}', key, -1)
+        await redis.hincrby(f"{instance}", key, -1)
 
     @staticmethod
     async def check(instance: str, key: str) -> bool:
@@ -293,10 +302,10 @@ class instancevar():
             instance {string} -- Instance Name
             key {string} -- Key to check
         """
-        return await redis.hexists(f'{instance}', key)
+        return await redis.hexists(f"{instance}", key)
 
 
-class instancestate():
+class instancestate:
     @staticmethod
     async def set(instance: str, *args: str):
         """Set an instance state
@@ -305,7 +314,7 @@ class instancestate():
             instance {string} -- Instance name
             *args {string} -- Instance state(s) to set
         """
-        await redis.sadd(f'{instance}-states', *args)
+        await redis.sadd(f"{instance}-states", *args)
 
     @staticmethod
     async def unset(instance: str, *args: str):
@@ -315,7 +324,7 @@ class instancestate():
             instance {string} -- Instance name
             *args {string} -- Instance state(s) to unset
         """
-        await redis.srem(f'{instance}-states', *args)
+        await redis.srem(f"{instance}-states", *args)
 
     @staticmethod
     async def check(instance: str, state) -> bool:
@@ -325,7 +334,7 @@ class instancestate():
             instance {string} -- Instance name
             state {string} -- Instance state
         """
-        return await redis.sismember(f'{instance}-states', state)
+        return await redis.sismember(f"{instance}-states", state)
 
     @staticmethod
     async def getlist(instance: str) -> list:
@@ -334,7 +343,7 @@ class instancestate():
         Arguments:
             instance {string} -- Instance name
         """
-        return await redis.smembers(f'{instance}-states')
+        return await redis.smembers(f"{instance}-states")
 
     @staticmethod
     async def clear(instance: str) -> bool:
@@ -343,5 +352,5 @@ class instancestate():
         Arguments:
             instance {string} -- Instance name
         """
-        await redis.delete(f'{instance}-states')
-        await redis.sadd(f'{instance}-states', 'pyark')
+        await redis.delete(f"{instance}-states")
+        await redis.sadd(f"{instance}-states", "pyark")

@@ -3,7 +3,7 @@ from time import time
 
 from modules.configreader import arkroot, instances, sharedpath
 
-instpids = {}  # Dict of instance pids 
+instpids = {}  # Dict of instance pids
 instpidfiles = {}  # Instance pid files from arkmanager
 
 instservernames = {}  # Host names of the server as they appear online
@@ -33,27 +33,35 @@ timer = {}  # timers for each task
 sharedpath = Path(sharedpath)
 arkrootpath = Path(arkroot)
 
-serverpre = ['@all']
+serverpre = ["@all"]
 arkmanager_paths = []
 gameini_customconfig_files = {}
 gusini_customconfig_files = {}
-gameini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini')
-gusini_final_file = Path(f'{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini')
-gameini_baseconfig_file = Path(f'{str(sharedpath)}/config/Game-base.ini')
-gusini_baseconfig_file = Path(f'{str(sharedpath)}/config/GameUserSettings-base.ini')
-gusini_tempconfig_file = Path(f'{str(sharedpath)}/config/GameUserSettings.tmp')
+gameini_final_file = Path(f"{arkroot}/ShooterGame/Saved/Config/LinuxServer/Game.ini")
+gusini_final_file = Path(
+    f"{arkroot}/ShooterGame/Saved/Config/LinuxServer/GameUserSettings.ini"
+)
+gameini_baseconfig_file = Path(f"{str(sharedpath)}/config/Game-base.ini")
+gusini_baseconfig_file = Path(f"{str(sharedpath)}/config/GameUserSettings-base.ini")
+gusini_tempconfig_file = Path(f"{str(sharedpath)}/config/GameUserSettings.tmp")
 for inst in instances:
-    arkmanager_paths.append(Path(f'{str(sharedpath)}/logs/arkmanager/{inst}'))
-    gusini_customconfig_files.update({inst: Path(f'{str(sharedpath)}/config/GameUserSettings-{inst.lower()}.ini')})
-    gameini_customconfig_files.update({inst: Path(f'{str(sharedpath)}/config/Game-{inst.lower()}.ini')})
-    status_counts.update({inst: {'running': 0, 'listening': 0, 'online': 0}})
-    instpidfiles.update({inst: Path(f'/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid')})
+    arkmanager_paths.append(Path(f"{str(sharedpath)}/logs/arkmanager/{inst}"))
+    gusini_customconfig_files.update(
+        {inst: Path(f"{str(sharedpath)}/config/GameUserSettings-{inst.lower()}.ini")}
+    )
+    gameini_customconfig_files.update(
+        {inst: Path(f"{str(sharedpath)}/config/Game-{inst.lower()}.ini")}
+    )
+    status_counts.update({inst: {"running": 0, "listening": 0, "online": 0}})
+    instpidfiles.update(
+        {inst: Path(f"/home/ark/ARK/ShooterGame/Saved/.arkserver-{inst}.pid")}
+    )
     instpids.update({inst: None})
-    instplayers.update({inst: {'online': None, 'active': None, 'connecting': None}})
+    instplayers.update({inst: {"online": None, "active": None, "connecting": None}})
     instarkbuild.update({inst: None})
     instarkversion.update({inst: None})
-    instlinks.update({inst: {'steam': None, 'arkservers': None}})
-    serverpre.append(f'@{inst}')
+    instlinks.update({inst: {"steam": None, "arkservers": None}})
+    serverpre.append(f"@{inst}")
     instservernames.update({inst: None})
 
 atinstances = tuple(serverpre)
