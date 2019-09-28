@@ -34,6 +34,21 @@ async def _currentlottery():
 
 
 @webapp.context_processor
+async def _newplayers():
+    async def newplayers():
+        nplayers = await webapp.db.fetchall(
+            f"SELECT playername FROM players WHERE firstseen > {Now() - Secs['week']} ORDER BY firsseen DESC"
+        )
+        num = 0
+        resp = []
+        for player in iter(nplayers):
+            num = num + 1
+            resp.append(player)
+        return {'count': num, 'names': ', '.join(resp)}
+    return dict(newplayers=await newplayers())
+
+
+@webapp.context_processor
 async def _last7lotterys():
     async def last7lotterys():
         lotterys = await webapp.db.fetchall(
