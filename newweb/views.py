@@ -3,9 +3,22 @@ from datetime import timedelta
 from modules.asyncdb import asyncDB
 from modules.redis import RedisClass
 from modules.timehelper import Now, Secs, elapsedTime
+from modules.clusterevents import asyncgetcurrenteventinfo, asyncgetlasteventinfo
 
 
 webapp = Quart(__name__)
+
+
+@webapp.context_processor
+async def _eventinfo():
+    async def eventinfo():
+        event = await asyncgetcurrenteventinfo()
+        if not event:
+            event = await asyncgetlasteventinfo()
+            return {'active': False, 'title': event['title'], 'description': event['description'], 'timeleft': event['starttime']}
+        else:
+            return {'active': True, 'title': event['title'], 'description': event['description'], 'timeleft': event['endtime']}
+    return dict(eventinfo=await eventinfo())
 
 
 @webapp.context_processor
