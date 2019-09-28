@@ -121,36 +121,20 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 in 1 Days, 4 Hours</h3>
 {% endif %}
 </div>
-
 <div class="minispacer"></div>
-<div id="serverstatus" class="serverstatus">
-{% for instance in instancedata %}
-{% if not instance['isup'] %}
-{% if instance['enabled'] %}
-<button class="serverbutton downcolor" style="color: #FFFFFF">{{ instance['name'].capitalize()}}</button>
-{% else %}
-<button class="serverbutton downcolor" style="color: #FFFFFF; text-decoration: line-through;">
-{{ instance['name'].capitalize() }}</button>
-{% endif %}
-{% elif instance['needsrestart'] == 'True' %}
-{% if instance['enabled'] %}
-<button class="serverbutton warningcolor">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{
-instance['restartcountdown'] }})</button> {% else %} <button class="serverbutton warningcolor" style="text-decoration: line-through;">{{ instance['name'].capitalize()
-}}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{ instance['restartcountdown']
-}})</button>
-{% endif %}
-{% else %}
 
-{% if instance['enabled'] %}
-<button class="serverbutton upcolor"><a href="{{instance['steamlink']}}">
-<span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}&nbsp;&nbsp;({{instance['activeplayers']}})</span><br />
-<span class="serverstatus" style="color: #FFFFFF">ONLINE</span>
-{% else %}
-<button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through;">{{instance['name'].capitalize()}}&nbsp;&nbsp;{{ a }}</button>
-{% endif %}
-{% endif %}
-{% endfor %}
-</button></center>
+<div id="serverstatus" class="serverstatus">
+  {% for instance in instancedata %}
+  {% if instance['enabled'] %}
+  <button class="serverbutton upcolor">
+  <span class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}&nbsp;&nbsp;{{instance['activeplayers']}}</span>
+  <br />
+  <span class="serverstatus" style="color: #FFFFFF">ONLINE</span>
+  </button>
+  {% else %}
+  <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through;">{{instance['name'].capitalize()}}&nbsp;&nbsp;{{ a }}</button>
+  {% endif %}
+  {% endfor %}
 </div>
 
 <div class="discordlogo">
