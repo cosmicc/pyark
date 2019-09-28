@@ -12,7 +12,7 @@ http://www.tooplate.com/view/2021-galaxy
 <title>Ark: Galaxy Cluster Servers</title>
 <meta name="keywords" content="" />
 <meta name="description" content="" />
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pyark.css?ver=1.3') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pyark.css?ver=1.4') }}"/>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/coda-slider.css') }}"/>
 
@@ -113,8 +113,10 @@ http://www.tooplate.com/view/2021-galaxy
                   <div class="dailyplayers">
                     <h3><span style="color: #FFFFFF"><b>{{ dailyplayers['count'] }}</b></span> Active Players Today: </h3>{{ dailyplayers['names'] }}
                   </div>
-                    <br><h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['week'] }}</b></span> Active Players this Week</h3>
-                    <br><h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['month'] }}</b></span> Active Players this Month</h3>
+                    <div class="spacer"> </div>
+                    <h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['week'] }}</b></span> Active Players this Week</h3>
+                    <div class="spacer"> </div>
+                    <h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['month'] }}</b></span> Active Players this Month</h3>
                 </div>
               </div>
 
