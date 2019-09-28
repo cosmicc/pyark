@@ -119,32 +119,35 @@ in 1 Days, 4 Hours</h3>
 {% endif %}
 </div>
 
-{% for instance in instancedata %} {% if not instance['isup'] %} {%
-if instance['enabled'] %} <button class="serverbutton downcolor"
-style="color: #FFFFFF">{{ instance['name'].capitalize()}}</button>
-{% else %} <button class="serverbutton downcolor" style=
-"color: #FFFFFF; text-decoration: line-through;">{{
-instance['name'].capitalize() }}</button> {% endif %} {% elif
-instance['needsrestart'] == 'True' %} {% if instance['enabled'] %}
-<button class="serverbutton warningcolor">{{
-instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{
-instance['restartcountdown'] }})</button> {% else %} <button class=
-"serverbutton warningcolor" style=
-"text-decoration: line-through;">{{ instance['name'].capitalize()
+{% for instance in instancedata %}
+{% if not instance['isup'] %}
+{% if instance['enabled'] %}
+<button class="serverbutton downcolor" style="color: #FFFFFF">{{ instance['name'].capitalize()}}</button>
+{% else %}
+<button class="serverbutton downcolor" style="color: #FFFFFF; text-decoration: line-through;">
+{{ instance['name'].capitalize() }}</button>
+{% endif %}
+{% elif instance['needsrestart'] == 'True' %}
+{% if instance['enabled'] %}
+<button class="serverbutton warningcolor">{{ instance['name'].capitalize() }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{
+instance['restartcountdown'] }})</button> {% else %} <button class="serverbutton warningcolor" style="text-decoration: line-through;">{{ instance['name'].capitalize()
 }}&nbsp;&nbsp;{{ a }}&nbsp;&nbsp;({{ instance['restartcountdown']
-}})</button> {% endif %} {% else %} {% if instance['enabled'] %}
-<a href="{{instance['steamlink']}}"><button class=
-"serverbutton upcolor"><a href=
-"{{instance['steamlink']}}"><span class="servername" style=
-"color: #FFFF87">{{instance['name'].capitalize()}}</span><br />
-<span class="serverstatus" style=
-"color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players:
-{{instance['activeplayers']}}</span></a> {% else %}
+}})</button>
+{% endif %}
+{% else %}
+
+{% if instance['enabled'] %}
+<button class="serverbutton upcolor"><a href="{{instance['steamlink']}}">
+<div class="servername" style="color: #FFFF87">{{instance['name'].capitalize()}}</div><br />
+<div class="serverstatus" style="color: #FFFFFF">ONLINE&nbsp;&nbsp;&nbsp;&nbsp;Players:{{instance['activeplayers']}}</div>
+{% else %}
 <button class="serverbutton upcolor" style="color: #FFFFFF; text-decoration: line-through;">{{instance['name'].capitalize()}}&nbsp;&nbsp;{{ a }}</button>
 {% endif %}
 {% endif %}
-{% endfor %}</button></a></center>
+{% endfor %}
+</button></center>
 </div>
+
 <div class="discordlogo">
 <center>
 <a href="https://discord.gg/AtA9T3R"><img src="{{url_for('static',filename='images/discord_150.png')}}"></ ></a>
