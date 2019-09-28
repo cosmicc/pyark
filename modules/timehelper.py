@@ -184,13 +184,17 @@ def elapsedTime(start_time, stop_time, nowifmin=True, append=False):
     """Convert 2 epochs to elapsed time string representation
 
     Args:
-        start_time (string, int, float): Description: Start time
-        stop_time (string, int, float): Description:  End time
+        start_time (string, int, float, datetime): Description: Start time
+        stop_time (string, int, float, datetime): Description:  End time
         nowifmin (bool, [Optional]): Description: If less then 1 minute return 'Now'
 
     Returns:
         STRING: Description: e.g. '1 Hour, 47 Minutes'
     """
+    if isinstance(start_time, datetime):
+        start_time = datetimeto(start_time, fmt='epoch')
+    if isinstance(stop_time, datetime):
+        stop_time = datetimeto(stop_time, fmt='epoch')
     result = []
     if start_time > stop_time:
         seconds = int(start_time) - int(stop_time)
