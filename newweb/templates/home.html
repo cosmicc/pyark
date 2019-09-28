@@ -76,23 +76,23 @@ Cluster</h1>
 <div class="col_left float_l">
 <div id="lotteryinfo" class="lotteryinfo">{% if
 currentlottery['active'] %}
-<h3>Current Lottery Ends in <span style="color: #FFFFFF">{{ currentlottery['ends'] }}</span></h3>
+<h3>Current Lottery Ends in <br><span style="color: #FFFFFF">{{ currentlottery['ends'] }}</span></h3>
 <div class="spacer"></div>
-<h3>Lottery is at <span style="color: #FFFFFF"><b>{{
-currentlottery['payout'] }}</b></span> Points with <span style=
-"color: #FFFFFF"><b>{{ currentlottery['playercount'] }}</b></span>
+<h3>Lottery is at <span style="color: #FFFFFF">{{
+currentlottery['payout'] }}</span> Points with <span style=
+"color: #FFFFFF">{{ currentlottery['playercount'] }}</span>
 Players:</h3>
 {{ currentlottery['players'] }}<br />
 {% else %}
 <h2>Next lottery starts in<br />
-<span style="color: #FFFFFF"><b>{{ currentlottery['ends']
-}}</b></span></h2>
+<span style="color: #FFFFFF">{{ currentlottery['ends']
+}}</span></h2>
 {% endif %}
 <div class="spacer"></div>
 <div class="spacer"></div>
-<h3>Last Lottery winner was: <span style="color: #FFFFFF"><b>{{
-lastlottery['winner'].title() }}</b></span> with <b><span style=
-"color: #FFFFFF">{{ lastlottery['payout'] }}</span></b> Points</h3>
+<h3>Last Lottery winner was: <span style="color: #FFFFFF">{{
+lastlottery['winner'].title() }}</span> with <span style=
+"color: #FFFFFF">{{ lastlottery['payout'] }}</span> Points</h3>
 <div class="spacer"></div>
 <div class="spacer"></div>
 <h3>Last 7 lottery winners:</h3>
@@ -147,18 +147,18 @@ in 1 Days, 4 Hours</h3>
 <div class="spacer"></div>
 <div class="spacer"></div>
 <div class="dailyplayers">
-<h3><span style="color: #FFFFFF"><b>{{ dailyplayers['count']
-}}</b></span> Active Players Today:</h3>
+<h3><span style="color: #FFFFFF">{{ dailyplayers['count']
+}}</span> Active Players Today:</h3>
 {{ dailyplayers['names'] }}</div>
 <div class="spacer"></div>
-<h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['week']
-}}</b></span> Active Players this Week</h3>
+<h3><span style="color: #FFFFFF">{{ otherplayercounts['week']
+}}</span> Active Players this Week</h3>
 <div class="spacer"></div>
-<h3><span style="color: #FFFFFF"><b>{{ otherplayercounts['month']
-}}</b></span> Active Players this Month</h3>
+<h3><span style="color: #FFFFFF">{{ otherplayercounts['month']
+}}</span> Active Players this Month</h3>
 <div class="spacer"></div>
-<h3><span style="color: #FFFFFF"><b>{{ newplayers['count']
-}}</b></span> New Players this week:</h3>
+<h3><span style="color: #FFFFFF">{{ newplayers['count']
+}}</span> New Players this week:</h3>
 {{ newplayers['names'] }}</div>
 </div>
 <!-- end of home -->
