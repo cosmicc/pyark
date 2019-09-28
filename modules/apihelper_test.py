@@ -2,6 +2,7 @@ import sys
 
 import pytest
 import modules.apihelper
+import pprint
 
 
 sys.path.append("/home/ark/pyark")
@@ -12,7 +13,7 @@ async def test_asyncfetchclusterauctiondata(testsession):
     # assert (
     #    type(await modules.apihelper.asyncfetchclusterauctiondata(testsession)) == dict
     #)
-    print(await modules.apihelper.asyncfetchclusterauctiondata(testsession))
+    pprint(await modules.apihelper.asyncfetchclusterauctiondata(testsession))
 
 
 @pytest.mark.last
