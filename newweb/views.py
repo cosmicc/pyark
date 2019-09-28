@@ -37,7 +37,7 @@ async def _currentlottery():
 async def _newplayers():
     async def newplayers():
         nplayers = await webapp.db.fetchall(
-            f"SELECT playername FROM players WHERE firstseen > {Now() - Secs['week']} ORDER BY firsseen DESC"
+            f"SELECT playername FROM players WHERE firstseen > {Now() - Secs['week']} ORDER BY firstseen DESC"
         )
         num = 0
         resp = []
