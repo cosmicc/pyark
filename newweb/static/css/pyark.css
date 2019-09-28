@@ -206,8 +206,8 @@ em { color: #f3c331; }
 
 .eventinfo { padding: 15px 0px 0px 0px;  }
 
-.statustitle { padding: 10px 0px 5px 0px; }
+.statustitle { padding: 10px 0px 0px 0px; }
 
-.discordlogo { padding: 10px 0px 0px 0px; }
+.discordlogo { padding: 15px 0px 0px 0px; }
 
 .spacer { height: 10px; width: 60pc; }
