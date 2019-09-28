@@ -74,8 +74,6 @@ http://www.tooplate.com/view/2021-galaxy
                   {% for lottoplayer in last7lotterys %}
                   {{ lottoplayer['num'] }}. {{ lottoplayer['playername'].title() }} won {{ lottoplayer['points'] }} Points<br>
                   {% endfor %}
-                  <br>
-                  <br>
                 </div>
                 </div>
                 <div class="col_center float_l">
@@ -103,8 +101,7 @@ http://www.tooplate.com/view/2021-galaxy
                 {% endif %}
                 {% endfor %}
                   </center></div>
-                  <center><div class="events"><h3>Next Event: Evolution Weekend<br>in 1 Days, 4 Hours</h3></div></center>
-                </div>
+                  <center><div class="events"><h3>Next Event: Evolution Weekend<br>in 1 Days, 4 Hours</h3></div></center></div>
                    <div class="col_right float_l">
                    <div class="onlineplayernames">
                     <h2><span style="color: #FFFFFF"><b>{{ onlineplayers['count'] }}</b></span> Online Players: </h2>{{ onlineplayers['names'] }}
@@ -122,7 +119,6 @@ http://www.tooplate.com/view/2021-galaxy
                     <h3><span style="color: #FFFFFF"><b>{{ newplayers['count'] }}</b></span> New Players this week: </h3>{{ newplayers['names'] }}
                   </div>
                 </div>
-              </div>
 
               <!-- end of home -->
 
