@@ -16,7 +16,7 @@ http://www.tooplate.com/view/2021-galaxy
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.8')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.9')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.0')}}" />
 <script src=
@@ -76,7 +76,7 @@ Cluster</h1>
 <div class="col_left float_l">
 <div id="lotteryinfo" class="lotteryinfo">
 {% if currentlottery['active'] %}
-<h3>Current Lottery Ends in <br>{{ currentlottery['ends'] }}</h3>
+<h2>Current Lottery Ends in <br>{{ currentlottery['ends'] }}</h2>
 <div class="spacer"></div>
 <div class="spacer"></div>
 <h3>Lottery is at <span style="color: #FFFFFF">{{
@@ -105,8 +105,8 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 <div id="serverstatus" class="serverstatus">
 <center>
 <div class="eventinfo">
-<h3>Next Event: Evolution Weekend<br />
-in 1 Days, 4 Hours</h3>
+<h2>Next Event: Evolution Weekend<br />
+in 1 Days, 4 Hours</h2>
 <div class="statustitle">
 <h2>Server Status:</h2>
 </div>
@@ -136,10 +136,11 @@ instance['restartcountdown'] }})</button> {% else %} <button class=
 {% endif %}
 {% endfor %}</button></a></center>
 </div>
-
+<div class="discordlogo">
 <center>
 <a href="https://discord.gg/AtA9T3R"><img src="{{url_for('static',filename='images/discord_150.png')}}"></ ></a>
 </center>
+</div>
 </div>
 <div class="col_right float_l">
 <div class="onlineplayernames">
