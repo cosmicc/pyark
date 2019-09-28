@@ -98,7 +98,7 @@ lastlottery['winner'].title() }}</b></span> with <b><span style=
 <h3>Last 7 lottery winners:</h3>
 {% for lottoplayer in last7lotterys %} {{ lottoplayer['num'] }}. {{
 lottoplayer['playername'].title() }} won {{ lottoplayer['points']
-}} Points {% endfor %}<br></div>
+}} Points<br>{% endfor %}</div>
 </div>
 <div class="col_center float_l">
 <div id="serverstatus" class="serverstatus">
