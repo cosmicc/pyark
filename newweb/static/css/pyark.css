@@ -220,10 +220,12 @@ em { color: #f3c331; }
 
 div.AuctionTable {
   border: 1px solid #FFFFFF;
-  width: 90%;
+  width: 95%;
 }
 .divTable.AuctionTable .divTableCell, .divTable.AuctionTable .divTableHead {
-	border: 1px solid #AAAAAA;
+}
+.divTable.AuctionTable .divTableRow:nth-child(even) {
+  background: #333333;
 }
 .divTable.AuctionTable .divTableHeading {
   background: #7f7467;
