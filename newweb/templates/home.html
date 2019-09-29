@@ -42,6 +42,9 @@
             $("#eventupdate").load(" #eventupdate");
         }, 60000);
     var pageLoader = setInterval(function(){
+            $("#auctionupdate").load(" #auctionupdate");
+        }, 300000);
+    var pageLoader = setInterval(function(){
             $("#playerhistoryupdate").load(" #playerhistoryupdate");
         }, 600000);
     starttimer();
@@ -229,6 +232,7 @@ in {{ eventinfo['timeleft'] }}</h3>
 <!-- end of home -->
 <div class="panel" id="auctions"><br />
 <center>
+<div id="auctionupdate">
 <h2>Dinos in Auction:</h2>
 <div class="minispacer"></div>
 <div class="divTable AuctionTable">
@@ -287,8 +291,7 @@ in {{ eventinfo['timeleft'] }}</h3>
 {% endfor %}
 </div>
 </div>
-
-
+</div>
 </center>
 </div>
 <!-- end of aboutus -->
