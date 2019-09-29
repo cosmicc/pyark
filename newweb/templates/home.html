@@ -229,9 +229,32 @@ in 1 Days, 4 Hours</h3>
 <!-- end of home -->
 <div class="panel" id="auctions"><br />
 <center>
+
+<div class="divTable AuctionTable">
+<div class="divTableHeading">
+<div class="divTableRow">
+<div class="divTableHead">head1</div>
+<div class="divTableHead">head2</div>
+<div class="divTableHead">head3</div>
+<div class="divTableHead">head4</div>
+<div class="divTableHead">head5</div>
+<div class="divTableHead">head6</div>
+<div class="divTableHead">head7</div>
+</div>
+</div>
+<div class="divTableBody">
 {% for auction in auctiondata %}
-{{ auction }}
+<div class="divTableRow">
+<div class="divTableCell">{{auction['playername'].title()}}</div>
+<div class="divTableCell">{{auction['quanity'].title()}}</div>
+<div class="divTableCell">{{auction['auctionname'].title()}}</div>
+<div class="divTableCell">000</div>
+<div class="divTableCell">{{auction['blueprint']}}</div>
+<div class="divTableCell">{{auction['date']}}</div>
+</div>
 {% endfor %}
+</div>
+
 </center>
 </div>
 <!-- end of aboutus -->
