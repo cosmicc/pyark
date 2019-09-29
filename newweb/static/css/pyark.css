@@ -225,7 +225,7 @@ div.AuctionTable {
 .divTable.AuctionTable .divTableCell, .divTable.AuctionTable .divTableHead {
 }
 .divTable.AuctionTable .divTableRow:nth-child(even) {
-  background: #333333;
+  background: #222222;
 }
 .divTable.AuctionTable .divTableHeading {
   background: #7f7467;
