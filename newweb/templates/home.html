@@ -64,7 +64,7 @@
 <li><a href="#discord">Login</a></li>
 </ul>
 </div>
-<!-- end of tooplate_menu -->
+
 <div class="cleaner"></div>
 </div>
 <div id="content">
@@ -77,7 +77,6 @@
 Cluster</h1>
 </center>
 </div>
-
 <div class="col_left float_l">
 <div class="lotteryinfo">
 <div id="lotteryupdate">
@@ -109,7 +108,6 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 </div>
 </div>
 </div>
-
 <div class="col_center float_l">
 <center>
 <div class="eventinfo">
@@ -125,13 +123,10 @@ in {{ eventinfo['timeleft'] }}</h3>
 {% endif %}
 </div>
 </div>
-
 <div class="minispacer"></div>
-
 <div class="serverstatus">
   <div id="serverupdate">
   {% for instance in instancedata %}
-
   {% if instance['needrestart'] %}
   <button class="serverbutton warningcolor">
   {% if instance['enabled'] %}
@@ -144,8 +139,6 @@ in {{ eventinfo['timeleft'] }}</h3>
   <span class="serverstatus" style="color: #000000">RESTARTING in {{ instance['restartcountdown']}} min</span>
   {% endif %}
   </button>
-
-
   {% elif instance['isup'] %}
   <button class="serverbutton upcolor">
   {% if instance['enabled'] %}
@@ -158,8 +151,6 @@ in {{ eventinfo['timeleft'] }}</h3>
   <span class="serverstatus" style="color: #FFFFFF">ONLINE</span>
   {% endif %}
   </button>
-
-
   {% elif instance['islistening'] %}
   <button class="serverbutton offlinecolor">
   {% if instance['enabled'] %}
@@ -172,8 +163,6 @@ in {{ eventinfo['timeleft'] }}</h3>
   <span class="serverstatus" style="color: #FFFFFF">STEAM OFFLINE</span>
   {% endif %}
   </button>
-
-
   {% else %}
   <button class="serverbutton downcolor">
   {% if instance['enabled'] %}
@@ -186,20 +175,16 @@ in {{ eventinfo['timeleft'] }}</h3>
   <span class="serverstatus" style="color: #FFFFFF">OFFLINE</span>
   {% endif %}
   </button>
-
   {% endif %}
-
   {% endfor %}
 </div>
 </div>
-
 <div class="discordlogo">
 <center>
 <a href="https://discord.gg/AtA9T3R"><img src="{{url_for('static',filename='images/discord_150.png')}}"></ ></a>
 </center>
 </div>
 </div>
-
 <div class="col_right float_l">
 <div class="onlineplayernames">
 <div id="playerupdate">
@@ -229,7 +214,7 @@ in {{ eventinfo['timeleft'] }}</h3>
 </div>
 </div>
 </div>
-<!-- end of home -->
+
 <div class="panel" id="auctions">
 <div class="dashtitle">
 <center>
@@ -299,28 +284,29 @@ in {{ eventinfo['timeleft'] }}</h3>
 </div>
 </center>
 </div>
-<!-- end of aboutus -->
-<div class="panel" id="stats"><br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
+
+<div class="panel" id="stats">
+<div class="dashtitle">
 <center>
-<h1>Comming Soon...</h1>
+<h1>Ark: Survival Evolved Galaxy Server Cluster Statistics</h1>
 </center>
 </div>
-<!-- end of service -->
+<div class="statistics">
+<div id="statsupdate">
+<center>
+test
+</center>
+</div>
+</div>
+</div>
+
 <div class="panel" id="gallery">
 <div class="dashtitle">
 <center>
 <h1>Ark: Survival Evolved Galaxy Server Cluster Screenshots</h1>
 </center>
 </div>
+<div class="minispacer"></div>
 <div id="gallery_container">
 {% for galleryimg in gallerylinks %}
 <div class="gallery_box"><a href="{{galleryimg['link']}}"
@@ -330,7 +316,7 @@ target="_blank"><img src="{{galleryimg['link']}}" alt=
 <div class="cleaner"></div>
 </div>
 </div>
-<!-- end of gallery -->
+
 <div class="panel" id="login"><br />
 <br />
 <br />
@@ -342,12 +328,13 @@ target="_blank"><img src="{{galleryimg['link']}}" alt=
 <br />
 <br />
 <center>
-<h1>Comming Soon...</h1>
+<h1>Player Logins Comming Soon...</h1>
 </center>
 </div>
-<!-- end of contact --></div>
 </div>
-<!-- end of scroll --></div>
+</div>
+</div>
+
 <div id="footer">
 <div id="footer_center"><span style="color: #AAAAAA">Page Refreshes Automatically</span>
 <div class="spacer_50"></div>
