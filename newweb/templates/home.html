@@ -295,7 +295,7 @@ in {{ eventinfo['timeleft'] }}</h3>
 <div id="statsupdate">
 <center>
 {% for instance in instacestats %}
-{{ instance }}
+{{ instance['name'] }}
 {% endfor %}
 </center>
 </div>
