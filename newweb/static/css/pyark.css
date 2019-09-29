@@ -223,6 +223,7 @@ div.AuctionTable {
   width: 90%;
 }
 .divTable.AuctionTable .divTableCell, .divTable.AuctionTable .divTableHead {
+	border: 1px solid #AAAAAA;
 }
 .divTable.AuctionTable .divTableHeading {
   background: #7f7467;
