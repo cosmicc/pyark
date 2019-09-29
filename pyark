@@ -13,7 +13,7 @@ from loguru import logger as log
 
 import globvars
 import modules.logging
-from modules.apihelper import asyncarkserverdatafetcher, asyncauctionapifetcher, asyncsteamapifetcher
+from modules.apihelper import asyncarkserverdatafetcher, asyncauctionapifetcher, asyncsteamapifetcher, asyncfetchclusterauctiondata
 from modules.arkupdater import asynccheckbackup, asynccheckmaint, asynccheckrestart, asynccheckupdates, asynccheckwipe
 from modules.asyncdb import DB as db
 from modules.clusterevents import asynceventwatcher
@@ -196,6 +196,7 @@ async def asyncmain():
 
                 if asynclooptime - globvars.timer['arkserversapi'] > globvars.delay['arkserversapi']:
                     asyncio.create_task(asyncarkserverdatafetcher(session))
+                    asyncio.create_task(asyncfetchclusterauctiondata(session))
                     if asynclooptime - globvars.timer['arkserversapi'] > globvars.delay['arkserversapi'] + 2:
                         log.error(f'arkserversapi was delayed {asynclooptime - globvars.timer["arkserversapi"] - globvars.delay["arkserversapi"]}')
                     globvars.timer.update({'arkserversapi': asyncloop.time()})
