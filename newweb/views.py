@@ -29,9 +29,9 @@ async def _eventinfo():
         event = await asyncgetcurrenteventinfo()
         if not event:
             event = await asyncgetlasteventinfo()
-            return {'active': False, 'title': event['title'], 'description': event['description'], 'timeleft': event['starttime']}
+            return {'active': False, 'title': event['title'], 'description': event['description'], 'timeleft': elapsedTime(event['starttime'], Now())}
         else:
-            return {'active': True, 'title': event['title'], 'description': event['description'], 'timeleft': event['endtime']}
+            return {'active': True, 'title': event['title'], 'description': event['description'], 'timeleft': elapsedTime(event['endtime'], Now())}
     return dict(eventinfo=await eventinfo())
 
 
