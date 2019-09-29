@@ -17,11 +17,11 @@ async def asyncfetchclusterauctiondata(session):
         log.error(f"Error fetching ArkServers data from web: {adata}")
     else:
         if adata is not None:
-            await db.update(f'DELETE * FROM auctiondata')
+            await db.update(f'DELETE FROM auctiondata')
             log.trace(f"Updating cluster-wide auction API information")
             for auction in iter(adata['Auctions']):
                 if auction['Type'] == 'Item':
-                    await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, blueprint) VALUES ({auction["Date"]}, {auction["Seller"]["Name"]}, {auction["Seller"]["SteamID"]}, 'Item', {auction["AskingClass"]}, {auction["AskingAmount"]}, {auction["Name"], auction["Quanity"]}, {auction["Items"]["Flags"]["IsBlueprint"]})""")
+                    await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, blueprint) VALUES ({auction["Date"]}, {auction["Seller"]["Name"]}, {auction["Seller"]["SteamID"]}, 'Item', {auction["AskingClass"]}, {auction["AskingAmount"]}, {auction["Name"], auction["Quantity"]}, {auction["Items"]["Flags"]["IsBlueprint"]})""")
 
 
 async def asyncarkserverdatafetcher(session):
