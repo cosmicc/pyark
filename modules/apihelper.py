@@ -22,6 +22,8 @@ async def asyncfetchclusterauctiondata(session):
             for auction in iter(adata['Auctions']):
                 if auction['Type'] == 'Item':
                     await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, blueprint) VALUES ('{auction["Date"]}', '{auction["Seller"]["Name"]}', '{auction["Seller"]["SteamID"]}', 'Item', '{auction["AskingClass"]}', '{auction["AskingAmount"]}', '{auction["Name"]}', '{auction["Quantity"]}', '{auction["Item"]["Flags"]["IsBlueprint"]}')""")
+                elif auction['Type'] == 'Dino':
+                    await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, level, exp, gender, extralevels) VALUES ('{auction["Date"]}', '{auction["Seller"]["Name"]}', '{auction["Seller"]["SteamID"]}', 'Item', '{auction["AskingClass"]}', '{auction["AskingAmount"]}', '{auction["Name"]}', '{auction["Quantity"]}', '{auction["Level"]}', '{auction["Experience"]}', '{auction["Gender"]}', '{auction["Extralevel"]}',)""")
 
 
 async def asyncarkserverdatafetcher(session):
