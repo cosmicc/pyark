@@ -32,7 +32,7 @@ async def asyncfetchclusterauctiondata(session):
                 if auction['Type'] == 'Item':
                     await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, blueprint) VALUES ('{auction["Date"]}', '{auction["Seller"]["Name"]}', '{auction["Seller"]["SteamID"]}', 'Item', '{auction["AskingClass"]}', {amt}, '{auction["Name"]}', '{auction["Quantity"]}', '{auction["Item"]["Flags"]["IsBlueprint"]}')""")
                 elif auction['Type'] == 'Dino':
-                    await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, level, exp, gender, extralevels) VALUES ('{auction["Date"]}', '{auction["Seller"]["Name"]}', '{auction["Seller"]["SteamID"]}', 'Dino', '{auction["AskingClass"]}', '{auction["AskingAmount"]}', '{auction["Name"]}', '{auction["Quantity"]}', '{auction["Dino"]["Level"]}', '{auction["Dino"]["Experience"]}', '{auction["Dino"]["Gender"]}', '{auction["Dino"]["ExtraLevel"]}')""")
+                    await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, level, exp, gender, extralevels) VALUES ('{auction["Date"]}', '{auction["Seller"]["Name"]}', '{auction["Seller"]["SteamID"]}', 'Dino', '{auction["AskingClass"]}', {amt}, '{auction["Name"]}', '{auction["Quantity"]}', '{auction["Dino"]["Level"]}', '{auction["Dino"]["Experience"]}', '{auction["Dino"]["Gender"]}', '{auction["Dino"]["ExtraLevel"]}')""")
 
 
 async def asyncarkserverdatafetcher(session):
