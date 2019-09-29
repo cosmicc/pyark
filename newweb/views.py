@@ -3,7 +3,7 @@ from datetime import timedelta
 from modules.asyncdb import asyncDB
 from modules.redis import RedisClass
 from modules.timehelper import Now, Secs, elapsedTime
-from modules.clusterevents import asyncgetcurrenteventinfo, asyncgetlasteventinfo
+from modules.clusterevents import asyncgetcurrenteventinfo, asyncgetlasteventinfo, d2dt_maint
 
 
 webapp = Quart(__name__)
@@ -29,9 +29,9 @@ async def _eventinfo():
         event = await asyncgetcurrenteventinfo()
         if not event:
             event = await asyncgetlasteventinfo()
-            return {'active': False, 'title': event['title'], 'description': event['description'], 'timeleft': elapsedTime(event['starttime'], Now())}
+            return {'active': False, 'title': event['title'], 'description': event['description'], 'timeleft': elapsedTime(d2dt_maint(event['starttime']), Now())}
         else:
-            return {'active': True, 'title': event['title'], 'description': event['description'], 'timeleft': elapsedTime(event['endtime'], Now())}
+            return {'active': True, 'title': event['title'], 'description': event['description'], 'timeleft': elapsedTime(d2dt_maint(event['endtime']), Now())}
     return dict(eventinfo=await eventinfo())
 
 
