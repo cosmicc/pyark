@@ -229,21 +229,49 @@ in 1 Days, 4 Hours</h3>
 <!-- end of home -->
 <div class="panel" id="auctions"><br />
 <center>
-
+Dinos up for Auction:
 <div class="divTable AuctionTable">
 <div class="divTableHeading">
 <div class="divTableRow">
-<div class="divTableHead">head1</div>
-<div class="divTableHead">head2</div>
-<div class="divTableHead">head3</div>
-<div class="divTableHead">head4</div>
-<div class="divTableHead">head5</div>
-<div class="divTableHead">head6</div>
-<div class="divTableHead">head7</div>
+<div class="divTableHead">Seller</div>
+<div class="divTableHead">Quantity</div>
+<div class="divTableHead">Dino Name (Level)</div>
+<div class="divTableHead">Price (Points)</div>
+<div class="divTableHead">Dino Gender</div>
+<div class="divTableHead">Extra Levels</div>
+<div class="divTableHead">Experience</div>
+<div class="divTableHead">Date</div>
 </div>
 </div>
 <div class="divTableBody">
-{% for auction in auctiondata %}
+{% for auction in dinoauctiondata %}
+<div class="divTableRow">
+<div class="divTableCell">{{auction['playername'].title()}}</div>
+<div class="divTableCell">{{auction['quanity']}}</div>
+<div class="divTableCell">{{auction['auctioname'].title()}} ({{auction['level']}})</div>
+<div class="divTableCell">000</div>
+<div class="divTableCell">{{auction['gender']}}</div>
+<div class="divTableCell">{{auction['extralevels']}}</div>
+<div class="divTableCell">{{auction['exp']}}</div>
+<div class="divTableCell">{{auction['date']}}</div>
+</div>
+{% endfor %}
+</div>
+
+Items up for Auction:
+<div class="divTable AuctionTable">
+<div class="divTableHeading">
+<div class="divTableRow">
+<div class="divTableHead">Seller</div>
+<div class="divTableHead">Quantity</div>
+<div class="divTableHead">Item Name</div>
+<div class="divTableHead">Price (Points)</div>
+<div class="divTableHead">Blueprint?</div>
+<div class="divTableHead">Date</div>
+</div>
+</div>
+<div class="divTableBody">
+{% for auction in itemauctiondata %}
 <div class="divTableRow">
 <div class="divTableCell">{{auction['playername'].title()}}</div>
 <div class="divTableCell">{{auction['quanity']}}</div>
@@ -254,6 +282,8 @@ in 1 Days, 4 Hours</h3>
 </div>
 {% endfor %}
 </div>
+
+
 
 </center>
 </div>
