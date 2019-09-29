@@ -217,3 +217,23 @@ em { color: #f3c331; }
 .minispacer { height: 5px; width: 0px; }
 
 .spacer_50 { height: 50px; width: 0px; }
+
+.div.AuctionTable {
+  border: 1px solid #FFFFFF;
+}
+.divTable.AuctionTable .divTableCell, .divTable.AuctionTable .divTableHead {
+}
+.divTable.AuctionTable .divTableHeading {
+  background: #DDDDDD;
+}
+.divTable.AuctionTable .divTableHeading .divTableHead {
+  font-weight: normal;
+}
+/* DivTable.com */
+.divTable{ display: table; }
+.divTableRow { display: table-row; }
+.divTableHeading { display: table-header-group;}
+.divTableCell, .divTableHead { display: table-cell;}
+.divTableHeading { display: table-header-group;}
+.divTableFoot { display: table-footer-group;}
+.divTableBody { display: table-row-group;}
