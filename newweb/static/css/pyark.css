@@ -220,6 +220,7 @@ em { color: #f3c331; }
 
 .div.AuctionTable {
   border: 1px solid #FFFFFF;
+  width: 90%;
 }
 .divTable.AuctionTable .divTableCell, .divTable.AuctionTable .divTableHead {
 }
