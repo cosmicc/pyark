@@ -102,25 +102,6 @@ em { color: #f3c331; }
 	text-decoration: none;
 }
 
-.service_list li .service_one {
-	background: url(images/onebit_08.png) center left no-repeat;
-}
-.service_list li .service_two {
-	background: url(images/onebit_11.png) center left no-repeat;
-}
-
-.service_list li .service_three {
-	background: url(images/onebit_17.png) center left no-repeat;
-}
-
-.service_list li .service_four {
-	background: url(images/onebit_21.png) center left no-repeat;
-}
-
-.service_list li .service_five {
-	background: url(images/onebit_12.png) center left no-repeat;
-}
-
 #contact_form {
 	padding: 0;
 }
@@ -171,8 +152,8 @@ em { color: #f3c331; }
 /* gallery */
 #gallery_container {
 	clear: both;
-	margin-top: 30px;
-	padding-right: 40px;
+	margin-top: 0px;
+	padding-right: 0px;
 }
 
 #gallery_container .gallery_box {
