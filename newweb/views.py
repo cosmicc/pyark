@@ -164,7 +164,7 @@ async def _onlineplayers():
 async def _instancestats():
     async def instancestats():
         return await webapp.db.fetchall(
-            f"SELECT name, lastwipe, lastrestart, lastvote, battlemetricslink, arkversion, rank, score, votes, serverhost, connectingplayers, activeplayers, arkbuild FROM instances ORDER BY name DESC"
+            f"SELECT name, lastdinowipe, lastrestart, lastvote, restartreason, battlemetricslink, arkversion, rank, score, votes, serverhost, connectingplayers, activeplayers, arkbuild FROM instances ORDER BY name DESC"
         )
     return dict(instancestats=iter(await instancestats()))
 
