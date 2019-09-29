@@ -55,8 +55,8 @@
 <div id="menu">
 <ul class="navigation">
 <li><a href="#home" class="selected">Status</a></li>
-<li><a href="#stats">Auctions</a></li>
-<li><a href="#auctions">Statistics</a></li>
+<li><a href="#auctions">Auctions</a></li>
+<li><a href="#stats">Statistics</a></li>
 <li><a href="#gallery">Gallery</a></li>
 <li><a href="#discord">Login</a></li>
 </ul>
@@ -227,22 +227,15 @@ in 1 Days, 4 Hours</h3>
 </div>
 </div>
 <!-- end of home -->
-<div class="panel" id="about"><br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
+<div class="panel" id="auctions"><br />
 <center>
-<h1>Comming Soon...</h1>
+{% for auction in auctiondata %}
+{{ auction }}
+{% endfor %}
 </center>
 </div>
 <!-- end of aboutus -->
-<div class="panel" id="services"><br />
+<div class="panel" id="stats"><br />
 <br />
 <br />
 <br />
@@ -268,7 +261,7 @@ target="_blank"><img src="{{galleryimg['link']}}" alt=
 </div>
 </div>
 <!-- end of gallery -->
-<div class="panel" id="contact"><br />
+<div class="panel" id="login"><br />
 <br />
 <br />
 <br />

@@ -10,6 +10,13 @@ webapp = Quart(__name__)
 
 
 @webapp.context_processor
+async def _auctiondata():
+    async def auctiondata():
+        return iter(await webapp.db.fetchone(f'SELECT * FROM auctiondata'))
+    return dict(auctiondata=await auctiondata())
+
+
+@webapp.context_processor
 async def _eventinfo():
     async def eventinfo():
         event = await asyncgetcurrenteventinfo()
