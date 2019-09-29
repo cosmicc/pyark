@@ -294,7 +294,9 @@ in {{ eventinfo['timeleft'] }}</h3>
 <div class="statistics">
 <div id="statsupdate">
 <center>
-test
+{% for instance in instacestats %}
+{{ instance }}
+{% endofor %}
 </center>
 </div>
 </div>

@@ -161,12 +161,20 @@ async def _onlineplayers():
 
 
 @webapp.context_processor
+async def _instancestats():
+    async def instancestats():
+        return await webapp.db.fetchall(
+            f"SELECT name, lastwipe, lastrestart, lastvote, battlemetricslink, arkversion, rank, score, votes, serverhost, connectingplayers, activeplayers, arkbuild FROM instances ORDER BY name DESC"
+        )
+    return dict(instancestats=iter(await instancestats()))
+
+
+@webapp.context_processor
 async def _instancedata():
     async def instancedata():
         return await webapp.db.fetchall(
             f"SELECT name, islistening, isup, needsrestart, restartcountdown, enabled, steamlink, activeplayers FROM instances ORDER BY name DESC"
         )
-
     return dict(instancedata=iter(await instancedata()))
 
 
