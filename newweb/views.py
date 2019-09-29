@@ -12,14 +12,14 @@ webapp = Quart(__name__)
 @webapp.context_processor
 async def _itemauctiondata():
     async def itemauctiondata():
-        return iter(await webapp.db.fetchall(f"SELECT * FROM auctiondata WHERE auctiontype = 'item'"))
+        return iter(await webapp.db.fetchall(f"SELECT * FROM auctiondata WHERE auctiontype = 'Item'"))
     return dict(itemauctiondata=await itemauctiondata())
 
 
 @webapp.context_processor
 async def _dinoauctiondata():
     async def dinoauctiondata():
-        return iter(await webapp.db.fetchall(f"SELECT * FROM auctiondata WHERE auctiontype = 'dino'"))
+        return iter(await webapp.db.fetchall(f"SELECT * FROM auctiondata WHERE auctiontype = 'Dino'"))
     return dict(dinoauctiondata=await dinoauctiondata())
 
 
