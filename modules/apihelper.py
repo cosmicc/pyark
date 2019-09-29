@@ -21,7 +21,7 @@ async def asyncfetchclusterauctiondata(session):
             log.trace(f"Updating cluster-wide auction API information")
             for auction in iter(adata['Auctions']):
                 if auction['Type'] == 'Item':
-                    await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, blueprint) VALUES ({auction["Date"]}, {auction["Seller"]["Name"]}, {auction["Seller"]["SteamID"]}, 'Item', {auction["AskingClass"]}, {auction["AskingAmount"]}, {auction["Name"], auction["Quantity"]}, {auction["Items"]["Flags"]["IsBlueprint"]})""")
+                    await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, blueprint) VALUES ({auction["Date"]}, {auction["Seller"]["Name"]}, {auction["Seller"]["SteamID"]}, 'Item', {auction["AskingClass"]}, {auction["AskingAmount"]}, {auction["Name"], auction["Quantity"]}, {auction["Item"]["Flags"]["IsBlueprint"]})""")
 
 
 async def asyncarkserverdatafetcher(session):
