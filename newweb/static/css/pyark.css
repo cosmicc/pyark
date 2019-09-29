@@ -225,10 +225,11 @@ div.AuctionTable {
 .divTable.AuctionTable .divTableCell, .divTable.AuctionTable .divTableHead {
 }
 .divTable.AuctionTable .divTableHeading {
-  background: #DDDDDD;
+  background: #7f7467;
 }
 .divTable.AuctionTable .divTableHeading .divTableHead {
   font-weight: normal;
+  color: #FFFFFF;
 }
 /* DivTable.com */
 .divTable{ display: table; }
