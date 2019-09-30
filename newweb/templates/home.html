@@ -117,8 +117,9 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 <h4>Event ends in <span style="color: #FFFFFF">{{ eventinfo['timeleft'] }}</span></h4>
 {{ eventinfo['description'] }}
 {% else %}
+<h3>No Current Active Event</h3>
 <h3>Next Event: {{eventinfo['title'].title()}}<br />
-in {{ eventinfo['timeleft'] }}</h3>
+in <span style="color: #FFFFFF">{{ eventinfo['timeleft'] }}</span></h3>
 <div class="spacer"></div>
 <div class="spacer"></div>
 {% endif %}
