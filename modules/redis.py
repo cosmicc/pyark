@@ -116,7 +116,9 @@ class globalvar:
         Arguments:
             key {string} -- Key to get value from
         """
-        return bool((await redis.get(key)).decode())
+        ret = await redis.get(key)
+        ret = int(ret.decode())
+        return bool(ret)
 
     @staticmethod
     async def getlist(key: str) -> list:
@@ -253,7 +255,9 @@ class instancevar:
             instance {string} -- Instance Name
             key {string} -- Key to get value from
         """
-        return bool((await redis.hget(f"{instance}", key)).decode())
+        ret = await redis.hget(f"{instance}", key)
+        ret = int(ret.decode())
+        return bool(ret)
 
     @staticmethod
     async def getfloat(instance: str, key: str) -> float:
