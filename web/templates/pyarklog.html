@@ -10,7 +10,7 @@
 <script>
     $(document).ready(function(){
         var ns = '{{ ns }}';
-        var socket = io.connect('http://' + document.domain + ':' + location.port + ns);
+        var socket = io.connect('http://' + document.domain + ns);
         $('textarea').empty()
             socket.on('logline', function(msg) {
             $('#log').append(msg.line + '<br>');
