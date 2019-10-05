@@ -39,7 +39,7 @@ async def _eventinfo():
 async def _currentlottery():
     async def currentlottery():
         lottery = await webapp.db.fetchone(
-            f"SELECT * FROM lotteryinfo WHERE completed = False and winner = 'Incomplete' and startdate >= 'Now(fmt='dt')' ORDER BY id DESC"
+            f"""SELECT * FROM lotteryinfo WHERE completed = False and winner = 'Incomplete' and startdate <= 'Now(fmt="dt")' ORDER BY id DESC"""
         )
         if not lottery:
             nextlotterystart = await webapp.db.fetchone(f"SELECT startdate from lotteryinfo WHERE completed = False and winner = 'Incomplete' and startdate > Now(fmt='dt') ORDER BY id DESC")
