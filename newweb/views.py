@@ -39,16 +39,24 @@ async def _eventinfo():
 async def _currentlottery():
     async def currentlottery():
         lottery = await webapp.db.fetchone(
-            f"SELECT * FROM lotteryinfo WHERE completed = False"
+            f"SELECT * FROM lotteryinfo WHERE completed = False and winner = 'Incomplete' and startdate <= Mow(fmt='dt') ORDER BY id DESC"
         )
         if not lottery:
-            nextlotterystart = await webapp.db.fetchone(f"SELECT startdate from lotteryinfo WHERE completed = True ORDER BY id DESC LIMIT 1")
-            return {
-                "active": False,
-                "playercount": 0,
-                "payout": 0,
-                "ends": elapsedTime(nextlotterystart["startdate"], Now(), nowifmin=False),
-            }
+            nextlotterystart = await webapp.db.fetchone(f"SELECT startdate from lotteryinfo WHERE completed = False and winner = 'Incomplete' and startdate > Now(fmt='dt') ORDER BY id DESC")
+            if nextlotterystart:
+                return {
+                    "active": False,
+                    "playercount": 0,
+                    "payout": 0,
+                    "ends": elapsedTime(nextlotterystart["startdate"], Now(), nowifmin=False),
+                }
+            else:
+                return {
+                    "active": False,
+                    "playercount": 0,
+                    "payout": 0,
+                    "ends": "1 Hour",
+                }
         else:
             lotterynames = await webapp.db.fetchall(
                 f"SELECT playername FROM lotteryplayers ORDER BY TIMESTAMP ASC"
