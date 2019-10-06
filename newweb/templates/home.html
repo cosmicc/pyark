@@ -301,15 +301,14 @@ in <span style="color: #FFFFFF">{{ eventinfo['timeleft'] }}</span></h3>
 <div class="inststatus">
 <div class="col_server float_l">
 <h2>{{ instance['name'].upper() }}</h2>
-<div class="minispacer"></div>
-Players Active: {{ instance['activeplayers']}}<br>
-Connecting: {{ instance['connectingplayers']}}<br>
-Last Restart Reason:<br>
-{{ instance['restartreason'].title()}}<br>
-Ark Version: {{ instance['arkversion']}}<br>
-Server Rank: {{ instance['rank']}}<br>
-Server Score: {{ instance['score']}}<br>
-Server Votes: {{ instance['votes']}}<br>
+Players Active: {{ instance['activeplayers']}}
+Connecting: {{ instance['connectingplayers']}}
+Last Restart Reason:
+{{ instance['restartreason'].title()}}
+Ark Version: {{ instance['arkversion']}}
+Server Rank: {{ instance['rank']}}
+Server Score: {{ instance['score']}}
+Server Votes: {{ instance['votes']}}
 </div>
 </div>
 {% endfor %}
