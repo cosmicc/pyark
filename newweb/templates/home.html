@@ -293,13 +293,14 @@ in <span style="color: #FFFFFF">{{ eventinfo['timeleft'] }}</span></h3>
 <h1>Ark: Survival Evolved Galaxy Server Cluster Statistics</h1>
 </center>
 </div>
+<div class="spacer"></div>
 <div class="statistics">
 <div id="statsupdate">
 <center>
 {% for instance in instancestats %}
 <div class="inststatus">
 <div class="col_server float_l">
-{{ instance['name'].upper() }}
+<h2>{{ instance['name'].upper() }}</h2>
 </div>
 </div>
 {% endfor %}
