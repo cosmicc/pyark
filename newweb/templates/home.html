@@ -300,8 +300,7 @@ in <span style="color: #FFFFFF">{{ eventinfo['timeleft'] }}</span></h3>
 {% for instance in instancestats %}
 <div class="inststatus">
 <div class="col_server">
-<span class="sname">{{ instance['name'].upper() }}</span> Players Active: {{ instance['activeplayers']}}
-Players Active: {{ instance['activeplayers']}}
+<span class="sname">{{ instance['name'].upper() }}</span> Status: {{ instance['isup']}} Active Players: {{ instance['activeplayers']}} Players Active: {{ instance['activeplayers']}}<br>
 Connecting: {{ instance['connectingplayers']}}
 Last Restart Reason:
 {{ instance['restartreason'].title()}}
