@@ -300,14 +300,9 @@ in <span style="color: #FFFFFF">{{ eventinfo['timeleft'] }}</span></h3>
 {% for instance in instancestats %}
 <div class="inststatus">
 <div class="col_server">
-<span class="sname">{{ instance['name'].upper() }}</span> Server Status: {{ instance['isup']}} Active Players: {{ instance['activeplayers']}} Connected Players: {{ instance['connectingplayers']}}<br>
-Connecting: {{ instance['connectingplayers']}}
-Last Restart Reason:
-{{ instance['restartreason'].title()}}
-Ark Version: {{ instance['arkversion']}}
-Server Rank: {{ instance['rank']}}
-Server Score: {{ instance['score']}}
-Server Votes: {{ instance['votes']}}
+<span class="sname">{{ instance['name'].upper() }}</span> Server Status: {{ instance['isup']}} Ark Version: {{ instance['arkversion']}} Active Players: {{ instance['activeplayers']}} Connected Players: {{ instance['connectingplayers']}}<br>
+Last Restart: {{ instance['lastrestart']}} Last Restart Reason: {{ instance['restartreason'].title()}}<br>
+Server Rank: {{ instance['rank']}} Server Score: {{ instance['score']}} Server Votes: {{ instance['votes']}}
 </div>
 </div>
 {% endfor %}
