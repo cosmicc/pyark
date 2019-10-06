@@ -124,7 +124,6 @@ ul.navigation a {
 	font-weight: 700;
 	text-align: center;
     text-decoration: none;
-	background: url(../images/tooplate_menu_divider.png) no-repeat center right;
 }
 
 ul.navigation a:hover, ul.navigation a.selected {
