@@ -9,7 +9,7 @@
 }
 
 #tooplate_header {
-	width: 900px;
+	width: 1000px;
 	height: 80px;
     margin-right: auto;
     margin-left: auto;
@@ -37,8 +37,8 @@
 #content {
 	clear: both;
     align-items: center;
-	width: 900px;
-	height: 500px;
+	width: 1000px;
+	height: 700px;
     margin-right: auto;
     margin-left: auto;
 	margin-bottom: 10px;
@@ -61,13 +61,13 @@
 	clear: both;
     margin-left: auto;
     margin-right: auto;
-	width: 900px;
+	width: 1000px;
 	padding: 0 0px;
 }
 
 #footer_center {
 	float: middle;
-	width: 900px;
+	width: 1000px;
 	text-align: center
 }
 
@@ -86,8 +86,8 @@
 }
 
 .scroll {
-    height: 500px;
-    width: 900px;
+    height: 700px;
+    width: 1000px;
     overflow: auto;
     /* overflow-x: hidden; */
     position: relative;
@@ -95,8 +95,8 @@
 }
 
 .scrollContainer div.panel {
-    height: 500px;
-    width: 900px;
+    height: 700px;
+    width: 1000px;
 	padding: 10px;
 	overflow: hidden;
 }
