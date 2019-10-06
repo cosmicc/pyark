@@ -78,9 +78,9 @@ em { color: #f3c331; }
 }
 
 .dashtitle { width: 1000px; margin-top: 5px; margin-bottom: 10px; }
-.col_left { width: 240px; margin-left: 50px}
-.col_center { width: 290px; }
-.col_right { width: 240px; padding-right: 50px; padding-left: 30px; }
+.col_left { width: 280px; margin-left: 50px}
+.col_center { width: 280px; }
+.col_right { width: 280px; padding-right: 50px; padding-left: 30px; }
 
 .col_server { text-align: left; height: 85px; width: 800px; padding-right: 30px; padding-left: 20px; padding-top: 0px; padding-bottom: 5px;}
 
