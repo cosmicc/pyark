@@ -9,7 +9,8 @@ body {
 	background-color: #07080a;
 	background-image: url(/static/images/tooplate_body.jpg);
 	background-repeat: no-repeat;
-	background-position: top center
+	background-position: top center;
+	background-size: auto;
 }
 
 a, a:link, a:visited { color: #f3c331; text-decoration: none; }
