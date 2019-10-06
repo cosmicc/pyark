@@ -82,7 +82,7 @@ em { color: #f3c331; }
 .col_center { width: 290px; }
 .col_right { width: 240px; padding-right: 50px; padding-left: 30px; }
 
-.col_server { width: 165px; padding-right: 5px; padding-left: 5px; }
+.col_server { width: 150px; padding-right: 10px; padding-left: 10px; padding-top: 5px; padding-bottom: 5px;}
 
 
 .service_list {
