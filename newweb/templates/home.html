@@ -77,37 +77,36 @@
 Cluster</h1>
 </center>
 </div>
-<div class="col_left float_l">
-<div class="lotteryinfo">
-<div id="lotteryupdate">
-{% if currentlottery['active'] %}
-<h3>Current Lottery Ends in <br><span style="color: #FFFFFF">{{ currentlottery['ends'] }}</span></h3>
+<div class="col_right float_l">
+<div class="onlineplayernames">
+<div id="playerupdate">
+<h3><span style="color: #FFFFFF"><b>{{ onlineplayers['count']
+}}</b></span> Online Players:</h3>
+{{ onlineplayers['names'] }}
+</div>
+</div>
 <div class="spacer"></div>
 <div class="spacer"></div>
-<h3>Lottery is at <span style="color: #FFFFFF">{{
-currentlottery['payout'] }}</span> Points with <span style=
-"color: #FFFFFF">{{ currentlottery['playercount'] }}</span>
-Players:</h3>
-{{ currentlottery['players'] }}<br />
-{% else %}
-<h3>Next lottery starts in<br />
-<span style="color: #FFFFFF">{{ currentlottery['ends']
-}}</span></h3>
-{% endif %}
+<div class="dailyplayers">
+<div id="playerhistoryupdate">
+<h3><span style="color: #FFFFFF">{{ dailyplayers['count']
+}}</span> Active players today:</h3>
+{{ dailyplayers['names'] }}
 <div class="spacer"></div>
+<h3><span style="color: #FFFFFF">{{ otherplayercounts['week']
+}}</span> Active players this week</h3>
 <div class="spacer"></div>
-<h3>Last Lottery winner was: <span style="color: #FFFFFF">{{
-lastlottery['winner'].title() }}</span> with <span style=
-"color: #FFFFFF">{{ lastlottery['payout'] }}</span> Points</h3>
+<h3><span style="color: #FFFFFF">{{ otherplayercounts['month']
+}}</span> Active players this month</h3>
 <div class="spacer"></div>
-<div class="spacer"></div>
-<h3>Last 7 lottery winners:</h3>
-{% for lottoplayer in last7lotterys %} {{ lottoplayer['num'] }}. {{
-lottoplayer['playername'].title() }} won {{ lottoplayer['points']
-}} Points<br>{% endfor %}
+<h3><span style="color: #FFFFFF">{{ newplayers['count']
+}}</span> New Players this week:</h3>
+{{ newplayers['names'] }}
 </div>
 </div>
 </div>
+
+
 <div class="col_center float_l">
 <center>
 <div class="eventinfo">
@@ -187,34 +186,39 @@ in <span style="color: #FFFFFF">{{ eventinfo['timeleft'] }}</span></h3>
 </center>
 </div>
 </div>
-<div class="col_right float_l">
-<div class="onlineplayernames">
-<div id="playerupdate">
-<h3><span style="color: #FFFFFF"><b>{{ onlineplayers['count']
-}}</b></span> Online Players:</h3>
-{{ onlineplayers['names'] }}
-</div>
-</div>
+
+<div class="col_left float_l">
+<div class="lotteryinfo">
+<div id="lotteryupdate">
+{% if currentlottery['active'] %}
+<h3>Current Lottery Ends in <br><span style="color: #FFFFFF">{{ currentlottery['ends'] }}</span></h3>
 <div class="spacer"></div>
 <div class="spacer"></div>
-<div class="dailyplayers">
-<div id="playerhistoryupdate">
-<h3><span style="color: #FFFFFF">{{ dailyplayers['count']
-}}</span> Active players today:</h3>
-{{ dailyplayers['names'] }}
+<h3>Lottery is at <span style="color: #FFFFFF">{{
+currentlottery['payout'] }}</span> Points with <span style=
+"color: #FFFFFF">{{ currentlottery['playercount'] }}</span>
+Players:</h3>
+{{ currentlottery['players'] }}<br />
+{% else %}
+<h3>Next lottery starts in<br />
+<span style="color: #FFFFFF">{{ currentlottery['ends']
+}}</span></h3>
+{% endif %}
 <div class="spacer"></div>
-<h3><span style="color: #FFFFFF">{{ otherplayercounts['week']
-}}</span> Active players this week</h3>
 <div class="spacer"></div>
-<h3><span style="color: #FFFFFF">{{ otherplayercounts['month']
-}}</span> Active players this month</h3>
+<h3>Last Lottery winner was: <span style="color: #FFFFFF">{{
+lastlottery['winner'].title() }}</span> with <span style=
+"color: #FFFFFF">{{ lastlottery['payout'] }}</span> Points</h3>
 <div class="spacer"></div>
-<h3><span style="color: #FFFFFF">{{ newplayers['count']
-}}</span> New Players this week:</h3>
-{{ newplayers['names'] }}
+<div class="spacer"></div>
+<h3>Last 7 lottery winners:</h3>
+{% for lottoplayer in last7lotterys %} {{ lottoplayer['num'] }}. {{
+lottoplayer['playername'].title() }} won {{ lottoplayer['points']
+}} Points<br>{% endfor %}
 </div>
 </div>
 </div>
+
 </div>
 
 <div class="panel" id="auctions">
