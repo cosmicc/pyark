@@ -80,7 +80,7 @@ em { color: #f3c331; }
 .dashtitle { width: 1000px; margin-top: 5px; margin-bottom: 10px; }
 .col_left { width: 300px; padding-left: 30px; margin-right: 20px;}
 .col_center { width: 300px; }
-.col_right { width: 300px; padding-right: 40px; margin-left: 20px;}
+.col_right { width: 300px; margin-right: 40px; margin-left: 10px;}
 
 .col_server { text-align: left; height: 85px; width: 800px; padding-right: 30px; padding-left: 20px; padding-top: 0px; padding-bottom: 5px;}
 
