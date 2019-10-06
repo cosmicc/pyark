@@ -297,7 +297,10 @@ in <span style="color: #FFFFFF">{{ eventinfo['timeleft'] }}</span></h3>
 <div id="statsupdate">
 <center>
 {% for instance in instancestats %}
-{{ instance['name'] }}
+<div class="inststatus">
+{{ instance['name'].upper() }}
+<br>
+</div>
 {% endfor %}
 </center>
 </div>
