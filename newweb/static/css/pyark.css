@@ -8,8 +8,6 @@ body {
 	line-height: 1.5em;
 	background-color: #07080a;
 	background-image: url(/static/images/tooplate_body.jpg);
-	background-repeat: no-repeat;
-	background-position: top center;
 	background-size: cover;
 }
 
