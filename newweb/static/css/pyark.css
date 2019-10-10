@@ -155,12 +155,14 @@ em { color: #f3c331; }
 /* gallery */
 #gallery_container {
 	clear: both;
+	margin-left: auto;
+	margin-right: auto;
 	margin-top: 0px;
 	padding-right: 0px;
 }
 
 #gallery_container .gallery_box {
-	float: middle;
+	float: left;
 	width: 145px;
 	display: block;
 	padding: 0;
@@ -168,7 +170,7 @@ em { color: #f3c331; }
 }
 
 .gallery_box img {
-	float: middle;
+	float: left;
 	width: 135px;
 	height: 80px;
 	border: 1px solid #000000;
