@@ -473,7 +473,7 @@ async def asynccheckifenabled(inst):
         )
     if (
         instdata["enabled"]
-        and instdata["isrunning"] == 0
+        and await instdata["isrunning"] == 0
         and not await instancestate.check(inst, "restartwaiting")
         and not await instancestate.check(inst, "restarting")
     ):
