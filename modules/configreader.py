@@ -35,7 +35,10 @@ chatfile: Path = Path(config.get("general", "chatlogfile"))
 
 maint_hour: int = int(config.get("general", "maint_hour"))
 
-is_arkupdater: bool = bool(config.get("general", "is_arkupdater"))
+if config.get("general", "is_arkupdater" == "True")
+    is_arkupdater = True
+else:
+    is_arkupdater = False
 
 # SteamAPI
 steamapikey: str = config.get("steam", "steamapikey")
