@@ -172,10 +172,13 @@ async def _onlineplayers():
 @webapp.context_processor
 async def _instancestats():
     async def instancestats():
-        idata = await webapp.db.fetchall(
+        inatancedata = await webapp.db.fetchall(
             f"SELECT name, lastdinowipe, lastrestart, lastvote, restartreason, arkversion, rank, score, votes, connectingplayers, activeplayers, isup, arkbuild, hostname FROM instances ORDER BY name DESC"
         )
-        return {'name': idata['name'], 'lastdinowipe': elapsedTime(Now(), idata['lastdinowipe']), 'lastrestart': elapsedTime(Now(), idata['lastrestart']), 'lastvote': elapsedTime(Now(), idata['lastvote']), 'restartreason': idata['restartreason'], 'arkversion': idata['arkversion'], 'rank': idata['rank'], 'score': idata['score'], 'votes': idata['votes'], 'connectingplayers': idata['connectingplayers'], 'activeplayers': idata['activeplayers'], 'isup': idata['isup'], 'arkbuild': idata['arkbuild'], 'hostname': idata['hostname']}
+        returnlist = []
+        for idata in instancedata:
+            returnlist.append({'name': idata['name'], 'lastdinowipe': elapsedTime(Now(), idata['lastdinowipe']), 'lastrestart': elapsedTime(Now(), idata['lastrestart']), 'lastvote': elapsedTime(Now(), idata['lastvote']), 'restartreason': idata['restartreason'], 'arkversion': idata['arkversion'], 'rank': idata['rank'], 'score': idata['score'], 'votes': idata['votes'], 'connectingplayers': idata['connectingplayers'], 'activeplayers': idata['activeplayers'], 'isup': idata['isup'], 'arkbuild': idata['arkbuild'], 'hostname': idata['hostname']})
+        return returnlist
     return dict(instancestats=iter(await instancestats()))
 
 
