@@ -481,7 +481,7 @@ async def asynccheckifenabled(inst):
             "MAINT",
             f"Instance [{inst.title()}] is not running and set to [enabled]. Starting server",
         )
-        # asyncio.create_task(asyncrestartinstnow(inst, startonly=True))
+        asyncio.create_task(asyncrestartinstnow(inst, startonly=True))
     elif (
         not instdata["enabled"]
         and instdata["isrunning"] == 1
