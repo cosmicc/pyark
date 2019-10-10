@@ -177,7 +177,7 @@ async def _instancestats():
         )
         returnlist = []
         for idata in instancedata:
-            returnlist.append({'name': idata['name'], 'lastdinowipe': elapsedTime(Now(), idata['lastdinowipe']), 'lastrestart': elapsedTime(Now(), idata['lastrestart']), 'lastvote': elapsedTime(Now(), idata['lastvote']), 'restartreason': idata['restartreason'], 'arkversion': idata['arkversion'], 'rank': idata['rank'], 'score': idata['score'], 'votes': idata['votes'], 'connectingplayers': idata['connectingplayers'], 'activeplayers': idata['activeplayers'], 'isup': idata['isup'], 'arkbuild': idata['arkbuild'], 'hostname': idata['hostname']})
+            returnlist.append({'name': idata['name'], 'lastdinowipe': elapsedTime(Now(), int(idata['lastdinowipe'])), 'lastrestart': elapsedTime(Now(), int(idata['lastrestart'])), 'lastvote': elapsedTime(Now(), int(idata['lastvote'])), 'restartreason': idata['restartreason'], 'arkversion': idata['arkversion'], 'rank': idata['rank'], 'score': idata['score'], 'votes': idata['votes'], 'connectingplayers': idata['connectingplayers'], 'activeplayers': idata['activeplayers'], 'isup': idata['isup'], 'arkbuild': idata['arkbuild'], 'hostname': idata['hostname']})
         return returnlist
     return dict(instancestats=iter(await instancestats()))
 
