@@ -511,12 +511,12 @@ async def asynccheckifalreadyrestarting(inst):
 @log.catch
 async def asynccheckupdates(instances):
     global updgennotify
-    if is_arkupdater == "True" and Now() - updgennotify > Secs["hour"]:
-        log.trace("running updatecheck for {hstname}")
+    if is_arkupdater == "True" and Now() - updgennotify > 600:
+        log.debug("running updatecheck for {hstname}")
         try:
             ustate, curver, avlver = await asyncisnewarkver("all")
             if not ustate:
-                log.trace("ark update check found no ark updates available")
+                log.debug("ark update check found no ark updates available")
             else:
                 for inst in instances:
                     await instancestate.set(inst, "updating")
