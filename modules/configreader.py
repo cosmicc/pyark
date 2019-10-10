@@ -35,7 +35,7 @@ chatfile: Path = Path(config.get("general", "chatlogfile"))
 
 maint_hour: int = int(config.get("general", "maint_hour"))
 
-if config.get("general", "is_arkupdater") == "True"
+if config.get("general", "is_arkupdater") == "True":
     is_arkupdater = True
 else:
     is_arkupdater = False
