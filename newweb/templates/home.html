@@ -9,7 +9,7 @@
 <meta name="keywords" content="Ark, Galaxy, Game Server, Ark Server" />
 <meta name="description" content="Ark: Survival Evolved Ultimate Extinction Core Galaxy Server Cluster" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.30')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.31')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.2')}}" />
 <script src=
@@ -325,7 +325,7 @@ Server Rank: {{ instance['rank']}} Server Score: {{ instance['score']}} Server V
 </center>
 </div>
 <div class="minispacer"></div>
-<div id="gallery_container">
+<div id="gallery_container" class="gallery">
 {% for galleryimg in gallerylinks %}
 <div class="gallery_box"><a href="{{galleryimg['link']}}"
 target="_blank"><img src="{{galleryimg['link']}}" alt=
