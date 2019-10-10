@@ -511,7 +511,7 @@ async def asynccheckifalreadyrestarting(inst):
 @log.catch
 async def asynccheckupdates(instances):
     global updgennotify
-    if is_arkupdater and Now() - updgennotify > 600:
+    if is_arkupdater:
         log.debug("running updatecheck for {hstname}")
         try:
             ustate, curver, avlver = await asyncisnewarkver("all")
