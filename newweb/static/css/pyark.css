@@ -155,7 +155,7 @@ em { color: #f3c331; }
 /* gallery */
 #gallery_container {
 	clear: both;
-	margin-left: auto;
+	margin-left: 200px;
 	margin-right: auto;
 	margin-top: 0px;
 	padding-right: 0px;
