@@ -126,11 +126,10 @@ async def asyncrestartinstnow(inst, startonly=False):
             ],
             _wait=True,
         )
-        await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
+        await instancevar.mset(inst, {"isrunning": 1, "isonline": 0, "islistening": 0})
         await asyncio.sleep(1)
         await asyncserverexec(["arkmanager", "start", f"@{inst}"], _wait=True)
         log.log("UPDATE", f"Instance [{inst.title()}] is starting")
-        await instancevar.mset(inst, {"isrunning": 1, "isonline": 0, "islistening": 0})
         await instancestate.clear(inst)
         await instancestate.set(inst, "restarting")
         await asyncresetlastrestart(inst)
