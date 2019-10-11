@@ -311,9 +311,9 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 {% for instance in instancestats %}
 <div class="inststatus">
 <div class="col_server">
-<span class="sname">{{ instance['name'].upper() }}</span>&nbsp;&nbsp;<span class="sdesc">Server Status:</span>&nbsp;<span class="sval">{{ instance['isup']}}</span>&nbsp;&nbsp;<span class="sdesc">Ark Version:</span>&nbsp;<span class="sval">{{ instance['arkversion']}}</span>&nbsp;&nbsp;Active Players: {{ instance['activeplayers']}} Connected Players: {{ instance['connectingplayers']}}<br>
-<span class="sdesc">Last Restart:</span>&nbsp;<span class="sval">{{ instance['lastrestart']}}</span>&nbsp;&nbsp;&nbsp;<span class="sdesc">Last Restart Reason:</span>&nbsp;<span class="sval">{{ instance['restartreason'].title()}}</span><br>
-<span class="sdesc">Last Wild Wipe:</span>&nbsp;<span class="sval">{{ instance['lastdinowipe']}}</span>&nbsp;&nbsp;&nbsp;<span class="sdesc">Last Vote:</span>&nbsp;<span class="sval">{{ instance['lastvote'].title()}}</span><br>
+<span class="sname">{{ instance['name'].upper() }}</span>&nbsp;&nbsp;<span class="sdesc">Server Status:</span>&nbsp;<span class="sval">{{ instance['isup']}}</span>&nbsp;&nbsp;<span class="sdesc">Ark Version:</span>&nbsp;<span class="sval">{{ instance['arkversion']}}</span>&nbsp;&nbsp;<span class="sdesc">Active Players:</span>&nbsp;<span class="sval">{{ instance['activeplayers']}}</span>&nbsp;&nbsp;&nbsp;<span class="sdesc">Connected Players:</span>&nbsp;<span class="sval">{{ instance['connectingplayers']}}</span><br>
+<span class="sdesc">Last Restart:</span>&nbsp;<span class="sval">{{ instance['lastrestart']}}&nbsp;ago</span>&nbsp;&nbsp;&nbsp;<span class="sdesc">Last Restart Reason:</span>&nbsp;<span class="sval">{{ instance['restartreason'].title()}}</span><br>
+<span class="sdesc">Last Wild Wipe:</span>&nbsp;<span class="sval">{{ instance['lastdinowipe']}}&nbsp;ago</span>&nbsp;&nbsp;&nbsp;<span class="sdesc">Last Vote:</span>&nbsp;<span class="sval">{{ instance['lastvote'].title()}}&nbsp;ago</span><br>
 <span class="sdesc">Server Rank:</span>&nbsp;<span class="sval">{{ instance['rank']}}</span>&nbsp;&nbsp;&nbsp;<span class="sdesc">Server Score:</span>&nbsp;<span class="sval">{{ instance['score']}}</span>&nbsp;&nbsp;&nbsp;<span class="sdesc">Server Votes:</span>&nbsp;<span class="sval">{{ instance['votes']}}</span>
 </div>
 </div>
