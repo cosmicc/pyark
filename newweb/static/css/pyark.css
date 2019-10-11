@@ -84,7 +84,7 @@ em { color: #f3c331; }
 
 .col_server { text-align: left; height: 100px; width: 900px; margin-right: 30px; padding-right: 30px; padding-left: 20px; padding-top: 10px; padding-bottom: 0px; margin-bottom: 15px; border: 1px solid #7f7467;}
 
-.motd { text-align: center; height: 50px; width: 600px; margin-right: auto; padding-top: 5px; padding-bottom: 5px; border: 1px solid #7f7467;}
+.motd { text-align: center; height: 20px; width: 600px; margin: auto; padding-top: 5px; padding-bottom: 5px; border: 1px solid #7f7467;}
 
 .service_list {
 	margin: 0 0 0 15px;
