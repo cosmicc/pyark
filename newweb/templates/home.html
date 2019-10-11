@@ -9,7 +9,7 @@
 <meta name="keywords" content="Ark, Galaxy, Game Server, Ark Server" />
 <meta name="description" content="Ark: Survival Evolved Ultimate Extinction Core Galaxy Server Cluster" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.42')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.43')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.2')}}" />
 <script src=
@@ -41,6 +41,7 @@
     var pageLoader = setInterval(function(){
             $("#lotteryupdate").load(" #lotteryupdate");
             $("#eventupdate").load(" #eventupdate");
+            $("#motd").load(" #motd");
         }, 60000);
     var pageLoader = setInterval(function(){
             $("#auctionupdate").load(" #auctionupdate");
@@ -80,6 +81,8 @@ Cluster</h1>
 </center>
 </div>
 <div class="minispacer"></div>
+<div class="motd" id="motd">motd</div>
+<div class="minispacer"></div>
 <div class="col_left float_l">
 <div class="onlineplayernames">
 <div id="playerupdate">
@@ -108,7 +111,6 @@ Cluster</h1>
 </div>
 </div>
 </div>
-
 
 <div class="col_center float_l">
 <center>
@@ -293,7 +295,6 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 </div>
 </center>
 </div>
-
 <div class="panel" id="stats">
 <div class="dashtitle">
 <center>
