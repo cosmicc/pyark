@@ -9,7 +9,7 @@
 <meta name="keywords" content="Ark, Galaxy, Game Server, Ark Server" />
 <meta name="description" content="Ark: Survival Evolved Ultimate Extinction Core Galaxy Server Cluster" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.47')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.48')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.2')}}" />
 <script src=
@@ -311,7 +311,7 @@ lottoplayer['playername'].title() }} won {{ lottoplayer['points']
 {% for instance in instancestats %}
 <div class="inststatus">
 <div class="col_server">
-<span class="sname">{{ instance['name'].upper() }}</span> Server Status: {{ instance['isup']}} Ark Version: {{ instance['arkversion']}} Active Players: {{ instance['activeplayers']}} Connected Players: {{ instance['connectingplayers']}}<br>
+<span class="sname">{{ instance['name'].upper() }}</span>&nbsp;&nbsp;<span class="sdesc">Server Status:</span>&nbsp;<span class="sval">{{ instance['isup']}}</span>&nbsp;&nbsp;<span class="sdesc">Ark Version:</span>&nbsp;<span class="sval">{{ instance['arkversion']}}</span> Active Players: {{ instance['activeplayers']}} Connected Players: {{ instance['connectingplayers']}}<br>
 Last Restart: {{ instance['lastrestart']}} Last Restart Reason: {{ instance['restartreason'].title()}}<br>
 Last Wild Wipe: {{ instance['lastdinowipe']}} Last Vote: {{ instance['lastvote'].title()}}<br>
 Server Rank: {{ instance['rank']}} Server Score: {{ instance['score']}} Server Votes: {{ instance['votes']}}
