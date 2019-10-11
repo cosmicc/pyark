@@ -124,6 +124,15 @@ async def _lastlottery():
 
 
 @webapp.context_processor
+async def _motd():
+    async def motd():
+        return await webapp.db.fetchone(
+            f"SELECT announce FROM general"
+        )
+
+    return dict(motd=await motd())
+
+@webapp.context_processor
 async def _otherplayercounts():
     async def otherplayercounts():
         wcount = await webapp.db.fetchone(

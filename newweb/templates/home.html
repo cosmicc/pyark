@@ -9,7 +9,7 @@
 <meta name="keywords" content="Ark, Galaxy, Game Server, Ark Server" />
 <meta name="description" content="Ark: Survival Evolved Ultimate Extinction Core Galaxy Server Cluster" />
 <link rel="stylesheet" href=
-"{{url_for('static', filename='css/pyark.css?ver=1.44')}}" />
+"{{url_for('static', filename='css/pyark.css?ver=1.45')}}" />
 <link rel="stylesheet" href=
 "{{url_for('static', filename='css/coda-slider.css?ver=1.2')}}" />
 <script src=
@@ -82,7 +82,7 @@ Cluster</h1>
 </div>
 <div class="minispacer"></div>
 <div class="motd">
-<div id="motdupdate">motd
+<div id="motdupdate">{{ motd['announce'] }}
 </div>
 </div>
 <div class="minispacer"></div>
