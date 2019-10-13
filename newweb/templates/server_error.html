@@ -7,16 +7,10 @@
     <title>Ark: Galaxy Cluster Servers</title>
     <link rel="stylesheet" href="{{url_for('static', filename='css/error.css?ver=1.00')}}" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--# if expr="$status = 502" -->
-      <meta http-equiv="refresh" content="2">
-    <!--# endif -->
-  </head>
+    <meta http-equiv="refresh" content="2">
+</head>
 <body>
-  <!--# if expr="$status = 502" -->
-    <h1>Website in Maintenance</h1>
-    <p>Page will be refreshed automatically</p>
-  <!--# else -->
-    <h1><!--# echo var="status" default="" --> <!--# echo var="status_text" default="Something goes wrong" --></h1>
-  <!--# endif -->
+    <center><h1>Website in Maintenance</h1></center>
+    <center><p>Page will be refreshed automatically</p></center>
 </body>
 </html>
