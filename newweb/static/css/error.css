@@ -9,12 +9,12 @@ a, a:link, a:visited { color: #f3c331; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 h1, h2, h3, h4, h5, h6 { font-family: Tahoma, Geneva, sans-serif; }
-h1 { font-size: 24px; color: #7f7467; margin: 0 0 0px 0; font-weight: bold; }
+h1 { font-size: 24px; color: #808080; margin: 0 0 0px 0; font-weight: bold; }
 h2 { font-size: 18px; color: #7f7467; margin: 0 0 0px 0; font-weight: normal; }
 
 #parent {
     width: 300px;
-    height: 50px;
+    height: 500px;
     margin: auto auto;
     display: flex;
     align-items: center; /* horizontal */
