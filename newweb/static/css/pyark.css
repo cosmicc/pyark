@@ -234,3 +234,12 @@ div.AuctionTable {
 .divTableHeading { display: table-header-group;}
 .divTableFoot { display: table-footer-group;}
 .divTableBody { display: table-row-group;}
+
+.servermaintenance {
+    width: 300px;
+    height: 500px;
+    margin: auto auto;
+    display: flex;
+    align-items: center; /* horizontal */
+    justify-content: center; /* vertical */
+}
