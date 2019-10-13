@@ -4,7 +4,7 @@ from modules.redis import globalvar, instancestate, instancevar, redis
 from modules.servertools import stripansi, asyncglobalbuffer
 from starlette.responses import Response
 
-app = FastAPI(openapi_prefix="/pyarkapi")
+app = FastAPI(openapi_prefix="/pyarkapi", title="Galaxy Cluster API", description="Ark: Galaxy Cluster Server API", version="2.0.1", redoc_url=None)
 
 db = asyncDB()
 
