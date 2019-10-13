@@ -13,5 +13,15 @@ body {
 a, a:link, a:visited { color: #f3c331; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-h1, h2, h3, h4, h5, h6 { color: #f3c331; font-family: Tahoma, Geneva, sans-serif; }
-h1 { font-size: 18px; margin: 0 0 0px 0; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 { font-family: Tahoma, Geneva, sans-serif; }
+h1 { font-size: 22px; color: #f3c331; margin: 0 0 0px 0; font-weight: normal; }
+h2 { font-size: 18px; color: #7f7467; margin: 0 0 0px 0; font-weight: normal; }
+
+#parent {
+    width: auto;
+    height: auto;
+    display: flex;
+}
+#child {
+    margin: auto auto;
+}
