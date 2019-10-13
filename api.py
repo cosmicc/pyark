@@ -4,7 +4,7 @@ from modules.redis import globalvar, instancestate, instancevar, redis
 from modules.servertools import stripansi, asyncglobalbuffer
 from starlette.responses import Response
 
-app = FastAPI(openapi_prefix="/api")
+app = FastAPI(openapi_prefix="/pyarkapi")
 
 db = asyncDB()
 
