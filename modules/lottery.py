@@ -125,11 +125,11 @@ async def asyncdeterminewinner(lottoinfo):
             for each in lottoers:
                 roll = randint(100)
                 lwins = await db.fetchone(f"SELECT lottowins FROM players WHERE steamid = '{each[0]}'")
-                if int(lwins) == 0:
+                if int(lwins['lottowins']) == 0:
                     roll = roll + 20
-                elif int(lwins) >= 5:
+                elif int(lwins['lottowins']) >= 5:
                     roll = roll - 20
-                elif int(lwins) >= 3:
+                elif int(lwins['lottowins']) >= 3:
                     roll = roll - 10
                 winners.update({each[0]: roll})
             winnersid = keywithmaxval(winners)
