@@ -9,8 +9,7 @@ from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery
 from modules.redis import globalvar
 from modules.timehelper import Now, datetimeto, elapsedTime, estshift
-from numpy import argmax
-from numpy.random import randint, seed, shuffle
+from numpy.random import randint, seed
 from timebetween import is_time_between
 from typing import Tuple
 
@@ -110,49 +109,37 @@ async def getlotteryendtime() -> datetime:
     return estshift(lottoinfo["startdate"] + timedelta(days=lottoinfo["days"]))
 
 
+def keywithmaxval(d):
+    v = list(d.values())
+    k = list(d.keys())
+    return k[v.index(max(v))]
+
+
 async def asyncdeterminewinner(lottoinfo):
     log.debug("Lottery time has ended. Determining winner.")
-    winners = []
-    picks = []
-    adjpicks = []
-    wins = []
+    winners = {}
     lottoers = await db.fetchall("SELECT * FROM lotteryplayers")
     if len(lottoers) >= 3:
         try:
-            for eachn in lottoers:
-                winners.append(eachn[0])
-            seed(randint(100))
-            shuffle(winners)
-            seed(randint(100))
-            for eachw in range(len(winners)):
-                picks.append(randint(100))
-                lwins = await db.fetchone(
-                    f"SELECT lottowins FROM players WHERE steamid = '{winners[eachw]}'"
-                )
-                wins.append(lwins[0])
-                if wins[eachw] > 10:
-                    adjj = 10
-                else:
-                    adjj = wins[eachw]
-                adjpicks.append(picks[eachw] - adjj * 5)
-            winneridx = argmax(adjpicks)
-            winnersid = winners[winneridx]
-            lwinner = await db.fetchone(
-                f"SELECT * FROM players WHERE steamid = '{winnersid}'"
-            )
-            await db.update(
-                f"UPDATE lotteryinfo SET winner = '{lwinner[1]}', completed = True WHERE id = '{lottoinfo['id']}'"
-            )
-            log.log(
-                "LOTTO",
-                f'Lottery ended, winner is: {lwinner[1].upper()} for {lottoinfo["payout"]} points, win #{lwinner[18]+1}',
-            )
+            seed(randint(99))
+            for each in lottoers:
+                roll = randint(100)
+                lwins = await db.fetchone(f"SELECT lottowins FROM players WHERE steamid = '{each[0]}'")
+                if lwins == 0:
+                    roll = roll + 20
+                elif lwins >= 5:
+                    roll = roll - 20
+                elif lwins >= 3:
+                    roll = roll - 10
+                winners.update({each[0]: roll})
+            winnersid = keywithmaxval(winners)
+            lwinner = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{winnersid}'")
+            await db.update(f"UPDATE lotteryinfo SET winner = '{lwinner[1]}', completed = True WHERE id = '{lottoinfo['id']}'")
+            log.log("LOTTO", f'Lottery ended, winner is: {lwinner[1].upper()} for {lottoinfo["payout"]} points, win #{lwinner[18]+1}')
             winners.remove(winnersid)
             log.debug(f"queuing up lottery deposits for {winners}")
             for ueach in winners:
-                kk = await db.fetchone(
-                    f"SELECT * FROM players WHERE steamid = '{ueach}'"
-                )
+                kk = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{ueach}'")
                 await db.update(
                     f"INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES ('{kk[0]}', '{kk[1]}', '{Now()}', 10, 0)"
                 )
