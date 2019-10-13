@@ -20,9 +20,9 @@ h2 { font-size: 18px; color: #7f7467; margin: 0 0 0px 0; font-weight: normal; }
 #parent {
     width: 300px;
     height: 50px;
-    background-color: 000000;
     display: flex;
 }
 #child {
+    background-color: #000000;
     margin: auto auto;
 }
