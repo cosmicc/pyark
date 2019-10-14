@@ -35,16 +35,15 @@ async def token_required(f):
 """
 
 
-def get_current_key(apikey: str = Depends(security)):
+async def get_current_key(apikey: str = Depends(security)):
     if apikey != "test":
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
-            detail="Incorrect api key",
         )
     return apikey
 
 
-@app.get("/authtest")
+@app.get("/authtest", status_code=200)
 def read_current_user(apikey: str = Depends(get_current_key)):
     return {"key": apikey}
 
