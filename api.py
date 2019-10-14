@@ -49,11 +49,6 @@ async def check_apikey(apikey: str = Depends(security)):
     return apikey
 
 
-@app.get("/authtest", status_code=200)
-def read_current_user(apikey: str = Depends(check_apikey)):
-    return {"key": apikey}
-
-
 @app.on_event("startup")
 async def startup():
     await db.connect(min=1, max=5, timeout=60)
