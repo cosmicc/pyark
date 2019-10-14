@@ -115,7 +115,7 @@ async def players_info(response: Response, apikey: str = Depends(check_apikey), 
 
 
 @app.get("/servers/info", status_code=200)
-async def servers_info(response: Response, servername=None):
+async def servers_info(response: Response, apikey: str = Depends(check_apikey), servername=None):
     instances = await globalvar.getlist("allinstances")
     if servername is not None:
         if servername in instances:
@@ -161,7 +161,7 @@ async def servers_vars(response: Response, servername=None):
 
 
 @app.get("/logs/pyark", status_code=200)
-async def logs_pyark(response: Response, lines=1):
+async def logs_pyark(response: Response, apikey: str = Depends(check_apikey), lines=1):
     getlines = await redis.zcard("pyarklog")
     if int(lines) > int(getlines):
         lines = int(getlines)
@@ -174,7 +174,7 @@ async def logs_pyark(response: Response, lines=1):
 
 
 @app.get("/logs/game", status_code=200)
-async def logs_game(response: Response, lines=1):
+async def logs_game(response: Response, apikey: str = Depends(check_apikey), lines=1):
     getlines = await redis.zcard("glhistory")
     if getlines is not None:
         if int(lines) > int(getlines):
@@ -187,7 +187,7 @@ async def logs_game(response: Response, lines=1):
 
 
 @app.get("/logs/chat", status_code=200)
-async def logs_chat(response: Response, lines=1):
+async def logs_chat(response: Response, apikey: str = Depends(check_apikey), lines=1):
     getlines = await redis.zcard("clhistory")
     if getlines is not None:
         if int(lines) > int(getlines):
