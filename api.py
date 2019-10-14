@@ -178,4 +178,4 @@ async def logs_chat(response: Response, lines=1):
 
 @app.get("/")
 def read_root():
-    raise HTTPException(status_code=404)
+    raise HTTPException(status_code=444)
