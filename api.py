@@ -35,8 +35,9 @@ async def token_required(f):
 """
 
 
-async def get_current_key(apikey: str = Depends(security)):
-    if apikey != "test":
+async def check_apikey(apikey: str = Depends(security)):
+    keys = await db.fetchall("SELECT apikey from players WHERE apikey is not NULL")
+    if apikey not in keys:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
         )
@@ -44,7 +45,7 @@ async def get_current_key(apikey: str = Depends(security)):
 
 
 @app.get("/authtest", status_code=200)
-def read_current_user(apikey: str = Depends(get_current_key)):
+def read_current_user(apikey: str = Depends(check_apikey)):
     return {"key": apikey}
 
 
