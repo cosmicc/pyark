@@ -35,9 +35,16 @@ async def token_required(f):
 """
 
 
+def in_dictlist(key, value, my_dictlist):
+    for this in my_dictlist:
+        if this[key] == value:
+            return True
+    return False
+
+
 async def check_apikey(apikey: str = Depends(security)):
     keys = await db.fetchall("SELECT apikey from players WHERE apikey is not NULL")
-    if apikey not in keys:
+    if not in_dictlist('apikey', apikey, keys):
         return f"{keys}"
     #    raise HTTPException(status_code=HTTP_401_UNAUTHORIZED)
     return keys
