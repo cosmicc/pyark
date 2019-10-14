@@ -37,10 +37,10 @@ async def token_required(f):
 
 async def check_apikey(apikey: str = Depends(security)):
     keys = await db.fetchall("SELECT apikey from players WHERE apikey is not NULL")
-    # if apikey not in iter(keys):
-    return f"{type(keys)}"
+    if apikey not in keys:
+        return f"{keys}"
     #    raise HTTPException(status_code=HTTP_401_UNAUTHORIZED)
-    return type(keys)
+    return keys
 
 
 @app.get("/authtest", status_code=200)
