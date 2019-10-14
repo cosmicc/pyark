@@ -135,11 +135,12 @@ async def asyncdeterminewinner(lottoinfo):
             winnersid = keywithmaxval(winners)
             lwinner = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{winnersid}'")
             await db.update(f"UPDATE lotteryinfo SET winner = '{lwinner[1]}', completed = True WHERE id = '{lottoinfo['id']}'")
+            log.debug(winners)
             log.log("LOTTO", f'Lottery ended, winner is: {lwinner[1].upper()} for {lottoinfo["payout"]} points, win #{lwinner[18]+1}')
-            winners.remove(winnersid)
+            del winners[winnersid]
             log.debug(f"queuing up lottery deposits for {winners}")
-            for ueach in winners:
-                kk = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{ueach}'")
+            for key, value in winners:
+                kk = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{key}'")
                 await db.update(
                     f"INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES ('{kk[0]}', '{kk[1]}', '{Now()}', 10, 0)"
                 )
