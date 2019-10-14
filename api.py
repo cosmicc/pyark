@@ -1,12 +1,16 @@
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import Depends, FastAPI, Form, HTTPException
 from modules.asyncdb import asyncDB
 from modules.redis import globalvar, instancestate, instancevar, redis
 from modules.servertools import stripansi, asyncglobalbuffer
 from starlette.responses import Response
+from fastapi.security import APIKeyQuery
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 app = FastAPI(openapi_prefix="/pyarkapi", title="Galaxy Cluster API", description="Ark: Galaxy Cluster Server API", version="2.0.1", redoc_url=None)
 
 db = asyncDB()
+
+security = APIKeyQuery(name='key')
 
 """
 async def token_required(f):
@@ -29,6 +33,20 @@ async def token_required(f):
         return f(*args, **kwargs)
     return decorated
 """
+
+
+def get_current_key(apikey: str = Depends(security)):
+    if apikey != "test":
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail="Incorrect api key",
+        )
+    return apikey
+
+
+@app.get("/authtest")
+def read_current_user(apikey: str = Depends(get_current_key)):
+    return {"key": apikey}
 
 
 @app.on_event("startup")
