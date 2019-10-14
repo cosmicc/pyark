@@ -45,9 +45,8 @@ def in_dictlist(key, value, my_dictlist):
 async def check_apikey(apikey: str = Depends(security)):
     keys = await db.fetchall("SELECT apikey from players WHERE apikey is not NULL")
     if not in_dictlist('apikey', apikey, keys):
-        return f"{keys}"
-    #    raise HTTPException(status_code=HTTP_401_UNAUTHORIZED)
-    return keys
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED)
+    return apikey
 
 
 @app.get("/authtest", status_code=200)
