@@ -49,11 +49,6 @@ async def check_apikey(apikey: str = Depends(security)):
     return apikey
 
 
-@app.get("/authtest", status_code=200)
-def read_current_user(apikey: str = Depends(check_apikey)):
-    return {"key": apikey}
-
-
 @app.on_event("startup")
 async def startup():
     await db.connect(min=1, max=5, timeout=60)
@@ -65,7 +60,7 @@ async def shutdown():
 
 
 @app.post("/serverchat")
-async def server_chat(chatline: str = Form(...)):
+async def server_chat(apikey: str = Depends(check_apikey), chatline: str = Form(...)):
     await asyncglobalbuffer(chatline)
     return chatline
 
@@ -92,7 +87,7 @@ async def players_online():
 
 
 @app.get("/players/info", status_code=200)
-async def players_info(response: Response, steamid=None, playername=None):
+async def players_info(apikey: str = Depends(check_apikey), response: Response, steamid=None, playername=None):
     if steamid:
         player = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{steamid}'")
         if player:
@@ -115,7 +110,7 @@ async def players_info(response: Response, steamid=None, playername=None):
 
 
 @app.get("/servers/info", status_code=200)
-async def servers_info(response: Response, servername=None):
+async def servers_info(apikey: str = Depends(check_apikey), response: Response, servername=None):
     instances = await globalvar.getlist("allinstances")
     if servername is not None:
         if servername in instances:
@@ -161,7 +156,7 @@ async def servers_vars(response: Response, servername=None):
 
 
 @app.get("/logs/pyark", status_code=200)
-async def logs_pyark(response: Response, lines=1):
+async def logs_pyark(apikey: str = Depends(check_apikey), response: Response, lines=1):
     getlines = await redis.zcard("pyarklog")
     if int(lines) > int(getlines):
         lines = int(getlines)
@@ -174,7 +169,7 @@ async def logs_pyark(response: Response, lines=1):
 
 
 @app.get("/logs/game", status_code=200)
-async def logs_game(response: Response, lines=1):
+async def logs_game(apikey: str = Depends(check_apikey), response: Response, lines=1):
     getlines = await redis.zcard("glhistory")
     if getlines is not None:
         if int(lines) > int(getlines):
