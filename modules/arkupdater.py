@@ -127,10 +127,7 @@ async def asynccheckwipe(instances):
             inst, "islistening"
         ):
             oplayers = await asyncgetliveplayersonline(inst)
-            if (
-                oplayers["activeplayers"] == 0
-                and await asyncgetplayersonline(inst, fmt="count") == 0
-            ):
+            if oplayers["activeplayers"] == 0 and await asyncgetplayersonline(inst, fmt="count") == 0:
                 log.log(
                     "WIPE",
                     f"Dino wipe needed for [{inst.title()}], server is empty, wiping now",
