@@ -68,7 +68,7 @@ def redislistener():
                 )
             elif response["data"].decode() == "restartwatchdog":
                 subprocess.run(
-                    ["systemctl restart arkwatchdog"], shell=False, capture_output=False
+                    ["/bin/systemctl restart arkwatchdog"], shell=False, capture_output=False
                 )
             elif response["data"].decode().startswith("loglevel"):
                 loglevel = response["data"].decode().split(":")[1]
@@ -84,7 +84,7 @@ def redislistener():
                         config.write(configfile)
                     sleep(1)
                     subprocess.run(
-                        ["systemctl restart pyark"], shell=False, capture_output=False
+                        ["/bin/systemctl restart pyark"], shell=False, capture_output=False
                     )
             elif response["data"].decode().startswith("setcfg"):
                 respsplit = response["data"].decode().split(":")
