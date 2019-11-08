@@ -1,55 +1,25 @@
-import asyncio
 import signal
-from concurrent.futures._base import CancelledError
-from datetime import datetime
 from datetime import time as dt
-from datetime import timedelta
+from datetime import datetime, timedelta
 from os import _exit, getpid
 
+import asyncio
 import discord
+from concurrent.futures._base import CancelledError
 from discord.ext import commands
 from loguru import logger as log
-
 from modules.asyncdb import DB as db
-from modules.clusterevents import (
-    asyncgetcurrenteventinfo,
-    asyncgetlasteventinfo,
-    asyncgetnexteventinfo,
-    asynciseventtime,
-)
-from modules.configreader import (
-    changelog_id,
-    discordtoken,
-    generalchat_id,
-    hstname,
-    infochat_id,
-    maint_hour,
-    serverchat_id,
-)
+from modules.clusterevents import (asyncgetcurrenteventinfo, asyncgetlasteventinfo, asyncgetnexteventinfo,
+                                   asynciseventtime)
+from modules.configreader import (changelog_id, discordtoken, generalchat_id, hstname, infochat_id, maint_hour,
+                                  serverchat_id)
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import (
-    asyncgetlastrestart,
-    asyncgetlastrestartreason,
-    asyncgetlastwipe,
-    asyncgetinstancelist,
-    asyncwriteglobal,
-)
-from modules.lottery import (
-    asyncgetlottowinnings,
-    asyncisinlottery,
-    asynctotallotterydeposits,
-)
-from modules.players import (
-    asyncgetnewestplayers,
-    asyncgetplayerinfo,
-    asyncgetplayerlastseen,
-    asyncgetplayerlastserver,
-    asyncgetplayersonline,
-    getplayerstoday,
-    asyncgettopplayedplayers,
-    isplayeradmin,
-    setprimordialbit,
-)
+from modules.instances import (asyncgetinstancelist, asyncgetlastrestart, asyncgetlastrestartreason, asyncgetlastwipe,
+                               asyncwriteglobal)
+from modules.lottery import asyncgetlottowinnings, asyncisinlottery, asynctotallotterydeposits
+from modules.players import (asyncgetnewestplayers, asyncgetplayerinfo, asyncgetplayerlastseen,
+                             asyncgetplayerlastserver, asyncgetplayersonline, asyncgettopplayedplayers, getplayerstoday,
+                             isplayeradmin, setprimordialbit)
 from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
 
 __name__ = "discordbot"
@@ -1525,7 +1495,7 @@ def pyarkbot():
                 message.content.lower().find("server has crashed! - restarting server")
                 != -1
             ):
-                generalchat = client.get_channel(int(generalchat_id))
+                # generalchat = client.get_channel(int(generalchat_id))
                 inst = message.content.split(":")[0].split()[3].lower()
                 log.log(
                     "CRASH",
