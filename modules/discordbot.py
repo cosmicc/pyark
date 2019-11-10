@@ -1495,7 +1495,7 @@ def pyarkbot():
                 message.content.lower().find("server has crashed! - restarting server")
                 != -1
             ):
-                # generalchat = client.get_channel(int(generalchat_id))
+                generalchat = client.get_channel(int(generalchat_id))
                 inst = message.content.split(":")[0].split()[3].lower()
                 log.log(
                     "CRASH",
