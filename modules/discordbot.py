@@ -1,26 +1,33 @@
+import asyncio
 import signal
+from concurrent.futures._base import CancelledError
+from datetime import datetime
 from datetime import time as dt
-from datetime import datetime, timedelta
+from datetime import timedelta
 from os import _exit, getpid
 
-import asyncio
 import discord
-from concurrent.futures._base import CancelledError
 from discord.ext import commands
 from loguru import logger as log
 from modules.asyncdb import DB as db
-from modules.clusterevents import (asyncgetcurrenteventinfo, asyncgetlasteventinfo, asyncgetnexteventinfo,
-                                   asynciseventtime)
-from modules.configreader import (changelog_id, discordtoken, generalchat_id, hstname, infochat_id, maint_hour,
+from modules.clusterevents import (asyncgetcurrenteventinfo,
+                                   asyncgetlasteventinfo,
+                                   asyncgetnexteventinfo, asynciseventtime)
+from modules.configreader import (changelog_id, discordtoken, generalchat_id,
+                                  hstname, infochat_id, maint_hour,
                                   serverchat_id)
 from modules.dbhelper import dbquery, dbupdate
-from modules.instances import (asyncgetinstancelist, asyncgetlastrestart, asyncgetlastrestartreason, asyncgetlastwipe,
+from modules.instances import (asyncgetinstancelist, asyncgetlastrestart,
+                               asyncgetlastrestartreason, asyncgetlastwipe,
                                asyncwriteglobal)
-from modules.lottery import asyncgetlottowinnings, asyncisinlottery, asynctotallotterydeposits
-from modules.players import (asyncgetnewestplayers, asyncgetplayerinfo, asyncgetplayerlastseen,
-                             asyncgetplayerlastserver, asyncgetplayersonline, asyncgettopplayedplayers, getplayerstoday,
-                             isplayeradmin, setprimordialbit)
-from modules.timehelper import Now, Secs, datetimeto, elapsedTime, epochto, playedTime
+from modules.lottery import (asyncgetlottowinnings, asyncisinlottery,
+                             asynctotallotterydeposits)
+from modules.players import (asyncgetnewestplayers, asyncgetplayerinfo,
+                             asyncgetplayerlastseen, asyncgetplayerlastserver,
+                             asyncgetplayersonline, asyncgettopplayedplayers,
+                             getplayerstoday, isplayeradmin, setprimordialbit)
+from modules.timehelper import (Now, Secs, datetimeto, elapsedTime, epochto,
+                                playedTime)
 
 __name__ = "discordbot"
 
@@ -1507,7 +1514,7 @@ def pyarkbot():
                 )
                 msg = f"The **{inst.title()}** server has crashed!\n\nServer is now restarting, there may be a slight rollback"
                 embed = discord.Embed(description=msg, color=FAIL_COLOR)
-                await generalchat.send(embed=embed)
+                #await generalchat.send(embed=embed)
         else:
             await client.process_commands(message)
 
