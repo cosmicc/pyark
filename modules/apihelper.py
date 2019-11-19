@@ -17,6 +17,7 @@ async def asyncfetchclusterauctiondata(session):
         log.error(f"Error fetching ArkServers data from web: {adata}")
     else:
         if adata is not None:
+            log.info(f'adata: {adata}')
             await db.update(f'DELETE FROM auctiondata')
             log.trace(f"Updating cluster-wide auction API information")
             for auction in iter(adata['Auctions']):
