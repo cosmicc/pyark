@@ -17,23 +17,25 @@ async def asyncfetchclusterauctiondata(session):
         log.error(f"Error fetching ArkServers data from web: {adata}")
     else:
         if adata is not None:
-            log.info(f'adata: {adata}')
             await db.update(f'DELETE FROM auctiondata')
             log.trace(f"Updating cluster-wide auction API information")
-            for auction in iter(adata['Auctions']):
-                if auction['AskingClass'] == 'PrimalItemConsumable_TCsAR_CurrencyARcTitanium_C':
-                    multp = 10
-                elif auction['AskingClass'] == 'PrimalItemConsumable_TCsAR_CurrencyARcThorium_C':
-                    multp = 500
-                elif auction['AskingClass'] == 'PrimalItemConsumable_TCsAR_CurrencyARcPlatinum_C':
-                    multp = 100
-                elif auction['AskingClass'] == 'PrimalItemConsumable_TCsAR_CurrencyARc_C':
-                    multp = 1
-                amt = int(auction['AskingAmount']) * multp
-                if auction['Type'] == 'Item':
-                    await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, blueprint) VALUES ('{auction["Date"]}', '{auction["Seller"]["Name"]}', '{auction["Seller"]["SteamID"]}', 'Item', '{auction["AskingClass"]}', {amt}, '{auction["Name"]}', '{auction["Quantity"]}', '{auction["Item"]["Flags"]["IsBlueprint"]}')""")
-                elif auction['Type'] == 'Dino':
-                    await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, level, exp, gender, extralevels) VALUES ('{auction["Date"]}', '{auction["Seller"]["Name"]}', '{auction["Seller"]["SteamID"]}', 'Dino', '{auction["AskingClass"]}', {amt}, '{auction["Name"]}', '{auction["Quantity"]}', '{auction["Dino"]["Level"]}', '{auction["Dino"]["Experience"]}', '{auction["Dino"]["Gender"]}', '{auction["Dino"]["ExtraLevel"]}')""")
+            if adata['Auctions'] is None:
+                log.debug('No auctions to post')
+            else:
+                for auction in iter(adata['Auctions']):
+                    if auction['AskingClass'] == 'PrimalItemConsumable_TCsAR_CurrencyARcTitanium_C':
+                        multp = 10
+                    elif auction['AskingClass'] == 'PrimalItemConsumable_TCsAR_CurrencyARcThorium_C':
+                        multp = 500
+                    elif auction['AskingClass'] == 'PrimalItemConsumable_TCsAR_CurrencyARcPlatinum_C':
+                        multp = 100
+                    elif auction['AskingClass'] == 'PrimalItemConsumable_TCsAR_CurrencyARc_C':
+                        multp = 1
+                    amt = int(auction['AskingAmount']) * multp
+                    if auction['Type'] == 'Item':
+                        await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, blueprint) VALUES ('{auction["Date"]}', '{auction["Seller"]["Name"]}', '{auction["Seller"]["SteamID"]}', 'Item', '{auction["AskingClass"]}', {amt}, '{auction["Name"]}', '{auction["Quantity"]}', '{auction["Item"]["Flags"]["IsBlueprint"]}')""")
+                    elif auction['Type'] == 'Dino':
+                        await db.update(f"""INSERT INTO auctiondata (date, playername, playersteamid, auctiontype, askingclass, askingamount, auctioname, quanity, level, exp, gender, extralevels) VALUES ('{auction["Date"]}', '{auction["Seller"]["Name"]}', '{auction["Seller"]["SteamID"]}', 'Dino', '{auction["AskingClass"]}', {amt}, '{auction["Name"]}', '{auction["Quantity"]}', '{auction["Dino"]["Level"]}', '{auction["Dino"]["Experience"]}', '{auction["Dino"]["Gender"]}', '{auction["Dino"]["ExtraLevel"]}')""")
 
 
 async def asyncarkserverdatafetcher(session):
