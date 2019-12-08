@@ -136,10 +136,10 @@ async def asyncdeterminewinner(lottoinfo):
             lwinner = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{winnersid}'")
             await db.update(f"UPDATE lotteryinfo SET winner = '{lwinner[1]}', completed = True WHERE id = '{lottoinfo['id']}'")
             log.debug(winners)
-            log.log("LOTTO", f'Lottery ended, winner is: {lwinner[1].upper()} for {lottoinfo["payout"]} points, win #{lwinner[18]+1}')
+            log.log("LOTTO", f'Lottery ended, winner is: {lwinner[1].upper()} with {lottoinfo["payout"]} points, win #{lwinner[18]+1}')
             del winners[winnersid]
             log.debug(f"queuing up lottery deposits for {winners}")
-            for key, value in winners:
+            for key, value in winners.items():
                 kk = await db.fetchone(f"SELECT * FROM players WHERE steamid = '{key}'")
                 await db.update(
                     f"INSERT INTO lotterydeposits (steamid, playername, timestamp, points, givetake) VALUES ('{kk[0]}', '{kk[1]}', '{Now()}', 10, 0)"
@@ -161,7 +161,7 @@ async def asyncdeterminewinner(lottoinfo):
                 lwin = int(lwinner[19])
             nlw = lwin + int(lottoinfo["payout"])
             await db.update(
-                f"UPDATE players SET lottowins = '{int(lwinner[18]) + 1}', lotterywinnings = '{nlw}' WHERE steamid = '{lwinner[0]}'"
+                f"UPDATE players SET lottowins = {int(lwinner[18]) + 1}, lotterywinnings = {nlw} WHERE steamid = '{lwinner[0]}'"
             )
         except:
             log.exception("Critical Error Lottery Winner determination!")
