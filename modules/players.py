@@ -1,14 +1,13 @@
 import asyncio
-
-from loguru import logger as log
+from typing import Dict, Optional, Union
 
 import globvars
 from asyncpg import Record
+from loguru import logger as log
 from modules.asyncdb import DB as db
 from modules.dbhelper import dbquery, dbupdate, formatdbdata
 from modules.servertools import asyncserverchat, asyncserverchatto
 from modules.timehelper import Now, Secs, wcstamp
-from typing import Optional, Union, Dict
 
 
 def getbannedplayers():
@@ -329,7 +328,7 @@ async def asyncnewplayer(steamid: str, playername: str, inst: str):
     if steamid not in globvars.welcomes:
         globvars.welcomes.add(steamid)
         added = await db.update(
-            f"INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated, refreshauctions, refreshsteam, homemovepoints, lotterywinnings) VALUES ('{steamid}', '{playername}', '{Now()}', '{inst}', '0', '0', '{Now()}', '1', '', '', '0', '0', '0', '0', '0', '{inst}', '0', '{Now()}', '0', 'True', 'True', '0', '0', False, True, 0, 0)"
+            f"INSERT INTO players (steamid, playername, lastseen, server, playedtime, rewardpoints, firstseen, connects, discordid, banned, totalauctions, itemauctions, dinoauctions, restartbit, primordialbit, homeserver, transferpoints, lastpointtimestamp, lottowins, welcomeannounce, online, steamlastlogoff, steamcreated, refreshauctions, refreshsteam, homemovepoints, lotterywinnings) VALUES ('{steamid}', '{playername.lower()}', '{Now()}', '{inst}', '0', '0', '{Now()}', '1', '', '', '0', '0', '0', '0', '0', '{inst}', '0', '{Now()}', '0', 'True', 'True', '0', '0', False, True, 0, 0)"
         )
         if added:
             log.log(
