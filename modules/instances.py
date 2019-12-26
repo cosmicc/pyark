@@ -1,26 +1,22 @@
+import asyncio
+import configparser
 import shutil
 from functools import partial
 from os import chown
+
 import globvars
-import asyncio
-import configparser
 import redis as _Redis
 from loguru import logger as log
 from modules.asyncdb import DB as db
-from modules.configreader import redis_host, redis_port, sharedpath, hstname
+from modules.clusterevents import asyncgetcurrenteventext, asynciseventtime
+from modules.configreader import hstname, redis_host, redis_port, sharedpath
 from modules.dbhelper import dbquery, dbupdate
 from modules.redis import globalvar, instancestate, instancevar
-from modules.servertools import (
-    asyncserverrconcmd,
-    asyncserverscriptcmd,
-    filterline,
-    asyncserverexec,
-    serverneedsrestart,
-    getserveruptime,
-)
+from modules.servertools import (asyncserverexec, asyncserverrconcmd,
+                                 asyncserverscriptcmd, filterline,
+                                 getserveruptime, serverneedsrestart)
 from modules.subprotocol import SubProtocol
 from modules.timehelper import Now
-from modules.clusterevents import asyncgetcurrenteventext, asynciseventtime
 
 
 @log.catch
@@ -70,75 +66,70 @@ async def asyncgetpendingcfgver(inst):
 @log.catch
 async def asyncrestartinstnow(inst, startonly=False):
     checkdirs(inst)
-    if await instancevar.getint(inst, "playersconnected") == 0 and await instancevar.getint(inst, "playersactive") == 0 and await instancevar.getint(inst, "playersonline") == 0:
-        if not startonly:
-            await asyncwipeit(inst)
-            await asyncio.sleep(5)
-            await asyncserverexec(
-                ["arkmanager", "stop", "--saveworld", f"@{inst}"], _wait=True
-            )
-            log.log(
-                "UPDATE", f"Instance [{inst.title()}] has stopped, backing up world data..."
-            )
-            await db.update(
-                f"UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '{inst}'"
-            )
-        await asyncserverexec(["arkmanager", "backup", f"@{inst}"], _wait=True)
-        if not await asyncisinstanceenabled(inst):
-            log.log(
-                "UPDATE", f"Instance [{inst.title()}] remaining off because not enabled."
-            )
-            await asyncunsetstartbit(inst)
-        elif (
-            serverneedsrestart()
-            and inst != "coliseum"
-            and inst != "crystal"
-            and not startonly
-        ):
-            await db.update(
-                f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'"
-            )
-            log.log(
-                "MAINT",
-                f"REBOOTING Server [{hstname.upper()}] for maintenance server reboot",
-            )
-            await instancevar.mset(inst, {"isrunning": 0, "isonline": 0, "islistening": 0})
-            await instancestate.clear(inst)
-            await instancestate.set(inst, "restarting")
-            await asyncserverexec(["reboot"])
-        else:
-            log.log(
-                "UPDATE",
-                f"Instance [{inst.title()}] has backed up world data, building config...",
-            )
-            await installconfigs(inst)
-            log.log(
-                "UPDATE", f"Instance [{inst.title()}] is updating from staging directory"
-            )
-            await asyncserverexec(
-                [
-                    "arkmanager",
-                    "update",
-                    "--force",
-                    "--no-download",
-                    "--update-mods",
-                    "--no-autostart",
-                    f"@{inst}",
-                ],
-                _wait=True,
-            )
-            await instancevar.mset(inst, {"isrunning": 1, "isonline": 0, "islistening": 0})
-            await asyncio.sleep(1)
-            await asyncserverexec(["arkmanager", "start", f"@{inst}"], _wait=True)
-            log.log("UPDATE", f"Instance [{inst.title()}] is starting")
-            await instancestate.clear(inst)
-            await instancestate.set(inst, "restarting")
-            await asyncresetlastrestart(inst)
-            await asyncunsetstartbit(inst)
-            await asyncplayerrestartbit(inst)
-            await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
+    # if await instancevar.getint(inst, "playersconnected") == 0 and await instancevar.getint(inst, "playersactive") == 0 and await instancevar.getint(inst, "playersonline") == 0:
+    if not startonly:
+        await asyncwipeit(inst)
+        await asyncio.sleep(5)
+        await asyncserverexec(
+            ["arkmanager", "stop", "--saveworld", f"@{inst}"], _wait=True
+        )
+        log.log(
+            "UPDATE", f"Instance [{inst.title()}] has stopped, backing up world data..."
+        )
+        await db.update(
+            f"UPDATE instances SET isup = 0, isrunning = 0, islistening = 0 WHERE name = '{inst}'"
+        )
+    await asyncserverexec(["arkmanager", "backup", f"@{inst}"], _wait=True)
+    if not await asyncisinstanceenabled(inst):
+        log.log(
+            "UPDATE", f"Instance [{inst.title()}] remaining off because not enabled."
+        )
+        await asyncunsetstartbit(inst)
+    elif (serverneedsrestart() and inst != "coliseum" and inst != "tunguska" and not startonly):
+        await db.update(
+            f"UPDATE instances SET restartserver = False WHERE name = '{inst.lower()}'"
+        )
+        log.log(
+            "MAINT",
+            f"REBOOTING Server [{hstname.upper()}] for maintenance server reboot",
+        )
+        await instancevar.mset(inst, {"isrunning": 0, "isonline": 0, "islistening": 0})
+        await instancestate.clear(inst)
+        await instancestate.set(inst, "restarting")
+        await asyncserverexec(["reboot"])
     else:
-        log.error("Instance [{inst.title()}] trying to start but people online!")
+        log.log(
+            "UPDATE",
+            f"Instance [{inst.title()}] has backed up world data, building config...",
+        )
+        await installconfigs(inst)
+        log.log(
+            "UPDATE", f"Instance [{inst.title()}] is updating from staging directory"
+        )
+        await asyncserverexec(
+            [
+                "arkmanager",
+                "update",
+                "--force",
+                "--no-download",
+                "--update-mods",
+                "--no-autostart",
+                f"@{inst}",
+            ],
+            _wait=True,
+        )
+        await instancevar.mset(inst, {"isrunning": 1, "isonline": 0, "islistening": 0})
+        await asyncio.sleep(1)
+        await asyncserverexec(["arkmanager", "start", f"@{inst}"], _wait=True)
+        log.log("UPDATE", f"Instance [{inst.title()}] is starting")
+        await instancestate.clear(inst)
+        await instancestate.set(inst, "restarting")
+        await asyncresetlastrestart(inst)
+        await asyncunsetstartbit(inst)
+        await asyncplayerrestartbit(inst)
+        await db.update(f"UPDATE instances SET isrunning = 1 WHERE name = '{inst}'")
+    # else:
+    #    log.error(f"Instance [{inst.title()}] trying to start but people online!")
 
 
 @log.catch
@@ -275,9 +266,7 @@ async def asyncfinishstatus(inst):
     if await instancevar.getint(inst, "missedrunning") >= 5 and await asyncisinstanceenabled(inst) and not await instancevar.check(inst, "isrunning"):
         asyncio.create_task(asyncrestartinstnow(inst, startonly=True))
     if (
-        await asyncisinstanceenabled(inst)
-        and await getserveruptime() < 60
-        and not await instancevar.check(inst, "isrunning")
+        await asyncisinstanceenabled(inst) and await getserveruptime() < 60 and not await instancevar.check(inst, "isrunning")
     ):
         await instancevar.mset(
             inst,
