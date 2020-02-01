@@ -986,6 +986,9 @@ async def asyncprocesscmdline(minst, eline):
                     f"Responding to a [!linkme] request from [{whoasked.title()}] on [{minst.title()}]",
                 )
                 await asynclinker(minst, whoasked)
+                
+            elif incmd.startswith(("!lottojoin", "!lottoenter")):
+                    await asynclottery(whoasked, True, minst)
 
             elif incmd.startswith(("!lottery", "!lotto")):
                 rawline = line.split(":")
