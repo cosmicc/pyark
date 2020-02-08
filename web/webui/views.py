@@ -85,7 +85,6 @@ from ..database import db
 from ..models import Role, User
 
 webui = Blueprint("webui", __name__)
-
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 
 logthreads = []
@@ -870,10 +869,10 @@ def manifest():
                     "sizes": "192x192",
                 }
             ],
-            "start_url": "/",
+            "start_url": "/arkadmin",
             "background_color": "#000000",
             "display": "standalone",
-            "scope": "/",
+            "scope": "/arkadmin",
             "theme_color": "#000000",
         }
     )

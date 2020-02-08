@@ -7,7 +7,8 @@ from modules.configreader import psql_db, psql_host, psql_port, psql_pw, psql_us
 def dbquery(query):
     conn = psycopg2.connect(dbname=psql_db, user=psql_user, host=psql_host, port=psql_port, password=psql_pw)
     c = conn.cursor()
-    resp = c.fetchall(query)
+    c.execute(query)
+    resp = c.fetchall()
     c.close()
     conn.close()
     return resp
@@ -22,6 +23,20 @@ def dbupdate(query):
     conn.close()
 
 
-lottotable = dbquery("select * from lottteryinfo")
+lottotable = dbquery("select * from lotteryinfo")
 
-print(lottotable)
+players = {}
+
+for entry in lottotable:
+    if entry[6] in players:
+        p = players[entry[6]]
+        newpoints = p[0] + entry[1]
+        newwins = p[1] + 1
+        players.update({entry[6]: [newpoints, newwins]})
+    else:
+        if entry[6] != 'None' and entry[6] != 'Incomplete':
+            players.update({entry[6]: [entry[1], 1]})
+
+for each, val in players.items():
+        print(f'{each} - {val}')
+        dbupdate(f"UPDATE players set lottowins = {val[1]}, lotterywinnings = {val[0]} where playername = '{each}'")

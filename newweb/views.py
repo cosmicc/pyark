@@ -132,6 +132,7 @@ async def _motd():
 
     return dict(motd=await motd())
 
+
 @webapp.context_processor
 async def _otherplayercounts():
     async def otherplayercounts():

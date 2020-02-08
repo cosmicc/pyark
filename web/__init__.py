@@ -16,6 +16,7 @@ def create_app(config_object):
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security.init_app(app, user_datastore, register_blueprint=True)
     socketio.init_app(app)
+    app.config['SECURITY_LOGIN_URL'] = '/arkadmin/login'
     return app
 
 
